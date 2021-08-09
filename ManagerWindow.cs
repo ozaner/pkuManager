@@ -1,155 +1,471 @@
-﻿using Newtonsoft.Json;
-using pkuManager.Exporters;
+﻿using pkuManager.Common;
+using pkuManager.pku;
+using pkuManager.Utilities;
 using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
-using APNGLib;
-using APNGViewer;
-using Newtonsoft.Json.Linq;
-using static pkuManager.BoxDisplay;
+using static pkuManager.Common.Collection;
+using static pkuManager.pku.PKUCollection.PKUBoxConfig;
 
 namespace pkuManager
 {
     public partial class ManagerWindow : Form
     {
+        // Discord Rich Presence
+        private DiscordPresence discord;
+
         // Refrences to certain UI Elements
-        SaveFileDialog saveFileDialog;
-        WarningWindow warningWindow;
-        FolderBrowserDialog pssSelectorDialog;
-        APNGBox spriteAPNGBox; //New one is created whenever an APNG is loaded
-        PictureBox spritePictureBox; //Same one is reused when an image is loaded.
-        BoxDisplay boxDisplay;
+        private SaveFileDialog saveFileDialog;
+        private WarningWindow warningWindow;
+        private FolderBrowserDialog collectionSelectorDialog;
+        private PictureBox FrontSpritePictureBox, BackSpritePictureBox;
 
-        // Constants
-        static string EXPORT_BUTTON_INTRO = "Export to \n";
+        // Manager for the currently open PKUCollection
+        private PKUCollectionManager pkuCollectionManager;
 
-        // Relevant variables
-        string pssPath = "C:\\Users\\PSS";
-        string currentBox;
-        PKUSlot currentPKUSlot;
+        // UI String Constants
+        private static readonly string EXPORT_BUTTON_INTRO = "Export to \n";
+        private static readonly string CHECKOUT_BUTTON_INTRO = "Check-out to \n";
 
-        // Pay no attention to this variable
-        bool _selectorSwitch = false; // Used to stop an infinite loop when box is refreshed and the 0th box is chosen.
+        // Export Variables
+        private bool exportMode = false; //false = check-out mode, true = export mode
+        private SlotInfo selectedSlotInfo; //ref to most recently selected pkuslot for exporter logic
+        private PKUObject selectedPKU;
 
         // Constructor initializes UI elements
         public ManagerWindow()
         {
+            // Add Discord RPC
+            discord = new DiscordPresence();
+            FormClosed += discord.Deinitialize;
+
+            //Initialize GUI Components
             InitializeComponent();
-            initializeExportButtons();
-            pssSelectorDialog = new FolderBrowserDialog();
+            InitializeExportButtons();
+            InitializeSpritePictureBox();
+            collectionSelectorDialog = new FolderBrowserDialog();
             saveFileDialog = new SaveFileDialog();
-            warningWindow = new WarningWindow(saveFileDialog);
             //saveFileDialog.RestoreDirectory = true;
-            refreshBoxList();
-            loadBox(currentBox); //should have a currentBox from above refresh.
+            warningWindow = new WarningWindow(saveFileDialog);
 
-            spritePictureBox = new PictureBox();
-            Summary.Controls.Add(spritePictureBox);
-
-            //JObject output = new JObject();
-            //for (int i = 1; i < 898 + 1; i++)
-            //{
-            //    JObject o = new JObject();
-            //    o.Add("National Dex", i);
-            //    output.Add(ReadingUtil.getStringFromFile("Species", i), o);
-            //}
-            //output = Utilities.getCombinedJson(new JObject[] { output, pkCommons.NATIONALDEX_DATA });
-            //Console.WriteLine(output);
+            //Fast Track the PSS since default collection .txt not implemented
+            //TODO implement last opened pss in a txt file next to exe...
+            string path = @"C:\Users\PSS";
+            OpenPKUCollection(path);
         }
 
-        // Displays the given image (Either an Image or APNG object) in the correct location
-        private void drawSprite(object image)
+
+        /* ------------------------------------
+         * Switch PKUCollections Stuff
+         * ------------------------------------
+        */
+
+        //TODO make this return a bool of whether it suceeded (i.e. valid boxconfig.json and all that. If failed, reject it/make a pss at that folder..?)
+        private void OpenPKUCollection(string path)
         {
-            if (image is APNG)
-                drawAPNG((APNG)image);
-            else if (image is Image)
-                drawPicture((Image)image);
+            // Initialize collectionManager and related GUI components.
+            pkuCollectionManager = new PKUCollectionManager(new PKUCollection(path), this);
+            ResetBoxDisplayDock(pkuCollectionManager.BoxDisplay);
+            ResetBoxSelector(pkuCollectionManager.GetBoxList());
+            UpdateGlobalFlagUI();
+
+            //Update discord collection name
+            discord.collection = pkuCollectionManager.GetCollectionName();
+            discord.setPresence();
+
+            //Enable tool bar if collection opened successfully not already enabled
+            importAPKUToolStripMenuItem.Enabled = true;
+            boxOptionsToolStripMenuItem.Enabled = true;
+
+            // Code for updating ManagerWindow UI whenever the boxDisplay changes.
+            pkuCollectionManager.BoxDisplayUpdated += (object s, EventArgs e) =>
+            {
+                ResetBoxDisplayDock(pkuCollectionManager.BoxDisplay);
+
+                //box options check
+                boxOptionsList.Enabled = pkuCollectionManager.CanChangeCurrentBoxType(BoxConfigType.LIST);
+                boxOptions30.Enabled = pkuCollectionManager.CanChangeCurrentBoxType(BoxConfigType.THIRTY);
+                boxOptions60.Enabled = pkuCollectionManager.CanChangeCurrentBoxType(BoxConfigType.SIXTY);
+                boxOptions96.Enabled = pkuCollectionManager.CanChangeCurrentBoxType(BoxConfigType.NINTYSIX);
+
+                //discord RPC
+                discord.box = (string)boxSelector.SelectedItem;
+                discord.setPresence();
+            };
+
+            // Code for updating SummaryTab and ExporterButtonVisibility when a slotDisplay is selected.
+            pkuCollectionManager.SlotSelected += (object s, EventArgs e) =>
+            {
+                byte[] pkmn;
+                SlotInfo newSlotInfo;
+                (newSlotInfo, pkmn) = ((SlotInfo, byte[]))s;
+                if (newSlotInfo != selectedSlotInfo) //if a different slot was just clicked
+                {
+                    selectedSlotInfo = newSlotInfo;
+                    selectedPKU = pkmn == null ? null : pkuUtil.ImportPKU(pkmn);
+                    UpdateSummaryTab(selectedSlotInfo);
+                    UpdateExportButtonVisibility(selectedSlotInfo, selectedPKU);
+                }
+            };
+        }
+
+        // Unlocks the current PKUCollection and opens a dialog to choose a new PKUCollection to open.
+        private void setCollectionDirectory_Click(object sender, EventArgs e)
+        {
+            DialogResult result = collectionSelectorDialog.ShowDialog(); // Show the dialog.
+            if (result == DialogResult.OK) // Test result.
+            {
+                pkuCollectionManager?.Unlock(); //unlock previous PKUCollection
+                OpenPKUCollection(collectionSelectorDialog.SelectedPath);
+                discord.collection = Path.GetFileName(Path.GetFileName(collectionSelectorDialog.SelectedPath));
+                discord.setPresence();
+            }
+        }
+
+
+        /* ------------------------------------
+         * Sprite Box Logic
+         * ------------------------------------
+        */
+
+        private partial class SpriteBoxArgs
+        {
+            public bool isShadow;
+            public string AuthorFront, AuthorBack;
+        }
+
+        private void OnSpriteboxLoaded(object s, System.ComponentModel.AsyncCompletedEventArgs e)
+        {
+            PictureBox spriteBox = (PictureBox)s;
+            if (e.Error != null) //if there was an error loading sprite
+                spriteBox.Image = Properties.Resources.unknown;
+
+            int xOffset = Summary.Width / 2;
+            int yOffset = 175;
+            spriteBox.Location = new Point(xOffset - spriteBox.Size.Width / 2, yOffset - spriteBox.Size.Height / 2);
+
+            //deal with shadow haze
+            SpriteBoxArgs spa = (SpriteBoxArgs)spriteBox.Tag;
+            if (spa.isShadow)
+                spriteBox.BackgroundImage = useLargeShadowBG(spriteBox.Image.Size) ? Properties.Resources.shadowbgx2 : Properties.Resources.shadowbg;
             else
-                throw new Exception("Only Image and APNG objets should have been passed here.");
+                spriteBox.BackgroundImage = null;
         }
 
-        // Removes the currently displayed pokemon sprite
-        private void clearSprite()
+        private void OnSpriteboxClick(object s, EventArgs e)
         {
-            spritePictureBox.Image = null;
-            Summary.Controls.Remove(spriteAPNGBox);
+            // shift click opens author link if possible
+            if (ModifierKeys.HasFlag(Keys.Shift))
+            {
+                SpriteBoxArgs spa = ((SpriteBoxArgs)((Control)s).Tag);
+                string url = FrontSpritePictureBox.Visible ? spa.AuthorFront : spa.AuthorBack;
+                if (DataUtil.isValidURL(url))
+                    System.Diagnostics.Process.Start(url);
+            }
+            //TODO: ctrl click mega evolves sprite if keystone is held.
+            else // normal left click switches front & back
+            {
+                FrontSpritePictureBox.Visible = s != FrontSpritePictureBox;
+                BackSpritePictureBox.Visible = s != BackSpritePictureBox;
+            }
         }
 
-        // Helper method for drawSprite(), deals with setting up APNGBox for APNG objects.
-        private void drawAPNG(APNG apng)
+        private void OnSpriteboxHover(object s, EventArgs e)
         {
-            spriteAPNGBox = new APNGBox(apng);
-            spriteAPNGBox.Start();
-            int xOffset = Summary.Width / 2;
-            int yOffset = 175;
-            spriteAPNGBox.Location = new Point(xOffset - spriteAPNGBox.Size.Width/2, yOffset- spriteAPNGBox.Size.Height/2);
-            Summary.Controls.Add(spriteAPNGBox);
-            spriteAPNGBox.BringToFront();
+            if (ModifierKeys.HasFlag(Keys.Shift))
+            {
+                SpriteBoxArgs spa = ((SpriteBoxArgs)((Control)s).Tag);
+                string author = FrontSpritePictureBox.Visible ? spa.AuthorFront : spa.AuthorBack;
+                toolTip1.SetToolTip((Control)s, author);
+            }
+            else
+                toolTip1.RemoveAll();
         }
 
-        // Helper method for drawSprite(), deals with setting up PictureBox for Image objects.
-        private void drawPicture(Image image)
+        private void InitializeSpritePictureBox()
         {
-            int xOffset = Summary.Width / 2;
-            int yOffset = 175;
-            spritePictureBox.Image = image;
-            spritePictureBox.SizeMode = PictureBoxSizeMode.AutoSize;
-            spritePictureBox.Location = new Point(xOffset - spritePictureBox.Size.Width / 2, yOffset - spritePictureBox.Size.Height / 2);
+            //Initialize sprite boxes
+            FrontSpritePictureBox = new PictureBox
+            {
+                SizeMode = PictureBoxSizeMode.CenterImage,
+                BackgroundImageLayout = ImageLayout.Center,
+                MinimumSize = Properties.Resources.shadowbgx2.Size
+            };
+            BackSpritePictureBox = new PictureBox
+            {
+                SizeMode = PictureBoxSizeMode.CenterImage,
+                BackgroundImageLayout = ImageLayout.Center,
+                MinimumSize = Properties.Resources.shadowbgx2.Size
+            };
+            FrontSpritePictureBox.LoadCompleted += OnSpriteboxLoaded;
+            BackSpritePictureBox.LoadCompleted += OnSpriteboxLoaded;
+            FrontSpritePictureBox.Click += OnSpriteboxClick;
+            BackSpritePictureBox.Click += OnSpriteboxClick;
+            FrontSpritePictureBox.MouseHover += OnSpriteboxHover;
+            BackSpritePictureBox.MouseHover += OnSpriteboxHover;
+
+            //Add them to the summary tab
+            Summary.Controls.Add(FrontSpritePictureBox);
+            Summary.Controls.Add(BackSpritePictureBox);
         }
+
+        private void UpdateSpriteBox(SlotInfo slotInfo)
+        {
+            //reset to front sprite
+            FrontSpritePictureBox.Visible = true;
+            BackSpritePictureBox.Visible = false;
+
+            //always reset picture box to prevent ghost images
+            FrontSpritePictureBox.Image = BackSpritePictureBox.Image = null;
+            FrontSpritePictureBox.Tag = BackSpritePictureBox.Tag = null;
+            FrontSpritePictureBox.BackgroundImage = BackSpritePictureBox.BackgroundImage = null;
+            toolTip1.RemoveAll();
+
+            if (slotInfo != null) //add sprites to sprite boxes
+            {
+                FrontSpritePictureBox.Tag = BackSpritePictureBox.Tag = new SpriteBoxArgs
+                {
+                    isShadow = slotInfo.hasShadowHaze,
+                    AuthorFront = slotInfo.frontSprite.author,
+                    AuthorBack = slotInfo.backSprite.author
+                };
+                FrontSpritePictureBox.ImageLocation = slotInfo.frontSprite.url;
+                BackSpritePictureBox.ImageLocation = slotInfo.backSprite.url;
+            }
+        }
+
+        private bool useLargeShadowBG(Size size)
+        {
+            if (Properties.Resources.shadowbg.Width * 1.4 < size.Width || Properties.Resources.shadowbg.Height * 1.4 < size.Height)
+                return true;
+            else
+                return false;
+        }
+
+
+        /* ------------------------------------
+         * Summary Tab Stuff
+         * ------------------------------------
+        */
+
+        // Behavior for clicking on a pku slot in the box display
+        // Also updates the discord presence
+        private void UpdateSummaryTab(SlotInfo slotInfo)
+        {
+            // summary text box fill in
+            if (slotInfo != null)
+            {
+                nicknameTextBox.Text = slotInfo.nickname;
+                otLabel.Text = slotInfo.trueOT ? "True OT:" : "OT:";
+                otTextBox.Text = slotInfo.OT;
+                speciesTextBox.Text = slotInfo.species;
+                gameTextBox.Text = slotInfo.game;
+                locationLabel.Text = slotInfo.locationIdentifier;
+                locationTextBox.Text = slotInfo.location;
+                checkedOutLabel.Visible = slotInfo.checkedOut;
+                UpdateSpriteBox(slotInfo);
+
+                //windows legacy design makes this unfeasible
+                //Icon = Icon.FromHandle(((Bitmap)pkuSlot.BackgroundImage).GetHicon());
+
+                // Discord RPC
+                discord.nickname = nicknameTextBox.Text;
+                discord.ball = slotInfo.ball;
+                discord.setPresence();
+            }
+            else
+                ClearSummaryTab();
+        }
+
+        // Clears the summary and deselects the currently selected pku slot.
+        // Also clears the discord presence
+        private void ClearSummaryTab()
+        {
+            // summary text box display
+            //nicknameLabel.Text = "Nickname";
+            nicknameTextBox.Text = "";
+            otLabel.Text = "True OT:";
+            otTextBox.Text = "";
+            speciesTextBox.Text = "";
+            gameTextBox.Text = "";
+            locationTextBox.Text = "";
+            checkedOutLabel.Visible = false;
+            UpdateSpriteBox(null);
+
+            //change window icon
+            //this.Icon = Properties.Resources.pc
+
+            //update discord RPC
+            discord.nickname = null;
+            discord.ball = "pc";
+            discord.setPresence();
+        }
+
+
+        /* ------------------------------------
+         * Export button Logic
+         * ------------------------------------
+        */
 
         // Creates a button for each export format registered in the Registry class.
-        private void initializeExportButtons()
+        private void InitializeExportButtons()
         {
             foreach (string name in Registry.EXPORTER_DICT.Keys)
             {
-                Button eb = new Button();
-                eb.Text = EXPORT_BUTTON_INTRO + name;
-                eb.AutoSize = true;
-                eb.Enabled = false;
-                exportButtons.Controls.Add(eb);
-
-                eb.Click += new EventHandler(delegate (object sender, EventArgs e)
+                Button eb = new Button
                 {
-                    PKUObject pku = currentPKUSlot.pku;
-                    Exporter exporter = (Exporter)Activator.CreateInstance(Registry.EXPORTER_DICT[name], new[] { pku });
+                    Text = CHECKOUT_BUTTON_INTRO + name,
+                    AutoSize = true,
+                    Enabled = false
+                };
+                exportButtons.Controls.Add(eb);
+                toolTip1.SetToolTip(eb, "TEST");
 
+                eb.Click += (object sender, EventArgs e) =>
+                {
+                    Exporter exporter = (Exporter)Activator.CreateInstance(Registry.EXPORTER_DICT[name], new object[] { selectedPKU, pkuCollectionManager.GetGlobalFlags() });
                     warningWindow.runWarningWindow(exporter);
-                });
+
+                    //if this is a checkout
+                    if (!exportMode && warningWindow.successfulExport) //if the pokemon was just checked-out
+                        pkuCollectionManager.CheckOut(selectedSlotInfo); //adds to check out list, and updates boxDisplay.
+
+                    //These are for displaying the checked-out text
+                    UpdateSummaryTab(selectedSlotInfo);
+                    LHSTabs.SelectedIndex = 0;
+                    Summary.Focus();
+                };
             }
         }
 
         // Updates which export buttons are visible given a PKUObject.
-        private void updateExportButtonVisibility(PKUObject pku)
+        private void UpdateExportButtonVisibility(SlotInfo slotInfo, PKUObject pku)
         {
-            if (pku == null)
+            if (pku == null || (!exportMode && slotInfo?.checkedOut == true)) //if pku is empty, or checking-out an already checked out pokemon
             {
                 foreach (Control c in exportButtons.Controls)
                     c.Enabled = false;
             }
-            else
+            else //2 exporter instances created, one for canexport, one for process+tofile...
             {
                 foreach (Control button in exportButtons.Controls)
                 {
-                    string name = button.Text.Substring(EXPORT_BUTTON_INTRO.Length);
-                    Exporter exporter = (Exporter)Activator.CreateInstance(Registry.EXPORTER_DICT[name], new[] { pku });
-                    if (exporter.canExport())
-                        button.Enabled = true;
+                    string name;
+                    if (exportMode)
+                        name = button.Text.Substring(EXPORT_BUTTON_INTRO.Length);
+                    else
+                        name = button.Text.Substring(CHECKOUT_BUTTON_INTRO.Length);
+                    Exporter exporter = (Exporter)Activator.CreateInstance(Registry.EXPORTER_DICT[name], new object[] { pku, pkuCollectionManager.GetGlobalFlags() });
+                    if (exporter.canExport()) //exportable in this format
+                    {
+                        if (exportMode) //Export mode
+                            button.Enabled = true;
+                        else if (slotInfo?.checkedOut == false)//Check-out mode, not checked out
+                            button.Enabled = true;
+                        else //Check-out mode, checked out
+                            button.Enabled = false;
+                    }
+                    else //can't export to this format
+                        button.Enabled = false;
                 }
             }
         }
 
-        // Opens a dialog to choose a new PSS location, and refreshes the box display.
-        private void setPSSDirectory_Click(object sender, EventArgs e)
+        // Switches the export/check-out toggle variable, and text of the export buttons
+        private void exportToggleButton_Click(object sender, EventArgs e)
         {
-            DialogResult result = pssSelectorDialog.ShowDialog(); // Show the dialog.
-            if (result == DialogResult.OK) // Test result.
+            exportMode = !exportMode;
+            foreach (Control button in exportButtons.Controls)
             {
-                pssPath = pssSelectorDialog.SelectedPath; // set new path
-                refreshButton_Click(sender, e); // refresh boxDisplay
+                if (exportMode)
+                    button.Text = EXPORT_BUTTON_INTRO + button.Text.Substring(CHECKOUT_BUTTON_INTRO.Length);
+                else
+                    button.Text = CHECKOUT_BUTTON_INTRO + button.Text.Substring(EXPORT_BUTTON_INTRO.Length);
             }
+
+            if (exportMode)
+                exportToggleButton.Text = "Toggle Check-out";
+            else
+                exportToggleButton.Text = "Toggle Export";
+
+            UpdateExportButtonVisibility(selectedSlotInfo, selectedPKU);
+        }
+
+
+        /* ------------------------------------
+         * Box Display Stuff
+         * ------------------------------------
+        */
+
+        // Behavior when a different box is selected.
+        // Also updates the discord presence
+        private void boxSelector_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            pkuCollectionManager.SwitchCurrentBox(boxSelector.SelectedIndex);
+            ClearSummaryTab();
+            UpdateExportButtonVisibility(null, null);
+            discord.box = (string)boxSelector.SelectedItem;
+            discord.setPresence();
+        }
+
+        // Box options
+        private void boxOptionsType_Click(object sender, EventArgs e)
+        {
+            if (sender.Equals(boxOptionsList))
+                pkuCollectionManager.ChangeCurrentBoxType(BoxConfigType.LIST);
+            else if (sender.Equals(boxOptions30))
+                pkuCollectionManager.ChangeCurrentBoxType(BoxConfigType.THIRTY);
+            else if (sender.Equals(boxOptions60))
+                pkuCollectionManager.ChangeCurrentBoxType(BoxConfigType.SIXTY);
+            else if (sender.Equals(boxOptions96))
+                pkuCollectionManager.ChangeCurrentBoxType(BoxConfigType.NINTYSIX);
+        }
+
+
+        /* ------------------------------------
+         * Global Flag UI Stuff
+         * ------------------------------------
+        */
+
+        // Updates UI elements dependent on the PKUCollection config.
+        // Right now it's just the global flag "Stat Nature Override".
+        private void UpdateGlobalFlagUI()
+        {
+            enableBattleStatOverrideButton.Checked = pkuCollectionManager.GetGlobalFlags().Battle_Stat_Override;
+        }
+
+        // Behavior for when the Stat Nature Override button is checked/unchecked
+        private void enableBattleStatOverrideButton_CheckedChanged(object sender, EventArgs e)
+        {
+            pkuCollectionManager.SetBattleStatOverrideFlag(((ToolStripMenuItem)sender).Checked);
+        }
+
+        private void ResetBoxDisplayDock(GUI.BoxDisplay boxDisplay)
+        {
+            boxDisplayDock.Controls.Clear();
+            boxDisplayDock.Controls.Add(boxDisplay);
+        }
+
+        private void ResetBoxSelector(string[] boxList)
+        {
+            boxSelector.Items.Clear();
+            boxSelector.Items.AddRange(pkuCollectionManager.GetBoxList());
+            boxSelector.SelectedIndex = 0;
+        }
+
+
+        /* ------------------------------------
+         * OLD CODE
+         * ------------------------------------
+        */
+
+        // Behavior for the toggle checkout viewer button
+        //doesn't do anything anymore, need to redo this feature
+        private void viewCheckedoutButton_Click(object sender, EventArgs e)
+        {
+            checkoutDock.Visible = !checkoutDock.Visible;
+            viewCheckedoutButton.Text = checkoutDock.Visible ? "Hide Check-Out" : "View Check-Out";
         }
 
         //doesn't do anything... yet
@@ -157,191 +473,6 @@ namespace pkuManager
         {
             Console.WriteLine("Importing .pku...");
             Console.WriteLine(".pku imported! (NOT REALLY!)");
-        }
-
-        // Behavior for clicking on a pku slot in the box display
-        private void boxSlot_Click(object sender, EventArgs e)
-        {
-            PKUSlot pkuSlot = ((PKUSlot)sender);
-            PKUObject pku = pkuSlot.pku;
-
-            // if it's the same slot selected, don't update anything
-            if (currentPKUSlot != null && currentPKUSlot.Equals(pkuSlot))
-                return;
-
-            resetSelection(); // deselect old slot
-            pkuSlot.select(); // add selection overlay even on empty slots
-            currentPKUSlot = pkuSlot; // now this slot is selected
-
-            // summary text box fill in
-            if (pkuSlot.isSet)
-            {
-                if(pku.Nickname == null || pkCommons.isAnEgg(pku))
-                {
-                    nicknameLabel.Text = "Name";
-                    nicknameTextBox.Text = pkCommons.isAnEgg(pku) ? "Egg" : pku.Species;
-                }
-                else
-                {
-                    nicknameLabel.Text = "Nickname";
-                    nicknameTextBox.Text = pku.Nickname;
-                }
-
-                if (pku.True_OT != null)
-                {
-                    otLabel.Text = "True OT:";
-                    otTextBox.Text = pku.True_OT;
-                }
-                else if(pku.Game_Info?.OT != null)
-                {
-                    otLabel.Text = "OT:";
-                    otTextBox.Text = pku.Game_Info.OT;
-                }
-                speciesTextBox.Text = pku.Species;
-                gameTextBox.Text = pku.Game_Info?.Origin_Game; //use official if origin is null (actually maybe not)
-                filenameTextBox.Text = pkuSlot.pkuFile.Name;
-
-                drawSprite(Utilities.getPKUSprite(pku));
-
-                //this.Icon = Icon.FromHandle(((Bitmap)pkuSlot.BackgroundImage).GetHicon());
-            }
-
-            // Enable export buttons (or not if pku is null)
-            updateExportButtonVisibility(pku);
-        }
-
-        // Behavior for clicking the box display itself
-        private void boxDisplay_Click(object sender, EventArgs e)
-        {
-            resetSelection();
-        }
-
-        // Resets the summary and deselects the currently selected pku slot.
-        // Happens when clicking the boxdisplay or an unset pku slot
-        private void resetSelection()
-        {
-            currentPKUSlot?.deselect(); //remove selection overlay
-            currentPKUSlot = null;
-
-            // summary text box display
-            nicknameLabel.Text = "Nickname";
-            nicknameTextBox.Text = "";
-            otLabel.Text = "True OT:";
-            otTextBox.Text = "";
-            speciesTextBox.Text = "";
-            gameTextBox.Text = "";
-            filenameTextBox.Text = "";
-
-            // remove pokemon sprite
-            clearSprite();
-
-            //change window icon
-            //this.Icon = Properties.Resources.pc;
-
-            // grey out all export buttons
-            updateExportButtonVisibility(null);
-        }
-
-        // Behavior for clicking the Refresh button
-        private void refreshButton_Click(object sender, EventArgs e)
-        {
-            refreshBoxList(); //Refresh the list of boxes in the PSS (boxes may have been renamed/added/removed)
-            loadBox(currentBox); //Refresh the current box (.pku's may have been changed/added/removed)
-            resetSelection(); // Deselect the currently selected pku (deals with the case of current pku being removed/changed by last statement)
-        }
-
-        // Refreshes the list of boxes based on the pssconfig.json, this also updates the currentBox
-        private void refreshBoxList()
-        {
-            string pssConfigstring = File.ReadAllText(pssPath + "/pssconfig.json");
-            PSSConfigObject pssConfig = JsonConvert.DeserializeObject<PSSConfigObject>(pssConfigstring);
-            boxSelector.Items.Clear();
-
-            //Adds each of the folder names listed in the config into the dropdown
-            foreach (string boxName in pssConfig.Boxes)
-                boxSelector.Items.Add(boxName);
-
-            //Set the currentBox to the 0th one, or null if no folders are listed.
-            if (boxSelector.Items.Count == 0) //If no boxes were found
-            {
-                boxSelector.Text = null;
-                currentBox = null;
-            }
-            else
-            {
-                _selectorSwitch = true; //So it doesn't trigger the event
-                boxSelector.SelectedIndex = 0; //Select 0th box
-                currentBox = (string)boxSelector.SelectedItem;
-                _selectorSwitch = false;
-            }
-        }
-
-        // Reloads the pku in the current box (folder) into the boxDisplay
-        private void loadBox(string currentBox)
-        {
-            if (currentBox == null)
-                return;
-
-            DirectoryInfo boxFolder = new DirectoryInfo(pssPath + "/" + currentBox);
-            FileInfo[] pkuFiles = new FileInfo[] { };
-            FileInfo[] boxBGFiles = new FileInfo[] { };
-            Image boxBG = null;
-
-            // Try to get .pku and box.png files
-            try
-            {
-                pkuFiles = boxFolder.GetFiles("*.pku"); //Get a list of all .pku files
-                boxBGFiles = boxFolder.GetFiles("box.png"); //Get the box.png file if it exists
-            }
-            catch (Exception ex) //Show warning window if folder doesn't exist
-            {
-                MessageBox.Show("The folder \"" + currentBox + "\" does not exist in the selected PSS (" +
-                    pssPath + "). Please remove it from your pssconfig.json.", currentBox + " does not exist!");
-                Console.WriteLine(ex.Message);
-            }
-
-            // Try reading the box.png to an Image if it exists.
-            if (boxBGFiles.Count() != 0)
-            {
-                try
-                {
-                    boxBG = Image.FromFile(boxBGFiles[0].FullName);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Failed to read the box background for \"" + currentBox + "\" !");
-                    Console.WriteLine(ex.Message);
-                }
-            }
-
-            boxDisplayDock.Controls.Remove(boxDisplay);
-            boxDisplay = new BoxDisplay(pkuFiles, BoxDisplayConfig.LIST, boxSlot_Click, boxDisplayDock.Size, boxBG);
-            boxDisplayDock.Controls.Add(boxDisplay);
-        }
-
-        // Behavior when a different box is selected.
-        private void boxSelector_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (!_selectorSwitch)
-            {
-                currentBox = (string)boxSelector.SelectedItem;
-                resetSelection();
-                loadBox(currentBox);
-            }
-        }
-
-        // Behavior for opening the current box in explorer
-        private void openExplorerButton_Click(object sender, EventArgs e)
-        {
-            Process.Start("explorer.exe", pssPath + "\\" + (string)boxSelector.SelectedItem);
-            Console.WriteLine("Just opened the " + (string)boxSelector.SelectedItem + " box in file explorer");
-        }
-
-        // Behavior for the toggle checkout viewer button
-        private void viewCheckedoutButton_Click(object sender, EventArgs e)
-        {
-            checkoutDock.Visible = !checkoutDock.Visible;
-            viewCheckedoutButton.Text = checkoutDock.Visible ? "Hide Check-Out" : "View Check-Out";
         }
     }
 }

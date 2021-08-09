@@ -1,8 +1,9 @@
 ﻿using pkuManager.Alerts;
+using pkuManager.Common;
+using pkuManager.GUI;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 
 namespace pkuManager
@@ -10,7 +11,12 @@ namespace pkuManager
     public partial class WarningWindow : Form
     {
         private SaveFileDialog sfd;
-        private EventHandler oldEventHandler;
+        private EventHandler currentEventHandler;
+
+        /// <summary>
+        /// Whether or not the most recent export attempt was successful.
+        /// </summary>
+        public bool successfulExport = false;
 
         public WarningWindow(SaveFileDialog sfd)
         {
@@ -18,28 +24,47 @@ namespace pkuManager
             this.sfd = sfd;
         }
 
-        // Clears the past warnings/error panels and populates them with the new ones.
-        // If both warnings & errors are empty/null, noWarnings is set to true.
-        private void populateWarnings(List<AlertBox> warnings, List<AlertBox> errors)
+        // Clears the past warning/error/note panels and populates them with the new ones.
+        private void populateAlerts(List<Alert> warnings, List<Alert> errors, List<Alert> notes)
         {
             warningPanel.Controls.Clear();
             errorPanel.Controls.Clear();
+            notesPanel.Controls.Clear();
 
-            if(warnings != null)
+            if (warnings != null)
             {
-                foreach (Panel w in warnings)
+                foreach (Alert a in warnings)
                 {
-                    if (w != null)
-                        warningPanel.Controls.Add(w);
+                    if (a != null)
+                    {
+                        if (a is RadioButtonAlert)
+                            warningPanel.Controls.Add(new RadioAlertBox((RadioButtonAlert)a));
+                        else
+                            warningPanel.Controls.Add(new AlertBox(a));
+                    }
                 }
             }
 
             if (errors != null)
             {
-                foreach (Panel e in errors)
+                foreach (Alert e in errors)
                 {
                     if (e != null)
-                        errorPanel.Controls.Add(e);               
+                    {
+                        if (e is RadioButtonAlert)
+                            errorPanel.Controls.Add(new RadioAlertBox((RadioButtonAlert)e));
+                        else
+                            errorPanel.Controls.Add(new AlertBox(e));
+                    }
+                }
+            }
+
+            if (notes != null)
+            {
+                foreach (Alert n in notes)
+                {
+                    if (n != null)
+                        notesPanel.Controls.Add(new NoteBox(n));
                 }
             }
         }
@@ -48,27 +73,27 @@ namespace pkuManager
         private void changeFormatText(string format, string extension)
         {
             descLabel.Text = "The following warnings and errors must be acknowledged before exporting to the " + format + " (." + extension + ") format.";
-            this.Text  = "Export Warning (" + format + ")";
+            this.Text = "Export Warning (" + format + ")";
         }
 
         // Changes which exporter the acceptButton uses.
         private void resetAcceptButtonEvent(Exporter exporter)
         {
-            acceptButton.Click -= oldEventHandler;
-            oldEventHandler = new EventHandler(delegate (object sender, EventArgs e)
+            acceptButton.Click -= currentEventHandler;
+            currentEventHandler = new EventHandler(delegate (object sender, EventArgs e)
             {
-                WarningWindow.exportFormat(exporter, sfd);
+                exportFormat(exporter, sfd);
                 this.Hide(); //"Closes" (same window each time) the warning window when done exporting (failure or not)
             });
-            acceptButton.Click += oldEventHandler;
+            acceptButton.Click += currentEventHandler;
         }
 
         // Generic behavior for the accept button in the Warning Window
-        private static void exportFormat(Exporter exporter, SaveFileDialog sfd)
+        private void exportFormat(Exporter exporter, SaveFileDialog sfd)
         {
             string pkuToFormat = ".pku to " + exporter.formatName + " (." + exporter.formatExtension + ")"; //For console logging
 
-            Console.WriteLine("Exporting " + pkuToFormat  + "...");
+            Console.WriteLine("Exporting " + pkuToFormat + "...");
 
             sfd.DefaultExt = exporter.formatExtension;
             sfd.Filter = exporter.formatExtension + " files (*." + exporter.formatExtension + ")|*." + exporter.formatExtension + "|All files (*.*)|*.*";
@@ -79,23 +104,30 @@ namespace pkuManager
             {
                 File.WriteAllBytes(Path.Combine(Path.GetDirectoryName(sfd.FileName), sfd.FileName), exporter.toFileChecked());
                 Console.WriteLine("Exported " + pkuToFormat + "!");
-                //Console.WriteLine(JsonConvert.SerializeObject(exporter.pku, Formatting.Indented)); //TODO maybe one day don't need to print out the entire pku...
+                successfulExport = true;
+                //Console.WriteLine(JsonConvert.SerializeObject(exporter.pku, Formatting.Indented)); //prints out the entire pku
             }
             else
+            {
                 Console.WriteLine("Failed to export " + pkuToFormat + "!");
+                successfulExport = false;
+            }
         }
 
-        // Sets up and opens the warning window, or just auto accepts if there are no warnings/errors
+        // Sets up and opens the warning window, or just auto accepts if there are no warnings, errors, or notes
         public void runWarningWindow(Exporter exporter)
         {
             exporter.processAlertsChecked();
-            populateWarnings(exporter.warnings, exporter.errors);
+            populateAlerts(exporter.warnings, exporter.errors, exporter.notes);
             changeFormatText(exporter.formatName, exporter.formatExtension);
             resetAcceptButtonEvent(exporter);
-            if (warningPanel.Controls.Count > 0 || errorPanel.Controls.Count > 0)
+
+            successfulExport = false;
+
+            if (warningPanel.Controls.Count > 0 || errorPanel.Controls.Count > 0 || notesPanel.Controls.Count > 0)
                 ShowDialog();
             else
-                oldEventHandler.Invoke(null, null);
+                currentEventHandler.Invoke(null, null);
         }
     }
 }

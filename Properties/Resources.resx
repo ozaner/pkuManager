@@ -118,14 +118,8 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="Abilities" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\common\abilities.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="egg" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\sprites\egg.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="egg_manaphy" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\sprites\egg-manaphy.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="checkedOut" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\sprites\checkedout.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="EncounterTypesENG" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\pk4\encountertypeseng.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
@@ -136,29 +130,26 @@
   <data name="GamesToFormat" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\common\gamestoformat.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="gen3Locations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\gen3\gen3locations.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
   <data name="grassbox" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\sprites\grassbox.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="LangENG" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\common\langeng.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="MarkingsENG" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\common\markingseng.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="Moves" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\common\moves.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="nationaldexData" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\common\nationaldexdata.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
-  <data name="Natures" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\common\natures.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
   <data name="pc" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\pc.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="pk3Locations" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\pk3\pk3locations.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  <data name="pk3Abilities" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\gen3\pk3\pk3abilities.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="pk3CharEncoding" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\gen3\pk3\pk3charencoding.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="pk3Forms" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\gen3\pk3\pk3forms.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="pk4BallsENG" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\pk4\pk4ballseng.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
@@ -899,12 +890,6 @@
         Jvx/xpSbfwvOASMAAAAASUVORK5CYII=
 </value>
   </data>
-  <data name="pkulogo" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\pkulogo.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="pokespriteData" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\sprites\pokespritedata.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
   <data name="pokestarData" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\pk5\pokestardata.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
@@ -914,19 +899,22 @@
   <data name="selection" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\sprites\selection.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="shadowbg" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\sprites\shadowbg.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="shadowbgx2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\sprites\shadowbgx2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="showdownData" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\showdown\showdowndata.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\resources\showdown\showdowndata.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
-  <data name="showdownItems" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\showdown\showdownitems.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="spriteData" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\sprites\spritedata.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  <data name="showdownSpecies" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\showdown\showdownspecies.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="unknown" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\sprites\unknown.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="unknown2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\sprites\unknown2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="unknown_box" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\sprites\unknown_box.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

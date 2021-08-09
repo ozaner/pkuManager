@@ -1,1165 +1,1700 @@
-﻿{
-    // showdownItems.txt is as of 1/20/21
-    // this is as of 1/20/21
-
-    // gen 5,6 everything but megas and regional
-    // gen 7,8, need everything
-
-    // Gen 1
-    "Venusaur": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Venusaur-Mega"
-            }
-        }
-    }, //3
-    "Charizard": {
-        "Forms": {
-            "Mega X": {
-                "Showdown Species": "Charizard-Mega-X"
-            },
-            "Mega Y": {
-                "Showdown Species": "Charizard-Mega-Y"
-            }
-        }
-    }, //6
-    "Blastoise": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Blastoise-Mega"
-            }
-        }
-    }, //9
-    "Beedrill": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Beedrill-Mega"
-            }
-        }
-    }, //15
-    "Pidgeot": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Pidgeot-Mega"
-            }
-        }
-    }, //18
-    "Rattata": {
-        "Forms": {
-            "Alolan": {
-                "Showdown Species": "Rattata-Alola"
-            }
-        }
-    }, //19
-    "Raticate": {
-        "Forms": {
-            "Alolan": {
-                "Showdown Species": "Raticate-Alola"
-            }
-        }
-    }, //20
-    "Pikachu": {
-        "Forms": {
-            "Original Cap": {
-                "Showdown-Species": "Pikachu-Original"
-            },
-            "Hoenn Cap": {
-                "Showdown-Species": "Pikachu-Hoenn"
-            },
-            "Sinnoh Cap": {
-                "Showdown-Species": "Pikachu-Sinnoh"
-            },
-            "Unova Cap": {
-                "Showdown-Species": "Pikachu-Unova"
-            },
-            "Kalos Cap": {
-                "Showdown-Species": "Pikachu-Kalos"
-            },
-            "Alola Cap": {
-                "Showdown-Species": "Pikachu-Alola"
-            },
-            "Partner Cap": {
-                "Showdown-Species": "Pikachu-Partner"
-            },
-            "World Cap": {
-                "Showdown-Species": "Pikachu-World"
-            },
-            "Starter": {
-                "Showdown-Species": "Pikachu-Starter"
-            },
-            "Cosplay": {
-                "Showdown-Species": "Pikachu-Cosplay"
-            },
-            "Belle": {
-                "Showdown-Species": "Pikachu-Belle"
-            },
-            "Libre": {
-                "Showdown-Species": "Pikachu-Libre"
-            },
-            "Pop-Star": {
-                "Showdown-Species": "Pikachu-Pop-Star"
-            },
-            "PhD": {
-                "Showdown-Species": "Pikachu-PhD"
-            },
-            "Rock-Star": {
-                "Showdown-Species": "Pikachu-Rock-Star"
-            }
-        }
-    }, //25
-    "Raichu": {
-        "Forms": {
-            "Alolan": {
-                "Showdown Species": "Raichu-Alola"
-            }
-        }
-    }, //26
-    "Sandshrew": {
-        "Forms": {
-            "Alolan": {
-                "Showdown Species": "Sandshrew-Alola"
-            }
-        }
-    }, //27
-    "Sandslash": {
-        "Forms": {
-            "Alolan": {
-                "Showdown Species": "Sandslash-Alola"
-            }
-        }
-    }, //28
-    "Vulpix": {
-        "Forms": {
-            "Alolan": {
-                "Showdown Species": "Vulpix-Alola"
-            }
-        }
-    }, //37
-    "Ninetales": {
-        "Forms": {
-            "Alolan": {
-                "Showdown Species": "Ninetales-Alola"
-            }
-        }
-    }, //38
-    "Diglett": {
-        "Forms": {
-            "Alolan": {
-                "Showdown Species": "Diglett-Alola"
-            }
-        }
-    }, //50
-    "Dugtrio": {
-        "Forms": {
-            "Alolan": {
-                "Showdown Species": "Dugtrio-Alola"
-            }
-        }
-    }, //51
-    "Meowth": {
-        "Forms": {
-            "Alolan": {
-                "Showdown Species": "Meowth-Alola"
-            },
-            "Galarian": {
-                "Showdown Species": "Meowth-Glalar"
-            }
-        }
-    }, //52
-    "Persian": {
-        "Forms": {
-            "Alolan": {
-                "Showdown Species": "Persian-Alola"
-            }
-        }
-    }, //53
-    "Alakazam": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Alakazam-Mega"
-            }
-        }
-    }, //65
-    "Geodude": {
-        "Forms": {
-            "Alolan": {
-                "Showdown Species": "Geodude-Alola"
-            }
-        }
-    }, //74
-    "Graveler": {
-        "Forms": {
-            "Alolan": {
-                "Showdown Species": "Graveler-Alola"
-            }
-        }
-    }, //75
-    "Golem": {
-        "Forms": {
-            "Alolan": {
-                "Showdown Species": "Golem-Alola"
-            }
-        }
-    }, //76
-    "Ponyta": {
-        "Forms": {
-            "Galarian": {
-                "Showdown Species": "Ponyta-Galar"
-            }
-        }
-    }, //77
-    "Rapidash": {
-        "Forms": {
-            "Galarian": {
-                "Showdown Species": "Rapidash-Galar"
-            }
-        }
-    }, //78
-    "Slowpoke": {
-        "Forms": {
-            "Galarian": {
-                "Showdown Species": "Slowpoke-Galar"
-            }
-        }
-    }, //79
-    "Slowbro": {
-        "Forms": {
-            "Galarian": {
-                "Showdown Species": "Slowbro-Galar"
-            }
-        }
-    }, //80
-    "Farfetch'd": {
-        "Forms": {
-            "Galarian": {
-                "Showdown Species": "Farfetch'd-Galar"
-            }
-        }
-    }, //83 TODO ' vs ’
-    "Grimer": {
-        "Forms": {
-            "Alolan": {
-                "Showdown Species": "Grimer-Alola"
-            }
-        }
-    }, //88
-    "Muk": {
-        "Forms": {
-            "Alolan": {
-                "Showdown Species": "Muk-Alola"
-            }
-        }
-    }, //89
-    "Gengar": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Gengar-Mega"
-            }
-        }
-    }, //94
-    "Exeggutor": {
-        "Forms": {
-            "Alolan": {
-                "Showdown Species": "Exeggutor-Alola"
-            }
-        }
-    }, //103
-    "Marowak": {
-        "Forms": {
-            "Alolan": {
-                "Showdown Species": "Marowak-Alola"
-            }
-        }
-    }, //105
-    "Weezing": {
-        "Forms": {
-            "Galarian": {
-                "Showdown Species": "Weezing-Galar"
-            }
-        }
-    }, //110
-    "Kangaskhan": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Kangaskhan-Mega"
-            }
-        }
-    }, //115
-    "Mr. Mime": {
-        "Forms": {
-            "Galarian": {
-                "Showdown Species": "Mr. Mime-Galar"
-            }
-        }
-    }, //122
-    "Pinsir": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Pinsir-Mega"
-            }
-        }
-    }, //127
-    "Gyarados": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Gyarados-Mega"
-            }
-        }
-    }, //130
-    "Aerodactyl": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Aerodactyl-Mega"
-            }
-        }
-    }, //142
-    "Articuno": {
-        "Forms": {
-            "Galarian": {
-                "Showdown Species": "Articuno-Galar"
-            }
-        }
-    }, //144
-    "Zapdos": {
-        "Forms": {
-            "Galarian": {
-                "Showdown Species": "Zapdos-Galar"
-            }
-        }
-    }, //145
-    "Moltres": {
-        "Forms": {
-            "Galarian": {
-                "Showdown Species": "Moltres-Galar"
-            }
-        }
-    }, //146
-    "Mewtwo": {
-        "Forms": {
-            "Mega X": {
-                "Showdown Species": "Mewtwo-Mega-X"
-            },
-            "Mega Y": {
-                "Showdown Species": "Mewtwo-Mega-Y"
-            }
-        }
-    }, //150
-
-    // Gen 2
-    "Pichu": {
-        "Forms": {
-            "Spiky-eared": {
-                "Showdown Species": "Pichu-Spiky-eared"
-            }
-        }
-    }, //172
-    "Ampharos": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Ampharos-Mega"
-            }
-        }
-    }, //181
-    "Slowking": { //199
-        "Forms": {
-            "Galarian": {
-                "Showdown Species": "Slowking-Galar"
-            }
-        }
-    }, //199
-    "Unown": {
-        "Forms": {
-            //"A": {
-            //    "Showdown Species": "Unown"
-            //},
-            "B": {
-                "Showdown Species": "Unown-B"
-            },
-            "C": {
-                "Showdown Species": "Unown-C"
-            },
-            "D": {
-                "Showdown Species": "Unown-D"
-            },
-            "E": {
-                "Showdown Species": "Unown-E"
-            },
-            "F": {
-                "Showdown Species": "Unown-F"
-            },
-            "G": {
-                "Showdown Species": "Unown-G"
-            },
-            "H": {
-                "Showdown Species": "Unown-H"
-            },
-            "I": {
-                "Showdown Species": "Unown-I"
-            },
-            "J": {
-                "Showdown Species": "Unown-J"
-            },
-            "K": {
-                "Showdown Species": "Unown-K"
-            },
-            "L": {
-                "Showdown Species": "Unown-L"
-            },
-            "M": {
-                "Showdown Species": "Unown-M"
-            },
-            "N": {
-                "Showdown Species": "Unown-N"
-            },
-            "O": {
-                "Showdown Species": "Unown-O"
-            },
-            "P": {
-                "Showdown Species": "Unown-P"
-            },
-            "Q": {
-                "Showdown Species": "Unown-Q"
-            },
-            "R": {
-                "Showdown Species": "Unown-R"
-            },
-            "S": {
-                "Showdown Species": "Unown-S"
-            },
-            "T": {
-                "Showdown Species": "Unown-T"
-            },
-            "U": {
-                "Showdown Species": "Unown-U"
-            },
-            "V": {
-                "Showdown Species": "Unown-V"
-            },
-            "W": {
-                "Showdown Species": "Unown-W"
-            },
-            "X": {
-                "Showdown Species": "Unown-X"
-            },
-            "Y": {
-                "Showdown Species": "Unown-Y"
-            },
-            "Z": {
-                "Showdown Species": "Unown-Z"
-            },
-            "!": {
-                "Showdown Species": "Unown-EX"
-            },
-            "?": {
-                "Showdown Species": "Unown-QU"
-            }
-        }
-    }, //201
-    "Steelix": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Steelix-Mega"
-            }
-        }
-    }, //208
-    "Scizor": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Scizor-Mega"
-            }
-        }
-    }, //212
-    "Heracross": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Heracross-Mega"
-            }
-        }
-    }, //214
-    "Corsola": {
-        "Forms": {
-            "Galarian": {
-                "Showdown Species": "Corsola-Galar"
-            }
-        }
-    }, //222
-    "Houndoom": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Houndoom-Mega"
-            }
-        }
-    }, //229
-    "Tyranitar": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Tyranitar-Mega"
-            }
-        }
-    }, //248
-
-    // Gen 3
-    "Sceptile": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Sceptile-Mega"
-            }
-        }
-    }, //254
-    "Blaziken": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Blaziken-Mega"
-            }
-        }
-    }, //257
-    "Swampert": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Swampert-Mega"
-            }
-        }
-    }, //260
-    "Zigzagoon": {
-        "Forms": {
-            "Galarian": {
-                "Showdown Species": "Zigzagoon-Galar"
-            }
-        }
-    }, //263
-    "Linoone": {
-        "Forms": {
-            "Galarian": {
-                "Showdown Species": "Linoone-Galar"
-            }
-        }
-    }, //264
-    "Gardevoir": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Gardevoir-Mega"
-            }
-        }
-    }, //282
-    "Sableye": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Sableye-Mega"
-            }
-        }
-    }, //302
-    "Mawile": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Mawile-Mega"
-            }
-        }
-    }, //303
-    "Aggron": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Aggron-Mega"
-            }
-        }
-    }, //306
-    "Medicham": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Medicham-Mega"
-            }
-        }
-    }, // 308
-    "Manectric": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Manectric-Mega"
-            }
-        }
-    }, //310
-    "Sharpedo": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Sharpedo-Mega"
-            }
-        }
-    }, //319
-    "Camerupt": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Camerupt-Mega"
-            }
-        }
-    }, //323
-    "Altaria": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Altaria-Mega"
-            }
-        }
-    }, //334
-    "Banette": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Banette-Mega"
-            }
-        }
-    }, //354
-    "Castform": {
-        "Forms": {
-            //"Normal": {
-            //    "Showdown Species": "Castform"
-            //},
-            "Sunny": {
-                "Showdown Species": "Castform-Sunny"
-            },
-            "Rainy": {
-                "Showdown Species": "Castform-Rainy"
-            },
-            "Snowy": {
-                "Showdown Species": "Castform-Snowy"
-            }
-        }
-    }, //351
-    "Absol": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Absol-Mega"
-            }
-        }
-    }, //359
-    "Glalie": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Glalie-Mega"
-            }
-        }
-    }, //362
-    "Salamence": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Salamence-Mega"
-            }
-        }
-    }, //373
-    "Metagross": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Metagross-Mega"
-            }
-        }
-    }, //376
-    "Latias": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Latias-Mega"
-            }
-        }
-    }, //380
-    "Latios": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Latios-Mega"
-            }
-        }
-    }, //381
-    "Kyogre": {
-        "Forms": {
-            "Primal": {
-                "Showdown Species": "Kyogre-Primal"
-            }
-        }
-    }, //382
-    "Groudon": {
-        "Forms": {
-            "Primal": {
-                "Showdown Species": "Groudon-Primal"
-            }
-        }
-    }, //383
-    "Rayquaza": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Rayquaza-Mega"
-            }
-        }
-    }, //384
-    "Deoxys": {
-        "Forms": {
-            //"Normal": {
-            //    "Showdown Species": "Deoxys"
-            //},
-            "Attack": {
-                "Showdown Species": "Deoxys-Attack"
-            },
-            "Defense": {
-                "Showdown Species": "Deoxys-Defense"
-            },
-            "Speed": {
-                "Showdown Species": "Deoxys-Speed"
-            }
-        }
-    }, //386
-
-    // Gen 4
-    "Burmy": {
-        "Forms": {
-            //"Plant Cloak": {
-            //    "Showdown Species": "Burmy"
-            //},
-            "Sandy Cloak": {
-                "Showdown Species": "Burmy-Sandy"
-            },
-            "Trash Cloak": {
-                "Showdown Species": "Burmy-Trash"
-            }
-        }
-    }, //412
-    "Wormadam": {
-        "Forms": {
-            //"Plant Cloak": {
-            //    "Showdown Species": "Wormadam"
-            //},
-            "Sandy Cloak": {
-                "Showdown Species": "Wormadam-Sandy"
-            },
-            "Trash Cloak": {
-                "Showdown Species": "Wormadam-Trash"
-            }
-        }
-    }, //413
-    "Cherrim": {
-        "Forms": {
-            //"Overcast": {
-            //    "Showdown Species": "Cherrim"
-            //},
-            "Sunny": {
-                "Showdown Species": "Cherrim-Sunshine"
-            }
-        }
-    }, //421
-    "Lopunny": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Lopunny-Mega"
-            }
-        }
-    }, //428
-    "Shellos": {
-        "Forms": {
-            //"West Sea": {
-            //    "Showdown Species": "Shellos"
-            //},
-            "East Sea": {
-                "Showdown Species": "Shellos-East"
-            }
-        }
-    }, //442
-    "Gastrodon": {
-        "Forms": {
-            //"West Sea": {
-            //    "Showdown Species": "Gastrodon"
-            //},
-            "East Sea": {
-                "Showdown Species": "Gastrodon-East"
-            }
-        }
-    }, //423
-    "Garchomp": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Garchomp-Mega"
-            }
-        }
-    }, //445
-    "Lucario": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Lucario-Mega"
-            }
-        }
-    }, //448
-    "Abomasnow": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Abomasnow-Mega"
-            }
-        }
-    }, //460
-    "Gallade": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Gallade-Mega"
-            }
-        }
-    }, //475
-    "Rotom": {
-        "Forms": {
-            //"": {
-            //    "Showdown Species": "Rotom"
-            //},
-            "Heat": {
-                "Showdown Species": "Rotom-Heat"
-            },
-            "Wash": {
-                "Showdown Species": "Rotom-Wash"
-            },
-            "Frost": {
-                "Showdown Species": "Rotom-Frost"
-            },
-            "Fan": {
-                "Showdown Species": "Rotom-Fan"
-            },
-            "Mow": {
-                "Showdown Species": "Rotom-Mow"
-            }
-        }
-    }, //479
-    "Giratina": {
-        "Forms": {
-            //"Altered": {
-            //    "Showdown Species": "Giratina"
-            //},
-            "Origin": {
-                "Showdown Species": "Giratina-Origin"
-            }
-        }
-    }, //487
-    "Shaymin": {
-        "Forms": {
-            //"Land": {
-            //    "Showdown Species": "Shaymin"
-            //},
-            "Sky": {
-                "Showdown Species": "Shaymin-Sky"
-            }
-        }
-    }, //492
-    "Arceus": {
-        "Forms": {
-            //"Normal": {
-            //    "Showdown Species": "Arceus"
-            //},
-            "Fire": {
-                "Showdown Species": "Arceus-Fire"
-            },
-            "Water": {
-                "Showdown Species": "Arceus-Water"
-            },
-            "Electric": {
-                "Showdown Species": "Arceus-Electric"
-            },
-            "Grass": {
-                "Showdown Species": "Arceus-Grass"
-            },
-            "Ice": {
-                "Showdown Species": "Arceus-Ice"
-            },
-            "Fighting": {
-                "Showdown Species": "Arceus-Fighting"
-            },
-            "Poison": {
-                "Showdown Species": "Arceus-Poison"
-            },
-            "Ground": {
-                "Showdown Species": "Arceus-Ground"
-            },
-            "Flying": {
-                "Showdown Species": "Arceus-Flying"
-            },
-            "Psychic": {
-                "Showdown Species": "Arceus-Psychic"
-            },
-            "Bug": {
-                "Showdown Species": "Arceus-Bug"
-            },
-            "Rock": {
-                "Showdown Species": "Arceus-Rock"
-            },
-            "Ghost": {
-                "Showdown Species": "Arceus-Ghost"
-            },
-            "Dragon": {
-                "Showdown Species": "Arceus-Dragon"
-            },
-            "Dark": {
-                "Showdown Species": "Arceus-Dark"
-            },
-            "Steel": {
-                "Showdown Species": "Arceus-Steel"
-            }
-        }
-    }, //493
-
-    // Gen 5 (TODO)
-    "Audino": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Audino-Mega"
-            }
-        }
-    }, //531
-    "Darumaka": {
-        "Forms": {
-            "Galarian": {
-                "Showdown Species": "Darumaka-Galar"
-            }
-        }
-    }, //554
-    "Darmanitan": {
-        "Forms": {
-            "Zen": {
-                "Showdown Species": "Darmanitan-Zen"
-            },
-            "Galarian": {
-                "Showdown Species": "Darmanitan-Galar"
-            },
-            "[Galarian, Zen]": {
-                "Showdown Species": "Darmanitan-Galar-Zen"
-            }
-        }
-    }, //555 TODO Deal with multiple forms (zen+galar)
-    "Yamask": {
-        "Forms": {
-            "Galarian": {
-                "Showdown Species": "Yamask-Galar"
-            }
-        }
-    }, //562
-    "Stunfisk": {
-        "Forms": {
-            "Galarian": {
-                "Showdown Species": "Stunfisk-Galar"
-            }
-        }
-    }, //618
-
-    // Gen 6 (TODO)
-    "Diancie": {
-        "Forms": {
-            "Mega": {
-                "Showdown Species": "Diancie-Mega"
-            }
-        }
-    }, //719
-
-    // Gen 7 (TODO)
-
-
-    // Gen 8 (TODO)
-
-
-    //Pokestar Species
-    "UFO": {
-        "Forms": {
-            "Form 1": {
-                "Showdown Species": "Pokestar UFO"
-            },
-            "Prop 1": { //Prop U1
-                "Showdown Species": "Pokestar UFO-Prop"
-            },
-            "Form 2": {
-                "Showdown Species": "Pokestar UFO-2"
-            },
-            "Prop 2": { //Prop U2
-                "Showdown Species": "Pokestar UFO-PropU2"
-            }
-        }
-    },
-    "Brycen-Man": {
-        "Forms": {
-            "": {
-                "Showdown Species": "Pokestar Brycen-Man"
-            },
-            "Prop": { //Prop H1
-                "Showdown Species": "Pokestar Brycen-Man-Prop"
-            }
-        }
-    },
-    "MT": {
-        "Forms": {
-            "": {
-                "Showdown Species": "Pokestar MT"
-            },
-            "Prop": { //Prop M1
-                "Showdown Species": "Pokestar MT-Prop"
-            }
-        }
-    },
-    "MT2": {
-        "Forms": {
-            "": {
-                "Showdown Species": "Pokestar MT2"
-            },
-            "Prop": { //Prop M2
-                "Showdown Species": "Pokestar MT2-Prop"
-            }
-        }
-    },
-    "Transport": {
-        "Forms": {
-            "": {
-                "Showdown Species": "Pokestar Transport"
-            },
-            "Prop": { //Prop T1
-                "Showdown Species": "Pokestar Transport-Prop"
-            }
-        }
-    },
-    "Giant ♀": {
-        "Forms": {
-            "Form 1": {
-                "Showdown Species": "Pokestar Giant"
-            },
-            "Prop 1": { //Prop O1
-                "Showdown Species": "Pokestar Giant-PropO1"
-            },
-            "Form 2": {
-                "Showdown Species": "Pokestar Giant-2"
-            },
-            "Prop 2": { //Prop O2
-                "Showdown Species": "Pokestar Giant-PropO2"
-            }
-        }
-    },
-    "Humanoid": {
-        "Forms": {
-            "": {
-                "Showdown Species": "Pokestar Humanoid"
-            },
-            "Prop": {
-                "Showdown Species": "Pokestar Humanoid-Prop"
-            }
-        }
-    },
-    "Monster": {
-        "Forms": {
-            "": {
-                "Showdown Species": "Pokestar Monster"
-            },
-            "Prop": { //Prop C2
-                "Showdown Species": "Pokestar Monster-Prop"
-            }
-        }
-    },
-    "F-00": {
-        "Forms": {
-            "Form 1": {
-                "Showdown Species": "Pokestar F-00"
-            },
-            "Prop 1": { //Prop R1
-                "Showdown Species": "Pokestar F-00-Prop"
-            },
-            "Form 2": {
-                "Showdown Species": "Pokestar F-002"
-            },
-            "Prop 2": { //Prop R2
-                "Showdown Species": "Pokestar F-002-Prop"
-            }
-        }
-    },
-    "Spirit": {
-        "Forms": {
-            "": {
-                "Showdown Species": "Pokestar Spirit"
-            },
-            "Prop": { //Prop G1
-                "Showdown Species": "Pokestar Spirit-Prop"
-            }
-        }
-    },
-    "White Door": {
-        "Forms": {
-            "": {
-                "Showdown Species": "Pokestar White Door"
-            },
-            "Prop": { //Prop W1
-                "Showdown Species": "Pokestar White Door-Prop"
-            }
-        }
-    },
-    "Black Door": {
-        "Forms": {
-            "": {
-                "Showdown Species": "Pokestar Black Door"
-            },
-            "Prop": { //Prop W2
-                "Showdown Species": "Pokestar Black Door-Prop"
-
-            }
-        }
-    },
-    "Black Belt": {
-        "Forms": {
-            "": {
-                "Showdown Species": "Pokestar Black Belt"
-            },
-            "Prop": { //Prop K1
-                "Showdown Species": "Pokestar Black Belt-Prop"
-            }
-        }
-    },
-    "Smeargle": {
-        "Forms": {
-            // Don't include base, since nationaldexData.json includes it
-            "Pokéstar": {
-                "Showdown Species": "Pokestar Smeargle"
-            }
-        }
-    },
-
-    //CAP Species
-    "Syclar": {},
-    "Syclant": {},
-    "Revenankh": {},
-    "Embirch": {},
-    "Flarelm": {},
-    "Pyroak": {},
-    "Breezi": {},
-    "Fidgit": {},
-    "Rebble": {},
-    "Tactite": {},
-    "Stratagem": {},
-    "Arghonaut": {},
-    "Kitsunoh": {},
-    "Cyclohm": {},
-    "Colossoil": {},
-    "Krilowatt": {},
-    "Voodoom": {},
-    "Scratchet": {},
-    "Tomohawk": {},
-    "Necturine": {},
-    "Necturna": {},
-    "Mollux": {},
-    "Cupra": {},
-    "Argalis": {},
-    "Aurumoth": {},
-    "Brattler": {},
-    "Malaconda": {},
-    "Cawdet": {},
-    "Cawmodore": {},
-    "Volkritter": {},
-    "Volkraken": {},
-    "Snugglow": {},
-    "Plasmanta": {},
-    "Floatoy": {},
-    "Caimanoe": {},
-    "Naviathan": {},
-    "Crucibelle": {
-        "Forms": {
-            "Mega": {
-                "Showdown Name": "Crucibelle-Mega"
-            }
-        }
-    },
-    "Pluffle": {},
-    "Kerfluffle": {},
-    "Pajantom": {},
-    "Mumbao": {},
-    "Jumbao": {},
-    "Caribolt": {},
-    "Smokomodo": {},
-    "Snaelstrom": {},
-    "Equilibra": {},
-    "Solotl": {},
-    "Astrolotl": {}
+//Updated 6/21/21
+{
+    "moves": [
+        "10,000,000 Volt Thunderbolt",
+        "Absorb",
+        "Accelerock",
+        "Acid",
+        "Acid Armor",
+        "Acid Downpour",
+        "Acid Spray",
+        "Acrobatics",
+        "Acupressure",
+        "Aerial Ace",
+        "Aeroblast",
+        "After You",
+        "Agility",
+        "Air Cutter",
+        "Air Slash",
+        "All-Out Pummeling",
+        "Ally Switch",
+        "Amnesia",
+        "Anchor Shot",
+        "Ancient Power",
+        "Apple Acid",
+        "Aqua Jet",
+        "Aqua Ring",
+        "Aqua Tail",
+        "Arm Thrust",
+        "Aromatherapy",
+        "Aromatic Mist",
+        "Assist",
+        "Assurance",
+        "Astonish",
+        "Astral Barrage",
+        "Attack Order",
+        "Attract",
+        "Aura Sphere",
+        "Aura Wheel",
+        "Aurora Beam",
+        "Aurora Veil",
+        "Autotomize",
+        "Avalanche",
+        "Baby-Doll Eyes",
+        "Baddy Bad",
+        "Baneful Bunker",
+        "Barrage",
+        "Barrier",
+        "Baton Pass",
+        "Beak Blast",
+        "Beat Up",
+        "Behemoth Bash",
+        "Behemoth Blade",
+        "Belch",
+        "Belly Drum",
+        "Bestow",
+        "Bide",
+        "Bind",
+        "Bite",
+        "Black Hole Eclipse",
+        "Blast Burn",
+        "Blaze Kick",
+        "Blizzard",
+        "Block",
+        "Bloom Doom",
+        "Blue Flare",
+        "Body Press",
+        "Body Slam",
+        "Bolt Beak",
+        "Bolt Strike",
+        "Bone Club",
+        "Bonemerang",
+        "Bone Rush",
+        "Boomburst",
+        "Bounce",
+        "Bouncy Bubble",
+        "Branch Poke",
+        "Brave Bird",
+        "Breaking Swipe",
+        "Breakneck Blitz",
+        "Brick Break",
+        "Brine",
+        "Brutal Swing",
+        "Bubble",
+        "Bubble Beam",
+        "Bug Bite",
+        "Bug Buzz",
+        "Bulk Up",
+        "Bulldoze",
+        "Bullet Punch",
+        "Bullet Seed",
+        "Burning Jealousy",
+        "Burn Up",
+        "Buzzy Buzz",
+        "Calm Mind",
+        "Camouflage",
+        "Captivate",
+        "Catastropika",
+        "Celebrate",
+        "Charge",
+        "Charge Beam",
+        "Charm",
+        "Chatter",
+        "Chip Away",
+        "Circle Throw",
+        "Clamp",
+        "Clanging Scales",
+        "Clangorous Soul",
+        "Clangorous Soulblaze",
+        "Clear Smog",
+        "Close Combat",
+        "Coaching",
+        "Coil",
+        "Comet Punch",
+        "Confide",
+        "Confuse Ray",
+        "Confusion",
+        "Constrict",
+        "Continental Crush",
+        "Conversion",
+        "Conversion 2",
+        "Copycat",
+        "Core Enforcer",
+        "Corkscrew Crash",
+        "Corrosive Gas",
+        "Cosmic Power",
+        "Cotton Guard",
+        "Cotton Spore",
+        "Counter",
+        "Court Change",
+        "Covet",
+        "Crabhammer",
+        "Crafty Shield",
+        "Cross Chop",
+        "Cross Poison",
+        "Crunch",
+        "Crush Claw",
+        "Crush Grip",
+        "Curse",
+        "Cut",
+        "Darkest Lariat",
+        "Dark Pulse",
+        "Dark Void",
+        "Dazzling Gleam",
+        "Decorate",
+        "Defend Order",
+        "Defense Curl",
+        "Defog",
+        "Destiny Bond",
+        "Detect",
+        "Devastating Drake",
+        "Diamond Storm",
+        "Dig",
+        "Disable",
+        "Disarming Voice",
+        "Discharge",
+        "Dive",
+        "Dizzy Punch",
+        "Doom Desire",
+        "Double-Edge",
+        "Double Hit",
+        "Double Iron Bash",
+        "Double Kick",
+        "Double Slap",
+        "Double Team",
+        "Draco Meteor",
+        "Dragon Ascent",
+        "Dragon Breath",
+        "Dragon Claw",
+        "Dragon Dance",
+        "Dragon Darts",
+        "Dragon Energy",
+        "Dragon Hammer",
+        "Dragon Pulse",
+        "Dragon Rage",
+        "Dragon Rush",
+        "Dragon Tail",
+        "Draining Kiss",
+        "Drain Punch",
+        "Dream Eater",
+        "Drill Peck",
+        "Drill Run",
+        "Drum Beating",
+        "Dual Chop",
+        "Dual Wingbeat",
+        "Dynamax Cannon",
+        "Dynamic Punch",
+        "Earth Power",
+        "Earthquake",
+        "Echoed Voice",
+        "Eerie Impulse",
+        "Eerie Spell",
+        "Egg Bomb",
+        "Electric Terrain",
+        "Electrify",
+        "Electro Ball",
+        "Electroweb",
+        "Embargo",
+        "Ember",
+        "Encore",
+        "Endeavor",
+        "Endure",
+        "Energy Ball",
+        "Entrainment",
+        "Eruption",
+        "Eternabeam",
+        "Expanding Force",
+        "Explosion",
+        "Extrasensory",
+        "Extreme Evoboost",
+        "Extreme Speed",
+        "Facade",
+        "Fairy Lock",
+        "Fairy Wind",
+        "Fake Out",
+        "Fake Tears",
+        "False Surrender",
+        "False Swipe",
+        "Feather Dance",
+        "Feint",
+        "Feint Attack",
+        "Fell Stinger",
+        "Fiery Dance",
+        "Fiery Wrath",
+        "Final Gambit",
+        "Fire Blast",
+        "Fire Fang",
+        "Fire Lash",
+        "Fire Pledge",
+        "Fire Punch",
+        "Fire Spin",
+        "First Impression",
+        "Fishious Rend",
+        "Fissure",
+        "Flail",
+        "Flame Burst",
+        "Flame Charge",
+        "Flame Wheel",
+        "Flamethrower",
+        "Flare Blitz",
+        "Flash",
+        "Flash Cannon",
+        "Flatter",
+        "Fleur Cannon",
+        "Fling",
+        "Flip Turn",
+        "Floaty Fall",
+        "Floral Healing",
+        "Flower Shield",
+        "Fly",
+        "Flying Press",
+        "Focus Blast",
+        "Focus Energy",
+        "Focus Punch",
+        "Follow Me",
+        "Force Palm",
+        "Foresight",
+        "Forest's Curse",
+        "Foul Play",
+        "Freeze-Dry",
+        "Freeze Shock",
+        "Freezing Glare",
+        "Freezy Frost",
+        "Frenzy Plant",
+        "Frost Breath",
+        "Frustration",
+        "Fury Attack",
+        "Fury Cutter",
+        "Fury Swipes",
+        "Fusion Bolt",
+        "Fusion Flare",
+        "Future Sight",
+        "Gastro Acid",
+        "Gear Grind",
+        "Gear Up",
+        "Genesis Supernova",
+        "Geomancy",
+        "Giga Drain",
+        "Giga Impact",
+        "Gigavolt Havoc",
+        "Glacial Lance",
+        "Glaciate",
+        "Glare",
+        "Glitzy Glow",
+        "G-Max Befuddle",
+        "G-Max Cannonade",
+        "G-Max Centiferno",
+        "G-Max Chi Strike",
+        "G-Max Cuddle",
+        "G-Max Depletion",
+        "G-Max Drum Solo",
+        "G-Max Finale",
+        "G-Max Fire Ball",
+        "G-Max Foam Burst",
+        "G-Max Gold Rush",
+        "G-Max Gravitas",
+        "G-Max Hydrosnipe",
+        "G-Max Malodor",
+        "G-Max Meltdown",
+        "G-Max One Blow",
+        "G-Max Rapid Flow",
+        "G-Max Replenish",
+        "G-Max Resonance",
+        "G-Max Sandblast",
+        "G-Max Smite",
+        "G-Max Snooze",
+        "G-Max Steelsurge",
+        "G-Max Stonesurge",
+        "G-Max Stun Shock",
+        "G-Max Sweetness",
+        "G-Max Tartness",
+        "G-Max Terror",
+        "G-Max Vine Lash",
+        "G-Max Volcalith",
+        "G-Max Volt Crash",
+        "G-Max Wildfire",
+        "G-Max Wind Rage",
+        "Grass Knot",
+        "Grass Pledge",
+        "Grass Whistle",
+        "Grassy Glide",
+        "Grassy Terrain",
+        "Grav Apple",
+        "Gravity",
+        "Growl",
+        "Growth",
+        "Grudge",
+        "Guardian of Alola",
+        "Guard Split",
+        "Guard Swap",
+        "Guillotine",
+        "Gunk Shot",
+        "Gust",
+        "Gyro Ball",
+        "Hail",
+        "Hammer Arm",
+        "Happy Hour",
+        "Harden",
+        "Haze",
+        "Headbutt",
+        "Head Charge",
+        "Head Smash",
+        "Heal Bell",
+        "Heal Block",
+        "Healing Wish",
+        "Heal Order",
+        "Heal Pulse",
+        "Heart Stamp",
+        "Heart Swap",
+        "Heat Crash",
+        "Heat Wave",
+        "Heavy Slam",
+        "Helping Hand",
+        "Hex",
+        "Hidden Power",
+        "Hidden Power Bug",
+        "Hidden Power Dark",
+        "Hidden Power Dragon",
+        "Hidden Power Electric",
+        "Hidden Power Fighting",
+        "Hidden Power Fire",
+        "Hidden Power Flying",
+        "Hidden Power Ghost",
+        "Hidden Power Grass",
+        "Hidden Power Ground",
+        "Hidden Power Ice",
+        "Hidden Power Poison",
+        "Hidden Power Psychic",
+        "Hidden Power Rock",
+        "Hidden Power Steel",
+        "Hidden Power Water",
+        "High Horsepower",
+        "High Jump Kick",
+        "Hold Back",
+        "Hold Hands",
+        "Hone Claws",
+        "Horn Attack",
+        "Horn Drill",
+        "Horn Leech",
+        "Howl",
+        "Hurricane",
+        "Hydro Cannon",
+        "Hydro Pump",
+        "Hydro Vortex",
+        "Hyper Beam",
+        "Hyper Fang",
+        "Hyperspace Fury",
+        "Hyperspace Hole",
+        "Hyper Voice",
+        "Hypnosis",
+        "Ice Ball",
+        "Ice Beam",
+        "Ice Burn",
+        "Ice Fang",
+        "Ice Hammer",
+        "Ice Punch",
+        "Ice Shard",
+        "Icicle Crash",
+        "Icicle Spear",
+        "Icy Wind",
+        "Imprison",
+        "Incinerate",
+        "Inferno",
+        "Inferno Overdrive",
+        "Infestation",
+        "Ingrain",
+        "Instruct",
+        "Ion Deluge",
+        "Iron Defense",
+        "Iron Head",
+        "Iron Tail",
+        "Jaw Lock",
+        "Judgment",
+        "Jump Kick",
+        "Jungle Healing",
+        "Karate Chop",
+        "Kinesis",
+        "King's Shield",
+        "Knock Off",
+        "Land's Wrath",
+        "Laser Focus",
+        "Lash Out",
+        "Last Resort",
+        "Lava Plume",
+        "Leafage",
+        "Leaf Blade",
+        "Leaf Storm",
+        "Leaf Tornado",
+        "Leech Life",
+        "Leech Seed",
+        "Leer",
+        "Let's Snuggle Forever",
+        "Lick",
+        "Life Dew",
+        "Light of Ruin",
+        "Light Screen",
+        "Light That Burns the Sky",
+        "Liquidation",
+        "Lock-On",
+        "Lovely Kiss",
+        "Low Kick",
+        "Low Sweep",
+        "Lucky Chant",
+        "Lunar Dance",
+        "Lunge",
+        "Luster Purge",
+        "Mach Punch",
+        "Magical Leaf",
+        "Magic Coat",
+        "Magic Powder",
+        "Magic Room",
+        "Magikarp's Revenge",
+        "Magma Storm",
+        "Magnet Bomb",
+        "Magnetic Flux",
+        "Magnet Rise",
+        "Magnitude",
+        "Malicious Moonsault",
+        "Mat Block",
+        "Max Airstream",
+        "Max Darkness",
+        "Max Flare",
+        "Max Flutterby",
+        "Max Geyser",
+        "Max Guard",
+        "Max Hailstorm",
+        "Max Knuckle",
+        "Max Lightning",
+        "Max Mindstorm",
+        "Max Ooze",
+        "Max Overgrowth",
+        "Max Phantasm",
+        "Max Quake",
+        "Max Rockfall",
+        "Max Starfall",
+        "Max Steelspike",
+        "Max Strike",
+        "Max Wyrmwind",
+        "Mean Look",
+        "Meditate",
+        "Me First",
+        "Mega Drain",
+        "Megahorn",
+        "Mega Kick",
+        "Mega Punch",
+        "Memento",
+        "Menacing Moonraze Maelstrom",
+        "Metal Burst",
+        "Metal Claw",
+        "Metal Sound",
+        "Meteor Assault",
+        "Meteor Beam",
+        "Meteor Mash",
+        "Metronome",
+        "Milk Drink",
+        "Mimic",
+        "Mind Blown",
+        "Mind Reader",
+        "Minimize",
+        "Miracle Eye",
+        "Mirror Coat",
+        "Mirror Move",
+        "Mirror Shot",
+        "Mist",
+        "Mist Ball",
+        "Misty Explosion",
+        "Misty Terrain",
+        "Moonblast",
+        "Moongeist Beam",
+        "Moonlight",
+        "Morning Sun",
+        "Mud Bomb",
+        "Mud Shot",
+        "Mud-Slap",
+        "Mud Sport",
+        "Muddy Water",
+        "Multi-Attack",
+        "Mystical Fire",
+        "Nasty Plot",
+        "Natural Gift",
+        "Nature Power",
+        "Nature's Madness",
+        "Needle Arm",
+        "Never-Ending Nightmare",
+        "Night Daze",
+        "Nightmare",
+        "Night Shade",
+        "Night Slash",
+        "Noble Roar",
+        "No Retreat",
+        "Nuzzle",
+        "Oblivion Wing",
+        "Obstruct",
+        "Oceanic Operetta",
+        "Octazooka",
+        "Octolock",
+        "Odor Sleuth",
+        "Ominous Wind",
+        "Origin Pulse",
+        "Outrage",
+        "Overdrive",
+        "Overheat",
+        "Pain Split",
+        "Paleo Wave",
+        "Parabolic Charge",
+        "Parting Shot",
+        "Payback",
+        "Pay Day",
+        "Peck",
+        "Perish Song",
+        "Petal Blizzard",
+        "Petal Dance",
+        "Phantom Force",
+        "Photon Geyser",
+        "Pika Papow",
+        "Pin Missile",
+        "Plasma Fists",
+        "Play Nice",
+        "Play Rough",
+        "Pluck",
+        "Poison Fang",
+        "Poison Gas",
+        "Poison Jab",
+        "Poison Powder",
+        "Poison Sting",
+        "Poison Tail",
+        "Pollen Puff",
+        "Poltergeist",
+        "Pound",
+        "Powder",
+        "Powder Snow",
+        "Power Gem",
+        "Power Split",
+        "Power Swap",
+        "Power Trick",
+        "Power Trip",
+        "Power-Up Punch",
+        "Power Whip",
+        "Precipice Blades",
+        "Present",
+        "Prismatic Laser",
+        "Protect",
+        "Psybeam",
+        "Psych Up",
+        "Psychic",
+        "Psychic Fangs",
+        "Psychic Terrain",
+        "Psycho Boost",
+        "Psycho Cut",
+        "Psycho Shift",
+        "Psyshock",
+        "Psystrike",
+        "Psywave",
+        "Pulverizing Pancake",
+        "Punishment",
+        "Purify",
+        "Pursuit",
+        "Pyro Ball",
+        "Quash",
+        "Quick Attack",
+        "Quick Guard",
+        "Quiver Dance",
+        "Rage",
+        "Rage Powder",
+        "Rain Dance",
+        "Rapid Spin",
+        "Razor Leaf",
+        "Razor Shell",
+        "Razor Wind",
+        "Recover",
+        "Recycle",
+        "Reflect",
+        "Reflect Type",
+        "Refresh",
+        "Relic Song",
+        "Rest",
+        "Retaliate",
+        "Return",
+        "Revelation Dance",
+        "Revenge",
+        "Reversal",
+        "Rising Voltage",
+        "Roar",
+        "Roar of Time",
+        "Rock Blast",
+        "Rock Climb",
+        "Rock Polish",
+        "Rock Slide",
+        "Rock Smash",
+        "Rock Throw",
+        "Rock Tomb",
+        "Rock Wrecker",
+        "Role Play",
+        "Rolling Kick",
+        "Rollout",
+        "Roost",
+        "Rototiller",
+        "Round",
+        "Sacred Fire",
+        "Sacred Sword",
+        "Safeguard",
+        "Sand Attack",
+        "Sandstorm",
+        "Sand Tomb",
+        "Sappy Seed",
+        "Savage Spin-Out",
+        "Scald",
+        "Scale Shot",
+        "Scary Face",
+        "Scorching Sands",
+        "Scratch",
+        "Screech",
+        "Searing Shot",
+        "Searing Sunraze Smash",
+        "Secret Power",
+        "Secret Sword",
+        "Seed Bomb",
+        "Seed Flare",
+        "Seismic Toss",
+        "Self-Destruct",
+        "Shadow Ball",
+        "Shadow Bone",
+        "Shadow Claw",
+        "Shadow Force",
+        "Shadow Punch",
+        "Shadow Sneak",
+        "Shadow Strike",
+        "Sharpen",
+        "Shattered Psyche",
+        "Sheer Cold",
+        "Shell Side Arm",
+        "Shell Smash",
+        "Shell Trap",
+        "Shift Gear",
+        "Shock Wave",
+        "Shore Up",
+        "Signal Beam",
+        "Silver Wind",
+        "Simple Beam",
+        "Sing",
+        "Sinister Arrow Raid",
+        "Sizzly Slide",
+        "Sketch",
+        "Skill Swap",
+        "Skitter Smack",
+        "Skull Bash",
+        "Sky Attack",
+        "Sky Drop",
+        "Sky Uppercut",
+        "Slack Off",
+        "Slam",
+        "Slash",
+        "Sleep Powder",
+        "Sleep Talk",
+        "Sludge",
+        "Sludge Bomb",
+        "Sludge Wave",
+        "Smack Down",
+        "Smart Strike",
+        "Smelling Salts",
+        "Smog",
+        "Smokescreen",
+        "Snap Trap",
+        "Snarl",
+        "Snatch",
+        "Snipe Shot",
+        "Snore",
+        "Soak",
+        "Soft-Boiled",
+        "Solar Beam",
+        "Solar Blade",
+        "Sonic Boom",
+        "Soul-Stealing 7-Star Strike",
+        "Spacial Rend",
+        "Spark",
+        "Sparkling Aria",
+        "Sparkly Swirl",
+        "Spectral Thief",
+        "Speed Swap",
+        "Spider Web",
+        "Spike Cannon",
+        "Spikes",
+        "Spiky Shield",
+        "Spirit Break",
+        "Spirit Shackle",
+        "Spit Up",
+        "Spite",
+        "Splash",
+        "Splintered Stormshards",
+        "Splishy Splash",
+        "Spore",
+        "Spotlight",
+        "Stealth Rock",
+        "Steam Eruption",
+        "Steamroller",
+        "Steel Beam",
+        "Steel Roller",
+        "Steel Wing",
+        "Sticky Web",
+        "Stockpile",
+        "Stoked Sparksurfer",
+        "Stomp",
+        "Stomping Tantrum",
+        "Stone Edge",
+        "Stored Power",
+        "Storm Throw",
+        "Strange Steam",
+        "Strength",
+        "Strength Sap",
+        "String Shot",
+        "Struggle",
+        "Struggle Bug",
+        "Stuff Cheeks",
+        "Stun Spore",
+        "Submission",
+        "Substitute",
+        "Subzero Slammer",
+        "Sucker Punch",
+        "Sunny Day",
+        "Sunsteel Strike",
+        "Super Fang",
+        "Superpower",
+        "Supersonic",
+        "Supersonic Skystrike",
+        "Surf",
+        "Surging Strikes",
+        "Swagger",
+        "Swallow",
+        "Sweet Kiss",
+        "Sweet Scent",
+        "Swift",
+        "Switcheroo",
+        "Swords Dance",
+        "Synchronoise",
+        "Synthesis",
+        "Tackle",
+        "Tail Glow",
+        "Tail Slap",
+        "Tail Whip",
+        "Tailwind",
+        "Take Down",
+        "Tar Shot",
+        "Taunt",
+        "Tearful Look",
+        "Teatime",
+        "Techno Blast",
+        "Tectonic Rage",
+        "Teeter Dance",
+        "Telekinesis",
+        "Teleport",
+        "Terrain Pulse",
+        "Thief",
+        "Thousand Arrows",
+        "Thousand Waves",
+        "Thrash",
+        "Throat Chop",
+        "Thunder",
+        "Thunderbolt",
+        "Thunder Cage",
+        "Thunder Fang",
+        "Thunderous Kick",
+        "Thunder Punch",
+        "Thunder Shock",
+        "Thunder Wave",
+        "Tickle",
+        "Topsy-Turvy",
+        "Torment",
+        "Toxic",
+        "Toxic Spikes",
+        "Toxic Thread",
+        "Transform",
+        "Tri Attack",
+        "Trick",
+        "Trick-or-Treat",
+        "Trick Room",
+        "Triple Axel",
+        "Triple Kick",
+        "Trop Kick",
+        "Trump Card",
+        "Twineedle",
+        "Twinkle Tackle",
+        "Twister",
+        "U-turn",
+        "Uproar",
+        "Vacuum Wave",
+        "V-create",
+        "Veevee Volley",
+        "Venom Drench",
+        "Venoshock",
+        "Vine Whip",
+        "Vise Grip",
+        "Vital Throw",
+        "Volt Switch",
+        "Volt Tackle",
+        "Wake-Up Slap",
+        "Waterfall",
+        "Water Gun",
+        "Water Pledge",
+        "Water Pulse",
+        "Water Shuriken",
+        "Water Sport",
+        "Water Spout",
+        "Weather Ball",
+        "Whirlpool",
+        "Whirlwind",
+        "Wicked Blow",
+        "Wide Guard",
+        "Wild Charge",
+        "Will-O-Wisp",
+        "Wing Attack",
+        "Wish",
+        "Withdraw",
+        "Wonder Room",
+        "Wood Hammer",
+        "Work Up",
+        "Worry Seed",
+        "Wrap",
+        "Wring Out",
+        "X-Scissor",
+        "Yawn",
+        "Zap Cannon",
+        "Zen Headbutt",
+        "Zing Zap",
+        "Zippy Zap"
+    ],
+    "items": [
+        "Abomasite",
+        "Absolite",
+        "Absorb Bulb",
+        "Adamant Orb",
+        "Adrenaline Orb",
+        "Aerodactylite",
+        "Aggronite",
+        "Aguav Berry",
+        "Air Balloon",
+        "Alakazite",
+        "Aloraichium Z",
+        "Altarianite",
+        "Ampharosite",
+        "Apicot Berry",
+        "Armor Fossil",
+        "Aspear Berry",
+        "Assault Vest",
+        "Audinite",
+        "Babiri Berry",
+        "Banettite",
+        "Beast Ball",
+        "Beedrillite",
+        "Belue Berry",
+        "Berry Juice",
+        "Berry Sweet",
+        "Big Root",
+        "Binding Band",
+        "Black Belt",
+        "Black Sludge",
+        "Black Glasses",
+        "Blastoisinite",
+        "Blazikenite",
+        "Blue Orb",
+        "Bluk Berry",
+        "Blunder Policy",
+        "Bottle Cap",
+        "Bright Powder",
+        "Bug Gem",
+        "Bug Memory",
+        "Buginium Z",
+        "Burn Drive",
+        "Cameruptite",
+        "Cell Battery",
+        "Charcoal",
+        "Charizardite X",
+        "Charizardite Y",
+        "Charti Berry",
+        "Cheri Berry",
+        "Cherish Ball",
+        "Chesto Berry",
+        "Chilan Berry",
+        "Chill Drive",
+        "Chipped Pot",
+        "Choice Band",
+        "Choice Scarf",
+        "Choice Specs",
+        "Chople Berry",
+        "Claw Fossil",
+        "Clover Sweet",
+        "Coba Berry",
+        "Colbur Berry",
+        "Cornn Berry",
+        "Cover Fossil",
+        "Cracked Pot",
+        "Custap Berry",
+        "Damp Rock",
+        "Dark Gem",
+        "Dark Memory",
+        "Darkinium Z",
+        "Dawn Stone",
+        "Decidium Z",
+        "Deep Sea Scale",
+        "Deep Sea Tooth",
+        "Destiny Knot",
+        "Diancite",
+        "Dive Ball",
+        "Dome Fossil",
+        "Douse Drive",
+        "Draco Plate",
+        "Dragon Fang",
+        "Dragon Gem",
+        "Dragon Memory",
+        "Dragon Scale",
+        "Dragonium Z",
+        "Dread Plate",
+        "Dream Ball",
+        "Dubious Disc",
+        "Durin Berry",
+        "Dusk Ball",
+        "Dusk Stone",
+        "Earth Plate",
+        "Eevium Z",
+        "Eject Button",
+        "Eject Pack",
+        "Electirizer",
+        "Electric Gem",
+        "Electric Memory",
+        "Electric Seed",
+        "Electrium Z",
+        "Energy Powder",
+        "Enigma Berry",
+        "Eviolite",
+        "Expert Belt",
+        "Fairium Z",
+        "Fairy Gem",
+        "Fairy Memory",
+        "Fast Ball",
+        "Fighting Gem",
+        "Fighting Memory",
+        "Fightinium Z",
+        "Figy Berry",
+        "Fire Gem",
+        "Fire Memory",
+        "Fire Stone",
+        "Firium Z",
+        "Fist Plate",
+        "Flame Orb",
+        "Flame Plate",
+        "Float Stone",
+        "Flower Sweet",
+        "Flying Gem",
+        "Flying Memory",
+        "Flyinium Z",
+        "Focus Band",
+        "Focus Sash",
+        "Fossilized Bird",
+        "Fossilized Dino",
+        "Fossilized Drake",
+        "Fossilized Fish",
+        "Friend Ball",
+        "Full Incense",
+        "Galarica Cuff",
+        "Galarica Wreath",
+        "Galladite",
+        "Ganlon Berry",
+        "Garchompite",
+        "Gardevoirite",
+        "Gengarite",
+        "Ghost Gem",
+        "Ghost Memory",
+        "Ghostium Z",
+        "Glalitite",
+        "Gold Bottle Cap",
+        "Grass Gem",
+        "Grass Memory",
+        "Grassium Z",
+        "Grassy Seed",
+        "Great Ball",
+        "Grepa Berry",
+        "Grip Claw",
+        "Griseous Orb",
+        "Ground Gem",
+        "Ground Memory",
+        "Groundium Z",
+        "Gyaradosite",
+        "Haban Berry",
+        "Hard Stone",
+        "Heal Ball",
+        "Heat Rock",
+        "Heavy Ball",
+        "Heavy-Duty Boots",
+        "Helix Fossil",
+        "Heracronite",
+        "Hondew Berry",
+        "Houndoominite",
+        "Iapapa Berry",
+        "Ice Gem",
+        "Ice Memory",
+        "Ice Stone",
+        "Icicle Plate",
+        "Icium Z",
+        "Icy Rock",
+        "Incinium Z",
+        "Insect Plate",
+        "Iron Ball",
+        "Iron Plate",
+        "Jaboca Berry",
+        "Jaw Fossil",
+        "Kasib Berry",
+        "Kebia Berry",
+        "Kee Berry",
+        "Kelpsy Berry",
+        "Kangaskhanite",
+        "King's Rock",
+        "Kommonium Z",
+        "Lagging Tail",
+        "Lansat Berry",
+        "Latiasite",
+        "Latiosite",
+        "Lax Incense",
+        "Leaf Stone",
+        "Leek",
+        "Leftovers",
+        "Leppa Berry",
+        "Level Ball",
+        "Liechi Berry",
+        "Life Orb",
+        "Light Ball",
+        "Light Clay",
+        "Lopunnite",
+        "Love Ball",
+        "Love Sweet",
+        "Lucarionite",
+        "Lucky Punch",
+        "Lum Berry",
+        "Luminous Moss",
+        "Lunalium Z",
+        "Lure Ball",
+        "Lustrous Orb",
+        "Luxury Ball",
+        "Lycanium Z",
+        "Macho Brace",
+        "Magmarizer",
+        "Magnet",
+        "Mago Berry",
+        "Magost Berry",
+        "Mail",
+        "Manectite",
+        "Maranga Berry",
+        "Marshadium Z",
+        "Master Ball",
+        "Mawilite",
+        "Meadow Plate",
+        "Medichamite",
+        "Mental Herb",
+        "Metagrossite",
+        "Metal Coat",
+        "Metal Powder",
+        "Metronome",
+        "Mewnium Z",
+        "Mewtwonite X",
+        "Mewtwonite Y",
+        "Micle Berry",
+        "Mimikium Z",
+        "Mind Plate",
+        "Miracle Seed",
+        "Misty Seed",
+        "Moon Ball",
+        "Moon Stone",
+        "Muscle Band",
+        "Mystic Water",
+        "Nanab Berry",
+        "Nest Ball",
+        "Net Ball",
+        "Never-Melt Ice",
+        "Nomel Berry",
+        "Normal Gem",
+        "Normalium Z",
+        "Occa Berry",
+        "Odd Incense",
+        "Old Amber",
+        "Oran Berry",
+        "Oval Stone",
+        "Pamtre Berry",
+        "Park Ball",
+        "Passho Berry",
+        "Payapa Berry",
+        "Pecha Berry",
+        "Persim Berry",
+        "Petaya Berry",
+        "Pidgeotite",
+        "Pikanium Z",
+        "Pikashunium Z",
+        "Pinap Berry",
+        "Pinsirite",
+        "Pixie Plate",
+        "Plume Fossil",
+        "Poison Barb",
+        "Poison Gem",
+        "Poison Memory",
+        "Poisonium Z",
+        "Poke Ball",
+        "Pomeg Berry",
+        "Power Anklet",
+        "Power Band",
+        "Power Belt",
+        "Power Bracer",
+        "Power Herb",
+        "Power Lens",
+        "Power Weight",
+        "Premier Ball",
+        "Primarium Z",
+        "Prism Scale",
+        "Protective Pads",
+        "Protector",
+        "Psychic Gem",
+        "Psychic Memory",
+        "Psychic Seed",
+        "Psychium Z",
+        "Qualot Berry",
+        "Quick Ball",
+        "Quick Claw",
+        "Quick Powder",
+        "Rabuta Berry",
+        "Rare Bone",
+        "Rawst Berry",
+        "Razor Claw",
+        "Razor Fang",
+        "Razz Berry",
+        "Reaper Cloth",
+        "Red Card",
+        "Red Orb",
+        "Repeat Ball",
+        "Ribbon Sweet",
+        "Rindo Berry",
+        "Ring Target",
+        "Rock Gem",
+        "Rock Incense",
+        "Rock Memory",
+        "Rockium Z",
+        "Rocky Helmet",
+        "Room Service",
+        "Root Fossil",
+        "Rose Incense",
+        "Roseli Berry",
+        "Rowap Berry",
+        "Rusted Shield",
+        "Rusted Sword",
+        "Sablenite",
+        "Sachet",
+        "Safari Ball",
+        "Safety Goggles",
+        "Sail Fossil",
+        "Salac Berry",
+        "Salamencite",
+        "Sceptilite",
+        "Scizorite",
+        "Scope Lens",
+        "Sea Incense",
+        "Sharp Beak",
+        "Sharpedonite",
+        "Shed Shell",
+        "Shell Bell",
+        "Shiny Stone",
+        "Shock Drive",
+        "Shuca Berry",
+        "Silk Scarf",
+        "Silver Powder",
+        "Sitrus Berry",
+        "Skull Fossil",
+        "Sky Plate",
+        "Slowbronite",
+        "Smooth Rock",
+        "Snorlium Z",
+        "Snowball",
+        "Soft Sand",
+        "Solganium Z",
+        "Soul Dew",
+        "Spell Tag",
+        "Spelon Berry",
+        "Splash Plate",
+        "Spooky Plate",
+        "Sport Ball",
+        "Starf Berry",
+        "Star Sweet",
+        "Steelixite",
+        "Steel Gem",
+        "Steel Memory",
+        "Steelium Z",
+        "Stick",
+        "Sticky Barb",
+        "Stone Plate",
+        "Strawberry Sweet",
+        "Sun Stone",
+        "Swampertite",
+        "Sweet Apple",
+        "Tamato Berry",
+        "Tanga Berry",
+        "Tapunium Z",
+        "Tart Apple",
+        "Terrain Extender",
+        "Thick Club",
+        "Throat Spray",
+        "Thunder Stone",
+        "Timer Ball",
+        "Toxic Orb",
+        "Toxic Plate",
+        "TR00",
+        "TR01",
+        "TR02",
+        "TR03",
+        "TR04",
+        "TR05",
+        "TR06",
+        "TR07",
+        "TR08",
+        "TR09",
+        "TR10",
+        "TR11",
+        "TR12",
+        "TR13",
+        "TR14",
+        "TR15",
+        "TR16",
+        "TR17",
+        "TR18",
+        "TR19",
+        "TR20",
+        "TR21",
+        "TR22",
+        "TR23",
+        "TR24",
+        "TR25",
+        "TR26",
+        "TR27",
+        "TR28",
+        "TR29",
+        "TR30",
+        "TR31",
+        "TR32",
+        "TR33",
+        "TR34",
+        "TR35",
+        "TR36",
+        "TR37",
+        "TR38",
+        "TR39",
+        "TR40",
+        "TR41",
+        "TR42",
+        "TR43",
+        "TR44",
+        "TR45",
+        "TR46",
+        "TR47",
+        "TR48",
+        "TR49",
+        "TR50",
+        "TR51",
+        "TR52",
+        "TR53",
+        "TR54",
+        "TR55",
+        "TR56",
+        "TR57",
+        "TR58",
+        "TR59",
+        "TR60",
+        "TR61",
+        "TR62",
+        "TR63",
+        "TR64",
+        "TR65",
+        "TR66",
+        "TR67",
+        "TR68",
+        "TR69",
+        "TR70",
+        "TR71",
+        "TR72",
+        "TR73",
+        "TR74",
+        "TR75",
+        "TR76",
+        "TR77",
+        "TR78",
+        "TR79",
+        "TR80",
+        "TR81",
+        "TR82",
+        "TR83",
+        "TR84",
+        "TR85",
+        "TR86",
+        "TR87",
+        "TR88",
+        "TR89",
+        "TR90",
+        "TR91",
+        "TR92",
+        "TR93",
+        "TR94",
+        "TR95",
+        "TR96",
+        "TR97",
+        "TR98",
+        "TR99",
+        "Twisted Spoon",
+        "Tyranitarite",
+        "Ultra Ball",
+        "Ultranecrozium Z",
+        "Up-Grade",
+        "Utility Umbrella",
+        "Venusaurite",
+        "Wacan Berry",
+        "Water Gem",
+        "Water Memory",
+        "Water Stone",
+        "Waterium Z",
+        "Watmel Berry",
+        "Wave Incense",
+        "Weakness Policy",
+        "Wepear Berry",
+        "Whipped Dream",
+        "White Herb",
+        "Wide Lens",
+        "Wiki Berry",
+        "Wise Glasses",
+        "Yache Berry",
+        "Zap Plate",
+        "Zoom Lens",
+        "Berserk Gene",
+        "Berry",
+        "Bitter Berry",
+        "Burnt Berry",
+        "Gold Berry",
+        "Ice Berry",
+        "Mint Berry",
+        "Miracle Berry",
+        "Mystery Berry",
+        "Pink Bow",
+        "Polkadot Bow",
+        "PRZ Cure Berry",
+        "PSN Cure Berry",
+        "Crucibellite"
+    ],
+    "abilities": [
+        "No Ability",
+        "Adaptability",
+        "Aerilate",
+        "Aftermath",
+        "Air Lock",
+        "Analytic",
+        "Anger Point",
+        "Anticipation",
+        "Arena Trap",
+        "Aroma Veil",
+        "As One",
+        "As One (Glastrier)",
+        "As One (Spectrier)",
+        "Aura Break",
+        "Bad Dreams",
+        "Ball Fetch",
+        "Battery",
+        "Battle Armor",
+        "Battle Bond",
+        "Beast Boost",
+        "Berserk",
+        "Big Pecks",
+        "Blaze",
+        "Bulletproof",
+        "Cheek Pouch",
+        "Chilling Neigh",
+        "Chlorophyll",
+        "Clear Body",
+        "Cloud Nine",
+        "Color Change",
+        "Comatose",
+        "Competitive",
+        "Compound Eyes",
+        "Contrary",
+        "Corrosion",
+        "Cotton Down",
+        "Curious Medicine",
+        "Cursed Body",
+        "Cute Charm",
+        "Damp",
+        "Dancer",
+        "Dark Aura",
+        "Dauntless Shield",
+        "Dazzling",
+        "Defeatist",
+        "Defiant",
+        "Delta Stream",
+        "Desolate Land",
+        "Disguise",
+        "Download",
+        "Dragon's Maw",
+        "Drizzle",
+        "Drought",
+        "Dry Skin",
+        "Early Bird",
+        "Effect Spore",
+        "Electric Surge",
+        "Emergency Exit",
+        "Fairy Aura",
+        "Filter",
+        "Flame Body",
+        "Flare Boost",
+        "Flash Fire",
+        "Flower Gift",
+        "Flower Veil",
+        "Fluffy",
+        "Forecast",
+        "Forewarn",
+        "Friend Guard",
+        "Frisk",
+        "Full Metal Body",
+        "Fur Coat",
+        "Gale Wings",
+        "Galvanize",
+        "Gluttony",
+        "Gooey",
+        "Gorilla Tactics",
+        "Grass Pelt",
+        "Grassy Surge",
+        "Grim Neigh",
+        "Gulp Missile",
+        "Guts",
+        "Harvest",
+        "Healer",
+        "Heatproof",
+        "Heavy Metal",
+        "Honey Gather",
+        "Huge Power",
+        "Hunger Switch",
+        "Hustle",
+        "Hydration",
+        "Hyper Cutter",
+        "Ice Body",
+        "Ice Face",
+        "Ice Scales",
+        "Illuminate",
+        "Illusion",
+        "Immunity",
+        "Imposter",
+        "Infiltrator",
+        "Innards Out",
+        "Inner Focus",
+        "Insomnia",
+        "Intimidate",
+        "Intrepid Sword",
+        "Iron Barbs",
+        "Iron Fist",
+        "Justified",
+        "Keen Eye",
+        "Klutz",
+        "Leaf Guard",
+        "Levitate",
+        "Libero",
+        "Light Metal",
+        "Lightning Rod",
+        "Limber",
+        "Liquid Ooze",
+        "Liquid Voice",
+        "Long Reach",
+        "Magic Bounce",
+        "Magic Guard",
+        "Magician",
+        "Magma Armor",
+        "Magnet Pull",
+        "Marvel Scale",
+        "Mega Launcher",
+        "Merciless",
+        "Mimicry",
+        "Minus",
+        "Mirror Armor",
+        "Misty Surge",
+        "Mold Breaker",
+        "Moody",
+        "Motor Drive",
+        "Moxie",
+        "Multiscale",
+        "Multitype",
+        "Mummy",
+        "Natural Cure",
+        "Neuroforce",
+        "Neutralizing Gas",
+        "No Guard",
+        "Normalize",
+        "Oblivious",
+        "Overcoat",
+        "Overgrow",
+        "Own Tempo",
+        "Parental Bond",
+        "Pastel Veil",
+        "Perish Body",
+        "Pickpocket",
+        "Pickup",
+        "Pixilate",
+        "Plus",
+        "Poison Heal",
+        "Poison Point",
+        "Poison Touch",
+        "Power Construct",
+        "Power of Alchemy",
+        "Power Spot",
+        "Prankster",
+        "Pressure",
+        "Primordial Sea",
+        "Prism Armor",
+        "Propeller Tail",
+        "Protean",
+        "Psychic Surge",
+        "Punk Rock",
+        "Pure Power",
+        "Queenly Majesty",
+        "Quick Draw",
+        "Quick Feet",
+        "Rain Dish",
+        "Rattled",
+        "Receiver",
+        "Reckless",
+        "Refrigerate",
+        "Regenerator",
+        "Ripen",
+        "Rivalry",
+        "RKS System",
+        "Rock Head",
+        "Rough Skin",
+        "Run Away",
+        "Sand Force",
+        "Sand Rush",
+        "Sand Spit",
+        "Sand Stream",
+        "Sand Veil",
+        "Sap Sipper",
+        "Schooling",
+        "Scrappy",
+        "Screen Cleaner",
+        "Serene Grace",
+        "Shadow Shield",
+        "Shadow Tag",
+        "Shed Skin",
+        "Sheer Force",
+        "Shell Armor",
+        "Shield Dust",
+        "Shields Down",
+        "Simple",
+        "Skill Link",
+        "Slow Start",
+        "Slush Rush",
+        "Sniper",
+        "Snow Cloak",
+        "Snow Warning",
+        "Solar Power",
+        "Solid Rock",
+        "Soul-Heart",
+        "Soundproof",
+        "Speed Boost",
+        "Stakeout",
+        "Stall",
+        "Stalwart",
+        "Stamina",
+        "Stance Change",
+        "Static",
+        "Steadfast",
+        "Steam Engine",
+        "Steelworker",
+        "Steely Spirit",
+        "Stench",
+        "Sticky Hold",
+        "Storm Drain",
+        "Strong Jaw",
+        "Sturdy",
+        "Suction Cups",
+        "Super Luck",
+        "Surge Surfer",
+        "Swarm",
+        "Sweet Veil",
+        "Swift Swim",
+        "Symbiosis",
+        "Synchronize",
+        "Tangled Feet",
+        "Tangling Hair",
+        "Technician",
+        "Telepathy",
+        "Teravolt",
+        "Thick Fat",
+        "Tinted Lens",
+        "Torrent",
+        "Tough Claws",
+        "Toxic Boost",
+        "Trace",
+        "Transistor",
+        "Triage",
+        "Truant",
+        "Turboblaze",
+        "Unaware",
+        "Unburden",
+        "Unnerve",
+        "Unseen Fist",
+        "Victory Star",
+        "Vital Spirit",
+        "Volt Absorb",
+        "Wandering Spirit",
+        "Water Absorb",
+        "Water Bubble",
+        "Water Compaction",
+        "Water Veil",
+        "Weak Armor",
+        "White Smoke",
+        "Wimp Out",
+        "Wonder Guard",
+        "Wonder Skin",
+        "Zen Mode",
+        "Mountaineer",
+        "Rebound",
+        "Persistent"
+    ],
+    "gmax": [
+        "Venusaur",
+        "Charizard",
+        "Blastoise",
+        "Butterfree",
+        "Pikachu",
+        "Meowth",
+        "Machamp",
+        "Gengar",
+        "Kingler",
+        "Lapras",
+        "Eevee",
+        "Snorlax",
+        "Garbodor",
+        "Melmetal",
+        "Rillaboom",
+        "Cinderace",
+        "Inteleon",
+        "Corviknight",
+        "Orbeetle",
+        "Drednaw",
+        "Coalossal",
+        "Flapple",
+        "Appletun",
+        "Sandaconda",
+        "Toxtricity",
+        "Toxtricity-Low-Key",
+        "Centiskorch",
+        "Hatterene",
+        "Grimmsnarl",
+        "Alcremie",
+        "Alcremie-Ruby-Cream",
+        "Alcremie-Matcha-Cream",
+        "Alcremie-Mint-Cream",
+        "Alcremie-Lemon-Cream",
+        "Alcremie-Salted-Cream",
+        "Alcremie-Ruby-Swirl",
+        "Alcremie-Caramel-Swirl",
+        "Alcremie-Rainbow-Swirl",
+        "Copperajah",
+        "Duraludon",
+        "Urshifu",
+        "Urshifu-Rapid-Strike"
+    ]
 }

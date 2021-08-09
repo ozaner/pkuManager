@@ -8,7 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace pkuManager.Properties {
+namespace pkuManager.Common
+.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

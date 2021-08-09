@@ -12,7 +12,7 @@
             "Prop 1": { //Prop U1
                 //don't include "Default": false, less clutter
                 "Gen 5 Index": 664,
-                "Not Grounded":  true, //whether or not this pokestar prop is attached to cables
+                "Suspended":  true, //whether or not this pokestar prop is attached to cables
                 "Languages": {
                     "English": "Prop 1"
                 }
@@ -25,7 +25,7 @@
             },
             "Prop 2": { //Prop U2
                 "Gen 5 Index": 665,
-                "Not Grounded": true,
+                "Suspended": true,
                 "Languages": {
                     "English": "Prop 2"
                 }
@@ -35,7 +35,6 @@
     "Brycen-Man": {
         "Forms": {
             "": {
-                "Default": true,
                 "Gen 5 Index": 653
                 // If there are no alt Languages for the default form, don't include "Languages" tag
             },
@@ -50,7 +49,6 @@
     "MT": {
         "Forms": {
             "": {
-                "Default": true,
                 "Gen 5 Index": 654
             },
             "Prop": { //Prop M1
@@ -64,7 +62,6 @@
     "MT2": {
         "Forms": {
             "": {
-                "Default": true,
                 "Gen 5 Index": 655
             },
             "Prop": { //Prop M2
@@ -78,7 +75,6 @@
     "Transport": {
         "Forms": {
             "": {
-                "Default": true,
                 "Gen 5 Index": 656
             },
             "Prop": { //Prop T1
@@ -121,7 +117,6 @@
     "Humanoid": {
         "Forms": {
             "": {
-                "Default": true,
                 "Gen 5 Index": 658
             },
             "Prop": {
@@ -135,7 +130,6 @@
     "Monster": {
         "Forms": {
             "": {
-                "Default": true,
                 "Gen 5 Index": 659
             },
             "Prop": { //Prop C2
@@ -178,12 +172,11 @@
     "Spirit": {
         "Forms": {
             "": {
-                "Default": true,
                 "Gen 5 Index": 661
             },
             "Prop": { //Prop G1
                 "Gen 5 Index": 674,
-                "Not Grounded": true,
+                "Suspended": true,
                 "Languages": {
                     "English": "Prop"
                 }
@@ -193,7 +186,6 @@
     "White Door": {
         "Forms": {
             "": {
-                "Default": true,
                 "Gen 5 Index": 662
             },
             "Prop": { //Prop W1
@@ -207,7 +199,6 @@
     "Black Door": {
         "Forms": {
             "": {
-                "Default": true,
                 "Gen 5 Index": 663
             },
             "Prop": { //Prop W2
@@ -221,7 +212,6 @@
     "Black Belt": {
         "Forms": {
             "": {
-                "Default": true,
                 "Gen 5 Index": 683
             },
             "Prop": { //Prop K1

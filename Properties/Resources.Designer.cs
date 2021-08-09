@@ -61,73 +61,11 @@ namespace pkuManager.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to None
-        ///Stench
-        ///Drizzle
-        ///Speed Boost
-        ///Battle Armor
-        ///Sturdy
-        ///Damp
-        ///Limber
-        ///Sand Veil
-        ///Static
-        ///Volt Absorb
-        ///Water Absorb
-        ///Oblivious
-        ///Cloud Nine
-        ///Compound Eyes
-        ///Insomnia
-        ///Color Change
-        ///Immunity
-        ///Flash Fire
-        ///Shield Dust
-        ///Own Tempo
-        ///Suction Cups
-        ///Intimidate
-        ///Shadow Tag
-        ///Rough Skin
-        ///Wonder Guard
-        ///Levitate
-        ///Effect Spore
-        ///Synchronize
-        ///Clear Body
-        ///Natural Cure
-        ///Lightning Rod
-        ///Serene Grace
-        ///Swift Swim
-        ///Chlorophyll
-        ///Illuminate
-        ///Trace
-        ///Huge Power
-        ///Poison Point
-        ///Inner Focus
-        ///Magma Armor
-        ///Water Veil
-        ///Magnet Pull
-        ///Soundproo [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string Abilities {
-            get {
-                return ResourceManager.GetString("Abilities", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap egg {
+        internal static System.Drawing.Bitmap checkedOut {
             get {
-                object obj = ResourceManager.GetObject("egg", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap egg_manaphy {
-            get {
-                object obj = ResourceManager.GetObject("egg_manaphy", resourceCulture);
+                object obj = ResourceManager.GetObject("checkedOut", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -231,6 +169,29 @@ namespace pkuManager.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {
+        ///    &quot;Base&quot;: {
+        ///        &quot;253&quot;: &quot;(gift-egg)&quot;, //location for gift eggs before they are hatched
+        ///        &quot;254&quot;: &quot;(in-game trade)&quot;,
+        ///        &quot;255&quot;: &quot;(fateful encounter)&quot; //not the same as fateful encounter in later gens, think of it as &quot;Received in an Event&quot;.
+        ///    },
+        ///    &quot;RS&quot;: {
+        ///        &quot;0&quot;: &quot;Littleroot Town&quot;,
+        ///        &quot;1&quot;: &quot;Oldale Town&quot;,
+        ///        &quot;2&quot;: &quot;Dewford Town&quot;,
+        ///        &quot;3&quot;: &quot;Lavaridge Town&quot;,
+        ///        &quot;4&quot;: &quot;Fallarbor Town&quot;,
+        ///        &quot;5&quot;: &quot;Verdanturf Town&quot;,
+        ///        &quot;6&quot;: &quot;Pacifidlog Town&quot;,
+        ///        &quot; [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string gen3Locations {
+            get {
+                return ResourceManager.GetString("gen3Locations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap grassbox {
@@ -241,168 +202,17 @@ namespace pkuManager.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to None
-        ///JPN / Japanese
-        ///ENG / English
-        ///FRE / French
-        ///ITA / Italian
-        ///GER / German
-        ///
-        ///SPA / Spanish
-        ///KOR / Korean
-        ///CHS / Chinese Simplified
-        ///CHT / Chinese Traditional.
-        /// </summary>
-        internal static string LangENG {
-            get {
-                return ResourceManager.GetString("LangENG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Blue Circle / Circle
-        ///Blue Triangle / Triangle
-        ///Blue Square / Square
-        ///Blue Heart / Heart
-        ///Blue Star / Star
-        ///Blue Diamond / Diamond
-        ///Pink Circle
-        ///Pink Triangle
-        ///Pink Square
-        ///Pink Heart
-        ///Pink Star
-        ///Pink Diamond
-        ///Favorite.
-        /// </summary>
-        internal static string MarkingsENG {
-            get {
-                return ResourceManager.GetString("MarkingsENG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to None
-        ///Pound
-        ///Karate Chop
-        ///Double Slap
-        ///Comet Punch
-        ///Mega Punch
-        ///Pay Day
-        ///Fire Punch
-        ///Ice Punch
-        ///Thunder Punch
-        ///Scratch
-        ///Vise Grip
-        ///Guillotine
-        ///Razor Wind
-        ///Swords Dance
-        ///Cut
-        ///Gust
-        ///Wing Attack
-        ///Whirlwind
-        ///Fly
-        ///Bind
-        ///Slam
-        ///Vine Whip
-        ///Stomp
-        ///Double Kick
-        ///Mega Kick
-        ///Jump Kick
-        ///Rolling Kick
-        ///Sand Attack
-        ///Headbutt
-        ///Horn Attack
-        ///Fury Attack
-        ///Horn Drill
-        ///Tackle
-        ///Body Slam
-        ///Wrap
-        ///Take Down
-        ///Thrash
-        ///Double-Edge
-        ///Tail Whip
-        ///Poison Sting
-        ///Twineedle
-        ///Pin Missile
-        ///Leer
-        ///Bite
-        ///Growl
-        ///Roar
-        ///Sing
-        ///Supersonic
-        ///Sonic Boom
-        ///Di [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string Moves {
-            get {
-                return ResourceManager.GetString("Moves", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to {
         ///    // Pokemon from gens 1-8
-        ///    // Gender Differences tags for pokemon from Gens 1-4
-        ///    &quot;Bulbasaur&quot;: {
-        ///        &quot;National Dex&quot;: 1
-        ///    },
-        ///    &quot;Ivysaur&quot;: {
-        ///        &quot;National Dex&quot;: 2
-        ///    },
-        ///    &quot;Venusaur&quot;: {
-        ///        &quot;National Dex&quot;: 3,
-        ///        &quot;Gender Differences&quot;: true
-        ///    },
-        ///    &quot;Charmander&quot;: {
-        ///        &quot;National Dex&quot;: 4
-        ///    },
-        ///    &quot;Charmeleon&quot;: {
-        ///        &quot;National Dex&quot;: 5
-        ///    },
-        ///    &quot;Charizard&quot;: {
-        ///        &quot;National Dex&quot;: 6
-        ///    },
-        ///    &quot;Squirtle&quot;: {
-        ///        &quot;National Dex&quot;: 7
-        ///    },
-        ///  [rest of string was truncated]&quot;;.
+        ///    // Gender difference tags (e.g. male and female Pikachu have different looking tails, but all Bulbasaur look the same).
+        ///    //      TODO: Might have to rework above to be form dependent. Mega Venasaur has gender differences
+        ///    //      but Mega Blaziken doesn&apos;t deaspite normal Blaziken having them...
+        ///    // Default form tags (e.g. Shaymin Land form is default, but Giratina&apos;s Origin form isn&apos;t)
+        ///    // Explicit on Import tags (e.g. want an Unown-A to be explictly liste [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string nationaldexData {
             get {
                 return ResourceManager.GetString("nationaldexData", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Hardy
-        ///Lonely
-        ///Brave
-        ///Adamant
-        ///Naughty
-        ///Bold
-        ///Docile
-        ///Relaxed
-        ///Impish
-        ///Lax
-        ///Timid
-        ///Hasty
-        ///Serious
-        ///Jolly
-        ///Naive
-        ///Modest
-        ///Mild
-        ///Quiet
-        ///Bashful
-        ///Rash
-        ///Calm
-        ///Gentle
-        ///Sassy
-        ///Careful
-        ///Quirky.
-        /// </summary>
-        internal static string Natures {
-            get {
-                return ResourceManager.GetString("Natures", resourceCulture);
             }
         }
         
@@ -417,50 +227,62 @@ namespace pkuManager.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Littleroot Town
-        ///Oldale Town
-        ///Dewford Town
-        ///Lavaridge Town
-        ///Fallarbor Town
-        ///Verdanturf Town
-        ///Pacifidlog Town
-        ///Petalburg City
-        ///Slateport City
-        ///Mauville City
-        ///Rustboro City
-        ///Fortree City
-        ///Lilycove City
-        ///Mossdeep City
-        ///Sootopolis City
-        ///Ever Grande City
-        ///Route 101
-        ///Route 102
-        ///Route 103
-        ///Route 104
-        ///Route 105
-        ///Route 106
-        ///Route 107
-        ///Route 108
-        ///Route 109
-        ///Route 110
-        ///Route 111
-        ///Route 112
-        ///Route 113
-        ///Route 114
-        ///Route 115
-        ///Route 116
-        ///Route 117
-        ///Route 118
-        ///Route 119
-        ///Route 120
-        ///Route 121
-        ///Route 122
-        ///Route 123
-        ///Route 12 [rest of string was truncated]&quot;;.
+        ///   Looks up a localized string similar to // Ability Data For Generation 3 GBA Games
+        ///// Pulled from Pokemon Emerald (ENG) ROM starting at Address 0x3203E8
+        ///// See: https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_species_data_structure_(Generation_III)
+        /////
+        ///// Format is as follows:
+        ///// &quot;National Dex #&quot;: {
+        /////    &quot;1&quot;: Slot 1 Ability ID
+        /////    &quot;2&quot;: Slot 2 Ability ID //Only if Slot 2 exists
+        ///// }
+        ///// For ability ID&apos;s, see: https://bulbapedia.bulbagarden.net/wiki/Ability#List_of_Abilities
+        ///{
+        ///    &quot;1&quot;: {
+        ///        &quot;1&quot;: 65
+        ///    },
+        ///    &quot;2&quot;: {
+        ///       [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string pk3Locations {
+        internal static string pk3Abilities {
             get {
-                return ResourceManager.GetString("pk3Locations", resourceCulture);
+                return ResourceManager.GetString("pk3Abilities", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {
+        ///    // See https://bulbapedia.bulbagarden.net/wiki/Character_encoding_(Generation_III) for more info.
+        ///    //
+        ///    // The phrase &quot;Unicode used in Gen 5&quot; means that the unicode character used is the same one used by the Gen 5 games.
+        ///    // We use these chars to represent equivalent chars in the gen 3/4 games to maintain consistency.
+        ///    &quot;International&quot;: {
+        ///        &quot;0&quot;: &quot; &quot;,
+        ///        &quot;1&quot;: &quot;À&quot;,
+        ///        &quot;2&quot;: &quot;Á&quot;,
+        ///        &quot;3&quot;: &quot;Â&quot;,
+        ///        &quot;4&quot;: &quot;Ç&quot;,
+        ///        &quot;5&quot;: &quot;È&quot;,
+        ///        &quot;6&quot;: &quot;É&quot;,
+        ///        &quot;7&quot;: &quot;Ê&quot; [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string pk3CharEncoding {
+            get {
+                return ResourceManager.GetString("pk3CharEncoding", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to //Can probably delete since forms are now defined in the natdex... wait but what gen the forms are in are not in nat dex...
+        ///{
+        ///    &quot;201&quot;: [ &quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;, &quot;E&quot;, &quot;F&quot;, &quot;G&quot;, &quot;H&quot;, &quot;I&quot;, &quot;J&quot;, &quot;K&quot;, &quot;L&quot;, &quot;M&quot;, &quot;N&quot;, &quot;O&quot;, &quot;P&quot;, &quot;Q&quot;, &quot;R&quot;, &quot;S&quot;, &quot;T&quot;, &quot;U&quot;, &quot;V&quot;, &quot;W&quot;, &quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;, &quot;!&quot;, &quot;?&quot; ],
+        ///    &quot;351&quot;: [ &quot;Normal&quot;, &quot;Sunny&quot;, &quot;Rainy&quot;, &quot;Snowy&quot;],
+        ///    &quot;386&quot;: [ &quot;Normal&quot;, &quot;Attack&quot;, &quot;Defense&quot;, &quot;Speed&quot;]
+        ///}.
+        /// </summary>
+        internal static string pk3Forms {
+            get {
+                return ResourceManager.GetString("pk3Forms", resourceCulture);
             }
         }
         
@@ -633,56 +455,6 @@ namespace pkuManager.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
-        /// </summary>
-        internal static System.Drawing.Icon pkulogo {
-            get {
-                object obj = ResourceManager.GetObject("pkulogo", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {
-        ///  &quot;001&quot;: {
-        ///    &quot;idx&quot;: &quot;001&quot;,
-        ///    &quot;name&quot;: {
-        ///      &quot;eng&quot;: &quot;Bulbasaur&quot;,
-        ///      &quot;chs&quot;: &quot;妙蛙种子&quot;,
-        ///      &quot;jpn&quot;: &quot;フシギダネ&quot;,
-        ///      &quot;jpn_ro&quot;: &quot;Fushigidane&quot;
-        ///    },
-        ///    &quot;slug&quot;: {
-        ///      &quot;eng&quot;: &quot;bulbasaur&quot;,
-        ///      &quot;jpn&quot;: &quot;fushigidane&quot;,
-        ///      &quot;jpn_ro&quot;: &quot;fushigidane&quot;
-        ///    },
-        ///    &quot;gen-7&quot;: {
-        ///      &quot;forms&quot;: {
-        ///        &quot;$&quot;: {
-        ///          &quot;has_female&quot;: false,
-        ///          &quot;has_right&quot;: false
-        ///        }
-        ///      }
-        ///    },
-        ///    &quot;gen-8&quot;: {
-        ///      &quot;forms&quot;: {
-        ///        &quot;$&quot;: {
-        ///          &quot;is_prev_gen_icon&quot;: true
-        ///        }
-        ///      }
-        ///    }
-        ///  },
-        ///  &quot;002&quot;: {
-        ///   [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string pokespriteData {
-            get {
-                return ResourceManager.GetString("pokespriteData", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to {
         ///    &quot;UFO&quot;: {
         ///        // Doesn&apos;t have dex number, don&apos;t include it
@@ -697,7 +469,7 @@ namespace pkuManager.Properties {
         ///            &quot;Prop 1&quot;: { //Prop U1
         ///                //don&apos;t include &quot;Default&quot;: false, less clutter
         ///                &quot;Gen 5 Index&quot;: 664,
-        ///                &quot;Not Grounded&quot;:  true, / [rest of string was truncated]&quot;;.
+        ///                &quot;Suspended&quot;:  true, //wh [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string pokestarData {
             get {
@@ -755,28 +527,50 @@ namespace pkuManager.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {
-        ///    // showdownItems.txt is as of 1/20/21
-        ///    // this is as of 1/20/21
-        ///
-        ///    // gen 5,6 everything but megas and regional
-        ///    // gen 7,8, need everything
-        ///
-        ///    // Gen 1
-        ///    &quot;Venusaur&quot;: {
-        ///        &quot;Forms&quot;: {
-        ///            &quot;Mega&quot;: {
-        ///                &quot;Showdown Species&quot;: &quot;Venusaur-Mega&quot;
-        ///            }
-        ///        }
-        ///    }, //3
-        ///    &quot;Charizard&quot;: {
-        ///        &quot;Forms&quot;: {
-        ///            &quot;Mega X&quot;: {
-        ///                &quot;Showdown Species&quot;: &quot;Charizard-Mega-X&quot;
-        ///            },
-        ///            &quot;Mega Y&quot;: {
-        ///                &quot;Sho [rest of string was truncated]&quot;;.
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap shadowbg {
+            get {
+                object obj = ResourceManager.GetObject("shadowbg", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap shadowbgx2 {
+            get {
+                object obj = ResourceManager.GetObject("shadowbgx2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to //Updated 6/21/21
+        ///{
+        ///    &quot;moves&quot;: [
+        ///        &quot;10,000,000 Volt Thunderbolt&quot;,
+        ///        &quot;Absorb&quot;,
+        ///        &quot;Accelerock&quot;,
+        ///        &quot;Acid&quot;,
+        ///        &quot;Acid Armor&quot;,
+        ///        &quot;Acid Downpour&quot;,
+        ///        &quot;Acid Spray&quot;,
+        ///        &quot;Acrobatics&quot;,
+        ///        &quot;Acupressure&quot;,
+        ///        &quot;Aerial Ace&quot;,
+        ///        &quot;Aeroblast&quot;,
+        ///        &quot;After You&quot;,
+        ///        &quot;Agility&quot;,
+        ///        &quot;Air Cutter&quot;,
+        ///        &quot;Air Slash&quot;,
+        ///        &quot;All-Out Pummeling&quot;,
+        ///        &quot;Ally Switch&quot;,
+        ///        &quot;Amnesia&quot;,
+        ///        &quot;Anchor Shot&quot;,
+        ///        &quot;Ancient Power&quot;,
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string showdownData {
             get {
@@ -785,81 +579,22 @@ namespace pkuManager.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Abomasite
-        ///Absolite
-        ///Absorb Bulb
-        ///Adamant Orb
-        ///Adrenaline Orb
-        ///Aerodactylite
-        ///Aggronite
-        ///Aguav Berry
-        ///Air Balloon
-        ///Alakazite
-        ///Aloraichium Z
-        ///Altarianite
-        ///Ampharosite
-        ///Apicot Berry
-        ///Armor Fossil
-        ///Aspear Berry
-        ///Assault Vest
-        ///Audinite
-        ///Babiri Berry
-        ///Banettite
-        ///Beast Ball
-        ///Beedrillite
-        ///Belue Berry
-        ///Berry Juice
-        ///Berry Sweet
-        ///Big Root
-        ///Binding Band
-        ///Black Belt
-        ///Black Sludge
-        ///Black Glasses
-        ///Blastoisinite
-        ///Blazikenite
-        ///Blue Orb
-        ///Bluk Berry
-        ///Blunder Policy
-        ///Bottle Cap
-        ///Bright Powder
-        ///Bug Gem
-        ///Bug Memory
-        ///Buginium Z        /// [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string showdownItems {
-            get {
-                return ResourceManager.GetString("showdownItems", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to {
-        ///    &quot;Pichu&quot;: {
-        ///        &quot;Forms&quot;: {
-        ///            &quot;Spiky-eared&quot;: {
-        ///                &quot;Bulbapedia Suffix&quot;: &quot;N&quot;
-        ///            }
-        ///        }
-        ///    },
-        ///    &quot;Unown&quot;: {
-        ///        &quot;Forms&quot;: {
-        ///            &quot;A&quot;: {
-        ///                &quot;Bulbapedia Suffix&quot;: &quot;&quot;
-        ///            },
-        ///            &quot;B&quot;: {
-        ///                &quot;Bulbapedia Suffix&quot;: &quot;-B&quot;
-        ///            },
-        ///            &quot;C&quot;: {
-        ///                &quot;Bulbapedia Suffix&quot;: &quot;-C&quot;
-        ///            },
-        ///            &quot;D&quot;: {
-        ///                &quot;Bulbapedia Suffix&quot;: &quot;-D&quot;
-        ///            },
-        ///            &quot;E&quot;:  [rest of string was truncated]&quot;;.
+        ///    // This json file is associates a species&apos; canonical PKU form name, with their Showdown form species name.
+        ///    // For example the Sinnoh Cap Pikachu form is denoted &quot;Sinnoh Cap&quot; by PKU, but in Showdown the species is: &quot;Pikachu-Sinnoh&quot;.
+        ///    // The corresponding json entry is given by:
+        ///    // ------------------------------------------
+        ///    // &quot;Pikachu&quot;: {
+        ///    //     &quot;Forms&quot;: {
+        ///    //      &quot;Sinnoh Cap&quot;: {
+        ///    //          &quot;Showdown-Species&quot;: &quot;Pikachu-Sinnoh&quot;
+        ///    //      },
+        ///    // }
+        ///    // ------ [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string spriteData {
+        internal static string showdownSpecies {
             get {
-                return ResourceManager.GetString("spriteData", resourceCulture);
+                return ResourceManager.GetString("showdownSpecies", resourceCulture);
             }
         }
         
@@ -876,9 +611,9 @@ namespace pkuManager.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap unknown2 {
+        internal static System.Drawing.Bitmap unknown_box {
             get {
-                object obj = ResourceManager.GetObject("unknown2", resourceCulture);
+                object obj = ResourceManager.GetObject("unknown_box", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

@@ -1,0 +1,2101 @@
+﻿{
+    // This json file is associates a species' canonical PKU form name, with their Showdown form species name.
+    // For example the Sinnoh Cap Pikachu form is denoted "Sinnoh Cap" by PKU, but in Showdown the species is: "Pikachu-Sinnoh".
+    // The corresponding json entry is given by:
+    // ------------------------------------------
+    // "Pikachu": {
+    //     "Forms": {
+    //      "Sinnoh Cap": {
+    //          "Showdown-Species": "Pikachu-Sinnoh"
+    //      },
+    // }
+    // ------------------------------------------
+    // This json file is updated as of 6/21/21. Check against https://github.com/smogon/pokemon-showdown/blob/master/data/pokedex.ts
+    // Note that this does not include GMax 'forms' as they are already accounted for by the Gigantamax tag in Showdown.
+
+    // Gen 1
+    "Venusaur": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Venusaur-Mega"
+            }
+        }
+    }, //3
+    "Charizard": {
+        "Forms": {
+            "Mega X": {
+                "Showdown Species": "Charizard-Mega-X"
+            },
+            "Mega Y": {
+                "Showdown Species": "Charizard-Mega-Y"
+            }
+        }
+    }, //6
+    "Blastoise": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Blastoise-Mega"
+            }
+        }
+    }, //9
+    "Beedrill": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Beedrill-Mega"
+            }
+        }
+    }, //15
+    "Pidgeot": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Pidgeot-Mega"
+            }
+        }
+    }, //18
+    "Rattata": {
+        "Forms": {
+            "Alolan": {
+                "Showdown Species": "Rattata-Alola"
+            }
+        }
+    }, //19
+    "Raticate": {
+        "Forms": {
+            "Alolan": {
+                "Showdown Species": "Raticate-Alola"
+            },
+            "Alolan Totem": {
+                "Showdown Species": "Raticate-Alola-Totem"
+            }
+        }
+    }, //20 - special case, double form Alolan-Totem
+    "Pikachu": {
+        "Forms": {
+            "Cosplay": {
+                "Showdown-Species": "Pikachu-Cosplay"
+            },
+            "Rock-Star": {
+                "Showdown-Species": "Pikachu-Rock-Star"
+            },
+            "Belle": {
+                "Showdown-Species": "Pikachu-Belle"
+            },
+            "Pop-Star": {
+                "Showdown-Species": "Pikachu-Pop-Star"
+            },
+            "PhD": {
+                "Showdown-Species": "Pikachu-PhD"
+            },
+            "Libre": {
+                "Showdown-Species": "Pikachu-Libre"
+            },
+            "Original Cap": {
+                "Showdown-Species": "Pikachu-Original"
+            },
+            "Hoenn Cap": {
+                "Showdown-Species": "Pikachu-Hoenn"
+            },
+            "Sinnoh Cap": {
+                "Showdown-Species": "Pikachu-Sinnoh"
+            },
+            "Unova Cap": {
+                "Showdown-Species": "Pikachu-Unova"
+            },
+            "Kalos Cap": {
+                "Showdown-Species": "Pikachu-Kalos"
+            },
+            "Alola Cap": {
+                "Showdown-Species": "Pikachu-Alola"
+            },
+            "Partner Cap": {
+                "Showdown-Species": "Pikachu-Partner"
+            },
+            "Partner": {
+                "Showdown-Species": "Pikachu-Starter"
+            },
+            "World Cap": {
+                "Showdown-Species": "Pikachu-World"
+            }
+        }
+    }, //25
+    "Raichu": {
+        "Forms": {
+            "Alolan": {
+                "Showdown Species": "Raichu-Alola"
+            }
+        }
+    }, //26
+    "Sandshrew": {
+        "Forms": {
+            "Alolan": {
+                "Showdown Species": "Sandshrew-Alola"
+            }
+        }
+    }, //27
+    "Sandslash": {
+        "Forms": {
+            "Alolan": {
+                "Showdown Species": "Sandslash-Alola"
+            }
+        }
+    }, //28
+    "Nidoran♀": {
+        "": {
+            "Showdown Species": "Nidoran-F"
+        }
+    }, //29
+    "Nidoran♂": {
+        "": {
+            "Showdown Species": "Nidoran-M"
+        }
+    }, //32
+    "Vulpix": {
+        "Forms": {
+            "Alolan": {
+                "Showdown Species": "Vulpix-Alola"
+            }
+        }
+    }, //37
+    "Ninetales": {
+        "Forms": {
+            "Alolan": {
+                "Showdown Species": "Ninetales-Alola"
+            }
+        }
+    }, //38
+    "Diglett": {
+        "Forms": {
+            "Alolan": {
+                "Showdown Species": "Diglett-Alola"
+            }
+        }
+    }, //50
+    "Dugtrio": {
+        "Forms": {
+            "Alolan": {
+                "Showdown Species": "Dugtrio-Alola"
+            }
+        }
+    }, //51
+    "Meowth": {
+        "Forms": {
+            "Alolan": {
+                "Showdown Species": "Meowth-Alola"
+            },
+            "Galarian": {
+                "Showdown Species": "Meowth-Glalar"
+            }
+        }
+    }, //52
+    "Persian": {
+        "Forms": {
+            "Alolan": {
+                "Showdown Species": "Persian-Alola"
+            }
+        }
+    }, //53
+    "Alakazam": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Alakazam-Mega"
+            }
+        }
+    }, //65
+    "Geodude": {
+        "Forms": {
+            "Alolan": {
+                "Showdown Species": "Geodude-Alola"
+            }
+        }
+    }, //74
+    "Graveler": {
+        "Forms": {
+            "Alolan": {
+                "Showdown Species": "Graveler-Alola"
+            }
+        }
+    }, //75
+    "Golem": {
+        "Forms": {
+            "Alolan": {
+                "Showdown Species": "Golem-Alola"
+            }
+        }
+    }, //76
+    "Ponyta": {
+        "Forms": {
+            "Galarian": {
+                "Showdown Species": "Ponyta-Galar"
+            }
+        }
+    }, //77
+    "Rapidash": {
+        "Forms": {
+            "Galarian": {
+                "Showdown Species": "Rapidash-Galar"
+            }
+        }
+    }, //78
+    "Slowpoke": {
+        "Forms": {
+            "Galarian": {
+                "Showdown Species": "Slowpoke-Galar"
+            }
+        }
+    }, //79
+    "Slowbro": {
+        "Forms": {
+            "Galarian": {
+                "Showdown Species": "Slowbro-Galar"
+            }
+        }
+    }, //80
+    "Farfetch’d": {
+        "Forms": {
+            "Galarian": {
+                "Showdown Species": "Farfetch’d-Galar"
+            }
+        }
+    }, //83 - note ' vs ’ in name (latter is correct)
+    "Grimer": {
+        "Forms": {
+            "Alolan": {
+                "Showdown Species": "Grimer-Alola"
+            }
+        }
+    }, //88
+    "Muk": {
+        "Forms": {
+            "Alolan": {
+                "Showdown Species": "Muk-Alola"
+            }
+        }
+    }, //89
+    "Gengar": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Gengar-Mega"
+            }
+        }
+    }, //94
+    "Exeggutor": {
+        "Forms": {
+            "Alolan": {
+                "Showdown Species": "Exeggutor-Alola"
+            }
+        }
+    }, //103
+    "Marowak": {
+        "Forms": {
+            "Alolan": {
+                "Showdown Species": "Marowak-Alola"
+            },
+            "Alolan Totem": {
+                "Showdown Species": "Marowak-Alola-Totem"
+            }
+        }
+    }, //105 - special case, double form Alolan-Totem
+    "Weezing": {
+        "Forms": {
+            "Galarian": {
+                "Showdown Species": "Weezing-Galar"
+            }
+        }
+    }, //110
+    "Kangaskhan": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Kangaskhan-Mega"
+            }
+        }
+    }, //115
+    "Mr. Mime": {
+        "Forms": {
+            "Galarian": {
+                "Showdown Species": "Mr. Mime-Galar"
+            }
+        }
+    }, //122
+    "Pinsir": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Pinsir-Mega"
+            }
+        }
+    }, //127
+    "Gyarados": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Gyarados-Mega"
+            }
+        }
+    }, //130
+    "Eevee": {
+        "Forms": {
+            "Partner": {
+                "Showdown Species": "Eevee-Starter"
+            }
+        }
+    },
+    "Aerodactyl": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Aerodactyl-Mega"
+            }
+        }
+    }, //142
+    "Articuno": {
+        "Forms": {
+            "Galarian": {
+                "Showdown Species": "Articuno-Galar"
+            }
+        }
+    }, //144
+    "Zapdos": {
+        "Forms": {
+            "Galarian": {
+                "Showdown Species": "Zapdos-Galar"
+            }
+        }
+    }, //145
+    "Moltres": {
+        "Forms": {
+            "Galarian": {
+                "Showdown Species": "Moltres-Galar"
+            }
+        }
+    }, //146
+    "Mewtwo": {
+        "Forms": {
+            "Mega X": {
+                "Showdown Species": "Mewtwo-Mega-X"
+            },
+            "Mega Y": {
+                "Showdown Species": "Mewtwo-Mega-Y"
+            }
+        }
+    }, //150
+
+    // Gen 2
+    "Pichu": {
+        "Forms": {
+            "Spiky-eared": {
+                "Showdown Species": "Pichu-Spiky-eared"
+            }
+        }
+    }, //172
+    "Ampharos": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Ampharos-Mega"
+            }
+        }
+    }, //181
+    "Slowking": { //199
+        "Forms": {
+            "Galarian": {
+                "Showdown Species": "Slowking-Galar"
+            }
+        }
+    }, //199
+    "Unown": {
+        "Forms": {
+            "A": {
+                "Showdown Species": "Unown"
+            },
+            "B": {
+                "Showdown Species": "Unown-B"
+            },
+            "C": {
+                "Showdown Species": "Unown-C"
+            },
+            "D": {
+                "Showdown Species": "Unown-D"
+            },
+            "E": {
+                "Showdown Species": "Unown-E"
+            },
+            "F": {
+                "Showdown Species": "Unown-F"
+            },
+            "G": {
+                "Showdown Species": "Unown-G"
+            },
+            "H": {
+                "Showdown Species": "Unown-H"
+            },
+            "I": {
+                "Showdown Species": "Unown-I"
+            },
+            "J": {
+                "Showdown Species": "Unown-J"
+            },
+            "K": {
+                "Showdown Species": "Unown-K"
+            },
+            "L": {
+                "Showdown Species": "Unown-L"
+            },
+            "M": {
+                "Showdown Species": "Unown-M"
+            },
+            "N": {
+                "Showdown Species": "Unown-N"
+            },
+            "O": {
+                "Showdown Species": "Unown-O"
+            },
+            "P": {
+                "Showdown Species": "Unown-P"
+            },
+            "Q": {
+                "Showdown Species": "Unown-Q"
+            },
+            "R": {
+                "Showdown Species": "Unown-R"
+            },
+            "S": {
+                "Showdown Species": "Unown-S"
+            },
+            "T": {
+                "Showdown Species": "Unown-T"
+            },
+            "U": {
+                "Showdown Species": "Unown-U"
+            },
+            "V": {
+                "Showdown Species": "Unown-V"
+            },
+            "W": {
+                "Showdown Species": "Unown-W"
+            },
+            "X": {
+                "Showdown Species": "Unown-X"
+            },
+            "Y": {
+                "Showdown Species": "Unown-Y"
+            },
+            "Z": {
+                "Showdown Species": "Unown-Z"
+            },
+            "!": {
+                "Showdown Species": "Unown-Exclamation"
+            },
+            "?": {
+                "Showdown Species": "Unown-Question"
+            }
+        }
+    }, //201
+    "Steelix": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Steelix-Mega"
+            }
+        }
+    }, //208
+    "Scizor": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Scizor-Mega"
+            }
+        }
+    }, //212
+    "Heracross": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Heracross-Mega"
+            }
+        }
+    }, //214
+    "Corsola": {
+        "Forms": {
+            "Galarian": {
+                "Showdown Species": "Corsola-Galar"
+            }
+        }
+    }, //222
+    "Houndoom": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Houndoom-Mega"
+            }
+        }
+    }, //229
+    "Tyranitar": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Tyranitar-Mega"
+            }
+        }
+    }, //248
+
+    // Gen 3
+    "Sceptile": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Sceptile-Mega"
+            }
+        }
+    }, //254
+    "Blaziken": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Blaziken-Mega"
+            }
+        }
+    }, //257
+    "Swampert": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Swampert-Mega"
+            }
+        }
+    }, //260
+    "Zigzagoon": {
+        "Forms": {
+            "Galarian": {
+                "Showdown Species": "Zigzagoon-Galar"
+            }
+        }
+    }, //263
+    "Linoone": {
+        "Forms": {
+            "Galarian": {
+                "Showdown Species": "Linoone-Galar"
+            }
+        }
+    }, //264
+    "Gardevoir": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Gardevoir-Mega"
+            }
+        }
+    }, //282
+    "Sableye": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Sableye-Mega"
+            }
+        }
+    }, //302
+    "Mawile": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Mawile-Mega"
+            }
+        }
+    }, //303
+    "Aggron": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Aggron-Mega"
+            }
+        }
+    }, //306
+    "Medicham": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Medicham-Mega"
+            }
+        }
+    }, // 308
+    "Manectric": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Manectric-Mega"
+            }
+        }
+    }, //310
+    "Sharpedo": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Sharpedo-Mega"
+            }
+        }
+    }, //319
+    "Camerupt": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Camerupt-Mega"
+            }
+        }
+    }, //323
+    "Altaria": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Altaria-Mega"
+            }
+        }
+    }, //334
+    "Banette": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Banette-Mega"
+            }
+        }
+    }, //354
+    "Castform": {
+        "Forms": {
+            "Normal": {
+                "Showdown Species": "Castform"
+            },
+            "Sunny": {
+                "Showdown Species": "Castform-Sunny"
+            },
+            "Rainy": {
+                "Showdown Species": "Castform-Rainy"
+            },
+            "Snowy": {
+                "Showdown Species": "Castform-Snowy"
+            }
+        }
+    }, //351
+    "Absol": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Absol-Mega"
+            }
+        }
+    }, //359
+    "Glalie": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Glalie-Mega"
+            }
+        }
+    }, //362
+    "Salamence": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Salamence-Mega"
+            }
+        }
+    }, //373
+    "Metagross": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Metagross-Mega"
+            }
+        }
+    }, //376
+    "Latias": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Latias-Mega"
+            }
+        }
+    }, //380
+    "Latios": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Latios-Mega"
+            }
+        }
+    }, //381
+    "Kyogre": {
+        "Forms": {
+            "Primal": {
+                "Showdown Species": "Kyogre-Primal"
+            }
+        }
+    }, //382
+    "Groudon": {
+        "Forms": {
+            "Primal": {
+                "Showdown Species": "Groudon-Primal"
+            }
+        }
+    }, //383
+    "Rayquaza": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Rayquaza-Mega"
+            }
+        }
+    }, //384
+    "Deoxys": {
+        "Forms": {
+            "Normal": {
+                "Showdown Species": "Deoxys"
+            },
+            "Attack": {
+                "Showdown Species": "Deoxys-Attack"
+            },
+            "Defense": {
+                "Showdown Species": "Deoxys-Defense"
+            },
+            "Speed": {
+                "Showdown Species": "Deoxys-Speed"
+            }
+        }
+    }, //386
+
+    // Gen 4
+    "Burmy": {
+        "Forms": {
+            "Plant Cloak": {
+                "Showdown Species": "Burmy"
+            },
+            "Sandy Cloak": {
+                "Showdown Species": "Burmy-Sandy"
+            },
+            "Trash Cloak": {
+                "Showdown Species": "Burmy-Trash"
+            }
+        }
+    }, //412
+    "Wormadam": {
+        "Forms": {
+            "Plant Cloak": {
+                "Showdown Species": "Wormadam"
+            },
+            "Sandy Cloak": {
+                "Showdown Species": "Wormadam-Sandy"
+            },
+            "Trash Cloak": {
+                "Showdown Species": "Wormadam-Trash"
+            }
+        }
+    }, //413
+    "Cherrim": {
+        "Forms": {
+            "Overcast": {
+                "Showdown Species": "Cherrim"
+            },
+            "Sunny": {
+                "Showdown Species": "Cherrim-Sunshine"
+            } //in-battle only
+        }
+    }, //421
+    "Lopunny": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Lopunny-Mega"
+            }
+        }
+    }, //428
+    "Shellos": {
+        "Forms": {
+            "West Sea": {
+                "Showdown Species": "Shellos"
+            },
+            "East Sea": {
+                "Showdown Species": "Shellos-East"
+            }
+        }
+    }, //442
+    "Gastrodon": {
+        "Forms": {
+            "West Sea": {
+                "Showdown Species": "Gastrodon"
+            },
+            "East Sea": {
+                "Showdown Species": "Gastrodon-East"
+            }
+        }
+    }, //423
+    "Garchomp": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Garchomp-Mega"
+            }
+        }
+    }, //445
+    "Lucario": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Lucario-Mega"
+            }
+        }
+    }, //448
+    "Abomasnow": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Abomasnow-Mega"
+            }
+        }
+    }, //460
+    "Gallade": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Gallade-Mega"
+            }
+        }
+    }, //475
+    "Rotom": {
+        "Forms": {
+            "Heat": {
+                "Showdown Species": "Rotom-Heat"
+            },
+            "Wash": {
+                "Showdown Species": "Rotom-Wash"
+            },
+            "Frost": {
+                "Showdown Species": "Rotom-Frost"
+            },
+            "Fan": {
+                "Showdown Species": "Rotom-Fan"
+            },
+            "Mow": {
+                "Showdown Species": "Rotom-Mow"
+            }
+        }
+    }, //479
+    "Giratina": {
+        "Forms": {
+            "Altered": {
+                "Showdown Species": "Giratina"
+            },
+            "Origin": {
+                "Showdown Species": "Giratina-Origin"
+            }
+        }
+    }, //487
+    "Shaymin": {
+        "Forms": {
+            "Land": {
+                "Showdown Species": "Shaymin"
+            },
+            "Sky": {
+                "Showdown Species": "Shaymin-Sky"
+            }
+        }
+    }, //492
+    "Arceus": {
+        "Forms": {
+            "Normal": {
+                "Showdown Species": "Arceus"
+            },
+            "Fire": {
+                "Showdown Species": "Arceus-Fire"
+            },
+            "Water": {
+                "Showdown Species": "Arceus-Water"
+            },
+            "Electric": {
+                "Showdown Species": "Arceus-Electric"
+            },
+            "Grass": {
+                "Showdown Species": "Arceus-Grass"
+            },
+            "Ice": {
+                "Showdown Species": "Arceus-Ice"
+            },
+            "Fighting": {
+                "Showdown Species": "Arceus-Fighting"
+            },
+            "Poison": {
+                "Showdown Species": "Arceus-Poison"
+            },
+            "Ground": {
+                "Showdown Species": "Arceus-Ground"
+            },
+            "Flying": {
+                "Showdown Species": "Arceus-Flying"
+            },
+            "Psychic": {
+                "Showdown Species": "Arceus-Psychic"
+            },
+            "Bug": {
+                "Showdown Species": "Arceus-Bug"
+            },
+            "Rock": {
+                "Showdown Species": "Arceus-Rock"
+            },
+            "Ghost": {
+                "Showdown Species": "Arceus-Ghost"
+            },
+            "Dragon": {
+                "Showdown Species": "Arceus-Dragon"
+            },
+            "Dark": {
+                "Showdown Species": "Arceus-Dark"
+            },
+            "Steel": {
+                "Showdown Species": "Arceus-Steel"
+            },
+            "Fairy": {
+                "Showdown Species": "Arceus-Fairy"
+            }
+        }
+    }, //493
+
+    // Gen 5
+    "Audino": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Audino-Mega"
+            }
+        }
+    }, //531
+    "Basculin": {
+        "Forms": {
+            "Red-Striped": {
+                "Showdown Species": "Basculin"
+            },
+            "Blue-Striped": {
+                "Showdown Species": "Basculin-Blue-Striped"
+            }
+        }
+    }, //550
+    "Darumaka": {
+        "Forms": {
+            "Galarian": {
+                "Showdown Species": "Darumaka-Galar"
+            }
+        }
+    }, //554
+    "Darmanitan": {
+        "Forms": {
+            "Standard Mode": {
+                "Showdown Species": "Darmanitan-Zen"
+            }, //in-battle only
+            "Zen Mode": {
+                "Showdown Species": "Darmanitan-Zen"
+            }, //in-battle only
+            "Galarian Standard Mode": {
+                "Showdown Species": "Darmanitan-Galar"
+            },
+            "Galarian Zen Mode": {
+                "Showdown Species": "Darmanitan-Galar-Zen"
+            } //in-battle only
+        }
+    }, //555 - special case, double form Galarian Zen
+    "Yamask": {
+        "Forms": {
+            "Galarian": {
+                "Showdown Species": "Yamask-Galar"
+            }
+        }
+    }, //562
+    "Deerling": {
+        "Forms": {
+            "Spring": {
+                "Showdown Species": "Deerling"
+            },
+            "Summer": {
+                "Showdown Species": "Deerling-Summer"
+            },
+            "Autumn": {
+                "Showdown Species": "Deerling-Autumn"
+            },
+            "Winter": {
+                "Showdown Species": "Deerling-Winter"
+            }
+        }
+    }, //585
+    "Sawsbuck": {
+        "Forms": {
+            "Spring": {
+                "Showdown Species": "Sawsbuck"
+            },
+            "Summer": {
+                "Showdown Species": "Sawsbuck-Summer"
+            },
+            "Autumn": {
+                "Showdown Species": "Sawsbuck-Autumn"
+            },
+            "Winter": {
+                "Showdown Species": "Sawsbuck-Winter"
+            }
+        }
+    }, //586
+    "Stunfisk": {
+        "Forms": {
+            "Galarian": {
+                "Showdown Species": "Stunfisk-Galar"
+            }
+        }
+    }, //618
+    "Tornadus": {
+        "Forms": {
+            "Incarnate": {
+                "Showdown Species": "Tornadus"
+            },
+            "Therian": {
+                "Showdown Species": "Tornadus-Therian"
+            }
+        }
+    }, //641
+    "Thundurus": {
+        "Forms": {
+            "Incarnate": {
+                "Showdown Species": "Thundurus"
+            },
+            "Therian": {
+                "Showdown Species": "Thundurus-Therian"
+            }
+        }
+    }, //642
+    "Landorus": {
+        "Forms": {
+            "Incarnate": {
+                "Showdown Species": "Landorus"
+            },
+            "Therian": {
+                "Showdown Species": "Landorus-Therian"
+            }
+        }
+    }, //645
+    "Kyurem": {
+        "Forms": {
+            "Black": {
+                "Showdown Species": "Kyurem-Black"
+            },
+            "White": {
+                "Showdown Species": "Kyurem-White"
+            }
+        }
+    }, //646
+    "Keldeo": {
+        "Forms": {
+            "Ordinary": {
+                "Showdown Species": "Keldeo"
+            },
+            "Resolute": {
+                "Showdown Species": "Keldeo-Resolute"
+            }
+        }
+    }, //647
+    "Meloetta": {
+        "Forms": {
+            "Aria": {
+                "Showdown Species": "Meloetta"
+            },
+            "Pirouette": {
+                "Showdown Species": "Meloetta-Pirouette"
+            } //in-battle only
+        }
+    }, //648
+    "Genesect": {
+        "Forms": {
+            "Douse Drive": {
+                "Showdown Species": "Genesect-Douse"
+            },
+            "Shock Drive": {
+                "Showdown Species": "Genesect-Shock"
+            },
+            "Burn Drive": {
+                "Showdown Species": "Genesect-Burn"
+            },
+            "Chill Drive": {
+                "Showdown Species": "Genesect-Chill"
+            }
+        }
+    }, //649
+
+    // Gen 6
+    "Greninja": {
+        "Forms": {
+            //A seperate Greninja form that demands Battle Bond for legality
+            //and, in hack formats, allows Greninja-Ash to be active before battle.
+            "Ash": {
+                "Showdown Species": "Greninja-Ash"
+            } //in-battle only
+        }
+    }, //658
+    "Vivillion": {
+        "Forms": {
+            "Meadow": {
+                "Showdown Species": "Vivillon"
+            },
+            "Archipelago": {
+                "Showdown Species": "Vivillon-Archipelago"
+            },
+            "Continental": {
+                "Showdown Species": "Vivillon-Continental"
+            },
+            "Elegant": {
+                "Showdown Species": "Vivillon-Elegant"
+            },
+            "Garden": {
+                "Showdown Species": "Vivillon-Garden"
+            },
+            "High Plains": {
+                "Showdown Species": "Vivillon-High Plains"
+            },
+            "Icy Snow": {
+                "Showdown Species": "Vivillon-Icy Snow"
+            },
+            "Jungle": {
+                "Showdown Species": "Vivillon-Jungle"
+            },
+            "Marine": {
+                "Showdown Species": "Vivillon-Marine"
+            },
+            "Modern": {
+                "Showdown Species": "Vivillon-Modern"
+            },
+            "Monsoon": {
+                "Showdown Species": "Vivillon-Monsoon"
+            },
+            "Ocean": {
+                "Showdown Species": "Vivillon-Ocean"
+            },
+            "Polar": {
+                "Showdown Species": "Vivillon-Polar"
+            },
+            "River": {
+                "Showdown Species": "Vivillon-River"
+            },
+            "Sandstorm": {
+                "Showdown Species": "Vivillon-Sandstorm"
+            },
+            "Savanna": {
+                "Showdown Species": "Vivillon-Savanna"
+            },
+            "Sun": {
+                "Showdown Species": "Vivillon-Sun"
+            },
+            "Tundra": {
+                "Showdown Species": "Vivillon-Tundra"
+            },
+            "Fancy": {
+                "Showdown Species": "Vivillon-Fancy"
+            },
+            "Poké Ball": {
+                "Showdown Species": "Vivillon-Pokeball"
+            }
+        }
+    }, //666
+    "Flabébé": {
+        "Forms": {
+            "Red Flower": {
+                "Showdown Species": "Flabébé"
+            },
+            "Blue Flower": {
+                "Showdown Species": "Flabébé-Blue"
+            },
+            "Orange Flower": {
+                "Showdown Species": "Flabébé-Orange"
+            },
+            "White Flower": {
+                "Showdown Species": "Flabébé-White"
+            },
+            "Yellow Flower": {
+                "Showdown Species": "Flabébé-Yellow"
+            }
+        }
+    }, //669
+    "Floette": {
+        "Forms": {
+            "Red Flower": {
+                "Showdown Species": "Floette"
+            },
+            "Blue Flower": {
+                "Showdown Species": "Floette-Blue"
+            },
+            "Orange Flower": {
+                "Showdown Species": "Floette-Orange"
+            },
+            "White Flower": {
+                "Showdown Species": "Floette-White"
+            },
+            "Yellow Flower": {
+                "Showdown Species": "Floette-Yellow"
+            },
+            "Eternal Flower": {
+                "Showdown Species": "Floette-Eternal"
+            }
+        }
+    }, //670
+    "Florges": {
+        "Forms": {
+            "Red Flower": {
+                "Showdown Species": "Florges"
+            },
+            "Blue Flower": {
+                "Showdown Species": "Florges-Blue"
+            },
+            "Orange Flower": {
+                "Showdown Species": "Florges-Orange"
+            },
+            "White Flower": {
+                "Showdown Species": "Florges-White"
+            },
+            "Yellow Flower": {
+                "Showdown Species": "Florges-Yellow"
+            }
+        }
+    }, //671
+    "Furfrou": {
+        "Forms": {
+            "Natural": {
+                "Showdown Species": "Furfrou"
+            },
+            "Dandy": {
+                "Showdown Species": "Furfrou-Dandy"
+            },
+            "Debutante": {
+                "Showdown Species": "Furfrou-Debutante"
+            },
+            "Diamond": {
+                "Showdown Species": "Furfrou-Diamond"
+            },
+            "Heart": {
+                "Showdown Species": "Furfrou-Heart"
+            },
+            "Kabuki": {
+                "Showdown Species": "Furfrou-Kabuki"
+            },
+            "La Reine": {
+                "Showdown Species": "Furfrou-La Reine"
+            },
+            "Matron": {
+                "Showdown Species": "Furfrou-Matron"
+            },
+            "Pharaoh": {
+                "Showdown Species": "Furfrou-Pharaoh"
+            },
+            "Star": {
+                "Showdown Species": "Furfrou-Star"
+            }
+        }
+    }, //676
+    "Meowstic": {
+        "Forms": {
+            "": {
+                "Showdown Gender Split": true,
+                "Showdown Species Male": "Meowstic",
+                "Showdown Species Female": "Meowstic-F"
+            }
+        }
+    }, //678 - special case for Showdown species with gender split
+    "Aegislash": {
+        "Forms": {
+            "Shield": {
+                "Showdown Species": "Aegislash"
+            },
+            "Blade": {
+                "Showdown Species": "Aegislash-Blade"
+            } //in-battle only
+        }
+    }, //681
+    "Pumpkaboo": {
+        "Forms": {
+            "Small Size": {
+                "Showdown Species": "Pumpkaboo-Small"
+            },
+            "Average Size": {
+                "Showdown Species": "Pumpkaboo"
+            },
+            "Large Size": {
+                "Showdown Species": "Pumpkaboo-Large"
+            },
+            "Super Size": {
+                "Showdown Species": "Pumpkaboo-Super"
+            }
+        }
+    }, //710
+    "Gourgeist": {
+        "Forms": {
+            "Small": {
+                "Showdown Species": "Gourgeist-Small"
+            },
+            "Average": {
+                "Showdown Species": "Gourgeist"
+            },
+            "Large": {
+                "Showdown Species": "Gourgeist-Large"
+            },
+            "Super": {
+                "Showdown Species": "Gourgeist-Super"
+            }
+        }
+    }, //711
+    //Xerneas - Has different forms in-game (just cosmetic, bad implementation), and in showdown (idk why)
+    "Zygarde": {
+        "Forms": {
+            "10%": {
+                "Showdown Species": "Zygarde-10%"
+            },
+            "50%": {
+                "Showdown Species": "Zygarde"
+            },
+            "Complete": {
+                "Showdown Species": "Zygarde-Complete"
+            }
+        }
+    }, //718
+    "Diancie": {
+        "Forms": {
+            "Mega": {
+                "Showdown Species": "Diancie-Mega"
+            }
+        }
+    }, //719
+    "Hoopa": {
+        "Forms": {
+            "Confined": {
+                "Showdown Species": "Hoopa"
+            },
+            "Unbound": {
+                "Showdown Species": "Hoopa-Unbound"
+            }
+        }
+    }, //720
+
+    // Gen 7
+    "Gumshoos": {
+        "Forms": {
+            "Totem": {
+                "Showdown Species": "Gumshoos-Totem"
+            }
+        }
+    }, //735
+    "Vikavolt": {
+        "Forms": {
+            "Totem": {
+                "Showdown Species": "Vikavolt-Totem"
+            }
+        }
+    }, //738
+    "Oricorio": {
+        "Forms": {
+            "Baile Style": {
+                "Showdown Species": "Oricorio"
+            },
+            "Pom-Pom Style": {
+                "Showdown Species": "Oricorio-Pom-Pom"
+            },
+            "Pa'u Style Style": {
+                "Showdown Species": "Oricorio-Pa'u"
+            }, //TODO is that apostrophe right? Looked at a text dump and I don't think so...?
+            "Sensu Style": {
+                "Showdown Species": "Oricorio-Sensu"
+            }
+        }
+    }, //741
+    "Ribombee": {
+        "Forms": {
+            "Totem": {
+                "Showdown Species": "Ribombee-Totem"
+            }
+        }
+    }, //743
+    "Lycanroc": {
+        "Forms": {
+            "Midday": {
+                "Showdown Species": "Lycanroc"
+            },
+            "Midnight": {
+                "Showdown Species": "Lycanroc-Midnight"
+            },
+            "Dusk": {
+                "Showdown Species": "Lycanroc-Dusk"
+            }
+        }
+    }, //745
+    "Wishiwashi": {
+        "Forms": {
+            "Solo": {
+                "Showdown Species": "Wishiwashi"
+            },
+            "School": {
+                "Showdown Species": "Wishiwashi-School"
+            }
+        }
+    }, //746
+    "Araquanid": {
+        "Forms": {
+            "Totem": {
+                "Showdown Species": "Araquanid-Totem"
+            }
+        }
+    }, //752
+    "Lurantis": {
+        "Forms": {
+            "Totem": {
+                "Showdown Species": "Lurantis-Totem"
+            }
+        }
+    }, //754
+    "Salazzle": {
+        "Forms": {
+            "Totem": {
+                "Showdown Species": "Salazzle-Totem"
+            }
+        }
+    }, //758
+    "Silvally": {
+        "Forms": {
+            "Normal": {
+                "Showdown Species": "Silvally"
+            },
+            "Fire": {
+                "Showdown Species": "Silvally-Fire"
+            },
+            "Water": {
+                "Showdown Species": "Silvally-Water"
+            },
+            "Electric": {
+                "Showdown Species": "Silvally-Electric"
+            },
+            "Grass": {
+                "Showdown Species": "Silvally-Grass"
+            },
+            "Ice": {
+                "Showdown Species": "Silvally-Ice"
+            },
+            "Fighting": {
+                "Showdown Species": "Silvally-Fighting"
+            },
+            "Poison": {
+                "Showdown Species": "Silvally-Poison"
+            },
+            "Ground": {
+                "Showdown Species": "Silvally-Ground"
+            },
+            "Flying": {
+                "Showdown Species": "Silvally-Flying"
+            },
+            "Psychic": {
+                "Showdown Species": "Silvally-Psychic"
+            },
+            "Bug": {
+                "Showdown Species": "Silvally-Bug"
+            },
+            "Rock": {
+                "Showdown Species": "Silvally-Rock"
+            },
+            "Ghost": {
+                "Showdown Species": "Silvally-Ghost"
+            },
+            "Dragon": {
+                "Showdown Species": "Silvally-Dragon"
+            },
+            "Dark": {
+                "Showdown Species": "Silvally-Dark"
+            },
+            "Steel": {
+                "Showdown Species": "Silvally-Steel"
+            },
+            "Fairy": {
+                "Showdown Species": "Silvally-Fairy"
+            }
+        }
+    }, //773
+    "Minior": {
+        "Forms": {
+            "Red": {
+                "Showdown Species": "Minior-Red"
+            },
+            "Orange": {
+                "Showdown Species": "Minior-Orange"
+            },
+            "Yellow": {
+                "Showdown Species": "Minior-Yellow"
+            },
+            "Green": {
+                "Showdown Species": "Minior-Green"
+            },
+            "Blue": {
+                "Showdown Species": "Minior-Blue"
+            },
+            "Indigo": {
+                "Showdown Species": "Minior-Indigo"
+            },
+            "Violet": {
+                "Showdown Species": "Minior-Violet"
+            },
+            "Red-Meteor": {
+                "Showdown Species": "Minior-Meteor"
+            },
+            "Orange-Meteor": {
+                "Showdown Species": "Minior-Meteor"
+            },
+            "Yellow-Meteor": {
+                "Showdown Species": "Minior-Meteor"
+            },
+            "Green-Meteor": {
+                "Showdown Species": "Minior-Meteor"
+            },
+            "Blue-Meteor": {
+                "Showdown Species": "Minior-Meteor"
+            },
+            "Indigo-Meteor": {
+                "Showdown Species": "Minior-Meteor"
+            },
+            "Violet-Meteor": {
+                "Showdown Species": "Minior-Meteor"
+            }
+        }
+    }, //774 - note that non-Red-Meteor forms won't return an invalid form error.
+    "Togedemaru": {
+        "Forms": {
+            "Totem": {
+                "Showdown Species": "Togedemaru-Totem"
+            }
+        }
+    }, //777
+    "Mimikyu": {
+        "Forms": {
+            "Disguised": {
+                "Showdown Species": "Mimikyu"
+            },
+            "Busted": {
+                "Showdown Species": "Mimikyu-Busted"
+            }, //in-battle only
+            "Totem": {
+                "Showdown Species": "Mimikyu-Totem"
+            },
+            "Totem-Busted": {
+                "Showdown Species": "Mimikyu-Busted-Totem"
+            } //in-battle only
+        }
+    }, //778
+    "Kommo-o": {
+        "Forms": {
+            "Totem": {
+                "Showdown Species": "Kommo-o-Totem"
+            }
+        }
+    }, //784
+    "Necrozma": {
+        "Forms": {
+            "Dusk Mane": {
+                "Showdown Species": "Necrozma-Dusk-Mane"
+            },
+            "Dawn Wings": {
+                "Showdown Species": "Necrozma-Dawn-Wings"
+            },
+            "Ultra": {
+                "Showdown Species": "Necrozma-Ultra"
+            } //in-battle only
+        }
+    }, //800
+    "Magearna": {
+        "Forms": {
+            "Original Color": {
+                "Showdown Species": "Magearna-Original"
+            }
+        }
+    }, //801
+
+    // Gen 8
+    "Cramorant": {
+        "Forms": {
+            "Gulping": {
+                "Showdown Species": "Cramorant-Gulping"
+
+            },
+            "Gorging": {
+                "Showdown Species": "Cramorant-Gorging"
+            }
+        }
+    }, //845
+    "Toxtricity": {
+        "Forms": {
+            "Amped": {
+                "Showdown Species": "Toxtricity"
+
+            },
+            "Low Key": {
+                "Showdown Species": "Toxtricity-Low-Key"
+            }
+        }
+    }, //849
+    "Sinistea": {
+        "Forms": {
+            "Phony": {
+                "Showdown Species": "Sinistea"
+            },
+            "Antique": {
+                "Showdown Species": "Sinistea-Antique"
+            }
+        }
+    }, //854
+    "Polteageist": {
+        "Forms": {
+            "Phony": {
+                "Showdown Species": "Polteageist"
+            },
+            "Antique": {
+                "Showdown Species": "Polteageist-Antique"
+            }
+        }
+    }, //855
+    "Alcremie": {
+        "Forms": {
+            "Vanilla Cream-Strawberry": {
+                "Showdown Species": "Alcremie"
+            },
+            "Vanilla Cream-Berry": {
+                "Showdown Species": "Alcremie"
+            },
+            "Vanilla Cream-Love": {
+                "Showdown Species": "Alcremie"
+            },
+            "Vanilla Cream-Star": {
+                "Showdown Species": "Alcremie"
+            },
+            "Vanilla Cream-Clover": {
+                "Showdown Species": "Alcremie"
+            },
+            "Vanilla Cream-Flower": {
+                "Showdown Species": "Alcremie"
+            },
+            "Vanilla Cream-Ribbon": {
+                "Showdown Species": "Alcremie"
+            },
+            "Ruby Cream-Strawberry": {
+                "Showdown Species": "Alcremie-Ruby-Cream"
+            },
+            "Ruby Cream-Berry": {
+                "Showdown Species": "Alcremie-Ruby-Cream"
+            },
+            "Ruby Cream-Love": {
+                "Showdown Species": "Alcremie-Ruby-Cream"
+            },
+            "Ruby Cream-Star": {
+                "Showdown Species": "Alcremie-Ruby-Cream"
+            },
+            "Ruby Cream-Clover": {
+                "Showdown Species": "Alcremie-Ruby-Cream"
+            },
+            "Ruby Cream-Flower": {
+                "Showdown Species": "Alcremie-Ruby-Cream"
+            },
+            "Ruby Cream-Ribbon": {
+                "Showdown Species": "Alcremie-Ruby-Cream"
+            },
+            "Matcha Cream-Strawberry": {
+                "Showdown Species": "Alcremie-Matcha-Cream"
+            },
+            "Matcha Cream-Berry": {
+                "Showdown Species": "Alcremie-Matcha-Cream"
+            },
+            "Matcha Cream-Love": {
+                "Showdown Species": "Alcremie-Matcha-Cream"
+            },
+            "Matcha Cream-Star": {
+                "Showdown Species": "Alcremie-Matcha-Cream"
+            },
+            "Matcha Cream-Clover": {
+                "Showdown Species": "Alcremie-Matcha-Cream"
+            },
+            "Matcha Cream-Flower": {
+                "Showdown Species": "Alcremie-Matcha-Cream"
+            },
+            "Matcha Cream-Ribbon": {
+                "Showdown Species": "Alcremie-Matcha-Cream"
+            },
+            "Mint Cream-Strawberry": {
+                "Showdown Species": "Alcremie-Mint-Cream"
+            },
+            "Mint Cream-Berry": {
+                "Showdown Species": "Alcremie-Mint-Cream"
+            },
+            "Mint Cream-Love": {
+                "Showdown Species": "Alcremie-Mint-Cream"
+            },
+            "Mint Cream-Star": {
+                "Showdown Species": "Alcremie-Mint-Cream"
+            },
+            "Mint Cream-Clover": {
+                "Showdown Species": "Alcremie-Mint-Cream"
+            },
+            "Mint Cream-Flower": {
+                "Showdown Species": "Alcremie-Mint-Cream"
+            },
+            "Mint Cream-Ribbon": {
+                "Showdown Species": "Alcremie-Mint-Cream"
+            },
+            "Lemon Cream-Strawberry": {
+                "Showdown Species": "Alcremie-Lemon-Cream"
+            },
+            "Lemon Cream-Berry": {
+                "Showdown Species": "Alcremie-Lemon-Cream"
+            },
+            "Lemon Cream-Love": {
+                "Showdown Species": "Alcremie-Lemon-Cream"
+            },
+            "Lemon Cream-Star": {
+                "Showdown Species": "Alcremie-Lemon-Cream"
+            },
+            "Lemon Cream-Clover": {
+                "Showdown Species": "Alcremie-Lemon-Cream"
+            },
+            "Lemon Cream-Flower": {
+                "Showdown Species": "Alcremie-Lemon-Cream"
+            },
+            "Lemon Cream-Ribbon": {
+                "Showdown Species": "Alcremie-Lemon-Cream"
+            },
+            "Salted Cream-Strawberry": {
+                "Showdown Species": "Alcremie-Salted-Cream"
+            },
+            "Salted Cream-Berry": {
+                "Showdown Species": "Alcremie-Salted-Cream"
+            },
+            "Salted Cream-Love": {
+                "Showdown Species": "Alcremie-Salted-Cream"
+            },
+            "Salted Cream-Star": {
+                "Showdown Species": "Alcremie-Salted-Cream"
+            },
+            "Salted Cream-Clover": {
+                "Showdown Species": "Alcremie-Salted-Cream"
+            },
+            "Salted Cream-Flower": {
+                "Showdown Species": "Alcremie-Salted-Cream"
+            },
+            "Salted Cream-Ribbon": {
+                "Showdown Species": "Alcremie-Salted-Cream"
+            },
+            "Ruby Swirl-Strawberry": {
+                "Showdown Species": "Alcremie-Ruby-Swirl"
+            },
+            "Ruby Swirl-Berry": {
+                "Showdown Species": "Alcremie-Ruby-Swirl"
+            },
+            "Ruby Swirl-Love": {
+                "Showdown Species": "Alcremie-Ruby-Swirl"
+            },
+            "Ruby Swirl-Star": {
+                "Showdown Species": "Alcremie-Ruby-Swirl"
+            },
+            "Ruby Swirl-Clover": {
+                "Showdown Species": "Alcremie-Ruby-Swirl"
+            },
+            "Ruby Swirl-Flower": {
+                "Showdown Species": "Alcremie-Ruby-Swirl"
+            },
+            "Ruby Swirl-Ribbon": {
+                "Showdown Species": "Alcremie-Ruby-Swirl"
+            },
+            "Caramel Swirl-Strawberry": {
+                "Showdown Species": "Alcremie-Caramel-Swirl"
+            },
+            "Caramel Swirl-Berry": {
+                "Showdown Species": "Alcremie-Caramel-Swirl"
+            },
+            "Caramel Swirl-Love": {
+                "Showdown Species": "Alcremie-Caramel-Swirl"
+            },
+            "Caramel Swirl-Star": {
+                "Showdown Species": "Alcremie-Caramel-Swirl"
+            },
+            "Caramel Swirl-Clover": {
+                "Showdown Species": "Alcremie-Caramel-Swirl"
+            },
+            "Caramel Swirl-Flower": {
+                "Showdown Species": "Alcremie-Caramel-Swirl"
+            },
+            "Caramel Swirl-Ribbon": {
+                "Showdown Species": "Alcremie-Caramel-Swirl"
+            },
+            "Rainbow Swirl-Strawberry": {
+                "Showdown Species": "Alcremie-Rainbow-Swirl"
+            },
+            "Rainbow Swirl-Berry": {
+                "Showdown Species": "Alcremie-Rainbow-Swirl"
+            },
+            "Rainbow Swirl-Love": {
+                "Showdown Species": "Alcremie-Rainbow-Swirl"
+            },
+            "Rainbow Swirl-Star": {
+                "Showdown Species": "Alcremie-Rainbow-Swirl"
+            },
+            "Rainbow Swirl-Clover": {
+                "Showdown Species": "Alcremie-Rainbow-Swirl"
+            },
+            "Rainbow Swirl-Flower": {
+                "Showdown Species": "Alcremie-Rainbow-Swirl"
+            },
+            "Rainbow Swirl-Ribbon": {
+                "Showdown Species": "Alcremie-Rainbow-Swirl"
+            }
+        }
+    }, //869 - note that non-Strawberry accessory forms won't return an invalid form error.
+    "Eiscue": {
+        "Forms": {
+            "Ice Face": {
+                "Showdown Species": "Eiscue"
+            },
+            "Noice Face": {
+                "Showdown Species": "Eiscue-Noice"
+            }
+        }
+    }, //875
+    "Morpeko": {
+        "Forms": {
+            "Full Belly Mode": {
+                "Showdown Species": "Morpeko"
+            },
+            "Hangry Mode": {
+                "Showdown Species": "Morpeko-Hangry"
+            }
+        }
+    }, //877
+    "Zacian": {
+        "Forms": {
+            "Hero of Many Battles": {
+                "Showdown Species": "Zacian"
+            },
+            "Crowned Sword": {
+                "Showdown Species": "Zacian-Crowned"
+            }
+        }
+    }, //888
+    "Zamazenta": {
+        "Forms": {
+            "Hero of Many Battles": {
+                "Showdown Species": "Zamazenta"
+            },
+            "Crowned Shield": {
+                "Showdown Species": "Zamazenta-Crowned"
+            }
+        }
+    }, //889
+    "Eternatus": {
+        "Forms": {
+            "Eternamax": {
+                "Showdown Species": "Eternatus-Eternamax"
+            }
+        }
+    }, //890
+    "Urshifu": {
+        "Forms": {
+            "Single Strike Style": {
+                "Showdown Species": "Urshifu"
+            },
+            "Rapid Strike Style": {
+                "Showdown Species": "Urshifu-Rapid-Strike"
+            }
+        }
+    }, //892
+    "Zarude": {
+        "Forms": {
+            "Dada": {
+                "Showdown Species": "Zarude-Dada"
+            }
+        }
+    }, //893
+    "Calyrex": {
+        "Forms": {
+            "Ice Rider": {
+                "Showdown Species": "Calyrex-Ice"
+            },
+            "Shadow Rider": {
+                "Showdown Species": "Calyrex-Shadow"
+            }
+        }
+    }, //898
+
+    // Pokestar
+    "UFO": {
+        "Forms": {
+            "Form 1": {
+                "Showdown Species": "Pokestar UFO"
+            },
+            "Prop 1": { //Prop U1
+                "Showdown Species": "Pokestar UFO-Prop"
+            },
+            "Form 2": {
+                "Showdown Species": "Pokestar UFO-2"
+            },
+            "Prop 2": { //Prop U2
+                "Showdown Species": "Pokestar UFO-PropU2"
+            }
+        }
+    },
+    "Brycen-Man": {
+        "Forms": {
+            "": {
+                "Showdown Species": "Pokestar Brycen-Man"
+            },
+            "Prop": { //Prop H1
+                "Showdown Species": "Pokestar Brycen-Man-Prop"
+            }
+        }
+    },
+    "MT": {
+        "Forms": {
+            "": {
+                "Showdown Species": "Pokestar MT"
+            },
+            "Prop": { //Prop M1
+                "Showdown Species": "Pokestar MT-Prop"
+            }
+        }
+    },
+    "MT2": {
+        "Forms": {
+            "": {
+                "Showdown Species": "Pokestar MT2"
+            },
+            "Prop": { //Prop M2
+                "Showdown Species": "Pokestar MT2-Prop"
+            }
+        }
+    },
+    "Transport": {
+        "Forms": {
+            "": {
+                "Showdown Species": "Pokestar Transport"
+            },
+            "Prop": { //Prop T1
+                "Showdown Species": "Pokestar Transport-Prop"
+            }
+        }
+    },
+    "Giant ♀": {
+        "Forms": {
+            "Form 1": {
+                "Showdown Species": "Pokestar Giant"
+            },
+            "Prop 1": { //Prop O1
+                "Showdown Species": "Pokestar Giant-PropO1"
+            },
+            "Form 2": {
+                "Showdown Species": "Pokestar Giant-2"
+            },
+            "Prop 2": { //Prop O2
+                "Showdown Species": "Pokestar Giant-PropO2"
+            }
+        }
+    },
+    "Humanoid": {
+        "Forms": {
+            "": {
+                "Showdown Species": "Pokestar Humanoid"
+            },
+            "Prop": {
+                "Showdown Species": "Pokestar Humanoid-Prop"
+            }
+        }
+    },
+    "Monster": {
+        "Forms": {
+            "": {
+                "Showdown Species": "Pokestar Monster"
+            },
+            "Prop": { //Prop C2
+                "Showdown Species": "Pokestar Monster-Prop"
+            }
+        }
+    },
+    "F-00": {
+        "Forms": {
+            "Form 1": {
+                "Showdown Species": "Pokestar F-00"
+            },
+            "Prop 1": { //Prop R1
+                "Showdown Species": "Pokestar F-00-Prop"
+            },
+            "Form 2": {
+                "Showdown Species": "Pokestar F-002"
+            },
+            "Prop 2": { //Prop R2
+                "Showdown Species": "Pokestar F-002-Prop"
+            }
+        }
+    },
+    "Spirit": {
+        "Forms": {
+            "": {
+                "Showdown Species": "Pokestar Spirit"
+            },
+            "Prop": { //Prop G1
+                "Showdown Species": "Pokestar Spirit-Prop"
+            }
+        }
+    },
+    "White Door": {
+        "Forms": {
+            "": {
+                "Showdown Species": "Pokestar White Door"
+            },
+            "Prop": { //Prop W1
+                "Showdown Species": "Pokestar White Door-Prop"
+            }
+        }
+    },
+    "Black Door": {
+        "Forms": {
+            "": {
+                "Showdown Species": "Pokestar Black Door"
+            },
+            "Prop": { //Prop W2
+                "Showdown Species": "Pokestar Black Door-Prop"
+
+            }
+        }
+    },
+    "Black Belt": {
+        "Forms": {
+            "": {
+                "Showdown Species": "Pokestar Black Belt"
+            },
+            "Prop": { //Prop K1
+                "Showdown Species": "Pokestar Black Belt-Prop"
+            }
+        }
+    },
+    "Smeargle": {
+        "Forms": {
+            // Don't include base, since nationaldexData.json includes it
+            "Pokéstar": {
+                "Showdown Species": "Pokestar Smeargle"
+            }
+        }
+    },
+
+    // CAP
+    "Syclar": {},
+    "Syclant": {},
+    "Revenankh": {},
+    "Embirch": {},
+    "Flarelm": {},
+    "Pyroak": {},
+    "Breezi": {},
+    "Fidgit": {},
+    "Rebble": {},
+    "Tactite": {},
+    "Stratagem": {},
+    "Arghonaut": {},
+    "Kitsunoh": {},
+    "Cyclohm": {},
+    "Colossoil": {},
+    "Krilowatt": {},
+    "Voodoom": {},
+    "Scratchet": {},
+    "Tomohawk": {},
+    "Necturine": {},
+    "Necturna": {},
+    "Mollux": {},
+    "Cupra": {},
+    "Argalis": {},
+    "Aurumoth": {},
+    "Brattler": {},
+    "Malaconda": {},
+    "Cawdet": {},
+    "Cawmodore": {},
+    "Volkritter": {},
+    "Volkraken": {},
+    "Snugglow": {},
+    "Plasmanta": {},
+    "Floatoy": {},
+    "Caimanoe": {},
+    "Naviathan": {},
+    "Crucibelle": {
+        "Forms": {
+            "Mega": {
+                "Showdown Name": "Crucibelle-Mega"
+            }
+        }
+    },
+    "Pluffle": {},
+    "Kerfluffle": {},
+    "Pajantom": {},
+    "Mumbao": {},
+    "Jumbao": {},
+    "Caribolt": {},
+    "Smokomodo": {},
+    "Snaelstrom": {},
+    "Equilibra": {},
+    "Solotl": {},
+    "Astrolotl": {}
+}

@@ -34,8 +34,11 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.errorPanel = new System.Windows.Forms.FlowLayoutPanel();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.notesPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
             // descLabel
@@ -51,7 +54,7 @@
             // 
             // acceptButton
             // 
-            this.acceptButton.Location = new System.Drawing.Point(362, 357);
+            this.acceptButton.Location = new System.Drawing.Point(362, 344);
             this.acceptButton.Name = "acceptButton";
             this.acceptButton.Size = new System.Drawing.Size(75, 23);
             this.acceptButton.TabIndex = 6;
@@ -100,11 +103,33 @@
             this.errorPanel.TabIndex = 0;
             this.errorPanel.WrapContents = false;
             // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.notesPanel);
+            this.groupBox3.Location = new System.Drawing.Point(15, 328);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(341, 91);
+            this.groupBox3.TabIndex = 7;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "Notes";
+            // 
+            // notesPanel
+            // 
+            this.notesPanel.AutoScroll = true;
+            this.notesPanel.Dock = System.Windows.Forms.DockStyle.Left;
+            this.notesPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.notesPanel.Location = new System.Drawing.Point(3, 16);
+            this.notesPanel.Name = "notesPanel";
+            this.notesPanel.Size = new System.Drawing.Size(332, 72);
+            this.notesPanel.TabIndex = 0;
+            this.notesPanel.WrapContents = false;
+            // 
             // WarningWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(463, 404);
+            this.ClientSize = new System.Drawing.Size(463, 439);
+            this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.acceptButton);
             this.Controls.Add(this.descLabel);
@@ -113,6 +138,7 @@
             this.Text = "Export Warning (Format)";
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
+            this.groupBox3.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -125,5 +151,7 @@
         private System.Windows.Forms.GroupBox groupBox2;
         protected System.Windows.Forms.FlowLayoutPanel warningPanel;
         protected System.Windows.Forms.FlowLayoutPanel errorPanel;
+        private System.Windows.Forms.GroupBox groupBox3;
+        protected System.Windows.Forms.FlowLayoutPanel notesPanel;
     }
 }
