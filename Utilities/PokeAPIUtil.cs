@@ -8,7 +8,7 @@ namespace pkuManager.Utilities
 {
     public static class PokeAPIUtil
     {
-        public static PokeApiClient paClient = new PokeApiClient(); // Shared PokeAPI Client
+        public static readonly PokeApiClient paClient = new PokeApiClient(); // Shared PokeAPI Client
 
         // ----------
         // Wrapped Info Methods
@@ -83,19 +83,15 @@ namespace pkuManager.Utilities
         }
 
         //maybe make an overload of this to accommodate custom valid move lists (only mainline example is gen 8).
-        public static int? GetMoveIndex(string move, int maxID)
+        public static int? GetMoveIndex(string move)
         {
             if (move == null)
                 return null;
 
-            Move moveObj;
             string searchMove = move.ToLower().Replace(' ', '-'); // lower case and replace spaces with dashes
             try
             {
-                moveObj = Task.Run(() => getMoveIndexAsync(searchMove)).Result;
-
-                //if move introduced after maxID (i.e. the gen's last moveID) then act as if it's null
-                return moveObj.Id > maxID ? (int?)null : moveObj.Id;
+                return Task.Run(() => getMoveIndexAsync(searchMove)).Result.Id;
             }
             catch
             {
@@ -105,11 +101,9 @@ namespace pkuManager.Utilities
 
         public static int? GetMoveBasePP(int moveID)
         {
-            Move moveObj;
             try
             {
-                moveObj = Task.Run(() => getMoveIndexAsync(moveID)).Result;
-                return moveObj.Pp;
+                return Task.Run(() => getMoveIndexAsync(moveID)).Result.Pp;
             }
             catch
             {
@@ -119,39 +113,14 @@ namespace pkuManager.Utilities
 
         public static string GetMoveName(int moveID)
         {
-            Move moveObj;
             try
             {
-                moveObj = Task.Run(() => getMoveIndexAsync(moveID)).Result;
+                Move moveObj = Task.Run(() => getMoveIndexAsync(moveID)).Result;
                 return moveObj.Names.FirstOrDefault(x => x.Language.Name == "en").Name;
             }
             catch
             {
                 return null; //move does not exist
-            }
-        }
-
-        // slot 1=1, slot 2=2, slot H=4
-        public static int? GetAbilitySlot(string name, string form, string ability)
-        {
-            string searchAbility = ability.ToLowerInvariant().Replace(' ', '-'); // lower case and replace spaces with dashes
-            try
-            {
-                Pokemon pkmn = Task.Run(() => getPokemonAsync(name, form)).Result;
-                Ability ab = Task.Run(() => getAbilityAsync(searchAbility)).Result;
-                int? slot = pkmn.Abilities.FirstOrDefault(x => x.Ability.Name == ab.Name)?.Slot;
-                return slot switch
-                {
-                    // Gen 6+ encodings
-                    1 => 1, //Slot 1
-                    2 => 2, //Slot 2
-                    3 => 4, //Slot H
-                    _ => null
-                };
-            }
-            catch
-            {
-                return null; //ability not on pokeapi
             }
         }
 
@@ -251,23 +220,6 @@ namespace pkuManager.Utilities
         public static async Task<Pokemon> getPokemonAsync(int dex)
         {
             return await paClient.GetResourceAsync<Pokemon>(dex);
-        }
-
-        public static async Task<Pokemon> getPokemonAsync(string name, string form)
-        {
-            string searchName = form != null ? $"{name}-{form}" : name;
-            try
-            {
-                return await paClient.GetResourceAsync<Pokemon>(searchName); //try with form name
-            }
-            catch
-            {
-                int? id = pkxUtil.GetNationalDex(name);
-                if (id.HasValue)
-                    return await paClient.GetResourceAsync<Pokemon>(id.Value); //just use dex if form name doesn't work
-                else
-                    return null;
-            }
         }
 
         public static async Task<Move> getMoveIndexAsync(int moveID)

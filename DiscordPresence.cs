@@ -74,14 +74,14 @@ namespace pkuManager
             //client.Logger = new ConsoleLogger() { Level = LogLevel.Warning };
 
             //Subscribe to events
-            client.OnReady += (sender, e) =>
-            {
-                Console.WriteLine("Received Ready from user {0}", e.User.Username);
-            };
+            //client.OnReady += (sender, e) =>
+            //{
+            //    Debug.WriteLine("Received Ready from user {0}", e.User.Username);
+            //};
 
             //client.OnPresenceUpdate += (sender, e) =>
             //{
-            //	Console.WriteLine("Received Update! {0}", e.Presence);
+            //	Debug.WriteLine("Received Update! {0}", e.Presence);
             //};
 
             //Connect to the RPC
@@ -93,22 +93,26 @@ namespace pkuManager
         public void setPresence()
         {
             //Set the rich presence
-            //Call this as many times as you want and anywhere in your code.
-            client.SetPresence(new RichPresence()
+            if (!Properties.Settings.Default.Hide_Discord_Presence)
             {
-                Details = collection != null ? "Collection: " + collection : null,
-                State = box != null ? "Box: " + box : null,
-                Assets = new Assets()
+                client.SetPresence(new RichPresence()
                 {
-                    LargeImageKey = ball,
-                    LargeImageText = nickname,
-                    //SmallImageKey = "poke"
-                }
-            });
+                    Details = collection != null ? "Collection: " + collection : null,
+                    State = box != null ? "Box: " + box : null,
+                    Assets = new Assets()
+                    {
+                        LargeImageKey = ball,
+                        LargeImageText = nickname,
+                        //SmallImageKey = "poke"
+                    }
+                });
+            }
+            else
+                client.ClearPresence();
         }
 
         // called when onClose event occurs (presumably when the form closes)
-        public void Deinitialize(Object sender, EventArgs e)
+        public void Deinitialize(object sender, EventArgs e)
         {
             client.Dispose();
         }

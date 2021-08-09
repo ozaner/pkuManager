@@ -1,6 +1,6 @@
 ﻿namespace pkuManager
 {
-    partial class WarningWindow
+    partial class ExportingWindow
     {
         /// <summary>
         /// Required designer variable.
@@ -44,19 +44,22 @@
             // descLabel
             // 
             this.descLabel.AutoSize = true;
-            this.descLabel.Location = new System.Drawing.Point(68, 31);
-            this.descLabel.MaximumSize = new System.Drawing.Size(350, 0);
+            this.descLabel.Location = new System.Drawing.Point(68, 23);
+            this.descLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.descLabel.MaximumSize = new System.Drawing.Size(408, 0);
             this.descLabel.Name = "descLabel";
-            this.descLabel.Size = new System.Drawing.Size(314, 26);
+            this.descLabel.Size = new System.Drawing.Size(403, 30);
             this.descLabel.TabIndex = 5;
             this.descLabel.Text = "The following warnings and errors must be acknowledged before exporting to Format" +
     " (extension)";
+            this.descLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // acceptButton
             // 
-            this.acceptButton.Location = new System.Drawing.Point(362, 344);
+            this.acceptButton.Location = new System.Drawing.Point(408, 379);
+            this.acceptButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.acceptButton.Name = "acceptButton";
-            this.acceptButton.Size = new System.Drawing.Size(75, 23);
+            this.acceptButton.Size = new System.Drawing.Size(88, 27);
             this.acceptButton.TabIndex = 6;
             this.acceptButton.Text = "Accept";
             this.acceptButton.UseVisualStyleBackColor = true;
@@ -66,18 +69,21 @@
             this.warningPanel.AutoScroll = true;
             this.warningPanel.Dock = System.Windows.Forms.DockStyle.Left;
             this.warningPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.warningPanel.Location = new System.Drawing.Point(3, 16);
+            this.warningPanel.Location = new System.Drawing.Point(4, 19);
+            this.warningPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.warningPanel.Name = "warningPanel";
-            this.warningPanel.Size = new System.Drawing.Size(197, 214);
+            this.warningPanel.Size = new System.Drawing.Size(195, 247);
             this.warningPanel.TabIndex = 0;
             this.warningPanel.WrapContents = false;
             // 
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.warningPanel);
-            this.groupBox1.Location = new System.Drawing.Point(12, 80);
+            this.groupBox1.Location = new System.Drawing.Point(39, 69);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(205, 233);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.groupBox1.Size = new System.Drawing.Size(204, 269);
             this.groupBox1.TabIndex = 3;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Warnings";
@@ -85,9 +91,11 @@
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.errorPanel);
-            this.groupBox2.Location = new System.Drawing.Point(232, 80);
+            this.groupBox2.Location = new System.Drawing.Point(297, 69);
+            this.groupBox2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(205, 233);
+            this.groupBox2.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.groupBox2.Size = new System.Drawing.Size(204, 269);
             this.groupBox2.TabIndex = 4;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Errors";
@@ -97,44 +105,50 @@
             this.errorPanel.AutoScroll = true;
             this.errorPanel.Dock = System.Windows.Forms.DockStyle.Left;
             this.errorPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.errorPanel.Location = new System.Drawing.Point(3, 16);
+            this.errorPanel.Location = new System.Drawing.Point(4, 19);
+            this.errorPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.errorPanel.Name = "errorPanel";
-            this.errorPanel.Size = new System.Drawing.Size(197, 214);
+            this.errorPanel.Size = new System.Drawing.Size(195, 247);
             this.errorPanel.TabIndex = 0;
             this.errorPanel.WrapContents = false;
             // 
             // groupBox3
             // 
             this.groupBox3.Controls.Add(this.notesPanel);
-            this.groupBox3.Location = new System.Drawing.Point(15, 328);
+            this.groupBox3.Location = new System.Drawing.Point(39, 360);
+            this.groupBox3.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(341, 91);
+            this.groupBox3.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.groupBox3.Size = new System.Drawing.Size(333, 134);
             this.groupBox3.TabIndex = 7;
             this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Notes";
+            this.groupBox3.Text = "Global Flags";
             // 
             // notesPanel
             // 
             this.notesPanel.AutoScroll = true;
             this.notesPanel.Dock = System.Windows.Forms.DockStyle.Left;
             this.notesPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.notesPanel.Location = new System.Drawing.Point(3, 16);
+            this.notesPanel.Location = new System.Drawing.Point(4, 19);
+            this.notesPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.notesPanel.Name = "notesPanel";
-            this.notesPanel.Size = new System.Drawing.Size(332, 72);
+            this.notesPanel.Size = new System.Drawing.Size(325, 112);
             this.notesPanel.TabIndex = 0;
             this.notesPanel.WrapContents = false;
             // 
-            // WarningWindow
+            // ExportingWindow
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(463, 439);
+            this.ClientSize = new System.Drawing.Size(540, 524);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.acceptButton);
             this.Controls.Add(this.descLabel);
             this.Controls.Add(this.groupBox1);
-            this.Name = "WarningWindow";
+            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.MinimumSize = new System.Drawing.Size(556, 563);
+            this.Name = "ExportingWindow";
             this.Text = "Export Warning (Format)";
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);

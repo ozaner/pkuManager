@@ -8,12 +8,11 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace pkuManager.Common
-.Properties {
+namespace pkuManager.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.6.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.10.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -21,6 +20,54 @@ namespace pkuManager.Common
         public static Settings Default {
             get {
                 return defaultInstance;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string Last_Path {
+            get {
+                return ((string)(this["Last_Path"]));
+            }
+            set {
+                this["Last_Path"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool Send_to_Recycle {
+            get {
+                return ((bool)(this["Send_to_Recycle"]));
+            }
+            set {
+                this["Send_to_Recycle"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool Ask_Auto_Add {
+            get {
+                return ((bool)(this["Ask_Auto_Add"]));
+            }
+            set {
+                this["Ask_Auto_Add"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool Hide_Discord_Presence {
+            get {
+                return ((bool)(this["Hide_Discord_Presence"]));
+            }
+            set {
+                this["Hide_Discord_Presence"] = value;
             }
         }
     }

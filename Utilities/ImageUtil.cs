@@ -1,126 +1,65 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using pkuManager.Common;
 using pkuManager.pku;
+using pkuManager.pkx;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
+using System.Diagnostics;
 using System.Net;
 
 namespace pkuManager.Utilities
 {
     public static class ImageUtil
     {
-        public enum SpriteGroup
-        {
-            RED_BLUE,
-            YELLOW,
-            GOLD,
-            SILVER,
-            CRYSTAL,
-            RUBY_SAPPHIRE,
-            FRLG,
-            EMERALD,
-            DP,
-            PLATINUM,
-            HGSS,
-            BW
-        }
-
-        private static readonly int WEB_TIMEOUT = 600;
-
-        // Retrives an Image object from the given URL, returns null on failure.
-        private static Image GetImageFromURL(string url)
-        {
-            if (url != null)
-            {
-                try
-                {
-                    WebRequest request = WebRequest.Create(url);
-                    request.Timeout = WEB_TIMEOUT;
-                    WebResponse response = request.GetResponse();
-                    Stream responseStream = response.GetResponseStream();
-                    return new Bitmap(responseStream);
-                }
-                catch
-                {
-                    Console.WriteLine($"Error in retreiving the image at: {url}");
-                }
-            }
-            return null;
-        }
-
-        // Gets the given pku's Pokestar sprite (as a gif) from B2W2 if it has one, null otherwise.
-        // Source: https://projectpokemon.org/home/docs/spriteindex_148/nds-sprites-pokestar-studios-related-animated-images-r97/
-        public static string getPokestarSpriteURL(PKUObject pku)
-        {
-            string url = "https://projectpokemon.org/images/sprites-models/pokestar/";
-            int[] shiny = { 660, 682, 684 }; //id #s that have shiny sprites
-
-            int? gen5id = pkxUtil.GetPokestarID(pku);
-            if (!gen5id.HasValue)
-                return null; //No pokestar image
-
-            // This will be null if form does not match
-            JToken checkedForm = null;
-            if (pku.Form != null)
-                checkedForm = pkxUtil.POKESTAR_DATA[pku.Species]?["Forms"]?[pku.Form];
-
-            // Check if its a prop
-            bool isProp = checkedForm != null && (pku.Form.ToLower() == "prop 1" ||
-                                                  pku.Form.ToLower() == "prop 2" ||
-                                                  pku.Form.ToLower() == "prop");
-            if (isProp)
-            {
-                bool? notGrounded = (bool?)pkxUtil.POKESTAR_DATA[pku.Species]?["Forms"]?[pku.Form]?["Suspended"];
-                if (notGrounded.HasValue && notGrounded.Value) //if its suspended by cables
-                    url += "cable.gif";
-                else
-                    url += "ground.gif";
-
-                return url;
-            }
-
-            // At this point only valid, non-prop pokemon are left (invalid forms are left too but gen5ID already accounts for this)
-            url += gen5id.Value;
-            if (pku.Shiny && shiny.Contains(gen5id.Value))
-            {
-                url += "-shiny";
-            }
-            return $"{url}.gif";
-        }
-
         // -----------------------
         // Sprite Index Stuff
         // -----------------------
 
+        /// <summary>
+        /// URL to the <see href="https://github.com/project-pku/pkuSprite">pkuSprite</see> repository on Github.<br/>
+        /// This is where all sprites used in pkuManager are sourced from.
+        /// </summary>
         private static readonly string SPRITE_INDICES_URL = "https://raw.githubusercontent.com/project-pku/pkuSprite/main/sprite-indices.json";
-        public static readonly JObject MASTER_SPRITE_INDEX = GetMasterSpriteIndex();
 
-        public enum SpriteTypes
+        /// <summary>
+        /// A JSON index of all Pokemon species sprites used in pkuManager.<br/>
+        /// Compiled from the <see cref="SPRITE_INDICES_URL">sprite-indicies.json</see> file on the pkuSprite repo.
+        /// </summary>
+        private static readonly JObject MASTER_SPRITE_INDEX = GetMasterSpriteIndex(SPRITE_INDICES_URL);
+
+        /// <summary>
+        /// The different types of sprites listed in the <see cref="MASTER_SPRITE_INDEX"/>.
+        /// </summary>
+        public enum Sprite_Type
         {
             Box,
             Front,
             Back
         }
 
-        public enum SpriteBlock
+        /// <summary>
+        /// The different types of sprite blocks listed in the <see cref="MASTER_SPRITE_INDEX"/>.
+        /// </summary>
+        public enum Block_Type
         {
             Default,
             Egg,
             Shadow
         }
 
-        private static JObject GetMasterSpriteIndex()
+        /// <summary>
+        /// Compiles a master sprite index from all the sprite indices listed in the given url.
+        /// </summary>
+        /// <param name="spriteIndicesURL">A URL to a .json file containing a list of URLS to sprite indices.</param>
+        /// <returns></returns>
+        private static JObject GetMasterSpriteIndex(string spriteIndicesURL)
         {
             JObject masterSpriteIndex = new JObject(); //init with empty sprite index
             WebClient client = new WebClient();
             try
             {
                 //Download sprite-indices.json
-                string spriteIndiciesStr = client.DownloadString(SPRITE_INDICES_URL);
+                string spriteIndiciesStr = client.DownloadString(spriteIndicesURL);
                 JObject spriteIndiciesJSON = JObject.Parse(spriteIndiciesStr);
 
                 foreach (var kvp in spriteIndiciesJSON)
@@ -135,192 +74,137 @@ namespace pkuManager.Utilities
                     }
                     catch
                     {
-                        Console.WriteLine($"Failed to read {kvp.Key} sprite index...");
+                        Debug.WriteLine($"Failed to read {kvp.Key} sprite index...");
                     }
                 }
             }
             catch
             {
-                Console.WriteLine("Failed to read sprite-indices.json...");
+                Debug.WriteLine("Failed to read sprite-indices.json...");
             }
             return masterSpriteIndex;
         }
 
-        public static (string url, string author) GetSpriteURL(PKUObject pku, SpriteTypes st)
+        /// <summary>
+        /// Gets the url and author of the requested sprite type of the given pku, according to <see href="https://github.com/project-pku/pkuSprite">pkuSprite</see>.
+        /// </summary>
+        /// <param name="pku">The pku whose sprite is to be returned.</param>
+        /// <param name="s_type">The type of sprite being requested (i.e. Front, Back, Box)</param>
+        /// <returns>A tuple of the url of the reuested sprite, and its author.</returns>
+        public static (string url, string author) GetSprite(pkuObject pku, Sprite_Type s_type)
         {
-            string species = pku.Species;
-            string form = pku.Form == null ? pkuUtil.getDefaultForm(species, Registry.MASTER_DEX) : pku.Form;
-
-            bool isEgg = pkuUtil.IsAnEgg(pku);
-            bool isShadow = pku.Shadow_Info?.Shadow == true;
-            SpriteBlock sb;
-            if (isEgg)
-                sb = SpriteBlock.Egg;
-            else if (isShadow) //egg takes priority over shadow
-                sb = SpriteBlock.Shadow;
+            // Determine Block type
+            Block_Type b_type;
+            if (pku.IsAnEgg())
+                b_type = Block_Type.Egg;
+            else if (pku.Shadow_Info?.Shadow == true) //egg takes priority over shadow
+                b_type = Block_Type.Shadow;
             else
-                sb = SpriteBlock.Default;
-            bool isShiny = pku.Shiny;
+                b_type = Block_Type.Default;
+
             bool isFemale = pkxUtil.GetGender(pku.Gender, false) == Gender.Female;
-            return GetSpriteURL(species, form, sb, isShiny, isFemale, st);
+            return GetSprite(pku.Species, DexUtil.GetCastableForms(pku), pku.Appearance ?? Array.Empty<string>(), b_type, pku.IsShiny(), isFemale, s_type);
         }
 
-        public static (string url, string author) GetSpriteURL(string species, string form, SpriteBlock sb, bool isShiny, bool isFemale, SpriteTypes st)
+        //request -> sprite
+        public static (string url, string author) GetSprite(string species, List<string> castableForms, string[] appearance, Block_Type b_type, bool isShiny, bool isFemale, Sprite_Type s_type)
         {
-            JToken speciesBlock = DataUtil.TraverseJTokenCaseInsensitive(MASTER_SPRITE_INDEX, species);
-            string defaultForm = pkuUtil.getDefaultForm(species, Registry.MASTER_DEX);
-            string blockString = sb switch
+            (string url, string author) = GetSpriteHelper(species, castableForms, appearance, b_type, isShiny, isFemale, s_type);
+
+            if(url != null)
+                return (url, author);
+            else
             {
-                SpriteBlock.Default => "Default",
-                SpriteBlock.Egg => "Egg",
-                SpriteBlock.Shadow => "Shadow",
+                // no shadow sprite found, try default
+                if (b_type == Block_Type.Shadow)
+                {
+                    (url, author) = GetSpriteHelper(species, castableForms, appearance, Block_Type.Default, isShiny, isFemale, s_type);
+                    
+                    if (url != null) //default found
+                        return (url, author);
+
+                    // no shiny sprite found, try default regular
+                    if (isShiny)
+                        (url, author) = GetSpriteHelper(species, castableForms, appearance, Block_Type.Default, false, isFemale, s_type);
+
+                    if (url != null) //default regular found
+                        return (url, author);
+                }
+
+                // no shiny sprite found, try regular
+                if (isShiny)
+                    (url, author) = GetSpriteHelper(species, castableForms, appearance, b_type, false, isFemale, s_type);
+
+                if (url != null) //regular found
+                    return (url, author);
+
+                //no sprites found, use default sprites
+                string shinyString = isShiny ? "Shiny" : "Regular";
+                string typeString = s_type switch
+                {
+                    Sprite_Type.Box => "Box",
+                    Sprite_Type.Front => "Front",
+                    Sprite_Type.Back => "Back",
+                    _ => throw new NotImplementedException(),
+                };
+                JToken block = DataUtil.TraverseJTokenCaseInsensitive(MASTER_SPRITE_INDEX, "", "Forms", "", "Sprites", b_type == Block_Type.Egg ? "Egg" : "Default", shinyString, typeString);
+                return ((string)DataUtil.TraverseJTokenCaseInsensitive(block, "URL"), (string)DataUtil.TraverseJTokenCaseInsensitive(block, "Author"));
+            }
+        }
+
+        //given a request, trys to find a matching sprite of the species in the same block. null on failure
+        public static (string url, string author) GetSpriteHelper(string species, List<string> castableForms, string[] appearance, Block_Type b_type, bool isShiny, bool isFemale, Sprite_Type s_type)
+        {
+            static JToken CheckFemale(JToken block, bool isFemale, string typeString)
+            {
+                if (isFemale)
+                {
+                    JToken blockA = DataUtil.TraverseJTokenCaseInsensitive(block, "Female", typeString);
+                    if (blockA != null)
+                        return blockA;
+                }
+                return DataUtil.TraverseJTokenCaseInsensitive(block, typeString);
+            }
+
+            JToken speciesBlock = DataUtil.TraverseJTokenCaseInsensitive(MASTER_SPRITE_INDEX, species, "Forms");
+            string blockString = b_type switch
+            {
+                Block_Type.Default => "Default",
+                Block_Type.Egg => "Egg",
+                Block_Type.Shadow => "Shadow",
                 _ => throw new NotImplementedException(),
             };
             string shinyString = isShiny ? "Shiny" : "Regular";
-            string typeString = st switch
+            string typeString = s_type switch
             {
-                SpriteTypes.Box => "Box",
-                SpriteTypes.Front => "Front",
-                SpriteTypes.Back => "Back",
+                Sprite_Type.Box => "Box",
+                Sprite_Type.Front => "Front",
+                Sprite_Type.Back => "Back",
                 _ => throw new NotImplementedException(),
             };
 
-            // Try getting given sprite
-            JToken spriteAuthorBlock = DataUtil.TraverseJTokenCaseInsensitive(speciesBlock, "Forms", form, "Sprites", blockString, shinyString);
-            if (isFemale)
-                spriteAuthorBlock = DataUtil.TraverseJTokenCaseInsensitive(spriteAuthorBlock, "Female");
-            spriteAuthorBlock = DataUtil.TraverseJTokenCaseInsensitive(spriteAuthorBlock, typeString);
-            string url = (string)DataUtil.TraverseJTokenCaseInsensitive(spriteAuthorBlock, "URL");
-
-            if (url != null) // sprite exists, return it
-                return (url, (string)DataUtil.TraverseJTokenCaseInsensitive(spriteAuthorBlock, "Author"));
-            else //sprite doesn't exist, find a fallback
+            JToken formBlock, check;
+            foreach (string searchableForm in castableForms)
             {
-                if (isFemale) //try default gender, if no female sprites
+                formBlock = DataUtil.TraverseJTokenCaseInsensitive(speciesBlock, searchableForm);
+
+                // try each appearance, and return when one is found
+                foreach (string app in appearance)
                 {
-                    spriteAuthorBlock = DataUtil.TraverseJTokenCaseInsensitive(speciesBlock, "Forms", form, "Sprites", blockString, shinyString, typeString);
-                    url = (string)DataUtil.TraverseJTokenCaseInsensitive(spriteAuthorBlock, "URL");
-                    if (url != null) // default gender sprite exists, return it
-                        return (url, (string)DataUtil.TraverseJTokenCaseInsensitive(spriteAuthorBlock, "Author"));
+                    check = DataUtil.TraverseJTokenCaseInsensitive(formBlock, "Appearance", app, "Sprites", blockString, shinyString);
+                    check = CheckFemale(check, isFemale, typeString);
+                    if (check != null)
+                        return ((string)DataUtil.TraverseJTokenCaseInsensitive(check, "URL"), (string)DataUtil.TraverseJTokenCaseInsensitive(check, "Author"));
                 }
-                if (isShiny) //try regular, if no shiny sprites
-                {
-                    if (isFemale)
-                    {
-                        spriteAuthorBlock = DataUtil.TraverseJTokenCaseInsensitive(speciesBlock, "Forms", form, "Sprites", blockString, "Regular", "Female", typeString);
-                        url = (string)DataUtil.TraverseJTokenCaseInsensitive(spriteAuthorBlock, "URL");
-                        if (url != null)
-                            return (url, (string)DataUtil.TraverseJTokenCaseInsensitive(spriteAuthorBlock, "Author"));
-                    }
-                    else
-                    {
-                        spriteAuthorBlock = DataUtil.TraverseJTokenCaseInsensitive(speciesBlock, "Forms", form, "Sprites", blockString, "Regular", typeString);
-                        url = (string)DataUtil.TraverseJTokenCaseInsensitive(spriteAuthorBlock, "URL");
-                        if (url != null)
-                            return (url, (string)DataUtil.TraverseJTokenCaseInsensitive(spriteAuthorBlock, "Author"));
-                    }
-                }
-                if (sb == SpriteBlock.Shadow) // try default block, if no shadow sprites
-                    return GetSpriteURL(species, form, SpriteBlock.Default, isShiny, isFemale, st);
-                if (!DataUtil.stringEqualsCaseInsensitive(form, defaultForm)) //try default form, if no given form sprites
-                    return GetSpriteURL(species, defaultForm, sb, isShiny, isFemale, st);
 
-                //no sprites found, use default sprites
-                if (sb == SpriteBlock.Egg) //default egg sprites
-                {
-                    spriteAuthorBlock = DataUtil.TraverseJTokenCaseInsensitive(MASTER_SPRITE_INDEX, "", "Forms", "", "Sprites", "Egg", shinyString, typeString);
-                    return ((string)DataUtil.TraverseJTokenCaseInsensitive(spriteAuthorBlock, "URL"), (string)DataUtil.TraverseJTokenCaseInsensitive(spriteAuthorBlock, "Author"));
-                }
-                else //unkown species (i.e. ?)
-                {
-                    spriteAuthorBlock = DataUtil.TraverseJTokenCaseInsensitive(MASTER_SPRITE_INDEX, "", "Forms", "", "Sprites", "Default", shinyString, typeString);
-                    return ((string)DataUtil.TraverseJTokenCaseInsensitive(spriteAuthorBlock, "URL"), (string)DataUtil.TraverseJTokenCaseInsensitive(spriteAuthorBlock, "Author"));
-                }
-            }
-        }
-
-
-        // -----------------------
-        // Sprite Index Work
-        // -----------------------
-
-        private static Dictionary<string, SpriteIndexStructure.SpeciesBlock> GetSpriteIndexFromText(string jsontext)
-        {
-            return JsonConvert.DeserializeObject<Dictionary<string, SpriteIndexStructure.SpeciesBlock>>(jsontext);
-        }
-
-        public class SpriteIndexStructure
-        {
-            public partial class SpeciesBlock
-            {
-                [JsonProperty("Forms")]
-                public Dictionary<string, FormBlock> Forms;
+                //no matching appearance found, try null appearance
+                check = DataUtil.TraverseJTokenCaseInsensitive(formBlock, "Sprites", blockString, shinyString);
+                check = CheckFemale(check, isFemale, typeString);
+                if (check != null)
+                    return ((string)DataUtil.TraverseJTokenCaseInsensitive(check, "URL"), (string)DataUtil.TraverseJTokenCaseInsensitive(check, "Author"));
             }
 
-            public partial class FormBlock
-            {
-                [JsonProperty("Sprites")]
-                public SpritesBlock Sprites;
-            }
-
-            public partial class SpritesBlock
-            {
-                [JsonProperty("Default")]
-                public ShinyBlock Default;
-
-                [JsonProperty("Egg")]
-                public ShinyBlock Egg;
-
-                [JsonProperty("Shadow")]
-                public ShinyBlock Shadow;
-            }
-
-            public partial class ShinyBlock
-            {
-                [JsonProperty("Regular")]
-                public SpriteTypeBlock Regular;
-
-                [JsonProperty("Shiny")]
-                public SpriteTypeBlock Shiny;
-            }
-
-            public partial class SpriteTypeBlock
-            {
-                //Sprites for default gender
-                [JsonProperty("Box")]
-                public SpriteAuthorBlock Box;
-
-                [JsonProperty("Front")]
-                public SpriteAuthorBlock Front;
-
-                [JsonProperty("Back")]
-                public SpriteAuthorBlock Back;
-
-                //Sprites for female if species has multiple genders.
-                [JsonProperty("Female")]
-                public FemaleBlock Female;
-            }
-
-            public partial class FemaleBlock
-            {
-                [JsonProperty("Box")]
-                public SpriteAuthorBlock Box;
-
-                [JsonProperty("Front")]
-                public SpriteAuthorBlock Front;
-
-                [JsonProperty("Back")]
-                public SpriteAuthorBlock Back;
-            }
-
-            public partial class SpriteAuthorBlock
-            {
-                [JsonProperty("URL")]
-                public string URL;
-
-                [JsonProperty("Author")]
-                public string Author;
-            }
+            return (null, null); //failed to find a sprite.
         }
     }
 }

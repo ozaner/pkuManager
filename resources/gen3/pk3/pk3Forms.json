@@ -1,6 +1,0 @@
-﻿//Can probably delete since forms are now defined in the natdex... wait but what gen the forms are in are not in nat dex...
-{
-    "201": [ "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "!", "?" ],
-    "351": [ "Normal", "Sunny", "Rainy", "Snowy"],
-    "386": [ "Normal", "Attack", "Defense", "Speed"]
-}

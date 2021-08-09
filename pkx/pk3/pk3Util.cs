@@ -1,14 +1,15 @@
 ﻿using Newtonsoft.Json.Linq;
 using pkuManager.Alerts;
 using pkuManager.Common;
+using pkuManager.pku;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using AlertType = pkuManager.Common.pkxUtil.TagAlerts.AlertType;
+using AlertType = pkuManager.pkx.pkxUtil.TagAlerts.AlertType;
 
-namespace pkuManager.pk3
+namespace pkuManager.pkx.pk3
 {
     public static class pk3Util
     {
@@ -97,7 +98,7 @@ namespace pkuManager.pk3
             { 0x0203, Language.French },
             { 0x0204, Language.Italian },
             { 0x0205, Language.German },
-            { 0x0206, Language.Korean },
+            //{ 0x0206, Common.Language.Korean }, //While this number was reserved for Korean, never saw usage in Gen 3.
             { 0x0207, Language.Spanish }
         };
         public static readonly uint EGG_LANGUAGE_ID = 0x0601;
@@ -166,7 +167,6 @@ namespace pkuManager.pk3
         {
             (JObject)PK3_LOCATION_DATA["Base"],
             (JObject)PK3_LOCATION_DATA["RS"],
-            (JObject)PK3_LOCATION_DATA["FRLG"],
             (JObject)PK3_LOCATION_DATA["E"]
         }).ToObject<Dictionary<byte?, string>>();
         private static readonly Dictionary<int?, string> COLO_LOCATION_TABLE = DataUtil.getCombinedJson(new JObject[]
@@ -180,7 +180,13 @@ namespace pkuManager.pk3
             (JObject)PK3_LOCATION_DATA["XD"]
         }).ToObject<Dictionary<int?, string>>();
 
-        public static string DEFAULT_LOCATION = RS_LOCATION_TABLE[0];
+        public static string GetDefaultLocationName(string checkedLocation) => checkedLocation?.ToLowerInvariant() switch
+        {
+            "colosseum" => null,
+            "xd" => XD_LOCATION_TABLE[0],
+            _ => RS_LOCATION_TABLE[0],
+        };
+
 
         public static byte? EncodeMetLocation(string game, string location)
         {
@@ -189,7 +195,7 @@ namespace pkuManager.pk3
 
             // Match explicit location IDs (i.e. "\0xXX...X\")
             if (Regex.IsMatch(location, @"^\\0x[a-fA-F0-9]+\\$"))
-                return Convert.ToByte(location.Substring(1, location.Length - 2), 16);
+                return Convert.ToByte(location[1..^1], 16);
 
             // Game must be specified to find a location (i.e. full path of a location is "Game:Location")
             if (game == null)
@@ -206,10 +212,10 @@ namespace pkuManager.pk3
                     return FRLG_LOCATION_TABLE.FirstOrDefault(x => x.Value.ToLowerInvariant() == location.ToLowerInvariant()).Key;
                 case "emerald":
                     return E_LOCATION_TABLE.FirstOrDefault(x => x.Value.ToLowerInvariant() == location.ToLowerInvariant()).Key;
-                case "colo":
-                    return (byte)COLO_LOCATION_TABLE.FirstOrDefault(x => x.Value.ToLowerInvariant() == location.ToLowerInvariant()).Key;
+                case "colosseum":
+                    return (byte?)COLO_LOCATION_TABLE.FirstOrDefault(x => x.Value.ToLowerInvariant() == location.ToLowerInvariant()).Key;
                 case "xd":
-                    return (byte)XD_LOCATION_TABLE.FirstOrDefault(x => x.Value.ToLowerInvariant() == location.ToLowerInvariant()).Key;
+                    return (byte?)XD_LOCATION_TABLE.FirstOrDefault(x => x.Value.ToLowerInvariant() == location.ToLowerInvariant()).Key;
                 default:
                     return null; //invalid game
             }
@@ -219,8 +225,7 @@ namespace pkuManager.pk3
         // ----------
         // Form Encoding Stuff
         // ----------
-
-        //public static readonly Dictionary<int, string[]> FORM_NAMES = DataUtil.getJson("pk3Forms").ToObject<Dictionary<int, string[]>>();
+        public static readonly JObject VALID_FORMS = DataUtil.getJson("gen3Forms");
 
         public static int GetUnownFormID(uint pid)
         {
@@ -262,13 +267,42 @@ namespace pkuManager.pk3
 
 
         // ----------
+        // Encryption Stuff
+        // ----------
+        public static uint CalculateChecksum(byte[] subData)
+        {
+            if (subData.Length != 48)
+                throw new ArgumentException("Expected a 48 byte pk3 subdata array.");
+
+            uint checksum = 0;
+            for (int i = 0; i < 24; i++) // Sum over subData, w/ 2 byte window
+                checksum += subData[i + 1] * (uint)256 + subData[i];
+            checksum %= 65536; //should be 2 bytes
+
+            return checksum;
+        }
+
+        public static void EncryptSubData(byte[] subData, uint id, uint pid)
+        {
+            uint encryptionKey = id ^ pid;
+            for (int i = 0; i < 12; i++) //xor subData with key in 4 byte chunks
+            {
+                int index = 4 * i;
+                uint chunk = (uint)(subData[index + 3] << 24 | subData[index + 2] << 16 | subData[index + 1] << 8 | subData[index]);
+                chunk ^= encryptionKey;
+                DataUtil.toByteArray(chunk).CopyTo(subData, index); //copy the encrypted chunk bytes to the subData array
+            }
+        }
+
+
+        // ----------
         // Exporter Stuff
         // ----------
 
         /// <summary>
         /// Gen 3-specific alert generation methods. See <see cref="pkxUtil.TagAlerts"/> for more.
         /// </summary>
-        public static class Alerts
+        public static class TagAlerts
         {
             /// <summary>
             /// Adds the gen 3 contest ribbon Alert onto an existing pkxUtil ribbon Alert.
@@ -327,6 +361,14 @@ namespace pkuManager.pk3
 
                 return new RadioButtonAlert("Fateful Encounter", msg, choices);
             }
+
+            public static Alert GetFormAlert(AlertType at, string[] invalidForm = null, bool isDeoxys = false)
+            {
+                if (isDeoxys)
+                    return new Alert("Form", "Note that in generation 3, Deoxys' form depends on what game it is currently in.");
+                else
+                    return pkxUtil.TagAlerts.GetFormAlert(at, invalidForm);
+            }
         }
 
         /// <summary>
@@ -334,49 +376,45 @@ namespace pkuManager.pk3
         /// </summary>
         public static class ProcessTags
         {
-            public static (int?, Alert) ProcessForm(PKUObject pku)
+            public static (int?, Alert) ProcessForm(pkuObject pku)
             {
                 int? unownForm = null; //to return
                 Alert alert = null; //to return
 
-                int? dex = pkxUtil.GetNationalDex(pku.Species); //Must be valid to use this method
-                if (dex == null)
-                    throw new ArgumentException("This species has no valid dex #. ProcessForm only works for official species.");
+                int dex = pkxUtil.GetNationalDexChecked(pku.Species); //Must be valid to use this method
 
-                if (pku.Form != null)
+                if (pku.Forms != null)
                 {
-                    if (dex == 201 && pku.Form.Length == 1 && Regex.IsMatch(pku.Form.ToLowerInvariant(), "[a-z!?]")) //unown
+                    string properFormName = DexUtil.GetSearchableFormName(pku).ToLowerInvariant();
+                    if (dex == 201 && pku.Forms.Length == 1 && Regex.IsMatch(properFormName, "[a-z!?]")) //unown
                     {
-                        if (pku.Form[0] == '?')
+                        if (properFormName[0] == '?')
                             unownForm = 26;
-                        else if (pku.Form[0] == '!')
+                        else if (properFormName[0] == '!')
                             unownForm = 27;
                         else //all other letters
-                            unownForm = pku.Form.ToLowerInvariant()[0] - 97;
+                            unownForm = properFormName[0] - 97;
                     }
-                    else if (dex == 386 && new string[] { "normal", "attack", "defense", "speed" }.Contains(pku.Form.ToLowerInvariant())) //deoxys
-                        alert = new Alert("Form", "Note that in generation 3, Deoxys' form depends on what game it is currently in.");
-                    else if (dex == 351 && new string[] { "sunny", "rainy", "snowy" }.Contains(pku.Form.ToLowerInvariant())) //castform
-                        alert = pkxUtil.TagAlerts.GetFormAlert(AlertType.IN_BATTLE, pku.Form);
-                    else if (dex == 351 && pku.Form.ToLowerInvariant() == "normal") { } //allow normal castform
-                    else //invalid
-                        alert = pkxUtil.TagAlerts.GetFormAlert(AlertType.INVALID);
+                    else if (dex == 386 && new string[] { "normal", "attack", "defense", "speed" }.Contains(properFormName)) //deoxys
+                        alert = TagAlerts.GetFormAlert(AlertType.NONE, null, true);
+                    else if (dex == 351 && new string[] { "sunny", "rainy", "snowy" }.Contains(properFormName)) //castform
+                        alert = TagAlerts.GetFormAlert(AlertType.IN_BATTLE, pku.Forms);
                 }
 
                 return (unownForm, alert);
             }
 
-            public static (byte[], Alert) ProcessNickname(PKUObject pku, Language checkedLang)
+            public static (byte[], Alert) ProcessNickname(pkuObject pku, Language checkedLang)
             {
-                return pkxUtil.ProcessTags.ProcessNickname(pku, true, checkedLang, MAX_NICKNAME_CHARS, 1, (c) => { return EncodeCharacter(c, checkedLang); });
+                return pkxUtil.ProcessTags.ProcessNickname(pku, 3, checkedLang, MAX_NICKNAME_CHARS, 1, (c) => { return EncodeCharacter(c, checkedLang); });
             }
 
-            public static (byte[], Alert) ProcessOT(PKUObject pku, Language checkedLang)
+            public static (byte[], Alert) ProcessOT(pkuObject pku, Language checkedLang)
             {
                 return pkxUtil.ProcessTags.ProcessOT(pku, MAX_OT_CHARS, 1, (c) => { return EncodeCharacter(c, checkedLang); });
             }
 
-            public static (byte[] trashedNickname, byte[] trashedOT, Alert) ProcessTrash(PKUObject pku, byte[] encodedNickname, byte[] encodedOT)
+            public static (byte[] trashedNickname, byte[] trashedOT, Alert) ProcessTrash(pkuObject pku, byte[] encodedNickname, byte[] encodedOT)
             {
                 //Get Nickname trash
                 byte[] nicknameTrash = null;
@@ -391,7 +429,7 @@ namespace pkuManager.pk3
                 return pkxUtil.ProcessTags.ProcessTrash(encodedNickname, nicknameTrash, encodedOT, otTrash, new byte[] { 0xFF });
             }
 
-            public static (int, Alert) ProcessAbility(PKUObject pku)
+            public static (int, Alert) ProcessAbility(pkuObject pku)
             {
                 int dex = pkxUtil.GetNationalDexChecked(pku.Species);
                 int defaultAbilityID = (int)PK3_ABILITY_DATA["" + dex]["1"];
@@ -414,7 +452,7 @@ namespace pkuManager.pk3
                     return (0, pkxUtil.TagAlerts.GetAbilityAlert(AlertType.UNSPECIFIED, null, defaultAbility));
             }
 
-            public static (HashSet<Ribbon>, Alert) ProcessRibbons(PKUObject pku)
+            public static (HashSet<Ribbon>, Alert) ProcessRibbons(pkuObject pku)
             {
                 (HashSet<Ribbon> ribbons, Alert a) = pkxUtil.ProcessTags.ProcessRibbons(pku, IsValidRibbon);
 
@@ -435,18 +473,18 @@ namespace pkuManager.pk3
                     ribbons.Contains(Ribbon.Tough_Hyper_G3) && !ribbons.Contains(Ribbon.Tough_Super_G3) ||
                     ribbons.Contains(Ribbon.Tough_Master_G3) && !ribbons.Contains(Ribbon.Tough_Hyper_G3))
                 {
-                    a = Alerts.AddContestRibbonAlert(a);
+                    a = TagAlerts.AddContestRibbonAlert(a);
                 }
                 return (ribbons, a);
             }
 
-            public static (Alert, bool[]) ProcessFatefulEncounter(PKUObject pku)
+            public static (Alert, bool[]) ProcessFatefulEncounter(pkuObject pku)
             {
                 int dex = pkxUtil.GetNationalDexChecked(pku.Species);
                 if (dex == 151 || dex == 386) //Mew or Deoxys
                 {
                     if (pku.Catch_Info?.Fateful_Encounter == false) //no fateful encounter, won't obey
-                        return (Alerts.GetFatefulEncounterAlert(dex == 151), new bool[] { false, true });
+                        return (TagAlerts.GetFatefulEncounterAlert(dex == 151), new bool[] { false, true });
                 }
 
                 return (null, new bool[] { pku.Catch_Info?.Fateful_Encounter == true });
@@ -461,12 +499,12 @@ namespace pkuManager.pk3
             /// </summary>
             /// <param name="pku">The pku whose gender is being processed.</param>
             /// <returns></returns>
-            public static (Nature?, Alert) ProcessNature(PKUObject pku)
+            public static (Nature?, Alert) ProcessNature(pkuObject pku)
             {
                 if (pku.Nature == null)
-                    return (null, Alerts.GetNatureAlert(AlertType.UNSPECIFIED));
+                    return (null, TagAlerts.GetNatureAlert(AlertType.UNSPECIFIED));
                 else if (!pkxUtil.GetNature(pku.Nature).HasValue)
-                    return (null, Alerts.GetNatureAlert(AlertType.INVALID, pku.Nature));
+                    return (null, TagAlerts.GetNatureAlert(AlertType.INVALID, pku.Nature));
                 else
                     return pkxUtil.ProcessTags.ProcessNature(pku);
             }
@@ -477,7 +515,7 @@ namespace pkuManager.pk3
             /// </summary>
             /// <param name="pku">The pku whose gender is being processed.</param>
             /// <returns></returns>
-            public static (Gender?, Alert) ProcessGender(PKUObject pku)
+            public static (Gender?, Alert) ProcessGender(pkuObject pku)
             {
                 int dex = pkxUtil.GetNationalDexChecked(pku.Species);
                 GenderRatio gr = PokeAPIUtil.GetGenderRatio(dex);
@@ -486,9 +524,9 @@ namespace pkuManager.pk3
                 if (pku.Gender == null && onlyOneGender) //Unspecified but only one gender anyway
                     return (null, null);
                 else if (pku.Gender == null) //unspecified
-                    return (null, Alerts.GetGenderAlert(AlertType.UNSPECIFIED));
+                    return (null, TagAlerts.GetGenderAlert(AlertType.UNSPECIFIED));
                 else if (!pkxUtil.GetGender(pku.Gender, false).HasValue)
-                    return (null, Alerts.GetGenderAlert(AlertType.INVALID, null, pku.Gender));
+                    return (null, TagAlerts.GetGenderAlert(AlertType.INVALID, null, pku.Gender));
                 else
                     return pkxUtil.ProcessTags.ProcessGender(pku);
             }

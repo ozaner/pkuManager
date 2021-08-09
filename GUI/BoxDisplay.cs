@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
@@ -10,15 +11,19 @@ namespace pkuManager.GUI
     {
         private static readonly int SCROLLBAR_SIZE = 17;
 
-        public event EventHandler SlotSelected;
-        public event EventHandler SlotsSwapped;
-        public class SlotsSwappedEventArgs : EventArgs
+
+
+        public event EventHandler NotifyColectionManager;
+
+        public class NotifyCollectionEventArgs : EventArgs
         {
-            public int slotA, slotB;
-            public SlotsSwappedEventArgs(int slotA, int slotB)
+            public string command;
+            public int intA, intB;
+            public NotifyCollectionEventArgs(string command, int intA = -1, int intB = -1)
             {
-                this.slotA = slotA;
-                this.slotB = slotB;
+                this.command = command;
+                this.intA = intA;
+                this.intB = intB;
             }
         }
 
@@ -45,7 +50,7 @@ namespace pkuManager.GUI
             Height = SlotDisplay.SLOT_SIZE.Height * 5;
 
             foreach (int slotID in boxInfo.slots.Keys)
-                Controls.Add(new SlotDisplay(boxInfo.slots[slotID], slotID, OnClick));
+                Controls.Add(new SlotDisplay(boxInfo.slots[slotID], slotID, OnClick, this));
 
             if (Controls.Count > 30)
                 Width += SCROLLBAR_SIZE;
@@ -61,7 +66,7 @@ namespace pkuManager.GUI
             for (int i = 1; i <= max; i++)
             {
                 if (boxInfo.slots.ContainsKey(i))
-                    Controls.Add(new SlotDisplay(boxInfo.slots[i], i, OnClick));
+                    Controls.Add(new SlotDisplay(boxInfo.slots[i], i, OnClick, this));
                 else
                     Controls.Add(new SlotDisplay(i, OnClick));
             }
@@ -77,32 +82,33 @@ namespace pkuManager.GUI
                 currentlySelectedSlotDisplay?.deselect();
                 currentlySelectedSlotDisplay = ((SlotDisplay)s);
                 currentlySelectedSlotDisplay.select();
-                OnSlotSelected(currentlySelectedSlotDisplay, null);
+                OnNotifyCollection(currentlySelectedSlotDisplay, new NotifyCollectionEventArgs("select"));
             }
-            //right clicking a slot while one is selected swaps it
-            else if (((MouseEventArgs)e).Button == MouseButtons.Right)
+
+            //middle clicking swaps slots
+            if (((MouseEventArgs)e).Button == MouseButtons.Middle)
             {
                 if (currentlySelectedSlotDisplay != null)
                 {
+                    SlotDisplay sd = (SlotDisplay)s;
                     var alphaIndex = Controls.IndexOf(currentlySelectedSlotDisplay);
-                    var betaIndex = Controls.IndexOf((SlotDisplay)s);
+                    var betaIndex = Controls.IndexOf(sd);
                     Controls.SetChildIndex(currentlySelectedSlotDisplay, betaIndex);
-                    Controls.SetChildIndex((SlotDisplay)s, alphaIndex);
-                    OnSlotsSwapped(null, new SlotsSwappedEventArgs(alphaIndex + 1, betaIndex + 1)); //slot numbers index at 1
+                    Controls.SetChildIndex(sd, alphaIndex);
+                    OnNotifyCollection(null, new NotifyCollectionEventArgs("swap", alphaIndex + 1, betaIndex + 1)); //slot numbers index at 1
                 }
             }
-
         }
 
-        protected virtual void OnSlotSelected(object s, EventArgs e)
+        private void OnDragDrop(object s, EventArgs e)
         {
-            EventHandler handler = SlotSelected;
-            handler?.Invoke(s, e);
+            DragEventArgs dea = (DragEventArgs)e;
+            Debug.WriteLine(((SlotDisplay)dea.Data.GetData(typeof(SlotDisplay))).slotID);
         }
 
-        protected virtual void OnSlotsSwapped(object s, EventArgs e)
+        protected virtual void OnNotifyCollection(object s, EventArgs e)
         {
-            EventHandler handler = SlotsSwapped;
+            EventHandler handler = NotifyColectionManager;
             handler?.Invoke(s, e);
         }
 
@@ -115,6 +121,8 @@ namespace pkuManager.GUI
 
             public bool isEmpty;
             public bool isSelected;
+
+            public BoxDisplay bd;
 
             public SlotInfo slotInfo;
 
@@ -146,8 +154,9 @@ namespace pkuManager.GUI
                 Click += onClick;
             }
 
-            public SlotDisplay(SlotInfo slotInfo, int slotID, EventHandler onClick) : this(slotID, onClick)
+            public SlotDisplay(SlotInfo slotInfo, int slotID, EventHandler onClick, BoxDisplay bd) : this(slotID, onClick)
             {
+                this.bd = bd;
                 this.slotInfo = slotInfo;
                 if (slotInfo.checkedOut)
                     picBox.BackgroundImage = Properties.Resources.checkedOut;
@@ -155,6 +164,13 @@ namespace pkuManager.GUI
                 if (picBox.ImageLocation == null)
                     picBox.Image = Properties.Resources.unknown_box;
                 isEmpty = false;
+
+                //Add context menu to non empty slots
+                ContextMenuStrip = new ContextMenuStrip();
+                ContextMenuStrip.Items.Add("Release", null, (s, e) => {
+                    bd.OnNotifyCollection(this, new NotifyCollectionEventArgs("delete"));
+                    bd.OnNotifyCollection(null, new NotifyCollectionEventArgs("select"));
+                });
             }
 
             public void select()

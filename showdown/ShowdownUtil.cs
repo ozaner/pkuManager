@@ -2,89 +2,85 @@
 using pkuManager.Alerts;
 using pkuManager.Common;
 using pkuManager.pku;
+using pkuManager.pkx;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Net;
-using AlertType = pkuManager.Common.pkxUtil.TagAlerts.AlertType;
+using AlertType = pkuManager.pkx.pkxUtil.TagAlerts.AlertType;
 
 namespace pkuManager.showdown
 {
     public class ShowdownUtil
     {
         // ----------
-        // Showdown Species Stuff
+        // Showdown Name Stuff
         // ----------
 
         /// <summary>
-        /// A JObject corresponding to <i>just</i> the showdownData.json data for the Showdown format.
-        /// Only includes showdown species names for non-base forms.
-        /// Use <see cref="COMBINED_SHOWDOWN_DATA"/> for a list of <b>ALL </b> valid showdown species.
+        /// A JObject corresponding to <i>just</i> the ShowdownNames.json data for the Showdown format.
+        /// Includes Showdown names for non-"" forms and for all appearances.
+        /// Also includes names for all CAP species.
         /// </summary>
-        public static readonly JObject SHOWDOWN_SPECIES_DATA = DataUtil.getJson("showdownSpecies");
-
-        /// <summary>
-        /// A JObject corresponding to all the relevant data on Pokemon species needed for Showdown.
-        /// That is to say it is a combination of the NATIONALDEX, POKESTAR, and SHOWDOWN json files.
-        /// </summary>
-        private static readonly JObject COMBINED_SHOWDOWN_DATA = DataUtil.getCombinedJson(pkxUtil.NATIONALDEX_DATA, pkxUtil.POKESTAR_DATA, SHOWDOWN_SPECIES_DATA);
-
-        //Takes in a given species jobject, a form, and an (unchecked) gender, and returns the showdownForm if one exists.
-        private static string GetShowdownSpeciesHelper(JToken speciesjson, string form, string genderUnchecked)
-        {
-            //If this is a gender split form (i.e. showdown treats the genders as different forms)
-            if ((bool?)DataUtil.TraverseJTokenCaseInsensitive(speciesjson, "Forms", form, "Showdown Gender Split") == true)
-            {
-                Gender? gender = pkxUtil.GetGender(genderUnchecked, false);
-                string genderStr = gender == Gender.Female ? "Female" : "Male"; //Default is male
-                return (string)DataUtil.TraverseJTokenCaseInsensitive(speciesjson, "Forms", form, $"Showdown Species {genderStr}");
-            }
-            else
-                return (string)DataUtil.TraverseJTokenCaseInsensitive(speciesjson, "Forms", form, "Showdown Species");
-        }
+        public static readonly JObject SHOWDOWN_DATA = DataUtil.getJson("ShowdownNames");
 
         /// <summary>
         /// <para>
-        /// Gets the Showdown name of a given pku, and whether it's form was invalid (i.e. not a recoginized Showdown form).
-        /// Anything other than National-Dex, Pokestar, and CAP species will return null.
+        /// Gets the Showdown name of a given pku. If form is invalid, but can be casted, the first valid casted form will be chosen.
+        /// If castable override isn't on, pku with invalid forms will return null.
         /// </para>
-        /// e.g. Called on a pku with "Species": "Pikachu" and "Form": "Sinnoh Cap" would return ("Pikachu-Sinnoh", false).
+        /// e.g. Called on a pku with "Species": "Pikachu", "Forms": ["Cosplay"], and "Appearance": "Libre Outfit" would return "Pikachu-Libre".
         /// </summary>
-        /// <param name="pku"></param>
-        /// <returns>The pku's Showdown species, and a bool of whether it's form was invalid.</returns>
-        public static (string showdownSpecies, bool invalidForm) GetShowdownSpecies(PKUObject pku)
+        /// <param name="pku">The pku whose Showdown name is to be determined.</param>
+        /// <returns>The pku's Showdown name, and a bool of whether its form was casted.</returns>
+        public static (string name, bool casted) GetShowdownName(pkuObject pku)
         {
-            //Species must be defined
-            if (pku.Species == null)
-                return (null, false); //no species, no showdown species
+            static string GetGenderedShowdownName(JToken subjson, string genderUnchecked)
+            {
+                //If this is a gender split form (i.e. showdown treats the genders as different forms)
+                if ((bool?)DataUtil.TraverseJTokenCaseInsensitive(subjson, "Showdown Gender Split") == true)
+                {
+                    Gender? gender = pkxUtil.GetGender(genderUnchecked, false);
+                    string genderStr = gender == Gender.Female ? "Female" : "Male"; //Default is male
+                    return (string)DataUtil.TraverseJTokenCaseInsensitive(subjson, $"Showdown Species {genderStr}");
+                }
+                else
+                    return (string)DataUtil.TraverseJTokenCaseInsensitive(subjson, "Showdown Species");
+            }
 
-            // Check if species is invalid in showdown
-            JToken speciesjson = DataUtil.TraverseJTokenCaseInsensitive(COMBINED_SHOWDOWN_DATA, pku.Species);
-            if (speciesjson == null)
-                return (null, false); // invalid species & no use of form
+            // Species must be defined
+            if (DataUtil.TraverseJTokenCaseInsensitive(pkxUtil.NATIONALDEX_DATA, pku.Species) == null || //only official species...
+                DataUtil.TraverseJTokenCaseInsensitive(SHOWDOWN_DATA, pku.Species) == null)              //and pokestar+cap species are allowed
+            return (null, false); //not a valid species
 
-            // Species must be valid past this point
+            // Species is valid past this point
 
-            // Get species with form (if form exists)
-            string checkedForm = pku.Form == null ? null : GetShowdownSpeciesHelper(speciesjson, pku.Form, pku.Gender);
+            // Try to get a Showdown name based off the pku's species/form/appearance
+            string showdownName;
+            List<string> castableForms = DexUtil.GetCastableForms(pku);
+            foreach (string searchableForm in castableForms)
+            {
+                JToken formJson = DataUtil.TraverseJTokenCaseInsensitive(SHOWDOWN_DATA, pku.Species, "Forms", searchableForm);
+                foreach (string acc in pku.Appearance ?? Array.Empty<string>())
+                {
+                    JToken appearancejson = DataUtil.TraverseJTokenCaseInsensitive(formJson, "Appearance", acc);
+                    showdownName = GetGenderedShowdownName(appearancejson, pku.Gender);
+                    if(showdownName != null)
+                        return (showdownName, DataUtil.stringEqualsCaseInsensitive(searchableForm, castableForms[0])); //found valid form+appearance
+                }
 
-            // If species with form exists, return
-            if (checkedForm != null)
-                return (checkedForm, false); //species+form is valid
+                //all appearances failed for this form, try null appearance
+                showdownName = GetGenderedShowdownName(formJson, pku.Gender);
+                if (showdownName != null)
+                    return (showdownName, DataUtil.stringEqualsCaseInsensitive(searchableForm, castableForms[0])); //found valid form+appearance
+            }
 
-            // Forms must be null or invalid past this point
-
-            //if form unspecified, not invalid. If specified, its invalid at this point.
-            bool formInvalid = pku.Form != null;
-
-            //get default form of this species
-            string defaultForm = pkuUtil.getDefaultForm(pku.Species, COMBINED_SHOWDOWN_DATA);
-
-            //get showdown species of default form (if its specified)
-            string defaultShowdownName = GetShowdownSpeciesHelper(speciesjson, defaultForm, pku.Gender);
-
-            //if no showdown name specified, fall back on species name.
-            return defaultShowdownName != null ? (defaultShowdownName, formInvalid) : (DataUtil.uppercaseFirstChar(pku.Species), formInvalid);
+            // No showdown name found in ShowdownNames.json
+            //TODO: make showdownNames.json have ALL species...
+            if (DexUtil.IsFormDefault(pku))
+                return (pku.Species, false); //If it's a default form, just assume Showdown name is species name
+            else
+                return (null, false); //no valid form/appearance found
         }
 
 
@@ -126,7 +122,6 @@ namespace pkuManager.showdown
             listOfNames.RemoveAll(x => x == null); //get rid of null entries (there shouldn't be any but just in case)
             return listOfNames;
         }
-
         private static List<string> PullShowdownDataHelper(string url)
         {
             // Download file to string
@@ -175,7 +170,7 @@ namespace pkuManager.showdown
         // ----------
         // Check Showdown Battle Data Stuff
         // ----------
-        private static readonly JObject SHOWDOWN_BATTLE_DATA = DataUtil.getJson("showdownData");
+        private static readonly JObject SHOWDOWN_BATTLE_DATA = DataUtil.getJson("ShowdownData");
 
         private static bool IsDatumValid(string type, string datum)
         {
@@ -215,17 +210,8 @@ namespace pkuManager.showdown
         /// <summary>
         /// Showdown-specific alert generation methods. See <see cref="pkxUtil.TagAlerts"/> for more.
         /// </summary>
-        public static class Alerts
+        public static class TagAlerts
         {
-            public static Alert GetFormAlert(AlertType at, string invalidform)
-            {
-                if (at == AlertType.INVALID)
-                    return new Alert("Form", $"The form \"{invalidform}\" is not a valid form for" +
-                        $" this species in Showdown. Using the default form.");
-                else
-                    throw pkxUtil.TagAlerts.InvalidAlertType(at);
-            }
-
             public static Alert GetNicknameAlert(AlertType at)
             {
                 if (at == AlertType.INVALID)
@@ -285,16 +271,16 @@ namespace pkuManager.showdown
         /// </summary>
         public static class ProcessTags
         {
-            public static (string, Alert) ProcessSpeciesName(PKUObject pku)
+            public static (string, Alert) ProcessShowdownName(pkuObject pku)
             {
-                (string showdownSpecies, bool invalidForm) = GetShowdownSpecies(pku);
-                if (showdownSpecies == null)
+                (string showdownName, bool casted) = GetShowdownName(pku);
+                if (showdownName == null)
                     throw new ArgumentException("Expected a pku with a valid Showdown species here.");
 
-                return (showdownSpecies, invalidForm ? Alerts.GetFormAlert(AlertType.INVALID, pku.Form) : null);
+                return (showdownName, casted ? pkxUtil.TagAlerts.GetFormAlert(AlertType.CASTED, pku.Forms) : null);
             }
 
-            public static (string, Alert) ProcessNickname(PKUObject pku)
+            public static (string, Alert) ProcessNickname(pkuObject pku)
             {
                 // Research:
                 //  - Practically no character limit
@@ -305,12 +291,12 @@ namespace pkuManager.showdown
                 if (pku.Nickname == null || pku.Nickname == "") //if null/empty
                     return (null, null);
                 else if (pku.Nickname[0] == ' ') //if first character is a space
-                    return (pku.Nickname, Alerts.GetNicknameAlert(AlertType.INVALID));
+                    return (pku.Nickname, TagAlerts.GetNicknameAlert(AlertType.INVALID));
                 else //nothing else to check
                     return (pku.Nickname, null);
             }
 
-            public static (string, Alert) ProcessItem(PKUObject pku)
+            public static (string, Alert) ProcessItem(pkuObject pku)
             {
                 Alert a = null;
                 bool itemValid = IsItemValid(pku.Item);
@@ -320,7 +306,7 @@ namespace pkuManager.showdown
                 return (itemValid ? pku.Item : null, a);
             }
 
-            public static (string, Alert) ProcessAbility(PKUObject pku)
+            public static (string, Alert) ProcessAbility(pkuObject pku)
             {
                 Alert a = null;
                 bool abilityValid = IsAbilityValid(pku.Ability);
@@ -330,47 +316,47 @@ namespace pkuManager.showdown
                 return (abilityValid ? pku.Ability : null, a);
             }
 
-            public static (int, Alert) ProcessLevel(PKUObject pku)
+            public static (int, Alert) ProcessLevel(pkuObject pku)
             {
                 return pkxUtil.ProcessTags.ProcessNumericTag(pku.Level, pkxUtil.TagAlerts.GetLevelAlert, false, 100, 1, 100);
             }
 
-            public static (int, Alert) ProcessFriendship(PKUObject pku)
+            public static (int, Alert) ProcessFriendship(pkuObject pku)
             {
-                return pkxUtil.ProcessTags.ProcessNumericTag(pku.Friendship, Alerts.GetFriendshipAlert, false, 255, 0, 255);
+                return pkxUtil.ProcessTags.ProcessNumericTag(pku.Friendship, TagAlerts.GetFriendshipAlert, false, 255, 0, 255);
             }
 
-            public static (int[], Alert) ProcessIVs(PKUObject pku)
+            public static (int[], Alert) ProcessIVs(pkuObject pku)
             {
                 int?[] vals = { pku.IVs?.HP, pku.IVs?.Attack, pku.IVs?.Defense, pku.IVs?.Sp_Attack, pku.IVs?.Sp_Defense, pku.IVs?.Speed };
                 return pkxUtil.ProcessTags.ProcessMultiNumericTag(pku.IVs != null, vals, pkxUtil.TagAlerts.GetIVsAlert, 31, 0, 31, false);
             }
 
-            public static (Nature?, Alert) ProcessNature(PKUObject pku)
+            public static (Nature?, Alert) ProcessNature(pkuObject pku)
             {
                 Nature? natureTest = pkxUtil.GetNature(pku.Nature);
                 if (natureTest.HasValue)
                     return pkxUtil.ProcessTags.ProcessNature(pku);
                 else if (pku.Nature == null)
-                    return (null, Alerts.GetNatureAlert(AlertType.UNSPECIFIED));
+                    return (null, TagAlerts.GetNatureAlert(AlertType.UNSPECIFIED));
                 else
-                    return (null, Alerts.GetNatureAlert(AlertType.INVALID, pku.Nature));
+                    return (null, TagAlerts.GetNatureAlert(AlertType.INVALID, pku.Nature));
             }
 
-            public static (bool, Alert) ProcessGMax(PKUObject pku, string checkedShowdownSpecies)
+            public static (bool, Alert) ProcessGMax(pkuObject pku, string checkedShowdownSpecies)
             {
-                if (pku.Gigantamax_Factor)
+                if (pku.Gigantamax_Factor == true)
                 {
                     if (IsGMaxValid(checkedShowdownSpecies))
                         return (true, null);
                     else
-                        return (false, Alerts.GetGMaxAlert(AlertType.INVALID));
+                        return (false, TagAlerts.GetGMaxAlert(AlertType.INVALID));
                 }
                 else
                     return (false, null);
             }
 
-            public static (string[], Alert) ProcessMoves(PKUObject pku)
+            public static (string[], Alert) ProcessMoves(pkuObject pku)
             {
                 //doesnt allow gmax moves, but showdown doesn't allow them either
                 List<string> moves = new List<string>();

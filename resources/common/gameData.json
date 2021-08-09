@@ -1,0 +1,53 @@
+{
+    // Gen 3
+    "Sapphire": {
+        "Generation": 3,
+        "Game ID": 1
+    },
+    "Ruby": {
+        "Generation": 3,
+        "Game ID": 2
+    },
+    "Emerald": {
+        "Generation": 3,
+        "Game ID": 3
+    },
+    "FireRed": {
+        "Generation": 3,
+        "Game ID": 4
+    },
+    "LeafGreen": {
+        "Generation": 3,
+        "Game ID": 5
+    },
+    "Colosseum": {
+        "Generation": 3,
+        "Game ID": 15
+    },
+    "XD": {
+        "Generation": 3,
+        "Game ID": 15
+    },
+
+    // Gen 4
+    "Diamond": {
+        "Generation": 4,
+        "Game ID": 10
+    },
+    "Pearl": {
+        "Generation": 4,
+        "Game ID": 11
+    },
+    "Platinum": {
+        "Generation": 4,
+        "Game ID": 12
+    },
+    "HeartGold": {
+        "Generation": 4,
+        "Game ID": 7
+    },
+    "SoulSilver": {
+        "Generation": 4,
+        "Game ID": 8
+    }
+}

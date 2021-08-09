@@ -1,6 +1,7 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Common;
 using pkuManager.pku;
+using pkuManager.pkx;
 using System.Linq;
 using System.Text;
 
@@ -8,7 +9,7 @@ namespace pkuManager.showdown
 {
     public class ShowdownExporter : Exporter
     {
-        public ShowdownExporter(PKUObject pku, GlobalFlags globalFlags) : base(pku, globalFlags) { }
+        public ShowdownExporter(pkuObject pku, GlobalFlags globalFlags) : base(pku, globalFlags) { }
 
         public override string formatName { get { return "Showdown!"; } }
 
@@ -17,11 +18,11 @@ namespace pkuManager.showdown
         public override bool canExport()
         {
             //Showdown doesn't support eggs (they can't exactly battle...).
-            if (pkuUtil.IsAnEgg(pku))
+            if (pku.IsAnEgg())
                 return false;
 
-            // Only Pokemon from gens 1-8, CAP, or Pokestar are allowed.
-            return ShowdownUtil.GetShowdownSpecies(pku).showdownSpecies != null;
+            // Only Pokemon with a valid Showdown name are allowed.
+            return ShowdownUtil.GetShowdownName(pku).name != null;
         }
 
 
@@ -44,7 +45,7 @@ namespace pkuManager.showdown
             // Process Global Flags
             // ----------
 
-            (pku, tempAlert) = pkxUtil.ProcessFlags.ProcessBattleStatOverride(pku, globalFlags);
+            tempAlert = pkxUtil.ProcessFlags.ProcessBattleStatOverride(pku, globalFlags);
             notes.Add(tempAlert);
 
 
@@ -52,9 +53,9 @@ namespace pkuManager.showdown
             // Process Tags
             // ----------
 
-            // Species Name
+            // Showdown Name
             //  - Combination of species and form tags (and gender for Meowstic & Indeedee)
-            (species, tempAlert) = ShowdownUtil.ProcessTags.ProcessSpeciesName(pku);
+            (species, tempAlert) = ShowdownUtil.ProcessTags.ProcessShowdownName(pku);
             warnings.Add(tempAlert);
 
             // Nickname
@@ -132,7 +133,7 @@ namespace pkuManager.showdown
                 txt += $"\nLevel: {level}";
 
             // Shiny (no preprocessing)
-            if (pku.Shiny)
+            if (pku.IsShiny())
                 txt += "\nShiny: true";
 
             // Friendship

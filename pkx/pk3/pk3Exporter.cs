@@ -6,11 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace pkuManager.pk3
+namespace pkuManager.pkx.pk3
 {
     public class pk3Exporter : Exporter
     {
-        public pk3Exporter(PKUObject pku, GlobalFlags globalFlags) : base(pku, globalFlags) { }
+        public pk3Exporter(pkuObject pku, GlobalFlags globalFlags) : base(pku, globalFlags) { }
 
         public override string formatName { get { return "Gen 3"; } }
 
@@ -18,21 +18,19 @@ namespace pkuManager.pk3
 
         public override bool canExport()
         {
-            // No Shadow Pokemon
-            if (pkuUtil.IsShadow(pku))
+            // Screen National Dex #
+            if (!(pkxUtil.GetNationalDex(pku.Species) <= 386)) //Only species gen 3 and below are allowed
                 return false;
 
-            // No Regional Variants
-            if (pku.Form != null && (pku.Form.ToLowerInvariant() == "alolan" || pku.Form.ToLowerInvariant() == "galarian"))
+            // Screen Form
+            if (!DexUtil.IsFormDefault(pku) && !DexUtil.CanCastPKU(pku, pk3Util.VALID_FORMS)) // If form isn't default, and uncastable
                 return false;
 
-            // In Gen 3 Nat Dex
-            int? dexTest = pkxUtil.GetNationalDex(pku.Species);
-            if (dexTest.HasValue && dexTest <= 386) //Deoxys (386) and below
-                return true;
+            // Screen Shadow Pokemon
+            if (pku.IsShadow())
+                return false;
 
-            // Not In Gen 3 Nat Dex
-            return false;
+            return true; //compatible with .pk3
         }
 
 
@@ -64,7 +62,7 @@ namespace pkuManager.pk3
             // Process Global Flags
             // ----------
 
-            (pku, tempAlert) = pkxUtil.ProcessFlags.ProcessBattleStatOverride(pku, globalFlags);
+            tempAlert = pkxUtil.ProcessFlags.ProcessBattleStatOverride(pku, globalFlags);
             notes.Add(tempAlert);
 
 
@@ -156,12 +154,12 @@ namespace pkuManager.pk3
 
             // Origin Game:
             string checkedGameName;
-            (game, checkedGameName, tempAlert) = pkxUtil.ProcessTags.ProcessOriginGame(pku);
+            (game, checkedGameName, tempAlert) = pkxUtil.ProcessTags.ProcessOriginGame(pku, 3);
             warnings.Add(tempAlert);
 
             // Met Location
             //  - Requires: Origin Game
-            (location, tempAlert) = pkxUtil.ProcessTags.ProcessMetLocation(pku, checkedGameName, (g, l) => { return pk3Util.EncodeMetLocation(g, l); }, pk3Util.DEFAULT_LOCATION);
+            (location, tempAlert) = pkxUtil.ProcessTags.ProcessMetLocation(pku, checkedGameName, (g, l) => { return pk3Util.EncodeMetLocation(g, l); }, pk3Util.GetDefaultLocationName(checkedGameName));
             warnings.Add(tempAlert);
 
             // Met Level
@@ -228,7 +226,7 @@ namespace pkuManager.pk3
                 {
                     DataUtil.ShiftCopy(moves[i], A, 2 * i, 2); // Move i - A: bytes (2i)-(2i+1)  (overall 0-7)
                     if (moves[i] != 0)
-                        A[8 + i] = (byte)((5 + ppups[i]) * PokeAPIUtil.GetMoveBasePP((int)moves[i]) / 5); // PP i - A: byte 8+i  (overall 8-11)
+                        A[8 + i] = (byte)((5 + ppups[i]) * PokeAPIUtil.GetMoveBasePP(moves[i]) / 5); // PP i - A: byte 8+i  (overall 8-11)
                 }
             }
 
@@ -277,7 +275,7 @@ namespace pkuManager.pk3
                 iv_egg_ability = DataUtil.setBits(iv_egg_ability, (uint)ivs[5], 15, 5); // Speed IV: IVs/Egg/Ability bits 15-19
                 iv_egg_ability = DataUtil.setBits(iv_egg_ability, (uint)ivs[3], 20, 5); // Sp. Attack IV: IVs/Egg/Ability bits 20-24
                 iv_egg_ability = DataUtil.setBits(iv_egg_ability, (uint)ivs[4], 25, 5); // Sp. Defense: IVs/Egg/Ability bits 25-29
-                iv_egg_ability = DataUtil.setBits(iv_egg_ability, Convert.ToUInt32(pkuUtil.IsAnEgg(pku)), 30); // Is Egg: IVs/Egg/Ability bit 30
+                iv_egg_ability = DataUtil.setBits(iv_egg_ability, Convert.ToUInt32(pku.IsAnEgg()), 30); // Is Egg: IVs/Egg/Ability bit 30
                 iv_egg_ability = DataUtil.setBits(iv_egg_ability, (uint)abilitySlot, 31); // Ability Slot: IVs/Egg/Ability bit 31
                 DataUtil.ShiftCopy(iv_egg_ability, M, 4);
 
@@ -312,20 +310,10 @@ namespace pkuManager.pk3
             M.CopyTo(subData, 12 * order.IndexOf('M'));
 
             // Calculate Checksum
-            uint checksum = 0;
-            for (int i = 0; i < 24; i++) // Sum over subData, w/ 2 byte window
-                checksum += subData[i + 1] * (uint)256 + subData[i];
-            checksum %= 65536; //should be 2 bytes
+            uint checksum = pk3Util.CalculateChecksum(subData);
 
             // Encryption Step
-            uint encryptionKey = id ^ pidResolver.DecideValue();
-            for (int i = 0; i < 12; i++) //xor subData with key in 4 byte chunks
-            {
-                int index = 4 * i;
-                uint chunk = (uint)(subData[index + 3] << 24 | subData[index + 2] << 16 | subData[index + 1] << 8 | subData[index]);
-                chunk ^= encryptionKey;
-                DataUtil.toByteArray(chunk).CopyTo(subData, index); //copy the encrypted chunk bytes to the subData array
-            }
+            pk3Util.EncryptSubData(subData, id, pidResolver.DecideValue());
 
             // Return
             return (subData, checksum);
@@ -347,7 +335,7 @@ namespace pkuManager.pk3
 
             // Language - bytes 18-19
             uint langBytes = pk3Util.EncodeLanguage(lang);
-            if (pkuUtil.IsAnEgg(pku))
+            if (pku.IsAnEgg())
                 langBytes = pk3Util.EGG_LANGUAGE_ID; //Eggs in gen 3 all have this as their language value.
             DataUtil.ShiftCopy(langBytes, data, 18, 2);
 

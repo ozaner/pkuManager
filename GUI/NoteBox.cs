@@ -28,11 +28,10 @@ namespace pkuManager.GUI
             this.AutoSize = true;
 
             titleLabel.Location = new Point(4, 4);
-            titleLabel.MaximumSize = new Size(270, 13);
-            titleLabel.MinimumSize = new Size(0, 13);
+            titleLabel.MaximumSize = new Size(270, 15);
+            titleLabel.MinimumSize = new Size(0, 15);
             titleLabel.Text = alert.title;
             titleLabel.Font = new Font(titleLabel.Font, FontStyle.Bold);
-            titleLabel.Height = 13;
             titleLabel.Width = titleLabel.PreferredWidth;
 
             messageTextbox.Location = new Point(7, 20);

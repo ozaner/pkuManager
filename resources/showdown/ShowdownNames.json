@@ -1,4 +1,4 @@
-﻿{
+{
     // This json file is associates a species' canonical PKU form name, with their Showdown form species name.
     // For example the Sinnoh Cap Pikachu form is denoted "Sinnoh Cap" by PKU, but in Showdown the species is: "Pikachu-Sinnoh".
     // The corresponding json entry is given by:
@@ -64,57 +64,63 @@
             "Alolan": {
                 "Showdown Species": "Raticate-Alola"
             },
-            "Alolan Totem": {
+            "Alolan-Totem": {
                 "Showdown Species": "Raticate-Alola-Totem"
             }
         }
     }, //20 - special case, double form Alolan-Totem
     "Pikachu": {
         "Forms": {
+            "": {
+                "Appearance": {
+                    "Original Cap": {
+                        "Showdown-Species": "Pikachu-Original"
+                    },
+                    "Hoenn Cap": {
+                        "Showdown-Species": "Pikachu-Hoenn"
+                    },
+                    "Sinnoh Cap": {
+                        "Showdown-Species": "Pikachu-Sinnoh"
+                    },
+                    "Unova Cap": {
+                        "Showdown-Species": "Pikachu-Unova"
+                    },
+                    "Kalos Cap": {
+                        "Showdown-Species": "Pikachu-Kalos"
+                    },
+                    "Alola Cap": {
+                        "Showdown-Species": "Pikachu-Alola"
+                    },
+                    "Partner Cap": {
+                        "Showdown-Species": "Pikachu-Partner"
+                    },
+                    "World Cap": {
+                        "Showdown-Species": "Pikachu-World"
+                    }
+                }
+            },
             "Cosplay": {
-                "Showdown-Species": "Pikachu-Cosplay"
-            },
-            "Rock-Star": {
-                "Showdown-Species": "Pikachu-Rock-Star"
-            },
-            "Belle": {
-                "Showdown-Species": "Pikachu-Belle"
-            },
-            "Pop-Star": {
-                "Showdown-Species": "Pikachu-Pop-Star"
-            },
-            "PhD": {
-                "Showdown-Species": "Pikachu-PhD"
-            },
-            "Libre": {
-                "Showdown-Species": "Pikachu-Libre"
-            },
-            "Original Cap": {
-                "Showdown-Species": "Pikachu-Original"
-            },
-            "Hoenn Cap": {
-                "Showdown-Species": "Pikachu-Hoenn"
-            },
-            "Sinnoh Cap": {
-                "Showdown-Species": "Pikachu-Sinnoh"
-            },
-            "Unova Cap": {
-                "Showdown-Species": "Pikachu-Unova"
-            },
-            "Kalos Cap": {
-                "Showdown-Species": "Pikachu-Kalos"
-            },
-            "Alola Cap": {
-                "Showdown-Species": "Pikachu-Alola"
-            },
-            "Partner Cap": {
-                "Showdown-Species": "Pikachu-Partner"
+                "Showdown-Species": "Pikachu-Cosplay",
+                "Appearance": {
+                    "Rock-Star Outfit": {
+                        "Showdown-Species": "Pikachu-Rock-Star"
+                    },
+                    "Belle Outfit": {
+                        "Showdown-Species": "Pikachu-Belle"
+                    },
+                    "Pop-Star Outfit": {
+                        "Showdown-Species": "Pikachu-Pop-Star"
+                    },
+                    "PhD Outfit": {
+                        "Showdown-Species": "Pikachu-PhD"
+                    },
+                    "Libre Outfit": {
+                        "Showdown-Species": "Pikachu-Libre"
+                    }
+                }
             },
             "Partner": {
                 "Showdown-Species": "Pikachu-Starter"
-            },
-            "World Cap": {
-                "Showdown-Species": "Pikachu-World"
             }
         }
     }, //25
@@ -250,13 +256,16 @@
             }
         }
     }, //80
-    "Farfetch’d": {
+    "Farfetch'd": {
         "Forms": {
+            "": {
+                "Showdown Species": "Farfetch’d"
+            },
             "Galarian": {
                 "Showdown Species": "Farfetch’d-Galar"
             }
         }
-    }, //83 - note ' vs ’ in name (latter is correct)
+    }, //83 - note that showdown uses ’ instead of ' (they are wrong on this, but I have no say on the matter...)
     "Grimer": {
         "Forms": {
             "Alolan": {
@@ -290,7 +299,7 @@
             "Alolan": {
                 "Showdown Species": "Marowak-Alola"
             },
-            "Alolan Totem": {
+            "Alolan-Totem": {
                 "Showdown Species": "Marowak-Alola-Totem"
             }
         }
@@ -379,8 +388,13 @@
     // Gen 2
     "Pichu": {
         "Forms": {
-            "Spiky-eared": {
-                "Showdown Species": "Pichu-Spiky-eared"
+            "": {
+                "Showdown Species": "Pichu",
+                "Appearance": {
+                    "Spiky-eared": {
+                        "Showdown Species": "Pichu-Spiky-eared"
+                    }
+                }
             }
         }
     }, //172
@@ -954,14 +968,14 @@
             "Zen Mode": {
                 "Showdown Species": "Darmanitan-Zen"
             }, //in-battle only
-            "Galarian Standard Mode": {
+            "Galarian-Standard Mode": {
                 "Showdown Species": "Darmanitan-Galar"
             },
-            "Galarian Zen Mode": {
+            "Galarian-Zen Mode": {
                 "Showdown Species": "Darmanitan-Galar-Zen"
             } //in-battle only
         }
-    }, //555 - special case, double form Galarian Zen
+    }, //555 - special case, double forms Galarian Standard/Zen Mode
     "Yamask": {
         "Forms": {
             "Galarian": {
@@ -1070,17 +1084,21 @@
     }, //648
     "Genesect": {
         "Forms": {
-            "Douse Drive": {
-                "Showdown Species": "Genesect-Douse"
-            },
-            "Shock Drive": {
-                "Showdown Species": "Genesect-Shock"
-            },
-            "Burn Drive": {
-                "Showdown Species": "Genesect-Burn"
-            },
-            "Chill Drive": {
-                "Showdown Species": "Genesect-Chill"
+            "": {
+                "Appearance": {
+                    "Douse Drive": {
+                        "Showdown Species": "Genesect-Douse"
+                    },
+                    "Shock Drive": {
+                        "Showdown Species": "Genesect-Shock"
+                    },
+                    "Burn Drive": {
+                        "Showdown Species": "Genesect-Burn"
+                    },
+                    "Chill Drive": {
+                        "Showdown Species": "Genesect-Chill"
+                    }
+                }
             }
         }
     }, //649
@@ -1095,7 +1113,7 @@
             } //in-battle only
         }
     }, //658
-    "Vivillion": {
+    "Vivillon": {
         "Forms": {
             "Meadow": {
                 "Showdown Species": "Vivillon"
@@ -1222,34 +1240,36 @@
     "Furfrou": {
         "Forms": {
             "Natural": {
-                "Showdown Species": "Furfrou"
-            },
-            "Dandy": {
-                "Showdown Species": "Furfrou-Dandy"
-            },
-            "Debutante": {
-                "Showdown Species": "Furfrou-Debutante"
-            },
-            "Diamond": {
-                "Showdown Species": "Furfrou-Diamond"
-            },
-            "Heart": {
-                "Showdown Species": "Furfrou-Heart"
-            },
-            "Kabuki": {
-                "Showdown Species": "Furfrou-Kabuki"
-            },
-            "La Reine": {
-                "Showdown Species": "Furfrou-La Reine"
-            },
-            "Matron": {
-                "Showdown Species": "Furfrou-Matron"
-            },
-            "Pharaoh": {
-                "Showdown Species": "Furfrou-Pharaoh"
-            },
-            "Star": {
-                "Showdown Species": "Furfrou-Star"
+                "Showdown Species": "Furfrou",
+                "Appearance": {
+                    "Dandy Trim": {
+                        "Showdown Species": "Furfrou-Dandy"
+                    },
+                    "Debutante Trim": {
+                        "Showdown Species": "Furfrou-Debutante"
+                    },
+                    "Diamond Trim": {
+                        "Showdown Species": "Furfrou-Diamond"
+                    },
+                    "Heart Trim": {
+                        "Showdown Species": "Furfrou-Heart"
+                    },
+                    "Kabuki Trim": {
+                        "Showdown Species": "Furfrou-Kabuki"
+                    },
+                    "La Reine Trim": {
+                        "Showdown Species": "Furfrou-La Reine"
+                    },
+                    "Matron Trim": {
+                        "Showdown Species": "Furfrou-Matron"
+                    },
+                    "Pharaoh Trim": {
+                        "Showdown Species": "Furfrou-Pharaoh"
+                    },
+                    "Star Trim": {
+                        "Showdown Species": "Furfrou-Star"
+                    }
+                }
             }
         }
     }, //676
@@ -1274,33 +1294,37 @@
     }, //681
     "Pumpkaboo": {
         "Forms": {
-            "Small Size": {
-                "Showdown Species": "Pumpkaboo-Small"
-            },
-            "Average Size": {
-                "Showdown Species": "Pumpkaboo"
-            },
-            "Large Size": {
-                "Showdown Species": "Pumpkaboo-Large"
-            },
-            "Super Size": {
-                "Showdown Species": "Pumpkaboo-Super"
+            "": {
+                "Showdown Species": "Pumpkaboo",
+                "Appearance": {
+                    "Small Size": {
+                        "Showdown Species": "Pumpkaboo-Small"
+                    },
+                    "Large Size": {
+                        "Showdown Species": "Pumpkaboo-Large"
+                    },
+                    "Super Size": {
+                        "Showdown Species": "Pumpkaboo-Super"
+                    }
+                }
             }
         }
     }, //710
     "Gourgeist": {
         "Forms": {
-            "Small": {
-                "Showdown Species": "Gourgeist-Small"
-            },
-            "Average": {
-                "Showdown Species": "Gourgeist"
-            },
-            "Large": {
-                "Showdown Species": "Gourgeist-Large"
-            },
-            "Super": {
-                "Showdown Species": "Gourgeist-Super"
+            "": {
+                "Showdown Species": "Gourgeist",
+                "Appearance": {
+                    "Small Size": {
+                        "Showdown Species": "Gourgeist-Small"
+                    },
+                    "Large Size": {
+                        "Showdown Species": "Gourgeist-Large"
+                    },
+                    "Super Size": {
+                        "Showdown Species": "Gourgeist-Super"
+                    }
+                }
             }
         }
     }, //711
@@ -1361,7 +1385,7 @@
             },
             "Pa'u Style Style": {
                 "Showdown Species": "Oricorio-Pa'u"
-            }, //TODO is that apostrophe right? Looked at a text dump and I don't think so...?
+            },
             "Sensu Style": {
                 "Showdown Species": "Oricorio-Sensu"
             }
@@ -1499,13 +1523,13 @@
             "Violet": {
                 "Showdown Species": "Minior-Violet"
             },
-            "Red-Meteor": {
+            "Meteor-Red": {
                 "Showdown Species": "Minior-Meteor"
             },
-            "Orange-Meteor": {
+            "Meteor-Orange": {
                 "Showdown Species": "Minior-Meteor"
             },
-            "Yellow-Meteor": {
+            "Meteor-Yellow": {
                 "Showdown Species": "Minior-Meteor"
             },
             "Green-Meteor": {
@@ -1517,7 +1541,7 @@
             "Indigo-Meteor": {
                 "Showdown Species": "Minior-Meteor"
             },
-            "Violet-Meteor": {
+            "Meteor-Violet": {
                 "Showdown Species": "Minior-Meteor"
             }
         }
@@ -1537,7 +1561,7 @@
             "Busted": {
                 "Showdown Species": "Mimikyu-Busted"
             }, //in-battle only
-            "Totem": {
+            "Totem-Disguised": {
                 "Showdown Species": "Mimikyu-Totem"
             },
             "Totem-Busted": {
@@ -1567,8 +1591,12 @@
     }, //800
     "Magearna": {
         "Forms": {
-            "Original Color": {
-                "Showdown Species": "Magearna-Original"
+            "": {
+                "Appearance": {
+                    "Original Color": {
+                        "Showdown Species": "Magearna-Original"
+                    }
+                }
             }
         }
     }, //801
@@ -1616,195 +1644,36 @@
             }
         }
     }, //855
+    "Sirfetch'd": {
+        "Showdown Species": "Sirfetch’d"
+    }, //865 - note that showdown uses ’ instead of ' (they are wrong on this, but I have no say on the matter...).
     "Alcremie": {
         "Forms": {
-            "Vanilla Cream-Strawberry": {
+            "Vanilla Cream": {
                 "Showdown Species": "Alcremie"
             },
-            "Vanilla Cream-Berry": {
-                "Showdown Species": "Alcremie"
-            },
-            "Vanilla Cream-Love": {
-                "Showdown Species": "Alcremie"
-            },
-            "Vanilla Cream-Star": {
-                "Showdown Species": "Alcremie"
-            },
-            "Vanilla Cream-Clover": {
-                "Showdown Species": "Alcremie"
-            },
-            "Vanilla Cream-Flower": {
-                "Showdown Species": "Alcremie"
-            },
-            "Vanilla Cream-Ribbon": {
-                "Showdown Species": "Alcremie"
-            },
-            "Ruby Cream-Strawberry": {
+            "Ruby Cream": {
                 "Showdown Species": "Alcremie-Ruby-Cream"
             },
-            "Ruby Cream-Berry": {
-                "Showdown Species": "Alcremie-Ruby-Cream"
-            },
-            "Ruby Cream-Love": {
-                "Showdown Species": "Alcremie-Ruby-Cream"
-            },
-            "Ruby Cream-Star": {
-                "Showdown Species": "Alcremie-Ruby-Cream"
-            },
-            "Ruby Cream-Clover": {
-                "Showdown Species": "Alcremie-Ruby-Cream"
-            },
-            "Ruby Cream-Flower": {
-                "Showdown Species": "Alcremie-Ruby-Cream"
-            },
-            "Ruby Cream-Ribbon": {
-                "Showdown Species": "Alcremie-Ruby-Cream"
-            },
-            "Matcha Cream-Strawberry": {
+            "Matcha Cream": {
                 "Showdown Species": "Alcremie-Matcha-Cream"
             },
-            "Matcha Cream-Berry": {
-                "Showdown Species": "Alcremie-Matcha-Cream"
-            },
-            "Matcha Cream-Love": {
-                "Showdown Species": "Alcremie-Matcha-Cream"
-            },
-            "Matcha Cream-Star": {
-                "Showdown Species": "Alcremie-Matcha-Cream"
-            },
-            "Matcha Cream-Clover": {
-                "Showdown Species": "Alcremie-Matcha-Cream"
-            },
-            "Matcha Cream-Flower": {
-                "Showdown Species": "Alcremie-Matcha-Cream"
-            },
-            "Matcha Cream-Ribbon": {
-                "Showdown Species": "Alcremie-Matcha-Cream"
-            },
-            "Mint Cream-Strawberry": {
+            "Mint Cream": {
                 "Showdown Species": "Alcremie-Mint-Cream"
             },
-            "Mint Cream-Berry": {
-                "Showdown Species": "Alcremie-Mint-Cream"
-            },
-            "Mint Cream-Love": {
-                "Showdown Species": "Alcremie-Mint-Cream"
-            },
-            "Mint Cream-Star": {
-                "Showdown Species": "Alcremie-Mint-Cream"
-            },
-            "Mint Cream-Clover": {
-                "Showdown Species": "Alcremie-Mint-Cream"
-            },
-            "Mint Cream-Flower": {
-                "Showdown Species": "Alcremie-Mint-Cream"
-            },
-            "Mint Cream-Ribbon": {
-                "Showdown Species": "Alcremie-Mint-Cream"
-            },
-            "Lemon Cream-Strawberry": {
+            "Lemon Cream": {
                 "Showdown Species": "Alcremie-Lemon-Cream"
             },
-            "Lemon Cream-Berry": {
-                "Showdown Species": "Alcremie-Lemon-Cream"
-            },
-            "Lemon Cream-Love": {
-                "Showdown Species": "Alcremie-Lemon-Cream"
-            },
-            "Lemon Cream-Star": {
-                "Showdown Species": "Alcremie-Lemon-Cream"
-            },
-            "Lemon Cream-Clover": {
-                "Showdown Species": "Alcremie-Lemon-Cream"
-            },
-            "Lemon Cream-Flower": {
-                "Showdown Species": "Alcremie-Lemon-Cream"
-            },
-            "Lemon Cream-Ribbon": {
-                "Showdown Species": "Alcremie-Lemon-Cream"
-            },
-            "Salted Cream-Strawberry": {
+            "Salted Cream": {
                 "Showdown Species": "Alcremie-Salted-Cream"
             },
-            "Salted Cream-Berry": {
-                "Showdown Species": "Alcremie-Salted-Cream"
-            },
-            "Salted Cream-Love": {
-                "Showdown Species": "Alcremie-Salted-Cream"
-            },
-            "Salted Cream-Star": {
-                "Showdown Species": "Alcremie-Salted-Cream"
-            },
-            "Salted Cream-Clover": {
-                "Showdown Species": "Alcremie-Salted-Cream"
-            },
-            "Salted Cream-Flower": {
-                "Showdown Species": "Alcremie-Salted-Cream"
-            },
-            "Salted Cream-Ribbon": {
-                "Showdown Species": "Alcremie-Salted-Cream"
-            },
-            "Ruby Swirl-Strawberry": {
+            "Ruby Swirl": {
                 "Showdown Species": "Alcremie-Ruby-Swirl"
             },
-            "Ruby Swirl-Berry": {
-                "Showdown Species": "Alcremie-Ruby-Swirl"
-            },
-            "Ruby Swirl-Love": {
-                "Showdown Species": "Alcremie-Ruby-Swirl"
-            },
-            "Ruby Swirl-Star": {
-                "Showdown Species": "Alcremie-Ruby-Swirl"
-            },
-            "Ruby Swirl-Clover": {
-                "Showdown Species": "Alcremie-Ruby-Swirl"
-            },
-            "Ruby Swirl-Flower": {
-                "Showdown Species": "Alcremie-Ruby-Swirl"
-            },
-            "Ruby Swirl-Ribbon": {
-                "Showdown Species": "Alcremie-Ruby-Swirl"
-            },
-            "Caramel Swirl-Strawberry": {
+            "Caramel Swirl": {
                 "Showdown Species": "Alcremie-Caramel-Swirl"
             },
-            "Caramel Swirl-Berry": {
-                "Showdown Species": "Alcremie-Caramel-Swirl"
-            },
-            "Caramel Swirl-Love": {
-                "Showdown Species": "Alcremie-Caramel-Swirl"
-            },
-            "Caramel Swirl-Star": {
-                "Showdown Species": "Alcremie-Caramel-Swirl"
-            },
-            "Caramel Swirl-Clover": {
-                "Showdown Species": "Alcremie-Caramel-Swirl"
-            },
-            "Caramel Swirl-Flower": {
-                "Showdown Species": "Alcremie-Caramel-Swirl"
-            },
-            "Caramel Swirl-Ribbon": {
-                "Showdown Species": "Alcremie-Caramel-Swirl"
-            },
-            "Rainbow Swirl-Strawberry": {
-                "Showdown Species": "Alcremie-Rainbow-Swirl"
-            },
-            "Rainbow Swirl-Berry": {
-                "Showdown Species": "Alcremie-Rainbow-Swirl"
-            },
-            "Rainbow Swirl-Love": {
-                "Showdown Species": "Alcremie-Rainbow-Swirl"
-            },
-            "Rainbow Swirl-Star": {
-                "Showdown Species": "Alcremie-Rainbow-Swirl"
-            },
-            "Rainbow Swirl-Clover": {
-                "Showdown Species": "Alcremie-Rainbow-Swirl"
-            },
-            "Rainbow Swirl-Flower": {
-                "Showdown Species": "Alcremie-Rainbow-Swirl"
-            },
-            "Rainbow Swirl-Ribbon": {
+            "Rainbow Swirl": {
                 "Showdown Species": "Alcremie-Rainbow-Swirl"
             }
         }
@@ -1819,6 +1688,15 @@
             }
         }
     }, //875
+    "Indeedee": {
+        "Forms": {
+            "": {
+                "Showdown Gender Split": true,
+                "Showdown Species Male": "Indeedee",
+                "Showdown Species Female": "Indeedee-F"
+            }
+        }
+    }, //876 - special case for Showdown species with gender split
     "Morpeko": {
         "Forms": {
             "Full Belly Mode": {
@@ -1868,8 +1746,13 @@
     }, //892
     "Zarude": {
         "Forms": {
-            "Dada": {
-                "Showdown Species": "Zarude-Dada"
+            "": {
+                "Showdown Species": "Zarude",
+                "Appearance": {
+                    "Dada Cape": {
+                        "Showdown Species": "Zarude-Dada"
+                    }
+                }
             }
         }
     }, //893
@@ -1890,13 +1773,13 @@
             "Form 1": {
                 "Showdown Species": "Pokestar UFO"
             },
-            "Prop 1": { //Prop U1
+            "Prop U1": {
                 "Showdown Species": "Pokestar UFO-Prop"
             },
             "Form 2": {
                 "Showdown Species": "Pokestar UFO-2"
             },
-            "Prop 2": { //Prop U2
+            "Prop U2": {
                 "Showdown Species": "Pokestar UFO-PropU2"
             }
         }
@@ -1906,7 +1789,7 @@
             "": {
                 "Showdown Species": "Pokestar Brycen-Man"
             },
-            "Prop": { //Prop H1
+            "Prop H": {
                 "Showdown Species": "Pokestar Brycen-Man-Prop"
             }
         }
@@ -1916,7 +1799,7 @@
             "": {
                 "Showdown Species": "Pokestar MT"
             },
-            "Prop": { //Prop M1
+            "Prop M1": {
                 "Showdown Species": "Pokestar MT-Prop"
             }
         }
@@ -1926,7 +1809,7 @@
             "": {
                 "Showdown Species": "Pokestar MT2"
             },
-            "Prop": { //Prop M2
+            "Prop M2": {
                 "Showdown Species": "Pokestar MT2-Prop"
             }
         }
@@ -1936,7 +1819,7 @@
             "": {
                 "Showdown Species": "Pokestar Transport"
             },
-            "Prop": { //Prop T1
+            "Prop T1": {
                 "Showdown Species": "Pokestar Transport-Prop"
             }
         }
@@ -1946,13 +1829,13 @@
             "Form 1": {
                 "Showdown Species": "Pokestar Giant"
             },
-            "Prop 1": { //Prop O1
+            "Prop O1": {
                 "Showdown Species": "Pokestar Giant-PropO1"
             },
             "Form 2": {
                 "Showdown Species": "Pokestar Giant-2"
             },
-            "Prop 2": { //Prop O2
+            "Prop O2": {
                 "Showdown Species": "Pokestar Giant-PropO2"
             }
         }
@@ -1962,7 +1845,7 @@
             "": {
                 "Showdown Species": "Pokestar Humanoid"
             },
-            "Prop": {
+            "Prop C1": {
                 "Showdown Species": "Pokestar Humanoid-Prop"
             }
         }
@@ -1972,7 +1855,7 @@
             "": {
                 "Showdown Species": "Pokestar Monster"
             },
-            "Prop": { //Prop C2
+            "Prop C2": {
                 "Showdown Species": "Pokestar Monster-Prop"
             }
         }
@@ -1982,13 +1865,13 @@
             "Form 1": {
                 "Showdown Species": "Pokestar F-00"
             },
-            "Prop 1": { //Prop R1
+            "Prop R1": {
                 "Showdown Species": "Pokestar F-00-Prop"
             },
             "Form 2": {
                 "Showdown Species": "Pokestar F-002"
             },
-            "Prop 2": { //Prop R2
+            "Prop R2": {
                 "Showdown Species": "Pokestar F-002-Prop"
             }
         }
@@ -1998,7 +1881,7 @@
             "": {
                 "Showdown Species": "Pokestar Spirit"
             },
-            "Prop": { //Prop G1
+            "Prop G1": {
                 "Showdown Species": "Pokestar Spirit-Prop"
             }
         }
@@ -2008,7 +1891,7 @@
             "": {
                 "Showdown Species": "Pokestar White Door"
             },
-            "Prop": { //Prop W1
+            "Prop W1": {
                 "Showdown Species": "Pokestar White Door-Prop"
             }
         }
@@ -2018,7 +1901,7 @@
             "": {
                 "Showdown Species": "Pokestar Black Door"
             },
-            "Prop": { //Prop W2
+            "Prop W2": {
                 "Showdown Species": "Pokestar Black Door-Prop"
 
             }
@@ -2029,7 +1912,7 @@
             "": {
                 "Showdown Species": "Pokestar Black Belt"
             },
-            "Prop": { //Prop K1
+            "Prop K1": {
                 "Showdown Species": "Pokestar Black Belt-Prop"
             }
         }

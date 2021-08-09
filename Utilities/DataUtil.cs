@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace pkuManager.Utilities
 {
@@ -126,9 +128,40 @@ namespace pkuManager.Utilities
             file.Directory.Create(); // If the directory already exists, this method does nothing.
         }
 
+        public static string GetNextFilename(string filename)
+        {
+            int i = 1;
+            string dir = Path.GetDirectoryName(filename);
+            string file = Path.GetFileNameWithoutExtension(filename) + "{0}";
+            string extension = Path.GetExtension(filename);
+
+            while (File.Exists(filename))
+                filename = Path.Combine(dir, string.Format(file, "(" + i++ + ")") + extension);
+
+            return filename;
+        }
+
+
         // -----------------------
-        // Data type methods
+        // String realted methods
         // -----------------------
+
+        public static readonly char[] VOWELS = new char[] { 'a', 'e', 'i', 'o', 'u' };
+
+        public static string FormatArrayPrint(string[] strs)
+        {
+            if (strs == null || strs.Length == 0)
+                return null;
+
+            if (strs.Length == 1)
+                return strs[0];
+
+            string formatted = "[";
+            foreach (string str in strs)
+                formatted += str + ", ";
+            
+            return formatted.Remove(formatted.Length - 2) + "]";
+        }
 
         public static bool isValidURL(string uriName)
         {
@@ -142,12 +175,6 @@ namespace pkuManager.Utilities
             return str1?.ToLowerInvariant() == str2?.ToLowerInvariant();
         }
 
-        public static uint GetRandomUint()
-        {
-            int number = random.Next(Int32.MinValue, Int32.MaxValue);
-            return (uint)(number + (uint)Int32.MaxValue);
-        }
-
         public static string uppercaseFirstChar(string str)
         {
             if (str == null || str == "")
@@ -155,6 +182,17 @@ namespace pkuManager.Utilities
             else if (str.Length == 1)
                 return "" + char.ToUpper(str[0]);
             return char.ToUpper(str[0]) + str.Substring(1);
+        }
+
+
+        // -----------------------
+        // Data type methods
+        // -----------------------
+
+        public static uint GetRandomUint()
+        {
+            int number = random.Next(Int32.MinValue, Int32.MaxValue);
+            return (uint)(number + (uint)Int32.MaxValue);
         }
 
         public static uint setByte(uint original, byte val, int index)
@@ -223,6 +261,48 @@ namespace pkuManager.Utilities
         // -----------------------
         // Misc.
         // -----------------------
+
+        public static DialogResult InputBox(string title, string promptText, ref string value)
+        {
+            Form form = new Form();
+            Label label = new Label();
+            TextBox textBox = new TextBox();
+            Button buttonOk = new Button();
+            Button buttonCancel = new Button();
+
+            form.Text = title;
+            label.Text = promptText;
+            textBox.Text = value;
+
+            buttonOk.Text = "OK";
+            buttonCancel.Text = "Cancel";
+            buttonOk.DialogResult = DialogResult.OK;
+            buttonCancel.DialogResult = DialogResult.Cancel;
+
+            label.SetBounds(9, 20, 372, 13);
+            textBox.SetBounds(12, 36, 372, 20);
+            buttonOk.SetBounds(228, 72, 75, 23);
+            buttonCancel.SetBounds(309, 72, 75, 23);
+
+            label.AutoSize = true;
+            textBox.Anchor = textBox.Anchor | AnchorStyles.Right;
+            buttonOk.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            buttonCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+
+            form.ClientSize = new Size(396, 107);
+            form.Controls.AddRange(new Control[] { label, textBox, buttonOk, buttonCancel });
+            form.ClientSize = new Size(Math.Max(300, label.Right + 10), form.ClientSize.Height);
+            form.FormBorderStyle = FormBorderStyle.FixedDialog;
+            form.StartPosition = FormStartPosition.CenterScreen;
+            form.MinimizeBox = false;
+            form.MaximizeBox = false;
+            form.AcceptButton = buttonOk;
+            form.CancelButton = buttonCancel;
+
+            DialogResult dialogResult = form.ShowDialog();
+            value = textBox.Text;
+            return dialogResult;
+        }
 
         /// <summary>
         /// Given a GBA ROM, creates a JObject of the different possible ability IDs a pokemon species can have.

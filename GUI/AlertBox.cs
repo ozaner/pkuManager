@@ -23,16 +23,15 @@ namespace pkuManager.GUI
             this.Controls.Add(messageTextbox);
 
             this.MinimumSize = new Size(169, 10); //30 height
-            this.MaximumSize = new Size(169, 200);
+            this.MaximumSize = new Size(169, 300);
             this.BorderStyle = BorderStyle.FixedSingle;
             this.AutoSize = true;
 
             titleLabel.Location = new Point(4, 4);
-            titleLabel.MaximumSize = new Size(155, 13);
-            titleLabel.MinimumSize = new Size(0, 13);
+            titleLabel.MaximumSize = new Size(155, 15);
+            titleLabel.MinimumSize = new Size(0, 15);
             titleLabel.Text = alert.title;
             titleLabel.Font = new Font(titleLabel.Font, FontStyle.Bold);
-            titleLabel.Height = 13;
             titleLabel.Width = titleLabel.PreferredWidth;
 
             messageTextbox.Location = new Point(7, 20);

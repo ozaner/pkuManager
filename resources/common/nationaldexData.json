@@ -1,13 +1,11 @@
-﻿{
+{
     // Pokemon from gens 1-8
-    // Gender difference tags (e.g. male and female Pikachu have different looking tails, but all Bulbasaur look the same).
-    //      TODO: Might have to rework above to be form dependent. Mega Venasaur has gender differences
-    //      but Mega Blaziken doesn't deaspite normal Blaziken having them...
-    // Default form tags (e.g. Shaymin Land form is default, but Giratina's Origin form isn't)
-    // Explicit on Import tags (e.g. want an Unown-A to be explictly listed as such when importing, but not Giratina Altered)
-    //      TODO: should above be renamed, Variant (i.e. unswitchable form) since the two concepts are closely related.
-    //      Maybe not since I would have to makrk alolan as variant and all that... or maybe I should to prevent invalid exports...
-    //      See EOI for cases of me settings this true even when its not a variant
+    // Tags:
+    //   National Dex
+    //     - Official National Dex number of species.
+    //   Form/Default
+    //     - e.g. Shaymin Land form is default, but Giratina's Origin form isn't.
+    //     - only made explicit when it's not "".
 
     // Gen 1
     "Bulbasaur": {
@@ -17,8 +15,7 @@
         "National Dex": 2
     },
     "Venusaur": {
-        "National Dex": 3,
-        "Gender Differences": true
+        "National Dex": 3
     },
     "Charmander": {
         "National Dex": 4
@@ -45,8 +42,7 @@
         "National Dex": 11
     },
     "Butterfree": {
-        "National Dex": 12,
-        "Gender Differences": true
+        "National Dex": 12
     },
     "Weedle": {
         "National Dex": 13
@@ -67,12 +63,15 @@
         "National Dex": 18
     },
     "Rattata": {
-        "National Dex": 19,
-        "Gender Differences": true
+        "National Dex": 19
     },
     "Raticate": {
         "National Dex": 20,
-        "Gender Differences": true
+        "Forms": {
+            "Alolan-Totem": {
+                "Castable to": ["Alolan"]
+            }
+        }
     },
     "Spearow": {
         "National Dex": 21
@@ -88,11 +87,17 @@
     },
     "Pikachu": {
         "National Dex": 25,
-        "Gender Differences": true
+        "Forms": {
+            "Cosplay": {
+                "Castable to": [ "" ]
+            },
+            "Partner": {
+                "Castable to": [ "" ]
+            }
+        }
     },
     "Raichu": {
-        "National Dex": 26,
-        "Gender Differences": true
+        "National Dex": 26
     },
     "Sandshrew": {
         "National Dex": 27
@@ -137,23 +142,19 @@
         "National Dex": 40
     },
     "Zubat": {
-        "National Dex": 41,
-        "Gender Differences": true
+        "National Dex": 41
     },
     "Golbat": {
-        "National Dex": 42,
-        "Gender Differences": true
+        "National Dex": 42
     },
     "Oddish": {
         "National Dex": 43
     },
     "Gloom": {
-        "National Dex": 44,
-        "Gender Differences": true
+        "National Dex": 44
     },
     "Vileplume": {
-        "National Dex": 45,
-        "Gender Differences": true
+        "National Dex": 45
     },
     "Paras": {
         "National Dex": 46
@@ -210,12 +211,10 @@
         "National Dex": 63
     },
     "Kadabra": {
-        "National Dex": 64,
-        "Gender Differences": true
+        "National Dex": 64
     },
     "Alakazam": {
-        "National Dex": 65,
-        "Gender Differences": true
+        "National Dex": 65
     },
     "Machop": {
         "National Dex": 66
@@ -268,16 +267,14 @@
     "Magneton": {
         "National Dex": 82
     },
-    "Farfetch’d": {
+    "Farfetch'd": {
         "National Dex": 83
-    }, //note ' vs ’ in name (latter is correct)
+    },
     "Doduo": {
-        "National Dex": 84,
-        "Gender Differences": true
+        "National Dex": 84
     },
     "Dodrio": {
-        "National Dex": 85,
-        "Gender Differences": true
+        "National Dex": 85
     },
     "Seel": {
         "National Dex": 86
@@ -313,8 +310,7 @@
         "National Dex": 96
     },
     "Hypno": {
-        "National Dex": 97,
-        "Gender Differences": true
+        "National Dex": 97
     },
     "Krabby": {
         "National Dex": 98
@@ -338,7 +334,12 @@
         "National Dex": 104
     },
     "Marowak": {
-        "National Dex": 105
+        "National Dex": 105,
+        "Forms": {
+            "Alolan-Totem": {
+                "Castable to": [ "Alolan" ]
+            }
+        }
     },
     "Hitmonlee": {
         "National Dex": 106
@@ -356,12 +357,10 @@
         "National Dex": 110
     },
     "Rhyhorn": {
-        "National Dex": 111,
-        "Gender Differences": true
+        "National Dex": 111
     },
     "Rhydon": {
-        "National Dex": 112,
-        "Gender Differences": true
+        "National Dex": 112
     },
     "Chansey": {
         "National Dex": 113
@@ -379,12 +378,10 @@
         "National Dex": 117
     },
     "Goldeen": {
-        "National Dex": 118,
-        "Gender Differences": true
+        "National Dex": 118
     },
     "Seaking": {
-        "National Dex": 119,
-        "Gender Differences": true
+        "National Dex": 119
     },
     "Staryu": {
         "National Dex": 120
@@ -396,8 +393,7 @@
         "National Dex": 122
     },
     "Scyther": {
-        "National Dex": 123,
-        "Gender Differences": true
+        "National Dex": 123
     },
     "Jynx": {
         "National Dex": 124
@@ -415,12 +411,10 @@
         "National Dex": 128
     },
     "Magikarp": {
-        "National Dex": 129,
-        "Gender Differences": true
+        "National Dex": 129
     },
     "Gyarados": {
-        "National Dex": 130,
-        "Gender Differences": true
+        "National Dex": 130
     },
     "Lapras": {
         "National Dex": 131
@@ -429,8 +423,7 @@
         "National Dex": 132
     },
     "Eevee": {
-        "National Dex": 133,
-        "Gender Differences": true //Only in gen 8+ (and partner in LGPE)
+        "National Dex": 133 //Only in gen 8+ (and partner in LGPE)
     },
     "Vaporeon": {
         "National Dex": 134
@@ -495,8 +488,7 @@
         "National Dex": 153
     },
     "Meganium": {
-        "National Dex": 154,
-        "Gender Differences": true
+        "National Dex": 154
     },
     "Cyndaquil": {
         "National Dex": 155
@@ -529,12 +521,10 @@
         "National Dex": 164
     },
     "Ledyba": {
-        "National Dex": 165,
-        "Gender Differences": true
+        "National Dex": 165
     },
     "Ledian": {
-        "National Dex": 166,
-        "Gender Differences": true
+        "National Dex": 166
     },
     "Spinarak": {
         "National Dex": 167
@@ -570,8 +560,7 @@
         "National Dex": 177
     },
     "Xatu": {
-        "National Dex": 178,
-        "Gender Differences": true
+        "National Dex": 178
     },
     "Mareep": {
         "National Dex": 179
@@ -592,12 +581,10 @@
         "National Dex": 184
     },
     "Sudowoodo": {
-        "National Dex": 185,
-        "Gender Differences": true
+        "National Dex": 185
     },
     "Politoed": {
-        "National Dex": 186,
-        "Gender Differences": true
+        "National Dex": 186
     },
     "Hoppip": {
         "National Dex": 187
@@ -609,8 +596,7 @@
         "National Dex": 189
     },
     "Aipom": {
-        "National Dex": 190,
-        "Gender Differences": true
+        "National Dex": 190
     },
     "Sunkern": {
         "National Dex": 191
@@ -622,12 +608,10 @@
         "National Dex": 193
     },
     "Wooper": {
-        "National Dex": 194,
-        "Gender Differences": true
+        "National Dex": 194
     },
     "Quagsire": {
-        "National Dex": 195,
-        "Gender Differences": true
+        "National Dex": 195
     },
     "Espeon": {
         "National Dex": 196
@@ -636,8 +620,7 @@
         "National Dex": 197
     },
     "Murkrow": {
-        "National Dex": 198,
-        "Gender Differences": true
+        "National Dex": 198
     },
     "Slowking": {
         "National Dex": 199
@@ -649,18 +632,15 @@
         "National Dex": 201,
         "Forms": {
             "A": {
-                "Default": true,
-                "Explicit on Import": true
+                "Default": true
             }
         }
     },
     "Wobbuffet": {
-        "National Dex": 202,
-        "Gender Differences": true
+        "National Dex": 202
     },
     "Girafarig": {
-        "National Dex": 203,
-        "Gender Differences": true
+        "National Dex": 203
     },
     "Pineco": {
         "National Dex": 204
@@ -672,12 +652,10 @@
         "National Dex": 206
     },
     "Gligar": {
-        "National Dex": 207,
-        "Gender Differences": true
+        "National Dex": 207
     },
     "Steelix": {
-        "National Dex": 208,
-        "Gender Differences": true
+        "National Dex": 208
     },
     "Snubbull": {
         "National Dex": 209
@@ -689,26 +667,22 @@
         "National Dex": 211
     },
     "Scizor": {
-        "National Dex": 212,
-        "Gender Differences": true
+        "National Dex": 212
     },
     "Shuckle": {
         "National Dex": 213
     },
     "Heracross": {
-        "National Dex": 214,
-        "Gender Differences": true
+        "National Dex": 214
     },
     "Sneasel": {
-        "National Dex": 215,
-        "Gender Differences": true
+        "National Dex": 215
     },
     "Teddiursa": {
         "National Dex": 216
     },
     "Ursaring": {
-        "National Dex": 217,
-        "Gender Differences": true
+        "National Dex": 217
     },
     "Slugma": {
         "National Dex": 218
@@ -720,8 +694,7 @@
         "National Dex": 220
     },
     "Piloswine": {
-        "National Dex": 221,
-        "Gender Differences": true
+        "National Dex": 221
     },
     "Corsola": {
         "National Dex": 222
@@ -730,8 +703,7 @@
         "National Dex": 223
     },
     "Octillery": {
-        "National Dex": 224,
-        "Gender Differences": true
+        "National Dex": 224
     },
     "Delibird": {
         "National Dex": 225
@@ -746,8 +718,7 @@
         "National Dex": 228
     },
     "Houndoom": {
-        "National Dex": 229,
-        "Gender Differences": true
+        "National Dex": 229
     },
     "Kingdra": {
         "National Dex": 230
@@ -756,8 +727,7 @@
         "National Dex": 231
     },
     "Donphan": {
-        "National Dex": 232,
-        "Gender Differences": true
+        "National Dex": 232
     },
     "Porygon2": {
         "National Dex": 233
@@ -826,16 +796,13 @@
         "National Dex": 254
     },
     "Torchic": {
-        "National Dex": 255,
-        "Gender Differences": true
+        "National Dex": 255
     },
     "Combusken": {
-        "National Dex": 256,
-        "Gender Differences": true
+        "National Dex": 256
     },
     "Blaziken": {
-        "National Dex": 257,
-        "Gender Differences": true
+        "National Dex": 257
     },
     "Mudkip": {
         "National Dex": 258
@@ -865,15 +832,13 @@
         "National Dex": 266
     },
     "Beautifly": {
-        "National Dex": 267,
-        "Gender Differences": true
+        "National Dex": 267
     },
     "Cascoon": {
         "National Dex": 268
     },
     "Dustox": {
-        "National Dex": 269,
-        "Gender Differences": true
+        "National Dex": 269
     },
     "Lotad": {
         "National Dex": 270
@@ -882,19 +847,16 @@
         "National Dex": 271
     },
     "Ludicolo": {
-        "National Dex": 272,
-        "Gender Differences": true
+        "National Dex": 272
     },
     "Seedot": {
         "National Dex": 273
     },
     "Nuzleaf": {
-        "National Dex": 274,
-        "Gender Differences": true
+        "National Dex": 274
     },
     "Shiftry": {
-        "National Dex": 275,
-        "Gender Differences": true
+        "National Dex": 275
     },
     "Taillow": {
         "National Dex": 276
@@ -990,12 +952,10 @@
         "National Dex": 306
     },
     "Meditite": {
-        "National Dex": 307,
-        "Gender Differences": true
+        "National Dex": 307
     },
     "Medicham": {
-        "National Dex": 308,
-        "Gender Differences": true
+        "National Dex": 308
     },
     "Electrike": {
         "National Dex": 309
@@ -1016,16 +976,13 @@
         "National Dex": 314
     },
     "Roselia": {
-        "National Dex": 315,
-        "Gender Differences": true
+        "National Dex": 315
     },
     "Gulpin": {
-        "National Dex": 316,
-        "Gender Differences": true
+        "National Dex": 316
     },
     "Swalot": {
-        "National Dex": 317,
-        "Gender Differences": true
+        "National Dex": 317
     },
     "Carvanha": {
         "National Dex": 318
@@ -1040,12 +997,10 @@
         "National Dex": 321
     },
     "Numel": {
-        "National Dex": 322,
-        "Gender Differences": true
+        "National Dex": 322
     },
     "Camerupt": {
-        "National Dex": 323,
-        "Gender Differences": true
+        "National Dex": 323
     },
     "Torkoal": {
         "National Dex": 324
@@ -1072,8 +1027,7 @@
         "National Dex": 331
     },
     "Cacturne": {
-        "National Dex": 332,
-        "Gender Differences": true
+        "National Dex": 332
     },
     "Swablu": {
         "National Dex": 333
@@ -1127,8 +1081,7 @@
         "National Dex": 349
     },
     "Milotic": {
-        "National Dex": 350,
-        "Gender Differences": true
+        "National Dex": 350
     },
     "Castform": {
         "National Dex": 351,
@@ -1190,8 +1143,7 @@
         "National Dex": 368
     },
     "Relicanth": {
-        "National Dex": 369,
-        "Gender Differences": true
+        "National Dex": 369
     },
     "Luvdisc": {
         "National Dex": 370
@@ -1245,8 +1197,7 @@
         "National Dex": 386,
         "Forms": {
             "Normal": {
-                "Default": true,
-                "Explicit on Import": true
+                "Default": true
             }
         }
     },
@@ -1278,51 +1229,40 @@
         "National Dex": 395
     },
     "Starly": {
-        "National Dex": 396,
-        "Gender Differences": true
+        "National Dex": 396
     },
     "Staravia": {
-        "National Dex": 397,
-        "Gender Differences": true
+        "National Dex": 397
     },
     "Staraptor": {
-        "National Dex": 398,
-        "Gender Differences": true
+        "National Dex": 398
     },
     "Bidoof": {
-        "National Dex": 399,
-        "Gender Differences": true
+        "National Dex": 399
     },
     "Bibarel": {
-        "National Dex": 400,
-        "Gender Differences": true
+        "National Dex": 400
     },
     "Kricketot": {
-        "National Dex": 401,
-        "Gender Differences": true
+        "National Dex": 401
     },
     "Kricketune": {
-        "National Dex": 402,
-        "Gender Differences": true
+        "National Dex": 402
     },
     "Shinx": {
-        "National Dex": 403,
-        "Gender Differences": true
+        "National Dex": 403
     },
     "Luxio": {
-        "National Dex": 404,
-        "Gender Differences": true
+        "National Dex": 404
     },
     "Luxray": {
-        "National Dex": 405,
-        "Gender Differences": true
+        "National Dex": 405
     },
     "Budew": {
         "National Dex": 406
     },
     "Roserade": {
-        "National Dex": 407,
-        "Gender Differences": true
+        "National Dex": 407
     },
     "Cranidos": {
         "National Dex": 408
@@ -1340,8 +1280,7 @@
         "National Dex": 412,
         "Forms": {
             "Plant Cloak": {
-                "Default": true,
-                "Explicit on Import": true
+                "Default": true
             }
         }
     },
@@ -1349,8 +1288,7 @@
         "National Dex": 413,
         "Forms": {
             "Plant Cloak": {
-                "Default": true,
-                "Explicit on Import": true
+                "Default": true
             }
         }
     },
@@ -1358,23 +1296,19 @@
         "National Dex": 414
     },
     "Combee": {
-        "National Dex": 415,
-        "Gender Differences": true
+        "National Dex": 415
     },
     "Vespiquen": {
         "National Dex": 416
     },
     "Pachirisu": {
-        "National Dex": 417,
-        "Gender Differences": true
+        "National Dex": 417
     },
     "Buizel": {
-        "National Dex": 418,
-        "Gender Differences": true
+        "National Dex": 418
     },
     "Floatzel": {
-        "National Dex": 419,
-        "Gender Differences": true
+        "National Dex": 419
     },
     "Cherubi": {
         "National Dex": 420
@@ -1391,8 +1325,7 @@
         "National Dex": 422,
         "Forms": {
             "West": {
-                "Default": true,
-                "Explicit on Import": true
+                "Default": true
             }
         }
     },
@@ -1400,14 +1333,12 @@
         "National Dex": 423,
         "Forms": {
             "West": {
-                "Default": true,
-                "Explicit on Import": true
+                "Default": true
             }
         }
     },
     "Ambipom": {
-        "National Dex": 424,
-        "Gender Differences": true
+        "National Dex": 424
     },
     "Drifloon": {
         "National Dex": 425
@@ -1464,16 +1395,13 @@
         "National Dex": 442
     },
     "Gible": {
-        "National Dex": 443,
-        "Gender Differences": true
+        "National Dex": 443
     },
     "Gabite": {
-        "National Dex": 444,
-        "Gender Differences": true
+        "National Dex": 444
     },
     "Garchomp": {
-        "National Dex": 445,
-        "Gender Differences": true
+        "National Dex": 445
     },
     "Munchlax": {
         "National Dex": 446
@@ -1485,12 +1413,10 @@
         "National Dex": 448
     },
     "Hippopotas": {
-        "National Dex": 449,
-        "Gender Differences": true
+        "National Dex": 449
     },
     "Hippowdon": {
-        "National Dex": 450,
-        "Gender Differences": true
+        "National Dex": 450
     },
     "Skorupi": {
         "National Dex": 451
@@ -1499,38 +1425,31 @@
         "National Dex": 452
     },
     "Croagunk": {
-        "National Dex": 453,
-        "Gender Differences": true
+        "National Dex": 453
     },
     "Toxicroak": {
-        "National Dex": 454,
-        "Gender Differences": true
+        "National Dex": 454
     },
     "Carnivine": {
         "National Dex": 455
     },
     "Finneon": {
-        "National Dex": 456,
-        "Gender Differences": true
+        "National Dex": 456
     },
     "Lumineon": {
-        "National Dex": 457,
-        "Gender Differences": true
+        "National Dex": 457
     },
     "Mantyke": {
         "National Dex": 458
     },
     "Snover": {
-        "National Dex": 459,
-        "Gender Differences": true
+        "National Dex": 459
     },
     "Abomasnow": {
-        "National Dex": 460,
-        "Gender Differences": true
+        "National Dex": 460
     },
     "Weavile": {
-        "National Dex": 461,
-        "Gender Differences": true
+        "National Dex": 461
     },
     "Magnezone": {
         "National Dex": 462
@@ -1539,12 +1458,10 @@
         "National Dex": 463
     },
     "Rhyperior": {
-        "National Dex": 464,
-        "Gender Differences": true
+        "National Dex": 464
     },
     "Tangrowth": {
-        "National Dex": 465,
-        "Gender Differences": true
+        "National Dex": 465
     },
     "Electivire": {
         "National Dex": 466
@@ -1568,8 +1485,7 @@
         "National Dex": 472
     },
     "Mamoswine": {
-        "National Dex": 473,
-        "Gender Differences": true
+        "National Dex": 473
     },
     "Porygon-Z": {
         "National Dex": 474
@@ -1730,8 +1646,7 @@
         "National Dex": 520
     },
     "Unfezant": {
-        "National Dex": 521,
-        "Gender Differences": true
+        "National Dex": 521
     },
     "Blitzle": {
         "National Dex": 522
@@ -1821,8 +1736,7 @@
         "National Dex": 550,
         "Forms": {
             "Red-Striped": {
-                "Default": true,
-                "Explicit on Import": true
+                "Default": true
             }
         }
     },
@@ -1937,8 +1851,7 @@
         "National Dex": 585,
         "Forms": {
             "Spring": {
-                "Default": true,
-                "Explicit on Import": true
+                "Default": true
             }
         }
     },
@@ -1946,8 +1859,7 @@
         "National Dex": 586,
         "Forms": {
             "Spring": {
-                "Default": true,
-                "Explicit on Import": true
+                "Default": true
             }
         }
     },
@@ -1967,12 +1879,10 @@
         "National Dex": 591
     },
     "Frillish": {
-        "National Dex": 592,
-        "Gender Differences": true
+        "National Dex": 592
     },
     "Jellicent": {
-        "National Dex": 593,
-        "Gender Differences": true
+        "National Dex": 593
     },
     "Alomomola": {
         "National Dex": 594
@@ -2219,8 +2129,7 @@
         "National Dex": 666,
         "Forms": {
             "Meadow": {
-                "Default": true,
-                "Explicit on Import": true
+                "Default": true
             }
         }
     },
@@ -2228,15 +2137,13 @@
         "National Dex": 667
     },
     "Pyroar": {
-        "National Dex": 668,
-        "Gender Differences": true
+        "National Dex": 668
     },
     "Flabébé": {
         "National Dex": 669,
         "Forms": {
             "Red Flower": {
-                "Default": true,
-                "Explicit on Import": true
+                "Default": true
             }
         }
     },
@@ -2244,8 +2151,7 @@
         "National Dex": 670,
         "Forms": {
             "Red Flower": {
-                "Default": true,
-                "Explicit on Import": true
+                "Default": true
             }
         }
     },
@@ -2253,8 +2159,7 @@
         "National Dex": 671,
         "Forms": {
             "Red Flower": {
-                "Default": true,
-                "Explicit on Import": true
+                "Default": true
             }
         }
     },
@@ -2282,8 +2187,7 @@
         "National Dex": 677
     },
     "Meowstic": {
-        "National Dex": 678,
-        "Gender Differences": true
+        "National Dex": 678
     },
     "Honedge": {
         "National Dex": 679
@@ -2384,22 +2288,10 @@
         "National Dex": 709
     },
     "Pumpkaboo": {
-        "National Dex": 710,
-        "Forms": {
-            "Average Size": {
-                "Default": true,
-                "Explicit on Import": true
-            }
-        }
+        "National Dex": 710
     },
     "Gourgeist": {
-        "National Dex": 711,
-        "Forms": {
-            "Average Size": {
-                "Default": true,
-                "Explicit on Import": true
-            }
-        }
+        "National Dex": 711
     },
     "Bergmite": {
         "National Dex": 712
@@ -2481,7 +2373,12 @@
         "National Dex": 734
     },
     "Gumshoos": {
-        "National Dex": 735
+        "National Dex": 735,
+        "Forms": {
+            "Totem": {
+                "Castable to": [ "" ]
+            }
+        }
     },
     "Grubbin": {
         "National Dex": 736
@@ -2490,7 +2387,12 @@
         "National Dex": 737
     },
     "Vikavolt": {
-        "National Dex": 738
+        "National Dex": 738,
+        "Forms": {
+            "Totem": {
+                "Castable to": [ "" ]
+            }
+        }
     },
     "Crabrawler": {
         "National Dex": 739
@@ -2502,8 +2404,7 @@
         "National Dex": 741,
         "Forms": {
             "Baile Style": {
-                "Default": true,
-                "Explicit on Import": true
+                "Default": true
             }
         }
     },
@@ -2511,7 +2412,12 @@
         "National Dex": 742
     },
     "Ribombee": {
-        "National Dex": 743
+        "National Dex": 743,
+        "Forms": {
+            "Totem": {
+                "Castable to": [ "" ]
+            }
+        }
     },
     "Rockruff": {
         "National Dex": 744
@@ -2520,8 +2426,7 @@
         "National Dex": 745,
         "Forms": {
             "Midday": {
-                "Default": true,
-                "Explicit on Import": true
+                "Default": true
             }
         }
     },
@@ -2549,13 +2454,23 @@
         "National Dex": 751
     },
     "Araquanid": {
-        "National Dex": 752
+        "National Dex": 752,
+        "Forms": {
+            "Totem": {
+                "Castable to": [ "" ]
+            }
+        }
     },
     "Fomantis": {
         "National Dex": 753
     },
     "Lurantis": {
-        "National Dex": 754
+        "National Dex": 754,
+        "Forms": {
+            "Totem": {
+                "Castable to": [ "" ]
+            }
+        }
     },
     "Morelull": {
         "National Dex": 755
@@ -2567,7 +2482,12 @@
         "National Dex": 757
     },
     "Salazzle": {
-        "National Dex": 758
+        "National Dex": 758,
+        "Forms": {
+            "Totem": {
+                "Castable to": [ "" ]
+            }
+        }
     },
     "Stufful": {
         "National Dex": 759
@@ -2623,8 +2543,7 @@
         "National Dex": 774,
         "Forms": {
             "Red": {
-                "Default": true,
-                "Explicit on Import": true
+                "Default": true
             }
         }
     },
@@ -2635,13 +2554,24 @@
         "National Dex": 776
     },
     "Togedemaru": {
-        "National Dex": 777
+        "National Dex": 777,
+        "Forms": {
+            "Totem": {
+                "Castable to": [ "" ]
+            }
+        }
     },
     "Mimikyu": {
         "National Dex": 778,
         "Forms": {
             "Disguised": {
                 "Default": true
+            },
+            "Disguised-Totem": {
+                "Castable to": [ "Disguised" ]
+            },
+            "Busted-Totem": {
+                "Castable to": [ "Busted" ]
             }
         }
     },
@@ -2661,7 +2591,12 @@
         "National Dex": 783
     },
     "Kommo-o": {
-        "National Dex": 784
+        "National Dex": 784,
+        "Forms": {
+            "Totem": {
+                "Castable to": [ "" ]
+            }
+        }
     },
     "Tapu Koko": {
         "National Dex": 785
@@ -2859,8 +2794,7 @@
         "National Dex": 849,
         "Forms": {
             "Amped": {
-                "Default": true,
-                "Explicit on Import": true //even though it's dependent on nature, might be nice to keep it explicit
+                "Default": true
             }
         }
     },
@@ -2880,8 +2814,7 @@
         "National Dex": 854,
         "Forms": {
             "Phony": {
-                "Default": true,
-                "Explicit on Import": true
+                "Default": true
             }
         }
     },
@@ -2889,8 +2822,7 @@
         "National Dex": 855,
         "Forms": {
             "Phony": {
-                "Default": true,
-                "Explicit on Import": true
+                "Default": true
             }
         }
     },
@@ -2936,9 +2868,8 @@
     "Alcremie": {
         "National Dex": 869,
         "Forms": {
-            "Vanilla Cream-Strawberry": {
-                "Default": true,
-                "Explicit on Import": true
+            "Vanilla Cream": {
+                "Default": true
             }
         }
     },
@@ -2966,8 +2897,7 @@
         }
     },
     "Indeedee": {
-        "National Dex": 876,
-        "Gender Differences": true
+        "National Dex": 876
     },
     "Morpeko": {
         "National Dex": 877,
@@ -3033,8 +2963,7 @@
         "National Dex": 892,
         "Forms": {
             "Single Strike Style": {
-                "Default": true,
-                "Explicit on Import": true
+                "Default": true
             }
         }
     },

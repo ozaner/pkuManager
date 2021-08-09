@@ -1,4 +1,5 @@
 ﻿using pkuManager.Alerts;
+using pkuManager.pku;
 using System;
 using System.Collections.Generic;
 
@@ -9,7 +10,7 @@ namespace pkuManager.Common
     public abstract class Exporter
     {
         // The particular pku to be (hopefully) exported by this exporter
-        public PKUObject pku;
+        public pkuObject pku;
 
         // The global flags to (optionally) be acted upon by the exporter.
         public GlobalFlags globalFlags;
@@ -21,7 +22,7 @@ namespace pkuManager.Common
         private bool alertsProcessed = false;
 
         // Instantiates the exporter with the given pku and GlobalFlags
-        public Exporter(PKUObject pku, GlobalFlags globalFlags)
+        public Exporter(pkuObject pku, GlobalFlags globalFlags)
         {
             this.pku = pku ?? throw new ArgumentException("Can't make an exporter with a null .pku!");
             this.globalFlags = globalFlags;
@@ -65,7 +66,7 @@ namespace pkuManager.Common
         // processAlerts will have been run before this.
         protected abstract byte[] toFile();
 
-        // Same as below but checks if this pku can be exported before trying it. Throws error if it cannot, or alerts have not been processed.
+        // Same as above but checks if this pku can be exported before trying it. Throws error if it cannot, or alerts have not been processed.
         public byte[] toFileChecked()
         {
             if (!canExport())

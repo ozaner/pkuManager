@@ -1,20 +1,22 @@
 ﻿using Newtonsoft.Json.Linq;
 using pkuManager.Alerts;
-using pkuManager.pk3;
+using pkuManager.Common;
 using pkuManager.pku;
+using pkuManager.pkx.pk3;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using static pkuManager.Common.pkxUtil.TagAlerts;
+using static pkuManager.pkx.pkxUtil.TagAlerts;
 
-namespace pkuManager.Common
+namespace pkuManager.pkx
 {
     public static class pkxUtil
     {
-        public static JObject POKESTAR_DATA = DataUtil.getJson("pokestarData"); //TODO: move this to pk5Util when it exists...
+        public static JObject POKESTAR_DATA = DataUtil.getJson("pokestarData"); //Gen 5: move this to pk5Util when it exists...
         public static JObject NATIONALDEX_DATA = DataUtil.getJson("nationaldexData");
+        public static JObject GAME_DATA = DataUtil.getJson("gameData");
 
         // Enum Defaults
         public static readonly Language DEFAULT_LANGUAGE = Language.English;
@@ -51,8 +53,6 @@ namespace pkuManager.Common
         public static int? GetNationalDex(string species)
         {
             //uses the nationaldex.json file and not pokeapi
-            //Note that pokeapi doesnt use special characters (e.g. é in Flabébé or ’ in Farfetch'd)
-
             if (species == null)
                 return null;
 
@@ -107,7 +107,7 @@ namespace pkuManager.Common
         public static Ball? GetBall(string ball)
         {
             //remove "ball" at the end of string
-            if (ball.ToLowerInvariant().EndsWith(" ball"))
+            if (ball != null && ball.ToLowerInvariant().EndsWith(" ball"))
                 ball = ball.Substring(0, ball.Length - 5);
             return GetEnumFromString<Ball>(ball);
         }
@@ -213,28 +213,14 @@ namespace pkuManager.Common
         }
 
         // Returns the ID of the given game version. Null if no ID is found.
-        public static int? GetGameID(string game)
+        public static (int?, int?) GetGameIDAndGen(string game)
         {
-            int id = ReadingUtil.getIDFromFile("Games", game); //try getting id from origin game
-            return id == -1 ? (int?)null : id;
-
-            //if (gen == 3 && (id > 5 || id != 15)) //Game ID doesn't exist in gen 3
-            //    return 0;
-            //if (gen == 4 && id > 15) //Game ID doesn't exist in gen 4
-            //    return 0;
-            //if (gen == 5 && id > 23) //Game ID doesn't exist in gen 5
-            //    return 0;
-            //if (gen == 6 && id > 27) //Game ID doesn't exist in gen 6
-            //    return 0;
-            //if (gen == 7 && id > 41) //Game ID doesn't exist in gen 7
-            //    return 0;
-            //if (gen == 8 && id > 45) //Game ID doesn't exist in gen 8
-            //    return 0;
+            return ((int?, int?))(DataUtil.TraverseJTokenCaseInsensitive(GAME_DATA, game, "Game ID"), DataUtil.TraverseJTokenCaseInsensitive(GAME_DATA, game, "Generation"));
         }
 
         // Returns the gen 5 id of a pokestar species, null if it's not a pokestar species (case insensitve)
         // TODO: move to pk5 util when it exists
-        public static int? GetPokestarID(PKUObject pku)
+        public static int? GetPokestarID(pkuObject pku)
         {
             //No species, no pokestar
             if (pku.Species == null)
@@ -243,13 +229,14 @@ namespace pkuManager.Common
             int? gen5ID = null;
 
             // Try getting the species+form ID (case insensitive)
-            if (pku.Form != null)
-                gen5ID = (int?)DataUtil.TraverseJTokenCaseInsensitive(POKESTAR_DATA, pku.Species, "Forms", pku.Form, "Gen 5 Index");
+            string searchableFormName = DexUtil.GetSearchableFormName(pku);
+            if (searchableFormName != null)
+                gen5ID = (int?)DataUtil.TraverseJTokenCaseInsensitive(POKESTAR_DATA, pku.Species, "Forms", searchableFormName, "Gen 5 Index");
 
             // If form is unspecified/invalid (i.e. above didn't work) then just get default form id
             if (!gen5ID.HasValue)
             {
-                string defaultForm = pkuUtil.getDefaultForm(pku.Species, POKESTAR_DATA);
+                string defaultForm = DexUtil.GetDefaultForm(pku, POKESTAR_DATA);
                 gen5ID = (int?)DataUtil.TraverseJTokenCaseInsensitive(POKESTAR_DATA, pku.Species, "Forms", defaultForm, "Gen 5 Index");
             }
             return gen5ID; //might still be null
@@ -307,7 +294,7 @@ namespace pkuManager.Common
                     if (pid % 25 != (int)nature)
                         continue;
                 }
-                if (((pid / 65536) ^ (pid % 65536) ^ (id / 65536) ^ (id % 65536)) < 8 != shiny) // Shiny Check
+                if ((pid / 65536 ^ pid % 65536 ^ id / 65536 ^ id % 65536) < 8 != shiny) // Shiny Check
                     continue;
 
                 return pid; // all checks out
@@ -358,7 +345,7 @@ namespace pkuManager.Common
                                 msg += $"unspecified {stats[i]} IV ";
                         }
                     }
-                    msg += "with 31 as they are Hyper Trained.";
+                    msg += "with 31s as they are Hyper Trained.";
                 }
 
                 return msg == "" ? null : new Alert("Battle Stat Override", msg);
@@ -382,7 +369,8 @@ namespace pkuManager.Common
                 UNSPECIFIED, //tag not specified in .pku file
                 INVALID, //given value is not a valid value for the tag to take on (more general than over/underflow)
                 MISMATCH, //two tags conflict
-                IN_BATTLE //this is an in-battle form only
+                IN_BATTLE, //this is an in-battle form only
+                CASTED //this form is not in the format, but a castable form was found
             }
 
             public static ArgumentException InvalidAlertType(AlertType? at = null)
@@ -475,7 +463,7 @@ namespace pkuManager.Common
             private static Alert GetEnumAlert(string tagName, string defaultVal, AlertType at, string invalidVal = null)
             {
                 if (at == AlertType.UNSPECIFIED)
-                    return new Alert(invalidVal, $"No {tagName.ToLowerInvariant()} was specified, using the default: {defaultVal}.");
+                    return new Alert(tagName, $"No {tagName.ToLowerInvariant()} was specified, using the default: {defaultVal}.");
                 else if (invalidVal == null)
                     throw new ArgumentException("Must give the invalid value if there is a specified enum Alert.");
                 else if (at == AlertType.INVALID)
@@ -489,7 +477,7 @@ namespace pkuManager.Common
             // Game Info Alert Methods
             // ----------
 
-            public static Alert getIDAlert(AlertType at)
+            public static Alert GetIDAlert(AlertType at)
             {
                 long val = 0;
                 if (at == AlertType.UNSPECIFIED)
@@ -533,7 +521,7 @@ namespace pkuManager.Common
                     return GetOTAlert(-1, ats);
             }
 
-            public static Alert getLanguageAlert(AlertType at, string invalidLang = null)
+            public static Alert GetLanguageAlert(AlertType at, string invalidLang = null)
             {
                 return GetEnumAlert("Language", DEFAULT_LANGUAGE.ToString(), at, invalidLang);
             }
@@ -570,9 +558,9 @@ namespace pkuManager.Common
             public static Alert GetMetLocationAlert(AlertType at, string defaultLoc, string invalidLocation = null)
             {
                 if (at == AlertType.INVALID)
-                    return new Alert("Met Location", $"The location \"{invalidLocation}\" doesn't exist in specified origin game. Using the default location: {defaultLoc}.");
+                    return new Alert("Met Location", $"The location \"{invalidLocation}\" doesn't exist in specified origin game. Using the default location: {defaultLoc ?? "None"}.");
                 else if (at == AlertType.UNSPECIFIED)
-                    return new Alert("Met Location", $"The met location was unspecified. Using the default location: {defaultLoc}.");
+                    return new Alert("Met Location", $"The met location was unspecified. Using the default location: {defaultLoc ?? "None"}.");
                 else
                     throw InvalidAlertType(at);
             }
@@ -726,7 +714,7 @@ namespace pkuManager.Common
                     return new Alert("PP Ups", $"PP Ups tag not specified, giving each move 0 PP ups.");
                 else if (at == AlertType.INVALID)
                 {
-                    if (!invalidData.HasValue || (invalidData.Value.overflow.Length < 1 && invalidData.Value.underflow.Length < 1))
+                    if (!invalidData.HasValue || invalidData.Value.overflow.Length < 1 && invalidData.Value.underflow.Length < 1)
                         throw new ArgumentException("If getPPUpAlert is given an INVALID alert, it must also receive invalidData and one of those arrays must be non-empty.");
 
                     string msgOF = "";
@@ -791,6 +779,8 @@ namespace pkuManager.Common
                         $"Some of the pku's moves are invalid in this format, using the first {movesUsed} valid moves.";
                     return new Alert("Moves", msg);
                 }
+                else if(at == AlertType.OVERFLOW)
+                    return new Alert("Moves", $"This pku has more than 4 valid moves, using the first 4.");
                 else
                     throw InvalidAlertType(at);
             }
@@ -809,16 +799,16 @@ namespace pkuManager.Common
                     throw InvalidAlertType(at);
             }
 
-            public static Alert GetFormAlert(AlertType at, string invalidForm = null)
+            public static Alert GetFormAlert(AlertType at, string[] invalidForm = null)
             {
                 if (at == AlertType.UNSPECIFIED)
                     return new Alert("Form", $"No form specified, using the default form.");
                 else if (invalidForm == null)
                     throw new ArgumentException("Must give invalidForm if there is a specified form Alert.");
-                else if (at == AlertType.INVALID)
-                    return new Alert("Form", $"The form \"{invalidForm}\" does not exist in this format, using the default form.");
+                else if (at == AlertType.CASTED)
+                    return new Alert("Form", $"The form \"{DataUtil.FormatArrayPrint(invalidForm)}\" does not exist in this format and has been casted to its default form.");
                 else if (at == AlertType.IN_BATTLE)
-                    return new Alert("Form", $"The form \"{invalidForm}\" only exists in-battle, using the default form.");
+                    return new Alert("Form", $"The form \"{DataUtil.FormatArrayPrint(invalidForm)}\" only exists in-battle, using its out of battle form.");
                 else
                     throw InvalidAlertType(at);
             }
@@ -830,7 +820,7 @@ namespace pkuManager.Common
 
             public static Alert GetEVsAlert(params AlertType[] ats)
             {
-                if (ats == null || (ats.Length != 1 && ats.Length != 6))
+                if (ats == null || ats.Length != 1 && ats.Length != 6)
                     throw new ArgumentException("getEVsAlert() only accepts a single UNSPECFIED AlertType, or six OVERFLOW/UNDERFLOW/UNSPECIFIED AlertTypes.");
                 return getMultiNumericalAlert("EVs", new string[]
                 {
@@ -840,7 +830,7 @@ namespace pkuManager.Common
 
             public static Alert GetIVsAlert(params AlertType[] ats)
             {
-                if (ats == null || (ats.Length != 1 && ats.Length != 6))
+                if (ats == null || ats.Length != 1 && ats.Length != 6)
                     throw new ArgumentException("getIVsAlert() only accepts a single UNSPECFIED AlertType, or six OVERFLOW/UNDERFLOW/UNSPECIFIED AlertTypes.");
                 return getMultiNumericalAlert("IVs", new string[]
                 {
@@ -850,7 +840,7 @@ namespace pkuManager.Common
 
             public static Alert GetContestAlert(params AlertType[] ats)
             {
-                if (ats == null || (ats.Length != 1 && ats.Length != 6))
+                if (ats == null || ats.Length != 1 && ats.Length != 6)
                     throw new ArgumentException("getContestAlert() only accepts a single UNSPECFIED AlertType, or six OVERFLOW/UNDERFLOW/UNSPECIFIED AlertTypes.");
                 return getMultiNumericalAlert("Contest Stats", new string[]
                 {
@@ -935,28 +925,28 @@ namespace pkuManager.Common
 
         public static class ProcessFlags
         {
-            public static (PKUObject, Alert) ProcessBattleStatOverride(PKUObject pku, GlobalFlags flags)
+            public static Alert ProcessBattleStatOverride(pkuObject pku, GlobalFlags flags)
             {
                 //generate alert, BEFORE modifying pku
                 Alert alert = FlagAlerts.GetBattleStatAlert(pku.Stat_Nature != null, pku.Nature != null, pku.Stat_Nature, pku.Nature, new bool[]
                 {
-                    pku.Hyper_Training.HP,
-                    pku.Hyper_Training.Attack,
-                    pku.Hyper_Training.Defense,
-                    pku.Hyper_Training.Sp_Attack,
-                    pku.Hyper_Training.Sp_Defense,
-                    pku.Hyper_Training.Speed
+                    pku.Hyper_Training?.HP == true,
+                    pku.Hyper_Training?.Attack == true,
+                    pku.Hyper_Training?.Defense == true,
+                    pku.Hyper_Training?.Sp_Attack == true,
+                    pku.Hyper_Training?.Sp_Defense == true,
+                    pku.Hyper_Training?.Speed == true
                 }, new int?[]
                 {
-                    pku.IVs.HP,
-                    pku.IVs.Attack,
-                    pku.IVs.Defense,
-                    pku.IVs.Sp_Attack,
-                    pku.IVs.Sp_Defense,
-                    pku.IVs.Speed
+                    pku.IVs?.HP,
+                    pku.IVs?.Attack,
+                    pku.IVs?.Defense,
+                    pku.IVs?.Sp_Attack,
+                    pku.IVs?.Sp_Defense,
+                    pku.IVs?.Speed
                 });
 
-                if (flags?.Battle_Stat_Override == true) //if statNatureOverride flag exists and is true
+                if (flags?.Battle_Stat_Override == true)
                 {
                     //If stat nature is specified, replace nature with it
                     if (pku.Stat_Nature != null)
@@ -966,7 +956,7 @@ namespace pkuManager.Common
                     if (pku.IVs == null && (pku.Hyper_Training?.HP == true || pku.Hyper_Training?.Attack == true ||
                                            pku.Hyper_Training?.Defense == true || pku.Hyper_Training?.Sp_Attack == true ||
                                            pku.Hyper_Training?.Sp_Defense == true || pku.Hyper_Training?.Speed == true))
-                        pku.IVs ??= new PKUObject.IVs_Class();
+                        pku.IVs ??= new pkuObject.IVs_Class();
 
                     //If any hyper training is specified, replace corresponding IVs with 31
                     if (pku.Hyper_Training?.HP == true)
@@ -981,8 +971,11 @@ namespace pkuManager.Common
                         pku.IVs.Sp_Defense = 31;
                     if (pku.Hyper_Training?.Speed == true)
                         pku.IVs.Speed = 31;
+
+                    return alert;
                 }
-                return (pku, alert);
+                else
+                    return null;
             }
         }
 
@@ -1184,16 +1177,13 @@ namespace pkuManager.Common
                 return (encodedStr, truncated, hasInvalidChars);
             }
 
-            public static (byte[], Alert) ProcessNickname(PKUObject pku, bool capitalized, Language checkedLang, int maxLength, int bytesPerChar = 2, Func<char, uint?> encodeChar = null)
+            public static (byte[], Alert) ProcessNickname(pkuObject pku, int gen, Language checkedLang, int maxLength, int bytesPerChar = 2, Func<char, uint?> encodeChar = null)
             {
                 byte[] name;
                 Alert alert = null;
-                int? dexTest = GetNationalDex(pku.Species); //must be valid at this point
-                if (!dexTest.HasValue)
-                    throw new ArgumentException("ProcessNickname expects an official pku species.");
-                int dex = dexTest.Value;
+                int dex = GetNationalDexChecked(pku.Species); //must be valid at this point
 
-                if (pku.Nickname != null) //nickname specified
+                if (pku.Nickname != null) //specified
                 {
                     bool truncated, invalid;
                     (name, truncated, invalid) = EncodeString(pku.Nickname, maxLength, bytesPerChar, encodeChar);
@@ -1204,18 +1194,24 @@ namespace pkuManager.Common
                     else if (invalid)
                         alert = GetNicknameAlert(AlertType.INVALID);
                 }
-                else
+                else //unspecified, get default name for given language
                 {
                     string defaultName = PokeAPIUtil.GetSpeciesNameTranslated(dex, checkedLang);
-                    if (capitalized)
+
+                    if (gen < 5) //Capitalize Gens 1-4
                         defaultName = defaultName.ToUpperInvariant();
-                    (name, _, _) = EncodeString(defaultName, maxLength, bytesPerChar, encodeChar); //species names shouldn't be truncated...
+
+                    if (gen < 8 && dex == 83) //farfetch'd uses ’ in Gens 1-7
+                        defaultName = defaultName.Replace('\'', '’'); //Gen 8: verify this once pokeAPI updates
+
+                    (name, _, _) = EncodeString(defaultName, maxLength, bytesPerChar, encodeChar); //species names shouldn't be truncated/invalid...
                     alert = GetNicknameAlert(AlertType.UNSPECIFIED, defaultName);
                 }
+
                 return (name, alert);
             }
 
-            public static (byte[], Alert) ProcessOT(PKUObject pku, int maxLength, int bytesPerChar = 2, Func<char, uint?> encodeChar = null)
+            public static (byte[], Alert) ProcessOT(pkuObject pku, int maxLength, int bytesPerChar = 2, Func<char, uint?> encodeChar = null)
             {
                 byte[] otName;
                 Alert alert = null;
@@ -1288,55 +1284,51 @@ namespace pkuManager.Common
             // Game Info Processing Methods
             // ----------
 
-            public static (uint, Alert) ProcessID(PKUObject pku)
+            public static (uint, Alert) ProcessID(pkuObject pku)
             {
-                return ProcessNumericTag(pku.Game_Info?.ID, getIDAlert, false, 4294967295, 0, 0);
+                return ProcessNumericTag(pku.Game_Info?.ID, GetIDAlert, false, 4294967295, 0, 0);
             }
 
-            public static (int gameID, string game, Alert alert) ProcessOriginGame(PKUObject pku)
+            public static (int gameID, string game, Alert alert) ProcessOriginGame(pkuObject pku, int gen)
             {
-                bool originSpecified = pku.Game_Info?.Origin_Game != null;
-                bool officialSpecified = pku.Game_Info?.Official_Origin_Game != null;
-                bool originExists = false;
-                bool officialExists = false;
+                bool triedOfficialOriginGame = false;
 
-                int? id = null;
-                if (originSpecified)
-                    id = GetGameID(pku.Game_Info.Origin_Game);
+                (int? id, int? genIntroduced) = GetGameIDAndGen(pku.Game_Info?.Origin_Game); //try origin game
 
-                if (!id.HasValue) //origin game didn't work / no origin
+                if (!id.HasValue) //origin game unspecified/didn't work
                 {
-                    id = GetGameID(pku.Game_Info?.Official_Origin_Game); //try official instead
-                    officialExists = id.HasValue;
+                    (id, genIntroduced) = GetGameIDAndGen(pku.Game_Info?.Official_Origin_Game); //try official origin game
+                    triedOfficialOriginGame = true;
                 }
-                else //origin did work
-                    originExists = true;
 
+                // Future games don't exist in past generations
+                if (genIntroduced > gen)
+                    id = null;
 
                 string game;
-                if (!originExists && !officialExists) //neither game worked
+                if (!id.HasValue) //neither game worked
                     game = null;
                 else //one game worked
-                    game = originExists ? pku.Game_Info?.Origin_Game : pku.Game_Info?.Official_Origin_Game;
+                    game = triedOfficialOriginGame ? pku.Game_Info?.Official_Origin_Game: pku.Game_Info?.Origin_Game;
 
                 Alert alert = null;
-                if (!originSpecified && !officialSpecified)
+                if (pku.Game_Info?.Origin_Game == null && pku.Game_Info?.Official_Origin_Game == null) //no origin game specified
                     alert = GetOriginGameAlert(AlertType.UNSPECIFIED);
-                else if (!id.HasValue)
+                else if (!id.HasValue) //origin game specified, just not valid in this gen
                     alert = GetOriginGameAlert(AlertType.INVALID, pku.Game_Info?.Origin_Game, pku.Game_Info?.Official_Origin_Game);
 
                 return (id ?? 0, game, alert); //default gameID is None (0)
             }
 
-            public static (Language, Alert) ProcessLanguage(PKUObject pku, Language[] validLanguages)
+            public static (Language, Alert) ProcessLanguage(pkuObject pku, Language[] validLanguages)
             {
-                return ProcessEnumTag(pku.Game_Info?.Language, GetLanguage(pku.Game_Info?.Language), getLanguageAlert, false, DEFAULT_LANGUAGE, (x) =>
+                return ProcessEnumTag(pku.Game_Info?.Language, GetLanguage(pku.Game_Info?.Language), GetLanguageAlert, false, DEFAULT_LANGUAGE, (x) =>
                 {
                     return validLanguages.Contains(x);
                 });
             }
 
-            public static (Gender, Alert) ProcessOTGender(PKUObject pku)
+            public static (Gender, Alert) ProcessOTGender(pkuObject pku)
             {
                 return ProcessEnumTag(pku.Game_Info?.Gender, GetGender(pku.Game_Info?.Gender, true), GetOTGenderAlert, false, DEFAULT_GENDER, (x) =>
                 {
@@ -1349,12 +1341,12 @@ namespace pkuManager.Common
             // Catch Info Processing Methods
             // ----------
 
-            public static (int, Alert) ProcessMetLevel(PKUObject pku)
+            public static (int, Alert) ProcessMetLevel(pkuObject pku)
             {
                 return ProcessNumericTag(pku.Catch_Info?.Met_Level, GetMetLevelAlert, false, 127, 0, 0);
             }
 
-            public static (Ball, Alert) ProcessBall(PKUObject pku, Ball maxBall)
+            public static (Ball, Alert) ProcessBall(pkuObject pku, Ball maxBall)
             {
                 return ProcessEnumTag(pku.Catch_Info?.Pokeball, GetBall(pku.Catch_Info?.Pokeball), GetBallAlert, false, DEFAULT_BALL, (x) =>
                 {
@@ -1362,7 +1354,7 @@ namespace pkuManager.Common
                 });
             }
 
-            public static (int, Alert) ProcessMetLocation(PKUObject pku, string checkedGameName, Func<string, string, int?> GetLocationID, string defaultLocation)
+            public static (int, Alert) ProcessMetLocation(pkuObject pku, string checkedGameName, Func<string, string, int?> GetLocationID, string defaultLocation)
             {
                 //override game for met location
                 if (pku.Catch_Info?.Met_Game_Override != null)
@@ -1386,8 +1378,8 @@ namespace pkuManager.Common
             // Pokemon Attribute Processing Methods
             // ----------
 
-            //TODO: account for gen6+ pid change on shiny mismatch
-            public static (Alert, uint[]) ProcessPID(PKUObject pku, uint checkedID, bool gen6Plus, Gender? checkedGender = null, Nature? checkedNature = null, int? checkedUnownForm = null)
+            //Gen 6: account for gen6+ pid change on shiny mismatch
+            public static (Alert, uint[]) ProcessPID(pkuObject pku, uint checkedID, bool gen6Plus, Gender? checkedGender = null, Nature? checkedNature = null, int? checkedUnownForm = null)
             {
                 uint pid, newPID;
                 Alert alert = null;
@@ -1439,13 +1431,13 @@ namespace pkuManager.Common
                     unownMismatch = checkedUnownForm != null && checkedUnownForm != oldunownform;
                 }
                 //always check shiny
-                bool oldshiny = ((checkedID / 65536) ^ (checkedID % 65536) ^ (pid / 65536) ^ (pid % 65536)) < (gen6Plus ? 16 : 8);
-                shinyMismatch = pku.Shiny != oldshiny;
+                bool oldshiny = (checkedID / 65536 ^ checkedID % 65536 ^ pid / 65536 ^ pid % 65536) < (gen6Plus ? 16 : 8);
+                shinyMismatch = pku.IsShiny() != oldshiny;
 
                 // Deal with pid-mismatches
                 if (unownMismatch || genderMismatch || natureMismatch || shinyMismatch)
                 {
-                    newPID = GenerateRandomPID(pku.Shiny, checkedID, PokeAPIUtil.GetGenderRatio(dex), checkedGender, checkedNature, checkedUnownForm);
+                    newPID = GenerateRandomPID(pku.IsShiny(), checkedID, PokeAPIUtil.GetGenderRatio(dex), checkedGender, checkedNature, checkedUnownForm);
 
                     if (pidInBounds) //two options: old & new, need error
                     {
@@ -1469,13 +1461,13 @@ namespace pkuManager.Common
                                                     //no warning: pid is in bounds w/ no mismatches.
             }
 
-            public static (Nature, Alert) ProcessNature(PKUObject pku)
+            public static (Nature, Alert) ProcessNature(pkuObject pku)
             {
                 return ProcessEnumTag(pku.Nature, GetNature(pku.Nature), GetNatureAlert, false, DEFAULT_NATURE);
             }
 
-            //TODO allow impossible genders in gen 6+ (I think they allow impossible genders...)
-            public static (Gender, Alert) ProcessGender(PKUObject pku)
+            //Gen 6: allow impossible genders in gen 6+ (I think they allow impossible genders...)
+            public static (Gender, Alert) ProcessGender(pkuObject pku)
             {
                 int dex = GetNationalDexChecked(pku.Species);
 
@@ -1518,38 +1510,38 @@ namespace pkuManager.Common
                 return (gender, alert);
             }
 
-            public static (int, Alert) ProcessFriendship(PKUObject pku)
+            public static (int, Alert) ProcessFriendship(pkuObject pku)
             {
                 return ProcessNumericTag(pku.Friendship, GetFriendshipAlert, false, 255, 0, 0);
             }
 
             // silent on unspecified
-            public static (int[], Alert) ProcessEVs(PKUObject pku)
+            public static (int[], Alert) ProcessEVs(pkuObject pku)
             {
                 int?[] vals = { pku.EVs?.HP, pku.EVs?.Attack, pku.EVs?.Defense, pku.EVs?.Sp_Attack, pku.EVs?.Sp_Defense, pku.EVs?.Speed };
                 return ProcessMultiNumericTag(pku.EVs != null, vals, GetEVsAlert, 255, 0, 0, true);
             }
 
             // not silent on unspecified
-            public static (int[], Alert) ProcessIVs(PKUObject pku)
+            public static (int[], Alert) ProcessIVs(pkuObject pku)
             {
                 int?[] vals = { pku.IVs?.HP, pku.IVs?.Attack, pku.IVs?.Defense, pku.IVs?.Sp_Attack, pku.IVs?.Sp_Defense, pku.IVs?.Speed };
                 return ProcessMultiNumericTag(pku.IVs != null, vals, GetIVsAlert, 31, 0, 0, false);
             }
 
             // silent on unspecified
-            public static (int[], Alert) ProcessContest(PKUObject pku)
+            public static (int[], Alert) ProcessContest(pkuObject pku)
             {
                 int?[] vals = { pku.Contest_Stats?.Cool, pku.Contest_Stats?.Beauty, pku.Contest_Stats?.Cute, pku.Contest_Stats?.Clever, pku.Contest_Stats?.Tough, pku.Contest_Stats?.Sheen };
                 return ProcessMultiNumericTag(pku.Contest_Stats != null, vals, GetContestAlert, 255, 0, 0, true);
             }
 
-            public static (int, Alert) ProcessItem(PKUObject pku, int gen, int maxOverride = 65536)
+            public static (int, Alert) ProcessItem(pkuObject pku, int gen, int maxOverride = 65536)
             {
                 //Manual Hex Override
                 if (pku.Item != null && Regex.IsMatch(pku.Item, @"^\\0x[a-fA-F0-9]+\\$"))
                 {
-                    int itemID = Convert.ToByte(pku.Item.Substring(1, pku.Item.Length - 2), 16);
+                    int itemID = Convert.ToByte(pku.Item[1..^1], 16);
                     if (itemID < maxOverride)
                         return (itemID, null);
                 }
@@ -1559,11 +1551,12 @@ namespace pkuManager.Common
             }
 
             //gmax moves use a different index and cannot even be stored out of battle. Thus, they are irrelevant.
-            public static (int[] moveIDs, int[] moveIndicies, Alert) ProcessMoves(PKUObject pku, int lastMoveIndex)
+            public static (int[] moveIDs, int[] moveIndicies, Alert) ProcessMoves(pkuObject pku, int lastMoveIndex)
             {
                 List<int> moveIndices = new List<int>(); //indicies in pku
                 int[] moveIDs = new int[4]; //index numbers for format
                 Alert alert = null;
+                bool invalid = false;
                 if (pku.Moves != null)
                 {
                     int confirmedMoves = 0;
@@ -1573,20 +1566,26 @@ namespace pkuManager.Common
                     {
                         if (pku.Moves[i].Name != null) //move has a name
                         {
-                            moveIDTemp = PokeAPIUtil.GetMoveIndex(pku.Moves[i].Name, lastMoveIndex);
-                            if (moveIDTemp.HasValue)
+                            moveIDTemp = PokeAPIUtil.GetMoveIndex(pku.Moves[i].Name);
+                            moveIDTemp = moveIDTemp > lastMoveIndex ? null : moveIDTemp;
+                            if (moveIDTemp.HasValue && confirmedMoves < 4)
                             {
                                 moveIDs[confirmedMoves] = moveIDTemp.Value;
                                 moveIndices.Add(i);
                                 confirmedMoves++;
                             }
+                            else if(moveIDTemp == null)
+                                invalid = true;
                         }
-                        if (confirmedMoves >= 4)
-                            break;
                     }
 
-                    if (confirmedMoves != pku.Moves.Length)
-                        alert = GetMoveAlert(AlertType.INVALID, confirmedMoves);
+                    if (confirmedMoves != pku.Moves.Length) //not a perfect match
+                    {
+                        if(invalid)
+                            alert = GetMoveAlert(AlertType.INVALID, confirmedMoves);
+                        else //if its not invalid but numbers don't match, then must be an overflow
+                            alert = GetMoveAlert(AlertType.OVERFLOW);
+                    }
                 }
                 else
                     alert = GetMoveAlert(AlertType.UNSPECIFIED);
@@ -1594,7 +1593,7 @@ namespace pkuManager.Common
                 return (moveIDs, moveIndices.ToArray(), alert);
             }
 
-            public static (int[], Alert) ProcessPPUps(PKUObject pku, int[] moveIndicies)
+            public static (int[], Alert) ProcessPPUps(pkuObject pku, int[] moveIndicies)
             {
                 int[] ppups = new int[4];
                 Alert alert = null;
@@ -1614,7 +1613,7 @@ namespace pkuManager.Common
                         else if (pku.Moves[moveIndicies[i]].PP_Ups < 0)
                             underflow.Add(i);
                         else
-                            ppups[i] = pku.Moves[i].PP_Ups.Value;
+                            ppups[i] = pku.Moves[moveIndicies[i]].PP_Ups.Value;
                     }
                 }
                 if (overflow.Count > 0 || underflow.Count > 0)
@@ -1622,7 +1621,7 @@ namespace pkuManager.Common
                 return (ppups, alert);
             }
 
-            public static (Alert, uint[]) ProcessEXP(PKUObject pku)
+            public static (Alert, uint[]) ProcessEXP(pkuObject pku)
             {
                 uint exp;
                 uint? expFromLevel = null;
@@ -1730,7 +1729,7 @@ namespace pkuManager.Common
                     return (alert, new uint[] { exp });
             }
 
-            public static (int strain, int days, Alert) ProcessPokerus(PKUObject pku)
+            public static (int strain, int days, Alert) ProcessPokerus(pkuObject pku)
             {
                 int strain = 0, days = 0;
                 AlertType atStrain = AlertType.NONE, atDays = AlertType.NONE;
@@ -1770,7 +1769,7 @@ namespace pkuManager.Common
                 return (strain, days, GetPokerusAlert(atStrain, atDays));
             }
 
-            public static (HashSet<Ribbon>, Alert) ProcessRibbons(PKUObject pku, Func<Ribbon, bool> isValidRibbon)
+            public static (HashSet<Ribbon>, Alert) ProcessRibbons(pkuObject pku, Func<Ribbon, bool> isValidRibbon)
             {
                 HashSet<Ribbon> ribbons = new HashSet<Ribbon>();
                 Alert a = null;
@@ -1784,7 +1783,7 @@ namespace pkuManager.Common
                 return (ribbons, a); //unspecified returns an empty set
             }
 
-            //TODO: do this for gen4+, slot/ability independent in all gens, EXCEPT for gen 3
+            //Gen 4: implement this for gen4+, slot/ability independent in all gens, EXCEPT for gen 3
             //public static (int abilityID, int slot, Alert) ProcessAbility(PKUObject pku, int maxAbility)
             //{
             //    
