@@ -1,0 +1,11 @@
+None
+JPN / Japanese
+ENG / English
+FRE / French
+ITA / Italian
+GER / German
+
+SPA / Spanish
+KOR / Korean
+CHS / Chinese Simplified
+CHT / Chinese Traditional

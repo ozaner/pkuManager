@@ -1,0 +1,246 @@
+﻿{
+    "UFO": {
+        // Doesn't have dex number, don't include it
+        "Forms": {
+            "Form 1": {
+                "Default": true,
+                "Gen 5 Index": 652,
+                "Languages": {
+                    "English": "Form 1" // For display/translating purposes only
+                }
+            },
+            "Prop 1": { //Prop U1
+                //don't include "Default": false, less clutter
+                "Gen 5 Index": 664,
+                "Not Grounded":  true, //whether or not this pokestar prop is attached to cables
+                "Languages": {
+                    "English": "Prop 1"
+                }
+            },
+            "Form 2": {
+                "Gen 5 Index": 680,
+                "Languages": {
+                    "English": "Form 2"
+                }
+            },
+            "Prop 2": { //Prop U2
+                "Gen 5 Index": 665,
+                "Not Grounded": true,
+                "Languages": {
+                    "English": "Prop 2"
+                }
+            }
+        }
+    },
+    "Brycen-Man": {
+        "Forms": {
+            "": {
+                "Default": true,
+                "Gen 5 Index": 653
+                // If there are no alt Languages for the default form, don't include "Languages" tag
+            },
+            "Prop": { //Prop H1
+                "Gen 5 Index": 666,
+                "Languages": {
+                    "English": "Prop"
+                }
+            }
+        }
+    },
+    "MT": {
+        "Forms": {
+            "": {
+                "Default": true,
+                "Gen 5 Index": 654
+            },
+            "Prop": { //Prop M1
+                "Gen 5 Index": 667,
+                "Languages": {
+                    "English": "Prop"
+                }
+            }
+        }
+    },
+    "MT2": {
+        "Forms": {
+            "": {
+                "Default": true,
+                "Gen 5 Index": 655
+            },
+            "Prop": { //Prop M2
+                "Gen 5 Index": 668,
+                "Languages": {
+                    "English": "Prop"
+                }
+            }
+        }
+    },
+    "Transport": {
+        "Forms": {
+            "": {
+                "Default": true,
+                "Gen 5 Index": 656
+            },
+            "Prop": { //Prop T1
+                "Gen 5 Index": 669,
+                "Languages": {
+                    "English": "Prop"
+                }
+            }
+        }
+    },
+    "Giant ♀": {
+        "Forms": {
+            "Form 1": {
+                "Default": true,
+                "Gen 5 Index": 657,
+                "Languages": {
+                    "English": "Form 1"
+                }
+            },
+            "Prop 1": { //Prop O1
+                "Gen 5 Index": 670,
+                "Languages": {
+                    "English": "Prop 1"
+                }
+            },
+            "Form 2": {
+                "Gen 5 Index": 681,
+                "Languages": {
+                    "English": "Form 2"
+                }
+            },
+            "Prop 2": { //Prop O2
+                "Gen 5 Index": 671,
+                "Languages": {
+                    "English": "Prop 2"
+                }
+            }
+        }
+    },
+    "Humanoid": {
+        "Forms": {
+            "": {
+                "Default": true,
+                "Gen 5 Index": 658
+            },
+            "Prop": {
+                "Gen 5 Index": 672,
+                "Languages": {
+                    "English": "Prop"
+                }
+            }
+        }
+    },
+    "Monster": {
+        "Forms": {
+            "": {
+                "Default": true,
+                "Gen 5 Index": 659
+            },
+            "Prop": { //Prop C2
+                "Gen 5 Index": 673,
+                "Languages": {
+                    "English": "Prop"
+                }
+            }
+        }
+    },
+    "F-00": {
+        "Forms": {
+            "Form 1": {
+                "Default": true,
+                "Gen 5 Index": 660,
+                "Languages": {
+                    "English": "Form 1"
+                }
+            },
+            "Prop 1": { //Prop R1
+                "Gen 5 Index": 677,
+                "Languages": {
+                    "English": "Prop 1"
+                }
+            },
+            "Form 2": {
+                "Gen 5 Index": 682,
+                "Languages": {
+                    "English": "Form 2"
+                }
+            },
+            "Prop 2": { //Prop R2
+                "Gen 5 Index": 678,
+                "Languages": {
+                    "English": "Prop 2"
+                }
+            }
+        }
+    },
+    "Spirit": {
+        "Forms": {
+            "": {
+                "Default": true,
+                "Gen 5 Index": 661
+            },
+            "Prop": { //Prop G1
+                "Gen 5 Index": 674,
+                "Not Grounded": true,
+                "Languages": {
+                    "English": "Prop"
+                }
+            }
+        }
+    },
+    "White Door": {
+        "Forms": {
+            "": {
+                "Default": true,
+                "Gen 5 Index": 662
+            },
+            "Prop": { //Prop W1
+                "Gen 5 Index": 675,
+                "Languages": {
+                    "English": "Prop"
+                }
+            }
+        }
+    },
+    "Black Door": {
+        "Forms": {
+            "": {
+                "Default": true,
+                "Gen 5 Index": 663
+            },
+            "Prop": { //Prop W2
+                "Gen 5 Index": 676,
+                "Languages": {
+                    "English": "Prop"
+                }
+            }
+        }
+    },
+    "Black Belt": {
+        "Forms": {
+            "": {
+                "Default": true,
+                "Gen 5 Index": 683
+            },
+            "Prop": { //Prop K1
+                "Gen 5 Index": 679,
+                "Languages": {
+                    "English": "Prop"
+                }
+            }
+        }
+    },
+    "Smeargle": {
+        "Forms": {
+            // Don't include base, since gen3Dex.json includes it
+            "Pokéstar": {
+                "Gen 5 Index": 684,
+                "Languages": {
+                    "English": "Pokéstar"
+                }
+            }
+        }
+    }
+}
