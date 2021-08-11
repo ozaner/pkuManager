@@ -52,8 +52,56 @@ namespace pkuManager.pku
             {
                 MessageBox.Show("The collectionConfig.json file is invalid or doesn't exist, a new one will be created.");
                 config = new PKUCollectionConfig();
-                WriteCollectionConfig();
             }
+
+            // Process box list
+            List<string> newBoxList = new List<string>();
+
+            // remove deleted boxes
+            foreach (string box in config.Boxes)
+            {
+                if (Directory.Exists($@"{path}\{box}"))
+                    newBoxList.Add(box);
+            }
+
+            // add new boxes (i.e. folders with pkus)
+            string[] folders = Directory.GetDirectories(path);
+            List<string> newContainsPKU = new List<string>();
+            foreach (string folderPath in folders)
+            {
+                DirectoryInfo folderInfo = new DirectoryInfo(folderPath);
+                List<FileInfo> allPkus = new List<FileInfo>(folderInfo.GetFiles("*.pku"));
+                if (allPkus.Count > 0)
+                    newContainsPKU.Add(folderInfo.Name);
+            }
+            newContainsPKU = newContainsPKU.Except(newBoxList).ToList();
+
+            if(newContainsPKU.Count > 0)
+            {
+                bool addBoxes = true;
+                string msg = "Found .pku files in the following folders: ";
+                foreach (string folder in newContainsPKU)
+                    msg += $"\n - {folder}";
+                if (Properties.Settings.Default.Ask_Auto_Add)
+                {
+                    DialogResult dr = MessageBox.Show(msg + "\n Would you like to add them to the collection?", "New boxes detected", MessageBoxButtons.YesNo);
+                    if (dr == DialogResult.No)
+                        addBoxes = false;
+                }
+                else
+                    MessageBox.Show(msg + "\n Adding them to the collection.", "New boxes detected");
+
+                if (addBoxes)
+                    newBoxList.AddRange(newContainsPKU);
+            }
+
+            //If box list is empty on load, add default box...
+            if (newBoxList.Count < 1)
+                newBoxList.Add("Default");
+
+            // save new box list
+            config.Boxes = newBoxList;
+            WriteCollectionConfig();
         }
 
         private void WriteCollectionConfig()
@@ -526,7 +574,7 @@ namespace pkuManager.pku
                 }
                 catch
                 {
-                    Debug.WriteLine($"Box Config for {name} box doesnt't exist. Generating a new one...");
+                    Debug.WriteLine($"Box config for {name} does not exist or is invalid. Generating a new one...");
                     boxConfig = new PKUBoxConfig();
                     string newConfigText = JsonConvert.SerializeObject(boxConfig, Formatting.Indented);
 
