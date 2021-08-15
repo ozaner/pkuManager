@@ -2,7 +2,6 @@
 using pkuManager.Common;
 using pkuManager.pku;
 using pkuManager.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -195,119 +194,108 @@ namespace pkuManager.pkx.pk3
 
         private (byte[], uint) encodeSubstructure()
         {
-            // G: Growth Block
-            byte[] G = new byte[12];
+            /* ------------------------------------
+             * G: Growth Block
+             * ------------------------------------
+            */
+            ByteArrayManipulator G = new ByteArrayManipulator(12, false);
+
+            G.SetUInt((int)PokeAPIUtil.GetSpeciesIndex(dex, 3), 0, 2); // Species: bytes 0-1
+            G.SetUInt(item, 2, 2);                                     // Item: bytes 2-3
+            G.SetUInt(expResolver.DecideValue(), 4, 4);                // Experience: bytes 4-7
+            G.SetUInt(ppups[0], 8, 0, 2);                              // PP Up 1: byte 8, bits 0-1
+            G.SetUInt(ppups[1], 8, 2, 2);                              // PP Up 2: byte 8, bits 2-3
+            G.SetUInt(ppups[2], 8, 4, 2);                              // PP Up 3: byte 8, bits 4-5
+            G.SetUInt(ppups[3], 8, 6, 2);                              // PP Up 4: byte 8, bits 6-7
+            G.SetUInt(friendship, 9, 1);                               // Friendship: byte 9
+                                                                       // "Unknown": byte 10-11 (Bulbapedia is vague here, but I suspect it's just padding.)
+
+
+            /* ------------------------------------
+             * A: Attacks Block
+             * ------------------------------------
+            */
+            ByteArrayManipulator A = new ByteArrayManipulator(12, false);
+            for (int i = 0; i < 4; i++)
             {
-                // Species - G: bytes 0-1
-                uint speciesID = (uint)PokeAPIUtil.GetSpeciesIndex(dex, 3);
-                DataUtil.ShiftCopy(speciesID, G, 0, 2);
-
-                // Item - G: bytes 2-3
-                DataUtil.ShiftCopy(item, G, 2, 2);
-
-                // Experience - G: bytes 4-7
-                DataUtil.ShiftCopy(expResolver.DecideValue(), G, 4, 4);
-
-                // PP Ups - G: byte 8
-                uint ppupval = (uint)(ppups[3] << 6 | ppups[2] << 4 | ppups[1] << 2 | ppups[0]);
-                DataUtil.ShiftCopy(ppupval, G, 8, 1);
-
-                // Friendship - G: byte 9
-                DataUtil.ShiftCopy(friendship, G, 9, 1);
-
-                // "Unknown" - G: byte 10-11
-                // Bulbapedia is vague here, but I suspect it's just padding.
+                A.SetUInt(moves[i], 2 * i, 2);                                                           // Move i: bytes (2i)-(2i+1)  (overall 0-7)
+                if (moves[i] != 0)
+                    A.SetUInt((5 + ppups[i]) * PokeAPIUtil.GetMoveBasePP(moves[i]).Value / 5, 8 + i, 1); // PP i: byte 8+i  (overall 8-11)
             }
 
-            // A: Attacks Block
-            byte[] A = new byte[12];
-            {
-                for (int i = 0; i < 4; i++)
-                {
-                    DataUtil.ShiftCopy(moves[i], A, 2 * i, 2); // Move i - A: bytes (2i)-(2i+1)  (overall 0-7)
-                    if (moves[i] != 0)
-                        A[8 + i] = (byte)((5 + ppups[i]) * PokeAPIUtil.GetMoveBasePP(moves[i]) / 5); // PP i - A: byte 8+i  (overall 8-11)
-                }
-            }
 
-            // E: EVs & Condition Block
-            byte[] E = new byte[12];
-            {
-                // EVs are encoded in a different order than usual:
-                E[0] = (byte)evs[0]; // HP: byte 0
-                E[1] = (byte)evs[1]; // Attack: byte 1
-                E[2] = (byte)evs[2]; // Defense: byte 2
-                E[3] = (byte)evs[5]; // Speed: byte 3
-                E[4] = (byte)evs[3]; // Sp. Attack: byte 4
-                E[5] = (byte)evs[4]; // Sp. Defense: byte 5
+            /* ------------------------------------
+             * E: EVs & Condition Block
+             * ------------------------------------
+            */
+            ByteArrayManipulator E = new ByteArrayManipulator(12, false);
 
-                // Contest Stats are encoded in the normal order:
-                // Cool, Beauty, Cute, Clever, Tough, Sheen
-                for (int i = 0; i < 6; i++)
-                    E[i + 6] = (byte)contest[i]; // Contest Stats: bytes 6-11
-            }
+            // EVs - are encoded in a different order than usual:
+            E.SetUInt(evs[0], 0, 1);                    // HP EV: byte 0
+            E.SetUInt(evs[1], 1, 1);                    // Attack: byte 1
+            E.SetUInt(evs[2], 2, 1);                    // Defense: byte 2
+            E.SetUInt(evs[5], 3, 1);                    // Speed: byte 3
+            E.SetUInt(evs[3], 4, 1);                    // Sp. Attack: byte 4
+            E.SetUInt(evs[4], 5, 1);                    // Sp. Defense: byte 5
 
-            // M: Misc. Block
-            byte[] M = new byte[12];
-            {
-                // Pokerus: byte 0
-                uint pokerus = 0;
-                pokerus = DataUtil.setBits(pokerus, (uint)pkrsDays, 0, 4); // Days: Pokerus bits 0-3
-                pokerus = DataUtil.setBits(pokerus, (uint)pkrsStrain, 4, 4);// Strain: Pokerus bits 4-7
-                M[0] = (byte)pokerus;
+            // Contest Stats: Cool, Beauty, Cute, Clever, Tough, Sheen
+            for (int i = 0; i < 6; i++)
+                E.SetUInt(contest[i], 6 + i, 1);        // Contest Stat i: byte 6+i (overall 6-11)
 
-                // Met Location: byte 1
-                M[1] = (byte)location;
 
-                // Origins: bytes 2-3
-                uint origins = 0;
-                origins = DataUtil.setBits(origins, (uint)metlevel, 0, 7); // Met Level: Origins bits 0-6
-                origins = DataUtil.setBits(origins, (uint)game, 7, 4); // Origin Game: Origins bits 7-10
-                origins = DataUtil.setBits(origins, (uint)ball, 11, 4); // Ball: Origins bits 11-14
-                origins = DataUtil.setBits(origins, (uint)otgender, 15); // OT Gender: Origins bit 15
-                DataUtil.ShiftCopy(origins, M, 2, 2);
+            /* ------------------------------------
+             * M: Misc. Block
+             * ------------------------------------
+            */
+            ByteArrayManipulator M = new ByteArrayManipulator(12, false);
 
-                // IVs/Egg/Ability: bytes 4-7
-                uint iv_egg_ability = 0;
-                iv_egg_ability = DataUtil.setBits(iv_egg_ability, (uint)ivs[0], 0, 5); // HP IV: IVs/Egg/Ability bits 0-4
-                iv_egg_ability = DataUtil.setBits(iv_egg_ability, (uint)ivs[1], 5, 5); // Attack IV: IVs/Egg/Ability bits 5-9
-                iv_egg_ability = DataUtil.setBits(iv_egg_ability, (uint)ivs[2], 10, 5); // Defense IV: IVs/Egg/Ability bits 10-14
-                iv_egg_ability = DataUtil.setBits(iv_egg_ability, (uint)ivs[5], 15, 5); // Speed IV: IVs/Egg/Ability bits 15-19
-                iv_egg_ability = DataUtil.setBits(iv_egg_ability, (uint)ivs[3], 20, 5); // Sp. Attack IV: IVs/Egg/Ability bits 20-24
-                iv_egg_ability = DataUtil.setBits(iv_egg_ability, (uint)ivs[4], 25, 5); // Sp. Defense: IVs/Egg/Ability bits 25-29
-                iv_egg_ability = DataUtil.setBits(iv_egg_ability, Convert.ToUInt32(pku.IsAnEgg()), 30); // Is Egg: IVs/Egg/Ability bit 30
-                iv_egg_ability = DataUtil.setBits(iv_egg_ability, (uint)abilitySlot, 31); // Ability Slot: IVs/Egg/Ability bit 31
-                DataUtil.ShiftCopy(iv_egg_ability, M, 4);
+            // Pokerus
+            M.SetUInt(pkrsDays, 0, 0, 4);                             // Pokerus Days: byte 0, bits 0-3
+            M.SetUInt(pkrsStrain, 0, 4, 4);                           // Pokerus Days: byte 0, bits 4-7
 
-                // Ribbons/Fateful Encounter: bytes 8-11
+            // Origins
+            M.SetUInt(location, 1, 1);                                // Met Location: byte 1
+            M.SetUInt(metlevel, 2, 0, 7);                             // Met Level: bytes 2-3, bits 0-6
+            M.SetUInt(game, 2, 7, 4);                                 // Origin Game: bytes 2-3, bits 7-10
+            M.SetUInt((int)ball, 2, 11, 4);                           // Ball: bytes 2-3, bits 11-14
+            M.SetBool(otgender > 0, 2, 15);                           // OT Gender: bytes 2-3, bit 15
 
-                // Contest Ribbons: Ribbons/Fateful Encounter bits 3i-(2+3i)
-                uint ribbons_fateful_encounter = 0;
-                for (int i = 0; i < 5; i++)
-                {
-                    for (int j = 0; j < 4; j++)
-                    {
-                        if (ribbons.Contains(Ribbon.Cool_G3 + 4 * i + j))
-                            ribbons_fateful_encounter = DataUtil.setBits(ribbons_fateful_encounter, (uint)j + 1, 3 * i, 3);
-                    }
-                }
+            // IVs - encoded in a different order than usual:
+            M.SetUInt(ivs[0], 4, 0, 5);                               // HP IV: bytes 4-7, bits 0-4
+            M.SetUInt(ivs[1], 4, 5, 5);                               // Attack IV: bytes 4-7, bits 5-9
+            M.SetUInt(ivs[2], 4, 10, 5);                              // Defense IV: bytes 4-7, bits 10-14
+            M.SetUInt(ivs[5], 4, 15, 5);                              // Speed IV: bytes 4-7, bits 15-19
+            M.SetUInt(ivs[3], 4, 20, 5);                              // Sp. Attack IV: bytes 4-7, bits 20-24
+            M.SetUInt(ivs[4], 4, 25, 5);                              // Sp. Defense IV: bytes 4-7, bits 25-29
 
-                // Non-Contest Ribbons: Ribbons/Fateful Encounter bits 15-26
-                foreach (var kvp in pk3Util.RIBBON_INDEX)
-                    ribbons_fateful_encounter = DataUtil.setBits(ribbons_fateful_encounter, Convert.ToUInt32(ribbons.Contains(kvp.Value)), kvp.Key);
+            M.SetBool(pku.IsAnEgg(), 4, 30);                          // Is Egg: bytes 4-7, bit 30
+            M.SetBool(abilitySlot > 0, 4, 31);                        // Ability Slot: bytes 4-7, bit 31
 
-                // Fateful Encounter: Ribbons/Fateful Encounter bit 31
-                ribbons_fateful_encounter = DataUtil.setBits(ribbons_fateful_encounter, Convert.ToUInt32(fatefulEncounterResolver.DecideValue()), 31);
-                DataUtil.ShiftCopy(ribbons_fateful_encounter, M, 8);
-            }
+            // Contest Ribbon Ranks
+            for (int i = 0; i < 5; i++)
+                for (int j = 0; j < 4; j++)
+                    if (ribbons.Contains(Ribbon.Cool_G3 + 4 * i + j))
+                        M.SetUInt(j + 1, 8, 3 * i, 3);                // Contest Ribbon i Rank: bytes 8-11, bits 3i-(2+3i) (overall 0-14)
+
+            // Non-Contest Ribbons
+            foreach (var kvp in pk3Util.RIBBON_INDEX)
+                M.SetBool(ribbons.Contains(kvp.Value), 8, kvp.Key);   // Non-Contest Ribbon i: bytes 8-11, bit kvp.Key (overall 15-26)
+
+            M.SetBool(fatefulEncounterResolver.DecideValue(), 8, 31); // Fateful Encounter: bytes 8-11, bit 31
+
+
+            /* ------------------------------------
+             * Compile Substructure
+             * ------------------------------------
+            */
 
             // Substructure Order
-            byte[] subData = new byte[48];
+            ByteArrayManipulator subData = new ByteArrayManipulator(48, false);
             string order = pk3Util.SUBSTRUCTURE_ORDER[pidResolver.DecideValue() % 24];
-            G.CopyTo(subData, 12 * order.IndexOf('G'));
-            A.CopyTo(subData, 12 * order.IndexOf('A'));
-            E.CopyTo(subData, 12 * order.IndexOf('E'));
-            M.CopyTo(subData, 12 * order.IndexOf('M'));
+            subData.SetBytes(G, 12 * order.IndexOf('G'));
+            subData.SetBytes(A, 12 * order.IndexOf('A'));
+            subData.SetBytes(E, 12 * order.IndexOf('E'));
+            subData.SetBytes(M, 12 * order.IndexOf('M'));
 
             // Calculate Checksum
             uint checksum = pk3Util.CalculateChecksum(subData);
@@ -321,47 +309,26 @@ namespace pkuManager.pkx.pk3
 
         protected override byte[] toFile()
         {
-            byte[] data = new byte[80]; //pc .pk3 file is an 80 byte data structure
+            //pc .pk3 file is an 80 byte data structure
+            ByteArrayManipulator data = new ByteArrayManipulator(80, false);
 
-            // PID - bytes 0-3
-            DataUtil.ShiftCopy(pidResolver.DecideValue(), data, 0, 4);
+            data.SetUInt(pidResolver.DecideValue(), 0, 4);                                               // PID: bytes 0-3
+            data.SetUInt(id, 4, 4);                                                                      // ID: bytes 4-7
+            data.SetBytes(name, 8);                                                                      // Nickname: bytes 8-17
+            data.SetUInt(pku.IsAnEgg() ? pk3Util.EGG_LANGUAGE_ID : pk3Util.EncodeLanguage(lang), 18, 2); // Language: bytes 18-19
+            data.SetBytes(otName, 20);                                                                   // OT: bytes 20-26
 
-            // ID - bytes 4-7
-            DataUtil.ShiftCopy(id, data, 4);
-
-            // Nickname - bytes 8-17
-            for (int i = 0; i < name.Length; i++)
-                data[8 + i] = name[i];
-
-            // Language - bytes 18-19
-            uint langBytes = pk3Util.EncodeLanguage(lang);
-            if (pku.IsAnEgg())
-                langBytes = pk3Util.EGG_LANGUAGE_ID; //Eggs in gen 3 all have this as their language value.
-            DataUtil.ShiftCopy(langBytes, data, 18, 2);
-
-            // OT - bytes 20-26
-            for (int i = 0; i < otName.Length; i++)
-                data[20 + i] = otName[i];
-
-            // Markings - byte 27
+            // Markings
             List<MarkingIndex> markings = pkxUtil.GetMarkings(pku.Markings);
-            byte mbyte = 0x0;
-            if (markings.Contains(MarkingIndex.BlueCircle))
-                mbyte += 1;
-            if (markings.Contains(MarkingIndex.BlueSquare))
-                mbyte += 2;
-            if (markings.Contains(MarkingIndex.BlueTriangle))
-                mbyte += 4;
-            if (markings.Contains(MarkingIndex.BlueHeart))
-                mbyte += 8;
-            data[27] = mbyte;
+            data.SetBool(markings.Contains(MarkingIndex.BlueCircle), 27, 0);                             // Markings: byte 27, bit 0
+            data.SetBool(markings.Contains(MarkingIndex.BlueSquare), 27, 1);                             // Markings: byte 27, bit 1
+            data.SetBool(markings.Contains(MarkingIndex.BlueTriangle), 27, 2);                           // Markings: byte 27, bit 2
+            data.SetBool(markings.Contains(MarkingIndex.BlueHeart), 27, 3);                              // Markings: byte 27, bit 3
 
-            // Checksum - bytes 28-29
+            //Data-substructure + Encrypting
             (byte[] subData, uint checksum) = encodeSubstructure();
-            DataUtil.ShiftCopy(checksum, data, 28, 2);
-
-            // Data - bytes 32-80
-            subData.CopyTo(data, 32);
+            data.SetUInt(checksum, 28, 2);                                                               // Checksum: bytes 28-29
+            data.SetBytes(subData, 32);                                                                  // Data-Substructure: bytes 32-80
 
             return data;
         }

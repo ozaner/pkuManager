@@ -1138,14 +1138,14 @@ namespace pkuManager.pkx
 
             //Helper method for processnickname and processOT
             //this just encodes strings and adds a terminator, it doesn't deal with trash.
-            private static (byte[] encodedString, bool truncated, bool hasInvalidChars) EncodeString(string str, int maxLength, int bytesPerChar, Func<char, uint?> encodeChar = null)
+            private static (byte[] encodedString, bool truncated, bool hasInvalidChars) EncodeString(string str, bool bigEndian, int maxLength, int bytesPerChar, Func<char, uint?> encodeChar = null)
             {
                 //Identity encoding (i.e. unicode for gens 5+)
                 if (encodeChar == null)
                     encodeChar = (x) => { return x; };
 
                 bool truncated = false, hasInvalidChars = false;
-                byte[] encodedStr = new byte[maxLength * bytesPerChar];
+                ByteArrayManipulator encodedStr = new ByteArrayManipulator(maxLength * bytesPerChar, bigEndian);
 
                 //Encode string
                 int successfulChars = 0;
@@ -1162,7 +1162,7 @@ namespace pkuManager.pkx
                     }
 
                     //else character not invalid
-                    DataUtil.ShiftCopy(encodedChar.Value, encodedStr, successfulChars * bytesPerChar, bytesPerChar);
+                    encodedStr.SetUInt(encodedChar.Value, successfulChars * bytesPerChar, bytesPerChar);
                     successfulChars++;
 
                     //stop encoding when limit reached
@@ -1172,12 +1172,12 @@ namespace pkuManager.pkx
 
                 //Deal with terminator
                 if (successfulChars < maxLength)
-                    DataUtil.ShiftCopy(encodeChar('\0').Value, encodedStr, successfulChars * bytesPerChar, bytesPerChar);
+                    encodedStr.SetUInt(encodeChar('\0').Value, successfulChars * bytesPerChar, bytesPerChar);
 
                 return (encodedStr, truncated, hasInvalidChars);
             }
 
-            public static (byte[], Alert) ProcessNickname(pkuObject pku, int gen, Language checkedLang, int maxLength, int bytesPerChar = 2, Func<char, uint?> encodeChar = null)
+            public static (byte[], Alert) ProcessNickname(pkuObject pku, int gen, bool bigEndian, Language checkedLang, int maxLength, int bytesPerChar = 2, Func<char, uint?> encodeChar = null)
             {
                 byte[] name;
                 Alert alert = null;
@@ -1186,7 +1186,7 @@ namespace pkuManager.pkx
                 if (pku.Nickname != null) //specified
                 {
                     bool truncated, invalid;
-                    (name, truncated, invalid) = EncodeString(pku.Nickname, maxLength, bytesPerChar, encodeChar);
+                    (name, truncated, invalid) = EncodeString(pku.Nickname, bigEndian, maxLength, bytesPerChar, encodeChar);
                     if (truncated && invalid)
                         alert = GetNicknameAlert(AlertType.OVERFLOW, maxLength, AlertType.INVALID);
                     else if (truncated)
@@ -1204,14 +1204,14 @@ namespace pkuManager.pkx
                     if (gen < 8 && dex == 83) //farfetch'd uses ’ in Gens 1-7
                         defaultName = defaultName.Replace('\'', '’'); //Gen 8: verify this once pokeAPI updates
 
-                    (name, _, _) = EncodeString(defaultName, maxLength, bytesPerChar, encodeChar); //species names shouldn't be truncated/invalid...
+                    (name, _, _) = EncodeString(defaultName, bigEndian, maxLength, bytesPerChar, encodeChar); //species names shouldn't be truncated/invalid...
                     alert = GetNicknameAlert(AlertType.UNSPECIFIED, defaultName);
                 }
 
                 return (name, alert);
             }
 
-            public static (byte[], Alert) ProcessOT(pkuObject pku, int maxLength, int bytesPerChar = 2, Func<char, uint?> encodeChar = null)
+            public static (byte[], Alert) ProcessOT(pkuObject pku, bool bigEndian, int maxLength, int bytesPerChar = 2, Func<char, uint?> encodeChar = null)
             {
                 byte[] otName;
                 Alert alert = null;
@@ -1219,7 +1219,7 @@ namespace pkuManager.pkx
                 if (pku.Game_Info?.OT != null) //OT specified
                 {
                     bool truncated, invalid;
-                    (otName, truncated, invalid) = EncodeString(pku.Game_Info.OT, maxLength, bytesPerChar, encodeChar);
+                    (otName, truncated, invalid) = EncodeString(pku.Game_Info.OT, bigEndian, maxLength, bytesPerChar, encodeChar);
                     if (truncated && invalid)
                         alert = GetOTAlert(maxLength, AlertType.OVERFLOW, AlertType.INVALID);
                     else if (truncated)
@@ -1229,7 +1229,7 @@ namespace pkuManager.pkx
                 }
                 else //OT not specified
                 {
-                    (otName, _, _) = EncodeString(null, maxLength, bytesPerChar, encodeChar); //blank array
+                    (otName, _, _) = EncodeString(null, bigEndian, maxLength, bytesPerChar, encodeChar); //blank array
                     alert = GetOTAlert(AlertType.UNSPECIFIED);
                 }
                 return (otName, alert);

@@ -25,43 +25,6 @@ namespace pkuManager.pkx.pk3
             "MGAE", "MGEA", "MAGE", "MAEG", "MEGA", "MEAG",
         };
 
-        // doesn't work, use random method in pkxUtil instead
-        private static uint generatePID(int? unownForm, GenderRatio gr, Gender gender, Nature nature, bool shiny)
-        {
-            if (unownForm != null && gender != Gender.Genderless)
-                throw new ArgumentException("unownForm is not null yet gender is not genderless. All unown are genderless.");
-
-            // 0 = Unset, U = Unown, G = Gender, N = Nature, S = Shiny
-
-            //P0: initialize to 0 (00000000 00000000 00000000 00000000)
-            uint newPID = 0;
-
-            //P1a: Unown (00000000 0000000U 000000UU 000000UU)
-            if (unownForm != null)
-            {
-                newPID = DataUtil.setBits(newPID, DataUtil.getBits((uint)unownForm.Value, 0, 2), 0, 2); //bits 0,1 of form
-                newPID = DataUtil.setBits(newPID, DataUtil.getBits((uint)unownForm.Value, 2, 2), 0, 2); //bits 2,3 of form
-                newPID = DataUtil.setBits(newPID, DataUtil.getBits((uint)unownForm.Value, 4), 0); //bit 4 of form
-                //bits past this wont get set by a number from 0-27;
-            }
-
-            //P1b: Gender (00000000 0000000U 000000UU GGGGGGGG)
-            if (gr != GenderRatio.ALL_MALE &&
-                gr != GenderRatio.ALL_FEMALE &&
-                gr != GenderRatio.ALL_GENDERLESS)
-            {
-
-            }
-
-            //P2: Nature (00000000 0000000U NNNNNNUU GGGGGG[G/U][G/U])
-            //mod equation for 2^11
-
-            //P3: Shiny (SSSSSSSS SSSSSSSU NNNNNNUU GGGGGG[G/U][G/U])
-            //if not shiny, make first S =1 in xor calc, if shiny mak all S = 0 in xor calc.
-
-            return newPID;
-        }
-
 
         // ----------
         // Ribbon Encoding Stuff
@@ -269,28 +232,31 @@ namespace pkuManager.pkx.pk3
         // ----------
         // Encryption Stuff
         // ----------
-        public static uint CalculateChecksum(byte[] subData)
+        public static uint CalculateChecksum(ByteArrayManipulator subData)
         {
             if (subData.Length != 48)
                 throw new ArgumentException("Expected a 48 byte pk3 subdata array.");
 
             uint checksum = 0;
             for (int i = 0; i < 24; i++) // Sum over subData, w/ 2 byte window
-                checksum += subData[i + 1] * (uint)256 + subData[i];
+                checksum += subData.GetUInt(i*2, 2);
             checksum %= 65536; //should be 2 bytes
 
             return checksum;
         }
 
-        public static void EncryptSubData(byte[] subData, uint id, uint pid)
+        public static void EncryptSubData(ByteArrayManipulator subData, uint id, uint pid)
         {
+            if (subData.Length != 48)
+                throw new ArgumentException("Expected a 48 byte pk3 subdata array.");
+
             uint encryptionKey = id ^ pid;
             for (int i = 0; i < 12; i++) //xor subData with key in 4 byte chunks
             {
                 int index = 4 * i;
-                uint chunk = (uint)(subData[index + 3] << 24 | subData[index + 2] << 16 | subData[index + 1] << 8 | subData[index]);
+                uint chunk = subData.GetUInt(index, 4);
                 chunk ^= encryptionKey;
-                DataUtil.toByteArray(chunk).CopyTo(subData, index); //copy the encrypted chunk bytes to the subData array
+                subData.SetUInt(chunk, index, 4);
             }
         }
 
@@ -406,12 +372,12 @@ namespace pkuManager.pkx.pk3
 
             public static (byte[], Alert) ProcessNickname(pkuObject pku, Language checkedLang)
             {
-                return pkxUtil.ProcessTags.ProcessNickname(pku, 3, checkedLang, MAX_NICKNAME_CHARS, 1, (c) => { return EncodeCharacter(c, checkedLang); });
+                return pkxUtil.ProcessTags.ProcessNickname(pku, 3, false, checkedLang, MAX_NICKNAME_CHARS, 1, (c) => { return EncodeCharacter(c, checkedLang); });
             }
 
             public static (byte[], Alert) ProcessOT(pkuObject pku, Language checkedLang)
             {
-                return pkxUtil.ProcessTags.ProcessOT(pku, MAX_OT_CHARS, 1, (c) => { return EncodeCharacter(c, checkedLang); });
+                return pkxUtil.ProcessTags.ProcessOT(pku, false, MAX_OT_CHARS, 1, (c) => { return EncodeCharacter(c, checkedLang); });
             }
 
             public static (byte[] trashedNickname, byte[] trashedOT, Alert) ProcessTrash(pkuObject pku, byte[] encodedNickname, byte[] encodedOT)
