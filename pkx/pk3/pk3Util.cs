@@ -5,6 +5,7 @@ using pkuManager.pku;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using AlertType = pkuManager.pkx.pkxUtil.TagAlerts.AlertType;
@@ -82,14 +83,14 @@ namespace pkuManager.pkx.pk3
         // ----------
         // Character Encoding Stuff
         // ----------
-        private static readonly JObject PK3_CHARACTER_ENCODING_DATA = DataUtil.getJson("pk3CharEncoding");
+        private static readonly JObject PK3_CHARACTER_ENCODING_DATA = DataUtil.GetJson("pk3CharEncoding");
         private static readonly Dictionary<byte?, char> INTERNATIONAL_CHARSET = PK3_CHARACTER_ENCODING_DATA["International"].ToObject<Dictionary<byte?, char>>();
-        private static readonly Dictionary<byte?, char> GERMAN_CHARSET = DataUtil.getCombinedJson(new JObject[]
+        private static readonly Dictionary<byte?, char> GERMAN_CHARSET = DataUtil.GetCombinedJson(new JObject[]
         {
             (JObject)PK3_CHARACTER_ENCODING_DATA["International"],
             (JObject)PK3_CHARACTER_ENCODING_DATA["German"]
         }).ToObject<Dictionary<byte?, char>>();
-        private static readonly Dictionary<byte?, char> FRENCH_CHARSET = DataUtil.getCombinedJson(new JObject[]
+        private static readonly Dictionary<byte?, char> FRENCH_CHARSET = DataUtil.GetCombinedJson(new JObject[]
         {
             (JObject)PK3_CHARACTER_ENCODING_DATA["International"],
             (JObject)PK3_CHARACTER_ENCODING_DATA["French"]
@@ -115,29 +116,29 @@ namespace pkuManager.pkx.pk3
         // ----------
         // Met Location Encoding Stuff
         // ----------
-        private static readonly JObject PK3_LOCATION_DATA = DataUtil.getJson("gen3Locations");
-        private static readonly Dictionary<byte?, string> RS_LOCATION_TABLE = DataUtil.getCombinedJson(new JObject[]
+        private static readonly JObject PK3_LOCATION_DATA = DataUtil.GetJson("gen3Locations");
+        private static readonly Dictionary<byte?, string> RS_LOCATION_TABLE = DataUtil.GetCombinedJson(new JObject[]
         {
             (JObject)PK3_LOCATION_DATA["Base"],
             (JObject)PK3_LOCATION_DATA["RS"]
         }).ToObject<Dictionary<byte?, string>>();
-        private static readonly Dictionary<byte?, string> FRLG_LOCATION_TABLE = DataUtil.getCombinedJson(new JObject[]
+        private static readonly Dictionary<byte?, string> FRLG_LOCATION_TABLE = DataUtil.GetCombinedJson(new JObject[]
         {
             (JObject)PK3_LOCATION_DATA["Base"],
             (JObject)PK3_LOCATION_DATA["FRLG"]
         }).ToObject<Dictionary<byte?, string>>();
-        private static readonly Dictionary<byte?, string> E_LOCATION_TABLE = DataUtil.getCombinedJson(new JObject[]
+        private static readonly Dictionary<byte?, string> E_LOCATION_TABLE = DataUtil.GetCombinedJson(new JObject[]
         {
             (JObject)PK3_LOCATION_DATA["Base"],
             (JObject)PK3_LOCATION_DATA["RS"],
             (JObject)PK3_LOCATION_DATA["E"]
         }).ToObject<Dictionary<byte?, string>>();
-        private static readonly Dictionary<int?, string> COLO_LOCATION_TABLE = DataUtil.getCombinedJson(new JObject[]
+        private static readonly Dictionary<int?, string> COLO_LOCATION_TABLE = DataUtil.GetCombinedJson(new JObject[]
         {
             (JObject)PK3_LOCATION_DATA["Base"],
             (JObject)PK3_LOCATION_DATA["Colo"]
         }).ToObject<Dictionary<int?, string>>();
-        private static readonly Dictionary<int?, string> XD_LOCATION_TABLE = DataUtil.getCombinedJson(new JObject[]
+        private static readonly Dictionary<int?, string> XD_LOCATION_TABLE = DataUtil.GetCombinedJson(new JObject[]
 {
             (JObject)PK3_LOCATION_DATA["Base"],
             (JObject)PK3_LOCATION_DATA["XD"]
@@ -149,7 +150,6 @@ namespace pkuManager.pkx.pk3
             "xd" => XD_LOCATION_TABLE[0],
             _ => RS_LOCATION_TABLE[0],
         };
-
 
         public static byte? EncodeMetLocation(string game, string location)
         {
@@ -188,15 +188,15 @@ namespace pkuManager.pkx.pk3
         // ----------
         // Form Encoding Stuff
         // ----------
-        public static readonly JObject VALID_FORMS = DataUtil.getJson("gen3Forms");
+        public static readonly JObject VALID_FORMS = DataUtil.GetJson("gen3Forms");
 
         public static int GetUnownFormID(uint pid)
         {
             uint formID = 0;
-            formID = DataUtil.setBits(formID, DataUtil.getBits(pid, 0, 2), 0, 2); //first two bits of byte 0
-            formID = DataUtil.setBits(formID, DataUtil.getBits(pid, 8, 2), 2, 2); //first two bits of byte 1
-            formID = DataUtil.setBits(formID, DataUtil.getBits(pid, 16, 2), 4, 2); //first two bits of byte 2
-            formID = DataUtil.setBits(formID, DataUtil.getBits(pid, 24, 2), 6, 2); //first two bits of byte 3
+            formID.SetBits(pid.GetBits(0, 2), 0, 2); //first two bits of byte 0
+            formID.SetBits(pid.GetBits(8, 2), 2, 2); //first two bits of byte 1
+            formID.SetBits(pid.GetBits(16, 2), 4, 2); //first two bits of byte 2
+            formID.SetBits(pid.GetBits(24, 2), 6, 2); //first two bits of byte 3
 
             return (byte)formID % 28;
         }
@@ -215,7 +215,7 @@ namespace pkuManager.pkx.pk3
         // ----------
         // Ability Encoding Stuff
         // ----------
-        private static readonly JObject PK3_ABILITY_DATA = DataUtil.getJson("pk3Abilities");
+        private static readonly JObject PK3_ABILITY_DATA = DataUtil.GetJson("pk3Abilities");
 
         public static (bool slot1, bool slot2) IsAbilityValid(int dex, int abilityID)
         {
@@ -226,6 +226,39 @@ namespace pkuManager.pkx.pk3
             int? slot2 = (int?)PK3_ABILITY_DATA["" + dex]?["2"];
 
             return (slot1 == abilityID, slot2 == abilityID);
+        }
+
+        /// <summary>
+        /// Given a GBA ROM, creates a JObject of the different possible ability IDs a pokemon species can have.
+        /// </summary>
+        /// <param name="path">Path to a main series Pokemon GBA ROM.</param>
+        /// <param name="offset">The starting index of the species table in this ROM.</param>
+        /// <returns></returns>
+        public static JObject ProduceGBAAbilityJSON(string path, int offset)
+        {
+            // offset = 0x3203E8 for english emerald
+            byte[] ROM = File.ReadAllBytes(path);
+            JObject abiltyDex = new JObject();
+
+            for (int i = 1; i <= 385; i++) //For each Gen 3 Pokemon (except deoxys)
+            {
+                int index = PokeAPIUtil.GetSpeciesIndex(i, 3).Value; //These are all valid pokedex #s
+                byte slot1 = ROM[offset + 28 * (index - 1) + 22];
+                byte slot2 = ROM[offset + 28 * (index - 1) + 23];
+
+                // Adjust for Air Lock (77 in Gen 3 -> 76 in Gen 4+)
+                slot1 = slot1 == 77 ? (byte)76 : slot1;
+                slot2 = slot2 == 77 ? (byte)76 : slot2;
+
+                // Add Entry to AbilityDex
+                JObject jo = new JObject();
+                jo.Add("1", slot1);
+                if (slot2 != 0) //No entry for blank Slot 2's
+                    jo.Add("2", slot2);
+                abiltyDex.Add("" + i, jo);
+            }
+
+            return abiltyDex;
         }
 
 

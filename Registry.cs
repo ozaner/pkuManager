@@ -34,7 +34,7 @@ namespace pkuManager
 
         // A JObject of all the species data for different formats.
         // Currently needed to declare the default form for a species.
-        public static readonly JObject MASTER_DEX = DataUtil.getCombinedJson(new JObject[]
+        public static readonly JObject MASTER_DEX = DataUtil.GetCombinedJson(new JObject[]
         {
             pkxUtil.NATIONALDEX_DATA,
             pkxUtil.POKESTAR_DATA,

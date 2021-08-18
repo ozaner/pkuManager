@@ -14,9 +14,9 @@ namespace pkuManager.pkx
 {
     public static class pkxUtil
     {
-        public static JObject POKESTAR_DATA = DataUtil.getJson("pokestarData"); //Gen 5: move this to pk5Util when it exists...
-        public static JObject NATIONALDEX_DATA = DataUtil.getJson("nationaldexData");
-        public static JObject GAME_DATA = DataUtil.getJson("gameData");
+        public static JObject POKESTAR_DATA = DataUtil.GetJson("pokestarData"); //Gen 5: move this to pk5Util when it exists...
+        public static JObject NATIONALDEX_DATA = DataUtil.GetJson("nationaldexData");
+        public static JObject GAME_DATA = DataUtil.GetJson("gameData");
 
         // Enum Defaults
         public static readonly Language DEFAULT_LANGUAGE = Language.English;
@@ -34,7 +34,7 @@ namespace pkuManager.pkx
         {
             foreach (var x in NATIONALDEX_DATA)
             {
-                if ((int?)DataUtil.TraverseJTokenCaseInsensitive(x.Value, "National Dex") == dex)
+                if ((int?)x.Value.TraverseJTokenCaseInsensitive("National Dex") == dex)
                     return x.Key;
             }
             return null;
@@ -57,7 +57,7 @@ namespace pkuManager.pkx
                 return null;
 
             //case insensitive species
-            return (int?)DataUtil.TraverseJTokenCaseInsensitive(NATIONALDEX_DATA, species, "National Dex");
+            return (int?)NATIONALDEX_DATA.TraverseJTokenCaseInsensitive(species, "National Dex");
         }
 
         public static int GetNationalDexChecked(string species)
@@ -215,7 +215,7 @@ namespace pkuManager.pkx
         // Returns the ID of the given game version. Null if no ID is found.
         public static (int?, int?) GetGameIDAndGen(string game)
         {
-            return ((int?, int?))(DataUtil.TraverseJTokenCaseInsensitive(GAME_DATA, game, "Game ID"), DataUtil.TraverseJTokenCaseInsensitive(GAME_DATA, game, "Generation"));
+            return ((int?, int?))(GAME_DATA.TraverseJTokenCaseInsensitive(game, "Game ID"), GAME_DATA.TraverseJTokenCaseInsensitive(game, "Generation"));
         }
 
         // Returns the gen 5 id of a pokestar species, null if it's not a pokestar species (case insensitve)
@@ -231,13 +231,13 @@ namespace pkuManager.pkx
             // Try getting the species+form ID (case insensitive)
             string searchableFormName = DexUtil.GetSearchableFormName(pku);
             if (searchableFormName != null)
-                gen5ID = (int?)DataUtil.TraverseJTokenCaseInsensitive(POKESTAR_DATA, pku.Species, "Forms", searchableFormName, "Gen 5 Index");
+                gen5ID = (int?)POKESTAR_DATA.TraverseJTokenCaseInsensitive(pku.Species, "Forms", searchableFormName, "Gen 5 Index");
 
             // If form is unspecified/invalid (i.e. above didn't work) then just get default form id
             if (!gen5ID.HasValue)
             {
                 string defaultForm = DexUtil.GetDefaultForm(pku, POKESTAR_DATA);
-                gen5ID = (int?)DataUtil.TraverseJTokenCaseInsensitive(POKESTAR_DATA, pku.Species, "Forms", defaultForm, "Gen 5 Index");
+                gen5ID = (int?)POKESTAR_DATA.TraverseJTokenCaseInsensitive(pku.Species, "Forms", defaultForm, "Gen 5 Index");
             }
             return gen5ID; //might still be null
         }
@@ -268,7 +268,7 @@ namespace pkuManager.pkx
             uint pid;
             while (true)
             {
-                pid = DataUtil.GetRandomUint(); //Generate new PID candidate
+                pid = DataUtil.GetRandomUInt(); //Generate new PID candidate
                 //if (abilitySlot.HasValue) // Ability Slot Check
                 //{
                 //    if (abilitySlot.Value != (DataUtil.getBits(pid, 0) == 0))
@@ -806,9 +806,9 @@ namespace pkuManager.pkx
                 else if (invalidForm == null)
                     throw new ArgumentException("Must give invalidForm if there is a specified form Alert.");
                 else if (at == AlertType.CASTED)
-                    return new Alert("Form", $"The form \"{DataUtil.FormatArrayPrint(invalidForm)}\" does not exist in this format and has been casted to its default form.");
+                    return new Alert("Form", $"The form \"{invalidForm.ToFormattedString()}\" does not exist in this format and has been casted to its default form.");
                 else if (at == AlertType.IN_BATTLE)
-                    return new Alert("Form", $"The form \"{DataUtil.FormatArrayPrint(invalidForm)}\" only exists in-battle, using its out of battle form.");
+                    return new Alert("Form", $"The form \"{invalidForm.ToFormattedString()}\" only exists in-battle, using its out of battle form.");
                 else
                     throw InvalidAlertType(at);
             }

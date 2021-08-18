@@ -70,7 +70,7 @@ namespace pkuManager.Utilities
                         string spriteIndexStr = client.DownloadString((string)kvp.Value);
                         JObject spriteIndexJSON = JObject.Parse(spriteIndexStr);
 
-                        masterSpriteIndex = DataUtil.getCombinedJson(masterSpriteIndex, spriteIndexJSON);
+                        masterSpriteIndex = DataUtil.GetCombinedJson(masterSpriteIndex, spriteIndexJSON);
                     }
                     catch
                     {
@@ -147,8 +147,8 @@ namespace pkuManager.Utilities
                     Sprite_Type.Back => "Back",
                     _ => throw new NotImplementedException(),
                 };
-                JToken block = DataUtil.TraverseJTokenCaseInsensitive(MASTER_SPRITE_INDEX, "", "Forms", "", "Sprites", b_type == Block_Type.Egg ? "Egg" : "Default", shinyString, typeString);
-                return ((string)DataUtil.TraverseJTokenCaseInsensitive(block, "URL"), (string)DataUtil.TraverseJTokenCaseInsensitive(block, "Author"));
+                JToken block = MASTER_SPRITE_INDEX.TraverseJTokenCaseInsensitive("", "Forms", "", "Sprites", b_type == Block_Type.Egg ? "Egg" : "Default", shinyString, typeString);
+                return ((string)block.TraverseJTokenCaseInsensitive("URL"), (string)block.TraverseJTokenCaseInsensitive("Author"));
             }
         }
 
@@ -159,14 +159,14 @@ namespace pkuManager.Utilities
             {
                 if (isFemale)
                 {
-                    JToken blockA = DataUtil.TraverseJTokenCaseInsensitive(block, "Female", typeString);
+                    JToken blockA = block.TraverseJTokenCaseInsensitive("Female", typeString);
                     if (blockA != null)
                         return blockA;
                 }
-                return DataUtil.TraverseJTokenCaseInsensitive(block, typeString);
+                return block.TraverseJTokenCaseInsensitive(typeString);
             }
 
-            JToken speciesBlock = DataUtil.TraverseJTokenCaseInsensitive(MASTER_SPRITE_INDEX, species, "Forms");
+            JToken speciesBlock = MASTER_SPRITE_INDEX.TraverseJTokenCaseInsensitive(species, "Forms");
             string blockString = b_type switch
             {
                 Block_Type.Default => "Default",
@@ -186,22 +186,22 @@ namespace pkuManager.Utilities
             JToken formBlock, check;
             foreach (string searchableForm in castableForms)
             {
-                formBlock = DataUtil.TraverseJTokenCaseInsensitive(speciesBlock, searchableForm);
+                formBlock = speciesBlock.TraverseJTokenCaseInsensitive(searchableForm);
 
                 // try each appearance, and return when one is found
                 foreach (string app in appearance)
                 {
-                    check = DataUtil.TraverseJTokenCaseInsensitive(formBlock, "Appearance", app, "Sprites", blockString, shinyString);
+                    check = formBlock.TraverseJTokenCaseInsensitive("Appearance", app, "Sprites", blockString, shinyString);
                     check = CheckFemale(check, isFemale, typeString);
                     if (check != null)
-                        return ((string)DataUtil.TraverseJTokenCaseInsensitive(check, "URL"), (string)DataUtil.TraverseJTokenCaseInsensitive(check, "Author"));
+                        return ((string)check.TraverseJTokenCaseInsensitive("URL"), (string)check.TraverseJTokenCaseInsensitive("Author"));
                 }
 
                 //no matching appearance found, try null appearance
-                check = DataUtil.TraverseJTokenCaseInsensitive(formBlock, "Sprites", blockString, shinyString);
+                check = formBlock.TraverseJTokenCaseInsensitive("Sprites", blockString, shinyString);
                 check = CheckFemale(check, isFemale, typeString);
                 if (check != null)
-                    return ((string)DataUtil.TraverseJTokenCaseInsensitive(check, "URL"), (string)DataUtil.TraverseJTokenCaseInsensitive(check, "Author"));
+                    return ((string)check.TraverseJTokenCaseInsensitive("URL"), (string)check.TraverseJTokenCaseInsensitive("Author"));
             }
 
             return (null, null); //failed to find a sprite.

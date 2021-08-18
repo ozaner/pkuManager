@@ -335,7 +335,7 @@ namespace pkuManager.pku
 
             pkuObject pku = pkuObject.Deserialize(file).pku;
 
-            string filename = DataUtil.GetNextFilename(@$"{path}\{cachedBoxName}\{pku.Nickname ?? pku.Species ?? "PKMN"}.pku");
+            string filename = DataUtil.GetNextFilePath(@$"{path}\{cachedBoxName}\{pku.Nickname ?? pku.Species ?? "PKMN"}.pku");
             File.WriteAllBytes(filename, file);
 
             FileInfo nf = new FileInfo(filename);
@@ -397,7 +397,7 @@ namespace pkuManager.pku
 
         private bool CurrentBoxContainsExportedName(string filename)
         {
-            return cachedBoxConfig.exportedPku.Any(s => DataUtil.stringEqualsCaseInsensitive(s, filename));
+            return cachedBoxConfig.exportedPku.Any(s => s.EqualsCaseInsensitive(filename));
         }
 
         public void CheckOut(int boxID, SlotInfo slotInfo)
@@ -509,7 +509,7 @@ namespace pkuManager.pku
                 List<int> keysToRemove = new List<int>();
                 foreach (var kvp in newBoxConfigNames)
                 {
-                    var temp = allPkus.Find(x => DataUtil.stringEqualsCaseInsensitive(kvp.Value, x.Name));
+                    var temp = allPkus.Find(x => kvp.Value.EqualsCaseInsensitive(x.Name));
                     if (temp == null)
                         keysToRemove.Add(kvp.Key);
                 }
@@ -533,7 +533,7 @@ namespace pkuManager.pku
                 int numInConfig = 0;
                 foreach (var kvp in newBoxConfigNames)
                 {
-                    FileInfo fi = allPkus.Find(x => DataUtil.stringEqualsCaseInsensitive(x.Name, kvp.Value));
+                    FileInfo fi = allPkus.Find(x => x.Name.EqualsCaseInsensitive(kvp.Value));
                     if (fi != null && numInConfig < (int)boxConfig.boxType)
                     {
                         pkuFiles.Add(kvp.Key, fi);
@@ -578,7 +578,7 @@ namespace pkuManager.pku
                     boxConfig = new PKUBoxConfig();
                     string newConfigText = JsonConvert.SerializeObject(boxConfig, Formatting.Indented);
 
-                    DataUtil.WriteStringToFileChecked(configPath, newConfigText); //Write file
+                    newConfigText.WriteToFile(configPath); //Write file
                 }
 
                 // remove duplicates from pkuFileNames

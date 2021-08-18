@@ -29,7 +29,7 @@ namespace pkuManager.Utilities
             if (species == null)
                 return null;
 
-            JToken formsCheck = DataUtil.TraverseJTokenCaseInsensitive(data, species, "Forms");
+            JToken formsCheck = data.TraverseJTokenCaseInsensitive(species, "Forms");
             if (formsCheck == null)
                 return ""; // No listed forms, default is just "" (i.e. base form)
 
@@ -37,7 +37,7 @@ namespace pkuManager.Utilities
 
             foreach (var j in forms)
             {
-                bool? isDefault = (bool?)DataUtil.TraverseJTokenCaseInsensitive(j.Value, "Default");
+                bool? isDefault = (bool?)j.Value.TraverseJTokenCaseInsensitive("Default");
                 if (isDefault == true) //"default" exists and is true
                     return j.Key; //default form found
             }
@@ -86,7 +86,7 @@ namespace pkuManager.Utilities
 
         public static bool FormExists(string species, string searchableForm, JObject datadex)
         {
-            JToken searchResult = DataUtil.TraverseJTokenCaseInsensitive(datadex, species, "Forms", searchableForm);
+            JToken searchResult = datadex.TraverseJTokenCaseInsensitive(species, "Forms", searchableForm);
             return searchResult != null;
         }
 
@@ -100,8 +100,8 @@ namespace pkuManager.Utilities
         {
             string searchableFormName = GetSearchableFormName(pku) ?? GetDefaultForm(pku);
             List<string> castableFormList = new List<string> { searchableFormName };
-            castableFormList.AddRange(DataUtil.TraverseJTokenCaseInsensitive(
-                Registry.MASTER_DEX, pku.Species, "Forms", searchableFormName, "Castable to"
+            castableFormList.AddRange(Registry.MASTER_DEX.TraverseJTokenCaseInsensitive(
+                pku.Species, "Forms", searchableFormName, "Castable to"
             )?.ToObject<List<string>>() ?? new List<string>());
             return castableFormList;
         }

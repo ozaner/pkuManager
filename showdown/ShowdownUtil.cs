@@ -22,7 +22,7 @@ namespace pkuManager.showdown
         /// Includes Showdown names for non-"" forms and for all appearances.
         /// Also includes names for all CAP species.
         /// </summary>
-        public static readonly JObject SHOWDOWN_DATA = DataUtil.getJson("ShowdownNames");
+        public static readonly JObject SHOWDOWN_DATA = DataUtil.GetJson("ShowdownNames");
 
         /// <summary>
         /// <para>
@@ -38,19 +38,19 @@ namespace pkuManager.showdown
             static string GetGenderedShowdownName(JToken subjson, string genderUnchecked)
             {
                 //If this is a gender split form (i.e. showdown treats the genders as different forms)
-                if ((bool?)DataUtil.TraverseJTokenCaseInsensitive(subjson, "Showdown Gender Split") == true)
+                if ((bool?)subjson.TraverseJTokenCaseInsensitive("Showdown Gender Split") == true)
                 {
                     Gender? gender = pkxUtil.GetGender(genderUnchecked, false);
                     string genderStr = gender == Gender.Female ? "Female" : "Male"; //Default is male
-                    return (string)DataUtil.TraverseJTokenCaseInsensitive(subjson, $"Showdown Species {genderStr}");
+                    return (string)subjson.TraverseJTokenCaseInsensitive($"Showdown Species {genderStr}");
                 }
                 else
-                    return (string)DataUtil.TraverseJTokenCaseInsensitive(subjson, "Showdown Species");
+                    return (string)subjson.TraverseJTokenCaseInsensitive("Showdown Species");
             }
 
             // Species must be defined
-            if (DataUtil.TraverseJTokenCaseInsensitive(pkxUtil.NATIONALDEX_DATA, pku.Species) == null || //only official species...
-                DataUtil.TraverseJTokenCaseInsensitive(SHOWDOWN_DATA, pku.Species) == null)              //and pokestar+cap species are allowed
+            if (pkxUtil.NATIONALDEX_DATA.TraverseJTokenCaseInsensitive(pku.Species) == null || //only official species...
+                SHOWDOWN_DATA.TraverseJTokenCaseInsensitive(pku.Species) == null)              //and pokestar+cap species are allowed
             return (null, false); //not a valid species
 
             // Species is valid past this point
@@ -60,19 +60,19 @@ namespace pkuManager.showdown
             List<string> castableForms = DexUtil.GetCastableForms(pku);
             foreach (string searchableForm in castableForms)
             {
-                JToken formJson = DataUtil.TraverseJTokenCaseInsensitive(SHOWDOWN_DATA, pku.Species, "Forms", searchableForm);
+                JToken formJson = SHOWDOWN_DATA.TraverseJTokenCaseInsensitive(pku.Species, "Forms", searchableForm);
                 foreach (string acc in pku.Appearance ?? Array.Empty<string>())
                 {
-                    JToken appearancejson = DataUtil.TraverseJTokenCaseInsensitive(formJson, "Appearance", acc);
+                    JToken appearancejson = formJson.TraverseJTokenCaseInsensitive("Appearance", acc);
                     showdownName = GetGenderedShowdownName(appearancejson, pku.Gender);
                     if(showdownName != null)
-                        return (showdownName, DataUtil.stringEqualsCaseInsensitive(searchableForm, castableForms[0])); //found valid form+appearance
+                        return (showdownName, searchableForm.EqualsCaseInsensitive(castableForms[0])); //found valid form+appearance
                 }
 
                 //all appearances failed for this form, try null appearance
                 showdownName = GetGenderedShowdownName(formJson, pku.Gender);
                 if (showdownName != null)
-                    return (showdownName, DataUtil.stringEqualsCaseInsensitive(searchableForm, castableForms[0])); //found valid form+appearance
+                    return (showdownName, searchableForm.EqualsCaseInsensitive(castableForms[0])); //found valid form+appearance
             }
 
             // No showdown name found in ShowdownNames.json
@@ -111,10 +111,10 @@ namespace pkuManager.showdown
             List<string> listOfNames = new List<string>();
             foreach (var c in fileObject)
             {
-                if (DataUtil.TraverseJTokenCaseInsensitive(c.Value, "canGigantamax") != null) //has GMax
+                if (c.Value.TraverseJTokenCaseInsensitive("canGigantamax") != null) //has GMax
                 {
-                    listOfNames.Add((string)DataUtil.TraverseJTokenCaseInsensitive(c.Value, "name"));
-                    string[] cosmeticForms = DataUtil.TraverseJTokenCaseInsensitive(c.Value, "cosmeticFormes")?.ToObject<string[]>();
+                    listOfNames.Add((string)c.Value.TraverseJTokenCaseInsensitive("name"));
+                    string[] cosmeticForms = c.Value.TraverseJTokenCaseInsensitive("cosmeticFormes")?.ToObject<string[]>();
                     if (cosmeticForms?.Length > 0)
                         listOfNames.AddRange(cosmeticForms);
                 }
@@ -141,7 +141,7 @@ namespace pkuManager.showdown
             JObject fileObject = JObject.Parse(fileString);
             List<string> listOfNames = new List<string>();
             foreach (var c in fileObject)
-                listOfNames.Add((string)DataUtil.TraverseJTokenCaseInsensitive(c.Value, "name"));
+                listOfNames.Add((string)c.Value.TraverseJTokenCaseInsensitive("name"));
             return listOfNames;
         }
 
@@ -170,13 +170,13 @@ namespace pkuManager.showdown
         // ----------
         // Check Showdown Battle Data Stuff
         // ----------
-        private static readonly JObject SHOWDOWN_BATTLE_DATA = DataUtil.getJson("ShowdownData");
+        private static readonly JObject SHOWDOWN_BATTLE_DATA = DataUtil.GetJson("ShowdownData");
 
         private static bool IsDatumValid(string type, string datum)
         {
             if (datum == null)
                 return true;
-            return Array.Exists(DataUtil.TraverseJTokenCaseInsensitive(SHOWDOWN_BATTLE_DATA, type).ToObject<string[]>(), (x) =>
+            return Array.Exists(SHOWDOWN_BATTLE_DATA.TraverseJTokenCaseInsensitive(type).ToObject<string[]>(), (x) =>
             {
                 return x.ToLowerInvariant() == datum.ToLowerInvariant();
             });

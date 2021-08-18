@@ -102,7 +102,7 @@ namespace pkuManager.pku
                 if(IsValidPKUCollection(fd.SelectedPath))
                     MessageBox.Show("This folder is already has a collectionConfig.json and thus is a valid Collection.");
                 else
-                    DataUtil.WriteStringToFileChecked(@$"{fd.SelectedPath}\collectionConfig.json", new pkuCollection.PKUCollectionConfig().ToString());
+                    new pkuCollection.PKUCollectionConfig().ToString().WriteToFile(@$"{fd.SelectedPath}\collectionConfig.json");
                 return fd.SelectedPath; //success
             }
             return null; //failure

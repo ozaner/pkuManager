@@ -64,7 +64,7 @@ namespace pkuManager.GUI
             if (ModifierKeys.HasFlag(Keys.Shift))
             {
                 string url = isBack ? currentSlotInfo.backSprite.author : currentSlotInfo.frontSprite.author;
-                if (DataUtil.isValidURL(url))
+                if (url.IsValidURL())
                 {
                     try
                     {
