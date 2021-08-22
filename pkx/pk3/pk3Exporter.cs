@@ -268,7 +268,7 @@ namespace pkuManager.pkx.pk3
             M.SetUInt(ivs[3], 4, 20, 5);                              // Sp. Attack IV: bytes 4-7, bits 20-24
             M.SetUInt(ivs[4], 4, 25, 5);                              // Sp. Defense IV: bytes 4-7, bits 25-29
 
-            M.SetBool(pku.IsAnEgg(), 4, 30);                          // Is Egg: bytes 4-7, bit 30
+            M.SetBool(pku.IsEgg(), 4, 30);                            // Is Egg: bytes 4-7, bit 30
             M.SetBool(abilitySlot > 0, 4, 31);                        // Ability Slot: bytes 4-7, bit 31
 
             // Contest Ribbon Ranks
@@ -315,7 +315,7 @@ namespace pkuManager.pkx.pk3
             data.SetUInt(pidResolver.DecideValue(), 0, 4);                                               // PID: bytes 0-3
             data.SetUInt(id, 4, 4);                                                                      // ID: bytes 4-7
             data.SetBytes(name, 8);                                                                      // Nickname: bytes 8-17
-            data.SetUInt(pku.IsAnEgg() ? pk3Util.EGG_LANGUAGE_ID : pk3Util.EncodeLanguage(lang), 18, 2); // Language: bytes 18-19
+            data.SetUInt(pku.IsEgg() ? pk3Util.EGG_LANGUAGE_ID : pk3Util.EncodeLanguage(lang), 18, 2);   // Language: bytes 18-19
             data.SetBytes(otName, 20);                                                                   // OT: bytes 20-26
 
             // Markings

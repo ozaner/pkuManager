@@ -1,20 +1,20 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace pkuManager.pku
 {
-    public class pkuObject
+    public class pkuObject : pkuDictionaryTag
     {
         [JsonProperty("Species")]
         public string Species { get; set; }
-
-        [JsonProperty("Forms")]
-        public string[] Forms { get; set; }
-
-        [JsonProperty("Appearance")]
-        public string[] Appearance { get; set; }
 
         [JsonProperty("Nickname")]
         public string Nickname { get; set; }
@@ -22,17 +22,20 @@ namespace pkuManager.pku
         [JsonProperty("Nickname Flag")]
         public bool? Nickname_Flag { get; set; }
 
-        [JsonProperty("Trash Bytes")]
-        public Trash_Bytes_Class Trash_Bytes { get; set; }
-
         [JsonProperty("True OT")]
         public string True_OT { get; set; }
 
-        [JsonProperty("Level")]
-        public int? Level { get; set; }
+        [JsonProperty("Forms")]
+        public string[] Forms { get; set; }
+
+        [JsonProperty("Appearance")]
+        public string[] Appearance { get; set; }
 
         [JsonProperty("Gender")]
         public string Gender { get; set; }
+
+        [JsonProperty("Level")]
+        public int? Level { get; set; }
 
         [JsonProperty("EXP")]
         public int? EXP { get; set; }
@@ -43,17 +46,11 @@ namespace pkuManager.pku
         [JsonProperty("Moves")]
         public Move[] Moves { get; set; }
 
-        [JsonProperty("Pokerus")] //Support accent?
-        public Pokerus_Class Pokerus { get; set; }
-
-        [JsonProperty("Shiny Leaf")]
-        public string[] Shiny_Leaf { get; set; }
-
         [JsonProperty("PID")]
-        public long? PID { get; set; }
+        public uint? PID { get; set; }
 
         [JsonProperty("Shiny")]
-        public bool? Shiny { get; set; } //not nullable, default false
+        public bool? Shiny { get; set; }
 
         [JsonProperty("Nature")]
         public string Nature { get; set; }
@@ -65,7 +62,7 @@ namespace pkuManager.pku
         public string Ability { get; set; }
 
         [JsonProperty("Gigantamax Factor")]
-        public bool? Gigantamax_Factor { get; set; } //not nullable, default false
+        public bool? Gigantamax_Factor { get; set; }
 
         [JsonProperty("Friendship")]
         public int? Friendship { get; set; }
@@ -100,13 +97,22 @@ namespace pkuManager.pku
         [JsonProperty("Markings")]
         public string[] Markings { get; set; }
 
+        [JsonProperty("Pokérus")]
+        public Pokerus_Class Pokerus { get; set; }
+
         [JsonProperty("Shadow Info")]
         public Shadow_Info_Class Shadow_Info { get; set; }
 
-        public partial class Trash_Bytes_Class
+        [JsonProperty("Shiny Leaf")]
+        public string[] Shiny_Leaf { get; set; }
+
+        [JsonProperty("Trash Bytes")]
+        public Trash_Bytes_Class Trash_Bytes { get; set; }
+
+        public class Trash_Bytes_Class : pkuDictionaryTag
         {
             [JsonProperty("Gen")]
-            public int Gen { get; set; }
+            public int? Gen { get; set; }
 
             [JsonProperty("Nickname")]
             public byte[] Nickname { get; set; }
@@ -115,7 +121,7 @@ namespace pkuManager.pku
             public byte[] OT { get; set; }
         }
 
-        public partial class Move
+        public class Move : pkuDictionaryTag
         {
             [JsonProperty("Name")]
             public string Name { get; set; }
@@ -124,7 +130,7 @@ namespace pkuManager.pku
             public int? PP_Ups { get; set; }
         }
 
-        public partial class Game_Info_Class
+        public class Game_Info_Class : pkuDictionaryTag
         {
             [JsonProperty("Origin Game")]
             public string Origin_Game { get; set; }
@@ -139,21 +145,16 @@ namespace pkuManager.pku
             [JsonProperty("Gender")]
             public string Gender { get; set; }
 
-            // Called the Full Trainer ID (FTID)
+            // The full trainer ID, or FTID, if you will.
             [JsonProperty("ID")]
             public uint? ID { get; set; }
-
-            //[JsonProperty("TID")]
-            //public int? TID { get; set; }
-
-            //[JsonProperty("SID")]
-            //public int? SID { get; set; }
 
             [JsonProperty("Language")]
             public string Language { get; set; }
         }
 
-        public partial class Met_Info_Base
+        //parent of Catch_Info and Egg_Info
+        public class Met_Info_Base : pkuDictionaryTag
         {
             [JsonProperty("Met Location")]
             public string Met_Location { get; set; }
@@ -162,41 +163,40 @@ namespace pkuManager.pku
             public string Met_Game_Override { get; set; }
 
             [JsonProperty("Met Date")]
-            public DateTime Met_Date { get; set; }
+            public DateTime? Met_Date { get; set; }
         }
 
-        //child of Met_Info_Base
-        public partial class Catch_Info_Class : Met_Info_Base
+        public class Catch_Info_Class : Met_Info_Base
         {
-            [JsonProperty("Pokeball")]
-            public string Pokeball { get; set; }
+            [JsonProperty("Ball")]
+            public string Ball { get; set; }
 
             [JsonProperty("Met Level")]
             public int? Met_Level { get; set; }
 
             [JsonProperty("Fateful Encounter")]
-            public bool? Fateful_Encounter { get; set; } //not nullable, default false
+            public bool? Fateful_Encounter { get; set; }
 
             [JsonProperty("Encounter Type")]
             public string Encounter_Type { get; set; }
         }
 
-        //child of Met_Info_Base
-        public partial class Egg_Info_Class : Met_Info_Base
+        public class Egg_Info_Class : Met_Info_Base
         {
-            [JsonProperty("Is Egg")]
-            public bool? Is_Egg { get; set; } //not nullable, default false
+            [JsonProperty("Egg")]
+            public bool? Egg { get; set; }
 
-            // gen 4 doesn't seem to use this, instead it's implicit from the met date/location in the egg section not being empty...
-            //[JsonProperty("Hatched")] //isn't Is_Egg enough? I guess if you knew it was an egg but not when/where it was hatched you'd need this tag...
-            //public bool Hatched { get; set; } //not nullable, default false
+            // Games dont use this, instead it's implicit from the met location in the egg section not being empty...
+            // If you knew it was an egg but not when/where it was hatched, you couldn't represent that in-game...
+            //[JsonProperty("Hatched")]
+            //public bool? Hatched { get; set; }
 
-            // This is actually friendship, so is a seperate value neccesary?
+            // This is actually friendship, so is a seperate value isn't really necessary
             //[JsonProperty("Steps Left")]
             //public int? Steps_Left { get; set; }
         }
 
-        public partial class Hyper_Training_Class
+        public class Hyper_Training_Class : pkuDictionaryTag
         {
             [JsonProperty("HP")]
             public bool? HP { get; set; }
@@ -217,7 +217,7 @@ namespace pkuManager.pku
             public bool? Speed { get; set; }
         }
 
-        public partial class IVs_Class
+        public class IVs_Class : pkuDictionaryTag
         {
             [JsonProperty("HP")]
             public int? HP { get; set; }
@@ -238,7 +238,7 @@ namespace pkuManager.pku
             public int? Speed { get; set; }
         }
 
-        public partial class EVs_Class
+        public class EVs_Class : pkuDictionaryTag
         {
             [JsonProperty("HP")]
             public int? HP { get; set; }
@@ -259,7 +259,7 @@ namespace pkuManager.pku
             public int? Speed { get; set; }
         }
 
-        public partial class Contest_Stats_Class
+        public class Contest_Stats_Class : pkuDictionaryTag
         {
             [JsonProperty("Cool")]
             public int? Cool { get; set; }
@@ -280,7 +280,7 @@ namespace pkuManager.pku
             public int? Sheen { get; set; }
         }
 
-        public partial class Pokerus_Class
+        public class Pokerus_Class : pkuDictionaryTag
         {
             [JsonProperty("Strain")]
             public int? Strain { get; set; }
@@ -289,13 +289,13 @@ namespace pkuManager.pku
             public int? Days { get; set; }
         }
 
-        public partial class Shadow_Info_Class
+        public class Shadow_Info_Class : pkuDictionaryTag
         {
             [JsonProperty("Shadow")]
-            public bool Shadow { get; set; }
+            public bool? Shadow { get; set; }
 
             [JsonProperty("Purified")]
-            public bool Purified { get; set; }
+            public bool? Purified { get; set; }
 
             [JsonProperty("Heart Gauge")]
             public int? Heart_Gauge { get; set; }
@@ -307,6 +307,8 @@ namespace pkuManager.pku
          * ------------------------------------
         */
 
+        /// <inheritdoc cref="Deserialize(string)"/>
+        /// <param name="pkuFileInfo">A reference to the pku file.</param>
         public static (pkuObject pku, string error) Deserialize(FileInfo pkuFileInfo)
         {
             string filetext;
@@ -322,6 +324,8 @@ namespace pkuManager.pku
             return Deserialize(filetext);
         }
 
+        /// <inheritdoc cref="Deserialize(string)"/>
+        /// <param name="pkuFile">An array of bytes representing the pku file in UTF-8.</param>
         public static (pkuObject pku, string error) Deserialize(byte[] pkuFile)
         {
             string filetext;
@@ -337,6 +341,12 @@ namespace pkuManager.pku
             return Deserialize(filetext);
         }
 
+        /// <summary>
+        /// Attempts to deserialize a .pku file. If this fails, an error string is returned.
+        /// </summary>
+        /// <param name="pkuJson">The pku JSON string.</param>
+        /// <returns>A tuple of the deserialized pkuObject and the error string, if any.<br/>
+        ///          The pkuObject will be null if there was an error.</returns>
         public static (pkuObject pku, string error) Deserialize(string pkuJson)
         {
             pkuObject pku = null;
@@ -344,7 +354,7 @@ namespace pkuManager.pku
 
             try
             {
-                pku = JsonConvert.DeserializeObject<pkuObject>(pkuJson);
+                pku = JsonConvert.DeserializeObject<pkuObject>(pkuJson, jsonSettings);
                 if (pku == null)
                     errormsg = "The pku file is empty.";
             }
@@ -358,46 +368,138 @@ namespace pkuManager.pku
                     else //tag type wrong
                         errormsg = $"The tag \"{match.Groups[1]}\" does not have the correct type.";
                 }
-                else //don't know/ no type mentioned
+                else //don't know/no type mentioned
                     errormsg = ex.Message;
             }
 
             return (pku, errormsg);
         }
 
+        /// <summary>
+        /// Serializes this pkuObject as a JSON string. Null entries are pruned.
+        /// </summary>
+        /// <returns>A JSON string of this pkuObject.</returns>
         public string Serialize()
         {
-            string str = JsonConvert.SerializeObject(this, Formatting.Indented,
-                            new JsonSerializerSettings
-                            {
-                                NullValueHandling = NullValueHandling.Ignore,
-                            });
-
-            return str;
+            return JsonConvert.SerializeObject(this, Formatting.Indented, jsonSettings);
         }
 
+        /// <summary>
+        /// Creates a deep copy of this <see cref="pkuObject"/>.
+        /// </summary>
+        /// <returns>A deep copy of this pkuObject.</returns>
         public pkuObject DeepCopy()
         {
             var serialized = JsonConvert.SerializeObject(this);
             return JsonConvert.DeserializeObject<pkuObject>(serialized);
         }
 
-        /// <returns>Whether the pku is an egg (i.e. <see cref="Egg_Info_Class.Is_Egg"/> is true).</returns>
-        public bool IsAnEgg()
+        /// <summary>
+        /// Whether this pku has been explictly marked as an egg.
+        /// </summary>
+        /// <returns>Whether <see cref="Egg_Info_Class.Egg"/> is true.</returns>
+        public bool IsEgg()
         {
-            return Egg_Info != null && Egg_Info.Is_Egg == true;
+            return Egg_Info?.Egg == true;
         }
 
-        /// <returns>Whether the pku is a shadow pokemon (i.e. <see cref="Shadow_Info_Class.Shadow"/> is true.</returns>
+        /// <summary>
+        /// Whether this pku has been explictly marked as shadow.
+        /// </summary>
+        /// <returns>Whether <see cref="Shadow_Info_Class.Shadow"/> is true.</returns>
         public bool IsShadow()
         {
             return Shadow_Info?.Shadow == true;
         }
 
-        /// <returns>Whether the pku is shiny (i.e. <see cref="Shiny"/> is true.</returns>
+        /// <summary>
+        /// Whether this pku has been explictly marked as shiny.
+        /// </summary>
+        /// <returns>Whether <see cref="Shiny"/> is true.</returns>
         public bool IsShiny()
         {
             return Shiny == true;
         }
+
+
+        /* ------------------------------------
+         * Serialization Mechanics
+         * ------------------------------------
+        */
+
+        private static JsonSerializerSettings jsonSettings = new JsonSerializerSettings
+        {
+            NullValueHandling = NullValueHandling.Ignore,
+            ContractResolver = EmptyToNullContractResolver.Instance
+        };
+
+        private class EmptyToNullContractResolver : DefaultContractResolver
+        {
+            public static readonly EmptyToNullContractResolver Instance = new EmptyToNullContractResolver();
+
+            private static bool IsEmpty(object value)
+            {
+                //all null values are empty
+                if (value == null)
+                    return true;
+
+                Type valueType = value.GetType();
+
+                //array and dictionary tags won't be serialized if they are null or empty (but if they have null entries they still will...)
+                if (typeof(ICollection).IsAssignableFrom(valueType))
+                    return ((ICollection)value).Count < 1;
+
+                //pkuDictionaryTags tags won't be serialized if they are null or all their entries IsEmpty()
+                else if (valueType.IsSubclassOf(typeof(pkuDictionaryTag)))
+                    return value == null || valueType.GetProperties().All(propertyInfo => IsEmpty(propertyInfo.GetValue(value)));
+
+                //if it's not null, and not an empty collection/pkuDict it must have some value
+                else
+                    return false;
+            }
+
+            protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+            {
+                JsonProperty property = base.CreateProperty(member, memberSerialization);
+                property.ValueProvider = new EmptyToNullValueProvider(member as PropertyInfo);
+                return property;
+            }
+
+            private class EmptyToNullValueProvider : IValueProvider
+            {
+                private readonly PropertyInfo _targetProperty;
+
+                public EmptyToNullValueProvider(PropertyInfo targetProperty)
+                {
+                    _targetProperty = targetProperty;
+                }
+
+                // Called during deserialization.
+                // Value parameter is the original value read from the JSON.
+                // Target is the object on which to set the value.
+                public void SetValue(object target, object value)
+                {
+                    _targetProperty.SetValue(target, IsEmpty(value) ? null : value);
+                }
+
+                // Called during serialization.
+                // Target parameter has the object from which to read the value.
+                // Return value is what gets written to the JSON.
+                public object GetValue(object target)
+                {
+                    object value = _targetProperty.GetValue(target);
+                    return IsEmpty(value) ? null : value;
+                }
+            }
+        }
+    }
+
+    public class pkuDictionaryTag
+    {
+        /// <summary>
+        /// Where tags not used by pkuManager are stored.
+        /// </summary>
+        [JsonExtensionData]
+        public IDictionary<string, JToken> ExtraTags { get; set; }
     }
 }

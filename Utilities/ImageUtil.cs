@@ -95,7 +95,7 @@ namespace pkuManager.Utilities
         {
             // Determine Block type
             Block_Type b_type;
-            if (pku.IsAnEgg())
+            if (pku.IsEgg())
                 b_type = Block_Type.Egg;
             else if (pku.Shadow_Info?.Shadow == true) //egg takes priority over shadow
                 b_type = Block_Type.Shadow;

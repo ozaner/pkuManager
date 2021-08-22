@@ -1348,7 +1348,7 @@ namespace pkuManager.pkx
 
             public static (Ball, Alert) ProcessBall(pkuObject pku, Ball maxBall)
             {
-                return ProcessEnumTag(pku.Catch_Info?.Pokeball, GetBall(pku.Catch_Info?.Pokeball), GetBallAlert, false, DEFAULT_BALL, (x) =>
+                return ProcessEnumTag(pku.Catch_Info?.Ball, GetBall(pku.Catch_Info?.Ball), GetBallAlert, false, DEFAULT_BALL, (x) =>
                 {
                     return x <= maxBall;
                 });

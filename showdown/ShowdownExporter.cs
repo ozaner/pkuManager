@@ -18,7 +18,7 @@ namespace pkuManager.showdown
         public override bool canExport()
         {
             //Showdown doesn't support eggs (they can't exactly battle...).
-            if (pku.IsAnEgg())
+            if (pku.IsEgg())
                 return false;
 
             // Only Pokemon with a valid Showdown name are allowed.

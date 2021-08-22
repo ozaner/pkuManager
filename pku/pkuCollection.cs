@@ -240,7 +240,7 @@ namespace pkuManager.pku
                     iconURL = ImageUtil.GetSprite(pku, ImageUtil.Sprite_Type.Box).url,
                     format = "pku",
                     checkedOut = CurrentBoxContainsExportedName(kvp.Value.Name),
-                    ball = pku.Catch_Info?.Pokeball,
+                    ball = pku.Catch_Info?.Ball,
                     hasShadowHaze = pku.Shadow_Info?.Shadow == true
                 };
             }
