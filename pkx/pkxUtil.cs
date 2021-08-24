@@ -436,30 +436,6 @@ namespace pkuManager.pkx
                     return new Alert(tag, msg.Substring(0, msg.Length - 4) + ".");
             }
 
-            private static Alert GetNicknameAlert(int maxCharacters, string defaultName, params AlertType[] ats)
-            {
-                string msg = "";
-                if (ats.Contains(AlertType.UNSPECIFIED))
-                {
-                    return new Alert("Nickname", $"Nickname was not specified, using the species name for this language: {defaultName}.");
-                }
-                if (ats.Contains(AlertType.INVALID)) //invalid characters, removing
-                {
-                    msg += $"Some of the characters in the nickname are invalid in this format, removing them.";
-                }
-                if (ats.Contains(AlertType.OVERFLOW)) //too many characters, truncating
-                {
-                    if (msg != "")
-                        msg += "\r\n\r\n";
-                    msg += $"Nickname can only have {maxCharacters} characters in this format, truncating it.";
-                }
-
-                if (msg != "")
-                    return new Alert("Nickname", msg);
-                else
-                    throw InvalidAlertType();
-            }
-
             private static Alert GetEnumAlert(string tagName, string defaultVal, AlertType at, string invalidVal = null)
             {
                 if (at == AlertType.UNSPECIFIED)
@@ -620,14 +596,44 @@ namespace pkuManager.pkx
                     throw InvalidAlertType(at);
             }
 
-            public static Alert GetNicknameAlert(AlertType at, string defaultName)
+            public static Alert GetNicknameAlert(AlertType at1, int? maxCharacters = null, AlertType at2 = AlertType.NONE)
             {
-                return GetNicknameAlert(-1, defaultName, new AlertType[] { at }); //for unspecified alerts
+                AlertType[] ats = new AlertType[] { at1, at2 };
+                string msg = "";
+                if (ats.Contains(AlertType.INVALID)) //invalid characters, removing
+                {
+                    msg += $"Some of the characters in the nickname are invalid in this format, removing them.";
+                }
+                if (ats.Contains(AlertType.OVERFLOW)) //too many characters, truncating
+                {
+                    if (maxCharacters == null)
+                        throw new ArgumentNullException("maxCharacters", "maxCharacters must be specified if OVERFLOW error is given.");
+                    if (msg != "")
+                        msg += "\r\n\r\n";
+                    msg += $"Nickname can only have {maxCharacters} characters in this format, truncating it.";
+                }
+
+                if (msg != "")
+                    return new Alert("Nickname", msg);
+                else
+                    throw InvalidAlertType();
             }
 
-            public static Alert GetNicknameAlert(AlertType at1, int maxCharacters = -1, AlertType at2 = AlertType.NONE)
+            public static Alert GetNicknameFlagAlert(AlertType at, bool flagset, string defaultName = null)
             {
-                return GetNicknameAlert(maxCharacters, null, new AlertType[] { at1, at2 }); //for combo invalid/overflow alerts
+                if (at == AlertType.MISMATCH)
+                {
+                    if (flagset)
+                    {
+                        if (defaultName == null)
+                            throw new ArgumentException("defaultName must be specified on a MISMATCH alert where flagst == true.");
+                        return new Alert("Nickname Flag", $"This pku's Nickname Flag is true, yet it doesn't have a nickname. Setting the nickname to: {defaultName}.");
+                    }
+                    else
+                        return new Alert("Nickname Flag", "This pku's Nickname Flag is false, yet it has a nickname.");
+                }
+                else
+                    throw InvalidAlertType(at);
             }
 
             public static Alert GetItemAlert(AlertType at, string invalidItem)
@@ -1177,14 +1183,17 @@ namespace pkuManager.pkx
                 return (encodedStr, truncated, hasInvalidChars);
             }
 
-            public static (byte[], Alert) ProcessNickname(pkuObject pku, int gen, bool bigEndian, Language checkedLang, int maxLength, int bytesPerChar = 2, Func<char, uint?> encodeChar = null)
+            public static (byte[] nickname, Alert nicknameAlert, bool nicknameFlag, Alert nicknameFlagAlert) ProcessNickname(pkuObject pku, int gen, bool bigEndian, Language checkedLang, int maxLength, int bytesPerChar = 2, Func<char, uint?> encodeChar = null)
             {
                 byte[] name;
+                bool nicknameFlag = pku.Nickname_Flag == true;
                 Alert alert = null;
+                Alert flagAlert = null;
                 int dex = GetNationalDexChecked(pku.Species); //must be valid at this point
 
                 if (pku.Nickname != null) //specified
                 {
+                    //name
                     bool truncated, invalid;
                     (name, truncated, invalid) = EncodeString(pku.Nickname, bigEndian, maxLength, bytesPerChar, encodeChar);
                     if (truncated && invalid)
@@ -1193,9 +1202,17 @@ namespace pkuManager.pkx
                         alert = GetNicknameAlert(AlertType.OVERFLOW, maxLength);
                     else if (invalid)
                         alert = GetNicknameAlert(AlertType.INVALID);
+
+                    //flag
+                    if (pku.Nickname_Flag == null)
+                        nicknameFlag = true;
+
+                    if (!nicknameFlag)
+                        flagAlert = GetNicknameFlagAlert(AlertType.MISMATCH, false);
                 }
                 else //unspecified, get default name for given language
                 {
+                    //name
                     string defaultName = PokeAPIUtil.GetSpeciesNameTranslated(dex, checkedLang);
 
                     if (gen < 5) //Capitalize Gens 1-4
@@ -1205,10 +1222,16 @@ namespace pkuManager.pkx
                         defaultName = defaultName.Replace('\'', '’'); //Gen 8: verify this once pokeAPI updates
 
                     (name, _, _) = EncodeString(defaultName, bigEndian, maxLength, bytesPerChar, encodeChar); //species names shouldn't be truncated/invalid...
-                    alert = GetNicknameAlert(AlertType.UNSPECIFIED, defaultName);
+
+                    //flag
+                    if (pku.Nickname_Flag == null)
+                        nicknameFlag = false;
+
+                    if (nicknameFlag)
+                        flagAlert = GetNicknameFlagAlert(AlertType.MISMATCH, true, defaultName);
                 }
 
-                return (name, alert);
+                return (name, alert, nicknameFlag, flagAlert);
             }
 
             public static (byte[], Alert) ProcessOT(pkuObject pku, bool bigEndian, int maxLength, int bytesPerChar = 2, Func<char, uint?> encodeChar = null)

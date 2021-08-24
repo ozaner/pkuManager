@@ -405,7 +405,8 @@ namespace pkuManager.pkx.pk3
 
             public static (byte[], Alert) ProcessNickname(pkuObject pku, Language checkedLang)
             {
-                return pkxUtil.ProcessTags.ProcessNickname(pku, 3, false, checkedLang, MAX_NICKNAME_CHARS, 1, (c) => { return EncodeCharacter(c, checkedLang); });
+                var temp = pkxUtil.ProcessTags.ProcessNickname(pku, 3, false, checkedLang, MAX_NICKNAME_CHARS, 1, (c) => { return EncodeCharacter(c, checkedLang); });
+                return (temp.nickname, temp.nicknameAlert);
             }
 
             public static (byte[], Alert) ProcessOT(pkuObject pku, Language checkedLang)
