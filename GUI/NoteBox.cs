@@ -17,7 +17,7 @@ namespace pkuManager.GUI
         public NoteBox(Alert alert)
         {
             titleLabel = new Label();
-            messageTextbox = newRichTextBox(alert.message);
+            messageTextbox = newRichTextBox(alert.Message);
 
             this.Controls.Add(titleLabel);
             this.Controls.Add(messageTextbox);
@@ -30,7 +30,7 @@ namespace pkuManager.GUI
             titleLabel.Location = new Point(4, 4);
             titleLabel.MaximumSize = new Size(270, 15);
             titleLabel.MinimumSize = new Size(0, 15);
-            titleLabel.Text = alert.title;
+            titleLabel.Text = alert.Title;
             titleLabel.Font = new Font(titleLabel.Font, FontStyle.Bold);
             titleLabel.Width = titleLabel.PreferredWidth;
 

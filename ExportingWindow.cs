@@ -80,20 +80,20 @@ namespace pkuManager
         }
 
         // Generic behavior for the accept button in the Warning Window
-        private static ExportStatus ExportFormat(Exporter exporter)
+        private static ExportStatus ExportFormat(Exporter exporter, Registry.FormatInfo fi)
         {
-            string pkuToFormat = ".pku to " + exporter.formatName + " (." + exporter.formatExtension + ")"; //For console logging
+            string pkuToFormat = ".pku to " + fi.name + " (." + fi.ext + ")"; //For console logging
 
             Debug.WriteLine("Exporting " + pkuToFormat + "...");
 
-            sfd.DefaultExt = exporter.formatExtension;
-            sfd.Filter = exporter.formatExtension + " files (*." + exporter.formatExtension + ")|*." + exporter.formatExtension + "|All files (*.*)|*.*";
+            sfd.DefaultExt = fi.ext;
+            sfd.Filter = fi.ext + " files (*." + fi.ext + ")|*." + fi.ext + "|All files (*.*)|*.*";
             //saveFileDialog.FilterIndex = 1; //redundant
             DialogResult result = sfd.ShowDialog(); // Show the dialog box.
 
             if (result == DialogResult.OK) //Successful choice of file name + location
             {
-                File.WriteAllBytes(Path.Combine(Path.GetDirectoryName(sfd.FileName), sfd.FileName), exporter.toFileChecked());
+                File.WriteAllBytes(Path.Combine(Path.GetDirectoryName(sfd.FileName), sfd.FileName), exporter.ToFile());
                 Debug.WriteLine("Exported " + pkuToFormat + "!");
                 return ExportStatus.Success;
                 //Debug.WriteLine(JsonConvert.SerializeObject(exporter.pku, Formatting.Indented)); //prints out the entire pku
@@ -110,7 +110,7 @@ namespace pkuManager
             //Debug.WriteLine($"Attempting to check canExport() for .pku to  {fi.name} (.{fi.ext})");
 
             Exporter exporter = (Exporter)Activator.CreateInstance(fi.exporter, new object[] { pku.DeepCopy(), flags });
-            return exporter.canExport();
+            return exporter.CanExport();
         }
 
         // Sets up and opens the warning window, or just auto accepts if there are no warnings, errors, or notes
@@ -125,20 +125,20 @@ namespace pkuManager
 
             Exporter exporter = (Exporter)Activator.CreateInstance(fi.exporter, new object[] { pku.DeepCopy(), flags });
 
-            if (!exporter.canExport()) //pku is invalid for this format
+            if (!exporter.CanExport()) //pku is invalid for this format
             {
                 Debug.WriteLine($"Export failed, pku is invalid for this format.");
                 return ExportStatus.Invalid_Format;
             }
 
-            exporter.processAlertsChecked(); //exporter calculates what needs to be added to alert lists
-            exporterWindow.PopulateAlerts(exporter.warnings, exporter.errors, exporter.notes); //add these to the exporterWindow
+            exporter.FirstPass(); //exporter calculates what needs to be added to alert lists
+            exporterWindow.PopulateAlerts(exporter.Warnings, exporter.Errors, exporter.Notes); //add these to the exporterWindow
 
             ExportStatus statusCode = ExportStatus.Failed;
 
             // update accept button with proper behavior
             exporterWindow.acceptButton.Click += (s, e) => {
-                statusCode = ExportFormat(exporter);
+                statusCode = ExportFormat(exporter, fi);
                 exporterWindow.Hide();
             };
 
@@ -146,7 +146,7 @@ namespace pkuManager
             if (exporterWindow.warningPanel.Controls.Count > 0 || exporterWindow.errorPanel.Controls.Count > 0 || exporterWindow.notesPanel.Controls.Count > 0)
                 exporterWindow.ShowDialog();
             else
-                statusCode = ExportFormat(exporter);
+                statusCode = ExportFormat(exporter, fi);
 
             return statusCode;
         }

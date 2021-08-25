@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
-using pkuManager.pkx;
-using pkuManager.pkx.pk3;
-using pkuManager.showdown;
+using pkuManager.Formats.pkx;
+using pkuManager.Formats.pkx.pk3;
+using pkuManager.Formats.showdown;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
@@ -25,7 +25,7 @@ namespace pkuManager
             }
         }
 
-        public static readonly List<FormatInfo> FORMAT_LIST = new List<FormatInfo>()
+        public static readonly List<FormatInfo> FORMAT_LIST = new()
         {
             // Name, Extension, Exporter Class, Importer Class, (optional) Exclude Check-Out
             new FormatInfo("Gen 3", "pk3", null, typeof(pk3Exporter)), //typeof(pk3Importer) not ready yet
@@ -38,7 +38,7 @@ namespace pkuManager
         {
             pkxUtil.NATIONALDEX_DATA,
             pkxUtil.POKESTAR_DATA,
-            ShowdownUtil.SHOWDOWN_DATA //includes Showdown CAP species
+            ShowdownObject.SHOWDOWN_DATA //includes Showdown CAP species
         });
     }
 }

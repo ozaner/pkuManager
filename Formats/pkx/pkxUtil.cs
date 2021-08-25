@@ -1,22 +1,23 @@
 ﻿using Newtonsoft.Json.Linq;
 using pkuManager.Alerts;
 using pkuManager.Common;
+using pkuManager.Formats.pkx.pk3;
 using pkuManager.pku;
-using pkuManager.pkx.pk3;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using static pkuManager.pkx.pkxUtil.TagAlerts;
+using static pkuManager.Alerts.Alert;
+using static pkuManager.Formats.pkx.pkxUtil.TagAlerts;
 
-namespace pkuManager.pkx
+namespace pkuManager.Formats.pkx
 {
     public static class pkxUtil
     {
-        public static JObject POKESTAR_DATA = DataUtil.GetJson("pokestarData"); //Gen 5: move this to pk5Util when it exists...
-        public static JObject NATIONALDEX_DATA = DataUtil.GetJson("nationaldexData");
-        public static JObject GAME_DATA = DataUtil.GetJson("gameData");
+        public static readonly JObject POKESTAR_DATA = DataUtil.GetJson("pokestarData"); //Gen 5: move this to pk5Util when it exists...
+        public static readonly JObject NATIONALDEX_DATA = DataUtil.GetJson("nationaldexData");
+        public static readonly JObject GAME_DATA = DataUtil.GetJson("gameData");
 
         // Enum Defaults
         public static readonly Language DEFAULT_LANGUAGE = Language.English;
@@ -276,7 +277,7 @@ namespace pkuManager.pkx
                 //}
                 if (unownForm.HasValue) // Unown Form Check
                 {
-                    if (unownForm != pk3Util.GetUnownFormID(pid))
+                    if (unownForm != pk3Object.GetUnownFormID(pid))
                         continue;
                 }
                 if (gr.HasValue && gender.HasValue) // Gender Check
@@ -306,7 +307,7 @@ namespace pkuManager.pkx
         // Exporter Stuff
         // ----------
 
-        public static class FlagAlerts
+        public static class PreProcessAlerts
         {
             public static Alert GetBattleStatAlert(bool hasStatNature, bool hasNature, string statNature, string trueNature, bool[] hyperIVs, int?[] IVs)
             {
@@ -360,26 +361,6 @@ namespace pkuManager.pkx
             // Alert method design philosophy:
             //      These Alert methods should take in the minimum amount of info needed.
             //      They shouldn't perform any pku logic. They should just create a relevant alert once the alert is known.
-
-            public enum AlertType
-            {
-                NONE, //Nothing wrong
-                OVERFLOW, //numerical value too large, or string too long
-                UNDERFLOW, //numerical value too small, or string too short
-                UNSPECIFIED, //tag not specified in .pku file
-                INVALID, //given value is not a valid value for the tag to take on (more general than over/underflow)
-                MISMATCH, //two tags conflict
-                IN_BATTLE, //this is an in-battle form only
-                CASTED //this form is not in the format, but a castable form was found
-            }
-
-            public static ArgumentException InvalidAlertType(AlertType? at = null)
-            {
-                if (at == null)
-                    return new ArgumentException($"No valid AlertTypes were given to this alert method.");
-
-                return new ArgumentException($"This alert method does not support the {at} AlertType");
-            }
 
             // ----------
             // Generalized Alert Methods
@@ -876,11 +857,11 @@ namespace pkuManager.pkx
 
                 string msg = "";
                 if (s != null)
-                    msg += s.message;
+                    msg += s.Message;
                 if (msg.Length > 0)
                     msg += "\r\n\r\n";
                 if (d != null)
-                    msg += d.message;
+                    msg += d.Message;
 
                 return new Alert("Pokérus", msg);
             }
@@ -929,12 +910,12 @@ namespace pkuManager.pkx
             }
         }
 
-        public static class ProcessFlags
+        public static class PreProcess
         {
             public static Alert ProcessBattleStatOverride(pkuObject pku, GlobalFlags flags)
             {
                 //generate alert, BEFORE modifying pku
-                Alert alert = FlagAlerts.GetBattleStatAlert(pku.Stat_Nature != null, pku.Nature != null, pku.Stat_Nature, pku.Nature, new bool[]
+                Alert alert = PreProcessAlerts.GetBattleStatAlert(pku.Stat_Nature != null, pku.Nature != null, pku.Stat_Nature, pku.Nature, new bool[]
                 {
                     pku.Hyper_Training?.HP == true,
                     pku.Hyper_Training?.Attack == true,
@@ -988,46 +969,6 @@ namespace pkuManager.pkx
         public static class ProcessTags
         {
             //Process Methods should not be creating alert strings. If the alerts were translated, these methods should work all the same.
-
-            public class ErrorResolver<T>
-            {
-                private RadioButtonAlert rba;
-                private readonly T[] options;
-
-                private bool isError;
-
-                public ErrorResolver(Alert alert, T[] options, List<Alert> warnings, List<Alert> errors)
-                {
-                    this.options = options;
-
-                    if (alert is RadioButtonAlert) //A RadioButtonAlert, add to errors and initalize decision variables.
-                    {
-                        rba = (RadioButtonAlert)alert;
-
-                        if (rba.choices.Length != options.Length)
-                            throw new ArgumentException("Number of RadioButtonAlert choices should equal number of option values.");
-
-                        isError = true;
-                        errors.Add(rba);
-                    }
-                    else //Not a RadioButtonAlert, add to warnings.
-                    {
-                        if (options.Length != 1)
-                            throw new ArgumentException("Can only have 1 option for non-error Alerts.");
-
-                        isError = false;
-                        warnings.Add(alert);
-                    }
-                }
-
-                public T DecideValue()
-                {
-                    if (isError)
-                        return options[rba.getSelectedIndex()]; //get the option corresponding to the currently selected alert choice.
-                    else
-                        return options[0]; //Not an error so only one option.
-                }
-            }
 
             // ----------
             // Generalized Processing Methods
@@ -1146,6 +1087,9 @@ namespace pkuManager.pkx
             //this just encodes strings and adds a terminator, it doesn't deal with trash.
             private static (byte[] encodedString, bool truncated, bool hasInvalidChars) EncodeString(string str, bool bigEndian, int maxLength, int bytesPerChar, Func<char, uint?> encodeChar = null)
             {
+                if (bytesPerChar != 1 && bytesPerChar != 2)
+                    throw new ArgumentException("bytesPerChar must be either 1 or 2.", nameof(bytesPerChar));
+
                 //Identity encoding (i.e. unicode for gens 5+)
                 if (encodeChar == null)
                     encodeChar = (x) => { return x; };
@@ -1168,7 +1112,10 @@ namespace pkuManager.pkx
                     }
 
                     //else character not invalid
-                    encodedStr.SetUInt(encodedChar.Value, successfulChars * bytesPerChar, bytesPerChar);
+                    if (bytesPerChar == 1)
+                        encodedStr.SetByte((byte)encodedChar.Value, successfulChars);
+                    else
+                        encodedStr.SetUShort((ushort)encodedChar.Value, successfulChars * 2);
                     successfulChars++;
 
                     //stop encoding when limit reached
@@ -1178,8 +1125,10 @@ namespace pkuManager.pkx
 
                 //Deal with terminator
                 if (successfulChars < maxLength)
-                    encodedStr.SetUInt(encodeChar('\0').Value, successfulChars * bytesPerChar, bytesPerChar);
-
+                    if (bytesPerChar == 1)
+                        encodedStr.SetByte((byte)encodeChar('\0').Value, successfulChars);
+                    else
+                        encodedStr.SetUShort((ushort)encodeChar('\0').Value, successfulChars * 2);
                 return (encodedStr, truncated, hasInvalidChars);
             }
 
@@ -1332,7 +1281,7 @@ namespace pkuManager.pkx
                 if (!id.HasValue) //neither game worked
                     game = null;
                 else //one game worked
-                    game = triedOfficialOriginGame ? pku.Game_Info?.Official_Origin_Game: pku.Game_Info?.Origin_Game;
+                    game = triedOfficialOriginGame ? pku.Game_Info?.Official_Origin_Game : pku.Game_Info?.Origin_Game;
 
                 Alert alert = null;
                 if (pku.Game_Info?.Origin_Game == null && pku.Game_Info?.Official_Origin_Game == null) //no origin game specified
@@ -1402,7 +1351,7 @@ namespace pkuManager.pkx
             // ----------
 
             //Gen 6: account for gen6+ pid change on shiny mismatch
-            public static (Alert, uint[]) ProcessPID(pkuObject pku, uint checkedID, bool gen6Plus, Gender? checkedGender = null, Nature? checkedNature = null, int? checkedUnownForm = null)
+            public static (uint[], Alert) ProcessPID(pkuObject pku, uint checkedID, bool gen6Plus, Gender? checkedGender = null, Nature? checkedNature = null, int? checkedUnownForm = null)
             {
                 uint pid, newPID;
                 Alert alert = null;
@@ -1450,7 +1399,7 @@ namespace pkuManager.pkx
                 }
                 if (checkedUnownForm.HasValue) //unown form mismatch check
                 {
-                    oldunownform = pk3Util.GetUnownFormID(pid);
+                    oldunownform = pk3Object.GetUnownFormID(pid);
                     unownMismatch = checkedUnownForm != null && checkedUnownForm != oldunownform;
                 }
                 //always check shiny
@@ -1466,7 +1415,7 @@ namespace pkuManager.pkx
                     {
                         List<(string, object, object)> tags = new List<(string, object, object)>();
                         if (unownMismatch)
-                            tags.Add(("Unown Form", pk3Util.GetUnownFormName(oldunownform), pk3Util.GetUnownFormName(checkedUnownForm.Value)));
+                            tags.Add(("Unown Form", pk3Object.GetUnownFormName(oldunownform), pk3Object.GetUnownFormName(checkedUnownForm.Value)));
                         if (genderMismatch)
                             tags.Add(("Gender", oldgender, checkedGender));
                         if (natureMismatch)
@@ -1474,14 +1423,14 @@ namespace pkuManager.pkx
                         if (shinyMismatch)
                             tags.Add(("Shiny", oldshiny, pku.Shiny));
                         alert = GetPIDAlert(AlertType.MISMATCH, tags); //RadioButtonAlert
-                        return (alert, new uint[] { pid, newPID }); //error: pid mismatched, choose old or new.
+                        return (new[] { pid, newPID }, alert); //error: pid mismatched, choose old or new.
                     }
                     else
-                        return (alert, new uint[] { newPID }); //warning: pid out of bounds, generating new one that deals with mismatches.
+                        return (new[] { newPID }, alert); //warning: pid out of bounds, generating new one that deals with mismatches.
                 }
-                return (alert, new uint[] { pid }); //either:
-                                                    //   warning: pid unspecified or out of bounds, rounding it.
-                                                    //no warning: pid is in bounds w/ no mismatches.
+                return (new[] { pid }, alert); //either:
+                                               //   warning: pid unspecified or out of bounds, rounding it.
+                                               //no warning: pid is in bounds w/ no mismatches.
             }
 
             public static (Nature, Alert) ProcessNature(pkuObject pku)
@@ -1644,7 +1593,7 @@ namespace pkuManager.pkx
                 return (ppups, alert);
             }
 
-            public static (Alert, uint[]) ProcessEXP(pkuObject pku)
+            public static (uint[], Alert) ProcessEXP(pkuObject pku)
             {
                 uint exp;
                 uint? expFromLevel = null;
@@ -1747,9 +1696,9 @@ namespace pkuManager.pkx
                 }
 
                 if (expFromLevel.HasValue)
-                    return (alert, new uint[] { exp, expFromLevel.Value });
+                    return (new[] { exp, expFromLevel.Value }, alert);
                 else
-                    return (alert, new uint[] { exp });
+                    return (new[] { exp }, alert);
             }
 
             public static (int strain, int days, Alert) ProcessPokerus(pkuObject pku)

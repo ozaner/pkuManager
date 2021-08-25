@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using pkuManager.Common;
-using pkuManager.pkx;
+using pkuManager.Formats.pkx;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;

@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using pkuManager.Common;
+using pkuManager.Formats.pkx;
 using pkuManager.pku;
-using pkuManager.pkx;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
