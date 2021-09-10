@@ -6,6 +6,7 @@ using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using static pkuManager.Alerts.Alert;
+using static pkuManager.Common.ExporterDirective;
 
 namespace pkuManager.Formats.showdown
 {
@@ -43,7 +44,7 @@ namespace pkuManager.Formats.showdown
         */
 
         // Battle Stat Override
-        [ExporterDirective(-10)]
+        [ExporterDirective(ProcessingPhase.PreProcessing)]
         protected virtual void ProcessBattleStatOverride()
         {
             Notes.Add(pkxUtil.PreProcess.ProcessBattleStatOverride(pku, GlobalFlags));
@@ -56,7 +57,7 @@ namespace pkuManager.Formats.showdown
         */
 
         // Showdown Name
-        [ExporterDirective(0)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessShowdownName()
         {
             // Notes:
@@ -72,7 +73,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // Nickname
-        [ExporterDirective(10)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessNickname()
         {
             // Notes:
@@ -91,7 +92,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // Gender
-        [ExporterDirective(20)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessGender()
         {
             // Notes:
@@ -102,7 +103,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // Item
-        [ExporterDirective(30)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessItem()
         {
             bool itemValid = ShowdownObject.IsItemValid(pku.Item);
@@ -114,7 +115,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // Ability
-        [ExporterDirective(40)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessAbility()
         {
             bool abilityValid = ShowdownObject.IsAbilityValid(pku.Ability);
@@ -125,7 +126,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // Level
-        [ExporterDirective(50)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessLevel()
         {
             var (level, alert) = pkxUtil.ProcessTags.ProcessNumericTag(pku.Level, pkxUtil.TagAlerts.GetLevelAlert, false, 100, 1, 100);
@@ -134,7 +135,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // Friendship
-        [ExporterDirective(60)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessFriendship()
         {
             var (friendship, alert) = pkxUtil.ProcessTags.ProcessNumericTag(pku.Friendship, GetFriendshipAlert, false, 255, 0, 255);
@@ -143,7 +144,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // IVs
-        [ExporterDirective(70)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessIVs()
         {
             int?[] vals = { pku.IVs?.HP, pku.IVs?.Attack, pku.IVs?.Defense, pku.IVs?.Sp_Attack, pku.IVs?.Sp_Defense, pku.IVs?.Speed };
@@ -153,7 +154,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // EVs
-        [ExporterDirective(80)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessEVs()
         {
             var (evs, alert) = pkxUtil.ProcessTags.ProcessEVs(pku);
@@ -162,7 +163,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // Nature
-        [ExporterDirective(90)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessNature()
         {
             ShowdownData.Nature = pkxUtil.GetNature(pku.Nature);
@@ -176,7 +177,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // Gigantamax Factor
-        [ExporterDirective(100)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessGigantamaxFactor()
         {
             if (pku.Gigantamax_Factor is true)
@@ -189,7 +190,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // Moves
-        [ExporterDirective(110)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessMoves()
         {
             //doesnt get gmax moves, but showdown doesn't allow them either

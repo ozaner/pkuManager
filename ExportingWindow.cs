@@ -131,7 +131,7 @@ namespace pkuManager
                 return ExportStatus.Invalid_Format;
             }
 
-            exporter.FirstPass(); //exporter calculates what needs to be added to alert lists
+            exporter.BeforeToFile(); //exporter calculates what needs to be added to alert lists
             exporterWindow.PopulateAlerts(exporter.Warnings, exporter.Errors, exporter.Notes); //add these to the exporterWindow
 
             ExportStatus statusCode = ExportStatus.Failed;

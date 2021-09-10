@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using static pkuManager.Alerts.Alert;
+using static pkuManager.Common.ExporterDirective;
 
 namespace pkuManager.Formats.pkx.pk3
 {
@@ -58,10 +59,17 @@ namespace pkuManager.Formats.pkx.pk3
         */
 
         // Battle Stat Override
-        [ExporterDirective(-10)]
+        [ExporterDirective(ProcessingPhase.PreProcessing)]
         protected virtual void ProcessBattleStatOverride()
         {
             Notes.Add(pkxUtil.PreProcess.ProcessBattleStatOverride(pku, GlobalFlags));
+        }
+
+        // Dex # [Implicit]
+        [ExporterDirective(ProcessingPhase.PreProcessing)]
+        protected virtual void ProcessDex()
+        {
+            dex = pkxUtil.GetNationalDexChecked(pku.Species);
         }
 
 
@@ -70,22 +78,15 @@ namespace pkuManager.Formats.pkx.pk3
          * ------------------------------------
         */
 
-        // Dex # [Implicit]
-        [ExporterDirective(0)]
-        protected virtual void ProcessDex()
-        {
-            dex = pkxUtil.GetNationalDexChecked(pku.Species);
-        }
-
         // Species
-        [ExporterDirective(10)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessSpecies()
         {
             pk3.Species = (ushort)PokeAPIUtil.GetSpeciesIndex(dex, 3);
         }
 
         // Nature [Implicit]
-        [ExporterDirective(20)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessNature()
         {
             Alert alert;
@@ -100,7 +101,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // Gender [Implicit]
-        [ExporterDirective(30)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessGender()
         {
             GenderRatio gr = PokeAPIUtil.GetGenderRatio(dex);
@@ -118,7 +119,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // Form [Implicit]
-        [ExporterDirective(40)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessForm()
         {
             Alert alert = null; //to return
@@ -144,7 +145,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // ID
-        [ExporterDirective(50)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessID()
         {
             Alert alert;
@@ -153,7 +154,8 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // PID [Requires: Gender, Form, Nature, ID] [ErrorResolver]
-        [ExporterDirective(60)]
+        [ExporterDirective(ProcessingPhase.FirstPass, nameof(ProcessGender), nameof(ProcessForm),
+                                                      nameof(ProcessNature), nameof(ProcessID))]
         protected virtual void ProcessPID()
         {
             var (pids, alert) = pkxUtil.ProcessTags.ProcessPID(pku, pk3.ID, false, gender, nature, unownForm);
@@ -165,14 +167,14 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // Egg
-        [ExporterDirective(70)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessEgg()
         {
             pk3.Egg = pku.IsEgg();
         }
 
         // Language [Requires: Egg]
-        [ExporterDirective(80)]
+        [ExporterDirective(ProcessingPhase.FirstPass, nameof(ProcessEgg))]
         protected virtual void ProcessLanguage()
         {
             var (language, alert) = pkxUtil.ProcessTags.ProcessLanguage(pku, pk3Object.LANGUAGE_ENCODING.Values.ToArray());
@@ -181,7 +183,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // Nickname [Requires: Language]
-        [ExporterDirective(90)]
+        [ExporterDirective(ProcessingPhase.FirstPass, nameof(ProcessLanguage))]
         protected virtual void ProcessNickname()
         {
             Alert alert;
@@ -191,7 +193,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // OT [Requires: Language]
-        [ExporterDirective(100)]
+        [ExporterDirective(ProcessingPhase.FirstPass, nameof(ProcessLanguage))]
         protected virtual void ProcessOT()
         {
             Alert alert;
@@ -201,7 +203,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // Trash Bytes [Requires: Nickname, OT]
-        [ExporterDirective(110)]
+        [ExporterDirective(ProcessingPhase.FirstPass, nameof(ProcessNickname), nameof(ProcessOT))]
         protected virtual void ProcessTrash()
         {
             Alert alert;
@@ -221,7 +223,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // Markings
-        [ExporterDirective(120)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessMarkings()
         {
             List<MarkingIndex> markings = pkxUtil.GetMarkings(pku.Markings);
@@ -232,7 +234,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // Item
-        [ExporterDirective(100)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessItem()
         {
             var temp = pkxUtil.ProcessTags.ProcessItem(pku, 3);
@@ -241,7 +243,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // Experience [ErrorResolver]
-        [ExporterDirective(110)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessExperience()
         {
             var (options, alert) = pkxUtil.ProcessTags.ProcessEXP(pku);
@@ -253,7 +255,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // Moves
-        [ExporterDirective(120)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessMoves()
         {
             int[] moves;
@@ -267,7 +269,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // PP-Ups [Requires: Moves]
-        [ExporterDirective(130)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessPPUps()
         {
             var (ppups, alert) = pkxUtil.ProcessTags.ProcessPPUps(pku, moveIndices);
@@ -279,7 +281,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // PP [Requires: Moves, PP-Ups]
-        [ExporterDirective(140)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessPP()
         {
             pk3.PP_1 = pk3Object.CalculatePP(pk3.Move_1, pk3.PP_Up_1);
@@ -289,7 +291,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // Friendship
-        [ExporterDirective(150)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessFriendship()
         {
             Alert alert;
@@ -298,7 +300,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // EVs
-        [ExporterDirective(160)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessEVs()
         {
             var (evs, alert) = pkxUtil.ProcessTags.ProcessEVs(pku);
@@ -312,7 +314,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // Contest Stats
-        [ExporterDirective(170)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessContestStats()
         {
             var (contest, alert) = pkxUtil.ProcessTags.ProcessContest(pku);
@@ -326,7 +328,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // Pokérus
-        [ExporterDirective(180)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessPokerus()
         {
             Alert alert;
@@ -335,7 +337,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // Origin Game
-        [ExporterDirective(190)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessOriginGame()
         {
             Alert alert;
@@ -344,7 +346,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // Met Location [Requires: Origin Game]
-        [ExporterDirective(200)]
+        [ExporterDirective(ProcessingPhase.FirstPass, nameof(ProcessOriginGame))]
         protected virtual void ProcessMetLocation()
         {
             Alert alert;
@@ -353,7 +355,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // Met Level
-        [ExporterDirective(210)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessMetLevel()
         {
             Alert alert;
@@ -362,7 +364,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // Ball
-        [ExporterDirective(220)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessBall()
         {
             Alert alert;
@@ -371,7 +373,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // OT Gender
-        [ExporterDirective(230)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessOTGender()
         {
             var (gender, alert) = pkxUtil.ProcessTags.ProcessOTGender(pku);
@@ -380,7 +382,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // IVs
-        [ExporterDirective(240)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessIVs()
         {
             var (ivs, alert) = pkxUtil.ProcessTags.ProcessIVs(pku);
@@ -394,7 +396,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // Ability Slot
-        [ExporterDirective(250)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessAbilitySlot()
         {
             Alert alert = null;
@@ -431,7 +433,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // Ribbons
-        [ExporterDirective(260)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessRibbons()
         {
             (HashSet<Ribbon> ribbons, Alert a) = pkxUtil.ProcessTags.ProcessRibbons(pku, pk3Object.IsValidRibbon);
@@ -481,7 +483,7 @@ namespace pkuManager.Formats.pkx.pk3
         }
 
         // Fateful Encounter [ErrorResolver]
-        [ExporterDirective(270)]
+        [ExporterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessFatefulEncounter()
         {
             Alert alert = null;
@@ -508,15 +510,15 @@ namespace pkuManager.Formats.pkx.pk3
         */
 
         // PID ErrorResolver
-        [ExporterDirective(280, true)]
+        [ExporterDirective(ProcessingPhase.SecondPass)]
         protected virtual ErrorResolver<uint> PIDResolver { get; set; }
 
         // Experience ErrorResolver
-        [ExporterDirective(290, true)]
+        [ExporterDirective(ProcessingPhase.SecondPass)]
         protected virtual ErrorResolver<uint> ExperienceResolver { get; set; }
 
         // Fateful Encounter ErrorResolver
-        [ExporterDirective(300, true)]
+        [ExporterDirective(ProcessingPhase.SecondPass)]
         protected virtual ErrorResolver<bool> FatefulEncounterResolver { get; set; }
 
 

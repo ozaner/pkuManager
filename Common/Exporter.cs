@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
+using static pkuManager.Common.ExporterDirective;
 
 namespace pkuManager.Common
 {
@@ -72,14 +73,12 @@ namespace pkuManager.Common
         /// <summary>
         /// Searches for all members in this instance's class with the <see cref="ExporterDirective"/> attribute.
         /// </summary>
-        /// <param name="secondPass">If true, only members marked for the second pass will be returned.<br/>
-        ///                          If false, members marked for the first pass are returned.</param>
-        /// <returns>An ordered list of MemberInfo objects of members with the <see cref="ExporterDirective"/> attribute.</returns>
-        private IOrderedEnumerable<MemberInfo> GetExporterDirectiveMembers(bool secondPass)
+        /// <param name="phase">The <see cref="ProcessingPhase"/> of the members to be searched for.</param>
+        /// <returns>A list of MemberInfo objects of members with the <see cref="ExporterDirective"/> attribute.</returns>
+        private List<MemberInfo> GetExporterDirectiveMembers(ProcessingPhase phase)
         {
             return GetType().GetMembers(BindingFlags.Instance | BindingFlags.NonPublic).Where(m =>
-                (m.GetCustomAttribute(typeof(ExporterDirective), true) as ExporterDirective)?.SecondPass == secondPass
-            ).OrderBy(m => (m.GetCustomAttribute(typeof(ExporterDirective), true) as ExporterDirective).Order);
+                (m.GetCustomAttribute(typeof(ExporterDirective), true) as ExporterDirective)?.Phase == phase).ToList();
         }
 
         /// <summary>
@@ -93,14 +92,24 @@ namespace pkuManager.Common
 
         /// <summary>
         /// Given a list of <paramref name="members"/>, invokes void methods and
-        /// decides values for <see cref="ErrorResolver{T}"/> respectively.
+        /// decides values for <see cref="ErrorResolver{T}"/>s respectively.
         /// </summary>
         /// <param name="members">A list of MemberInfo objects. Should not include any members but
         ///                       <see cref="ErrorResolver{T}"/>, and void parameterless methods.</param>
-        private void RunMembers(IOrderedEnumerable<MemberInfo> members)
+        private void RunMembers(List<MemberInfo> members)
         {
-            foreach (MemberInfo member in members)
+            void RunMember(MemberInfo member, List<MemberInfo> members)
             {
+                if (member is null) //already consumed/dne
+                    return;
+
+                ExporterDirective ed = member.GetCustomAttribute(typeof(ExporterDirective), true) as ExporterDirective;
+                if (ed.Prerequisites?.Length > 0) //has prereqs
+                {
+                    foreach (string prereq in ed.Prerequisites)
+                        RunMember(members.FirstOrDefault(x => x.Name == prereq), members);
+                }
+
                 if (member.MemberType is MemberTypes.Method)
                 {
                     MethodInfo minfo = (member as MethodInfo);
@@ -115,47 +124,50 @@ namespace pkuManager.Common
                         throw InvalidAttributeException();
                     resolver.GetType().GetMethod(nameof(ErrorResolver<object>.DecideValue)).Invoke(resolver, null);
                 }
+                members.Remove(member); //consumed
             }
+
+            while (members.Any())
+                RunMember(members.First(), members);
         }
 
         /// <summary>
-        /// Whether or not <see cref="FirstPass"/> was run yet.
+        /// Whether or not <see cref="BeforeToFile"/> was run yet.
         /// </summary>
-        private bool firstPass = false;
+        private bool beforeToFile = false;
 
         /// <summary>
-        /// The first pass of the exporting process. All alerts to be shown the user should be generated here.<br/>
+        /// The first half of the exporting process. Runs the <see cref="ProcessingPhase.PreProcessing"/>
+        /// and <see cref="ProcessingPhase.FirstPass"/> phases.<br/>
         /// Should only be run if <see cref="CanExport"/> returns true.
         /// </summary>
-        public void FirstPass()
+        public void BeforeToFile()
         {
             if (!CanExport())
-                throw new Exception("This .pku can't be exported to this format! This should not have happened.");
-            var members = GetExporterDirectiveMembers(false);
+                throw new Exception("This .pku can't be exported to this format! This should not have happened...");
+
+            var members = GetExporterDirectiveMembers(ProcessingPhase.PreProcessing);
             RunMembers(members);
-            firstPass = true;
+            members = GetExporterDirectiveMembers(ProcessingPhase.FirstPass);
+            RunMembers(members);
+
+            beforeToFile = true;
         }
 
         /// <summary>
-        /// The second pass of the exporting process.
-        /// This should be run once the user has decided what options to pick in the error resolution step, if any.
-        /// </summary>
-        private void SecondPass()
-        {
-            if (!firstPass)
-                throw new Exception("The first pass for this .pku has not occured yet! This should not have happened.");
-            var members = GetExporterDirectiveMembers(true);
-            RunMembers(members);
-        }
-
-        /// <summary>
-        /// Returns the exported file generated from the given <see cref="pku"/>.<br/>
-        /// Should only be run after <see cref="FirstPass"/>.
+        /// The second half of the exporting process. Runs the <see cref="ProcessingPhase.SecondPass"/><br/>
+        /// phase and returns the exported file generated from the given <see cref="pku"/>.<br/>
+        /// Should only be run after <see cref="BeforeToFile"/>.
         /// </summary>
         /// <returns>A <see cref="byte"/> array representation of the exported file.</returns>
         public byte[] ToFile()
         {
-            SecondPass();
+            if (!beforeToFile)
+                throw new Exception($"{nameof(BeforeToFile)} has not been run yet! This should not have happened...");
+
+            var members = GetExporterDirectiveMembers(ProcessingPhase.SecondPass);
+            RunMembers(members);
+
             return Data.ToFile();
         }
     }
@@ -168,25 +180,45 @@ namespace pkuManager.Common
     public class ExporterDirective : Attribute
     {
         /// <summary>
-        /// The priority of this member to be run when exporting.
+        /// The phase this member should be run in during the exporting process.
         /// </summary>
-        public int Order { get; init; }
+        public ProcessingPhase Phase { get; init; }
 
         /// <summary>
-        /// Whether this member is to be run in the second phase or not (i.e. first phase).
+        /// A list of members, in the same phase, that are to be run before this one.
         /// </summary>
-        public bool SecondPass { get; init; }
+        public string[] Prerequisites { get; init; }
 
         /// <summary>
-        /// Creates an ExporterDirective with the given priority (<paramref name="order"/>)
-        /// and phase (<paramref name="secondPass"/>).
+        /// Creates an ExporterDirective in the given <paramref name="phase"/> with the given <paramref name="prerequisites"/>.
         /// </summary>
-        /// <param name="order">The priority of this member to be run when exporting.</param>
-        /// <param name="secondPass">Whether this member is to be run in the second phase or not (i.e. first phase).</param>
-        public ExporterDirective(int order, bool secondPass = false)
+        /// <param name="phase">The phase this member will run in.</param>
+        /// <param name="prerequisites">A list of members, in the same phase, that are to be run before this one.</param>
+        public ExporterDirective(ProcessingPhase phase, params string[] prerequisites)
         {
-            Order = order;
-            SecondPass = secondPass;
+            Phase = phase;
+            Prerequisites = prerequisites;
         }
+
+        /// <summary>
+        /// A phase of the exporting process.
+        /// </summary>
+        public enum ProcessingPhase
+        {
+            /// <summary>
+            /// For modifications to the <see cref="pkuObject"/> itself, before exporting.
+            /// </summary>
+            PreProcessing,
+
+            /// <summary>
+            /// For generating the values and alerts that may need to be displayed to the user.
+            /// </summary>
+            FirstPass,
+
+            /// <summary>
+            /// For deciding on which values to use in the final file, based on user input.
+            /// </summary>
+            SecondPass
+        };
     }
 }
