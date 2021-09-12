@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using pkuManager.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -108,6 +109,9 @@ namespace pkuManager.pku
 
         [JsonProperty("Trash Bytes")]
         public Trash_Bytes_Class Trash_Bytes { get; set; }
+
+        [JsonProperty("Format Overrides")]
+        public Dictionary<string, pkuObject> Format_Overrides { get; set; }
 
         public class Trash_Bytes_Class : pkuDictionaryTag
         {
@@ -306,6 +310,42 @@ namespace pkuManager.pku
          * Utility Methods
          * ------------------------------------
         */
+
+        /// <summary>
+        /// Merges two pkuObjects, overriding the non-null entries
+        /// of <paramref name="pkuA"/> with <paramref name="pkuB"/>.
+        /// </summary>
+        /// <param name="pkuA">The base of the merge.</param>
+        /// <param name="pkuB">The pku that will be layered on top of <paramref name="pkuA"/>.</param>
+        /// <returns>A pkuObject representing the merging of
+        ///          <paramref name="pkuA"/> and <paramref name="pkuB"/>.</returns>
+        public static pkuObject Merge(pkuObject pkuA, pkuObject pkuB)
+        {
+            JObject a = JObject.FromObject(pkuA);
+            JObject b = JObject.FromObject(pkuB);
+            var (p, e) = Deserialize(DataUtil.GetCombinedJson(a, b).ToString());
+            if (e is not null)
+                throw new ArgumentException($"The merged pku isn't valid: {e}");
+            return p;
+        }
+
+        /// <summary>
+        /// Merges a pkuObject with one of its format overrides, if it exists.<br/>
+        /// See <see cref="Merge(pkuObject, pkuObject)"/>.
+        /// </summary>
+        /// <param name="pku">The pku to be merged.</param>
+        /// <param name="format">The name of the format override to merge with <paramref name="pku"/>.</param>
+        /// <returns>A pkuObject representing the merging of <paramref name="pku"/>
+        ///          and and its <paramref name="format"/> override. Or just
+        ///          <paramref name="pku"/> if that doesn't exist.</returns>
+        public static pkuObject MergeFormatOverride(pkuObject pku, string format)
+        {
+            pkuObject pkuOverride = null;
+            if (pku.Format_Overrides?.TryGetValue(format, out pkuOverride) is true)
+                return Merge(pku, pkuOverride);
+            else
+                return pku;
+        }
 
         /// <inheritdoc cref="Deserialize(string)"/>
         /// <param name="pkuFileInfo">A reference to the pku file.</param>

@@ -14,7 +14,7 @@ namespace pkuManager.Formats
         /// <summary>
         /// The pku file being ported.
         /// </summary>
-        protected pkuObject pku { get; }
+        protected pkuObject pku { get; set; }
 
         /// <summary>
         /// The global flags to, optionally, be acted upon by the porter.
@@ -189,6 +189,11 @@ namespace pkuManager.Formats
         /// </summary>
         public enum ProcessingPhase
         {
+            /// <summary>
+            /// Reserved for applying the format override, if it exists. Should occur before all other stages.
+            /// </summary>
+            FormatOverride,
+
             /// <summary>
             /// Usually for dealing with <see cref="GlobalFlags"/> before porting.
             /// </summary>

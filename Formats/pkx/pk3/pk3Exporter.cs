@@ -61,6 +61,13 @@ namespace pkuManager.Formats.pkx.pk3
          * ------------------------------------
         */
 
+        // Format Override
+        [PorterDirective(ProcessingPhase.FormatOverride)]
+        protected virtual void ProcessFormatOverride()
+        {
+            pku = pkuObject.MergeFormatOverride(pku, "pk3");
+        }
+
         // Battle Stat Override
         [PorterDirective(ProcessingPhase.PreProcessing)]
         protected virtual void ProcessBattleStatOverride()

@@ -46,6 +46,13 @@ namespace pkuManager.Formats.showdown
          * ------------------------------------
         */
 
+        // Format Override
+        [PorterDirective(ProcessingPhase.FormatOverride)]
+        protected virtual void ProcessFormatOverride()
+        {
+            pku = pkuObject.MergeFormatOverride(pku, "Showdown");
+        }
+
         // Battle Stat Override
         [PorterDirective(ProcessingPhase.PreProcessing)]
         protected virtual void ProcessBattleStatOverride()
