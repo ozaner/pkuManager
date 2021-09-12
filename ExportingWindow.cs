@@ -1,5 +1,6 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Common;
+using pkuManager.Formats;
 using pkuManager.GUI;
 using pkuManager.pku;
 using System;
@@ -110,7 +111,7 @@ namespace pkuManager
             //Debug.WriteLine($"Attempting to check canExport() for .pku to  {fi.name} (.{fi.ext})");
 
             Exporter exporter = (Exporter)Activator.CreateInstance(fi.exporter, new object[] { pku.DeepCopy(), flags });
-            return exporter.CanExport();
+            return exporter.CanPort().canPort;
         }
 
         // Sets up and opens the warning window, or just auto accepts if there are no warnings, errors, or notes
@@ -125,13 +126,13 @@ namespace pkuManager
 
             Exporter exporter = (Exporter)Activator.CreateInstance(fi.exporter, new object[] { pku.DeepCopy(), flags });
 
-            if (!exporter.CanExport()) //pku is invalid for this format
+            if (!exporter.CanPort().canPort) //pku is invalid for this format
             {
                 Debug.WriteLine($"Export failed, pku is invalid for this format.");
                 return ExportStatus.Invalid_Format;
             }
 
-            exporter.BeforeToFile(); //exporter calculates what needs to be added to alert lists
+            exporter.FirstHalf(); //exporter calculates what needs to be added to alert lists
             exporterWindow.PopulateAlerts(exporter.Warnings, exporter.Errors, exporter.Notes); //add these to the exporterWindow
 
             ExportStatus statusCode = ExportStatus.Failed;

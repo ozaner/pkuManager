@@ -1,93 +1,81 @@
 ﻿using pkuManager.Alerts;
+using pkuManager.Common;
 using pkuManager.pku;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Linq;
-using static pkuManager.Common.ExporterDirective;
+using System.Reflection;
+using static pkuManager.Formats.PorterDirective;
 
-namespace pkuManager.Common
+namespace pkuManager.Formats
 {
-    /// <summary>
-    /// The base class for all Exporters, all formats that can be<br/>
-    /// exported must have a corresponding class implements this.
-    /// </summary>
-    public abstract class Exporter
+    public abstract class Porter
     {
         /// <summary>
-        /// The particular pku to be exported.
+        /// The pku file being ported.
         /// </summary>
-        protected pkuObject pku { get; init; }
+        protected pkuObject pku { get; }
 
         /// <summary>
-        /// The global flags to, optionally, be acted upon by the exporter.
+        /// The global flags to, optionally, be acted upon by the porter.
         /// </summary>
-        protected GlobalFlags GlobalFlags { get; init; }
+        protected GlobalFlags GlobalFlags { get; }
 
         /// <summary>
-        /// A data structure representing the exported file.
+        /// The type of the <see cref="Data"/> that this porter makes use of.<br/>
+        /// Type must be a child of <see cref="FormatObject"/>.
         /// </summary>
-        protected FormatObject Data { get; init; }
+        protected abstract Type DataType { get; }
 
         /// <summary>
-        /// A list of warnings to be displayed on the exporter window.<br/>
-        /// A warning is an alert about a value that, generally, requires no input from the user.
+        /// A data structure representing the non-pku format.
         /// </summary>
-        public List<Alert> Warnings{ get; init; }
+        protected FormatObject Data { get; }
 
         /// <summary>
-        /// A list of errors to be displayed on the exporter window.<br/>
-        /// An error is an alert about a value that, generally, requires input from the user.
-        /// </summary>
-        public List<Alert> Errors { get; init; }
-
-        /// <summary>
-        /// A list of notes to be displayed on the exporter window.<br/>
+        /// A list of notes to be displayed on the porter window.<br/>
         /// A note is an alert that, generally, regards some pre-processing directive.
         /// </summary>
-        public List<Alert> Notes { get; init; }
+        public List<Alert> Notes { get; } = new();
 
         /// <summary>
-        /// Base exporter constructor.
+        /// Base porter constructor.
         /// </summary>
-        /// <param name="pku">The pku to be exported.</param>
+        /// <param name="pku">The pku to be ported.</param>
         /// <param name="globalFlags">The current collection's flag settings.</param>
-        /// <param name="data">A data structure representing the intended format.<br/>
-        ///                    This parameter should be hidden by any implementation of this class.</param>
-        public Exporter(pkuObject pku, GlobalFlags globalFlags, FormatObject data)
+        public Porter(pkuObject pku, GlobalFlags globalFlags)
         {
-            this.pku = pku ?? throw new ArgumentException("Can't make an exporter with a null .pku!");
+            this.pku = pku ?? throw new ArgumentException("Can't initialize an exporter with a null .pku!");
             GlobalFlags = globalFlags;
-            Data = data;
-            Warnings = new List<Alert>();
-            Errors = new List<Alert>();
-            Notes = new List<Alert>();
+            Data = (FormatObject)Activator.CreateInstance(DataType);
         }
 
         /// <summary>
-        /// Whether or not the passed <see cref="pku"/> can be exported to this format at all.
+        /// Determines whether or not the given file can be ported to the desired format, and a reason why if it cannot.
         /// </summary>
-        /// <returns>A bool denoting if the <see cref="pku"/> can be exported.</returns>
-        public abstract bool CanExport();
+        /// <returns>A 2-tuple of a bool of whether the port is possible and a string with a reason why if it can't.<br/>
+        ///          The string is <see langword="null"/> if a) is <see langword="true"/>.</returns>
+        public abstract (bool canPort, string reason) CanPort();
 
         /// <summary>
-        /// Searches for all members in this instance's class with the <see cref="ExporterDirective"/> attribute.
+        /// Searches for all members in this instance's class with the <see cref="PorterDirective"/> attribute.
         /// </summary>
         /// <param name="phase">The <see cref="ProcessingPhase"/> of the members to be searched for.</param>
-        /// <returns>A list of MemberInfo objects of members with the <see cref="ExporterDirective"/> attribute.</returns>
+        /// <returns>A list of MemberInfo objects of members with the <see cref="PorterDirective"/> attribute.</returns>
         private List<MemberInfo> GetExporterDirectiveMembers(ProcessingPhase phase)
         {
             return GetType().GetMembers(BindingFlags.Instance | BindingFlags.NonPublic).Where(m =>
-                (m.GetCustomAttribute(typeof(ExporterDirective), true) as ExporterDirective)?.Phase == phase).ToList();
+                (m.GetCustomAttribute(typeof(PorterDirective), true) as PorterDirective)?.Phase == phase).ToList();
         }
 
         /// <summary>
-        /// Generates an exception to be thrown when an <see cref="ExporterDirective"/> attribute is placed on an invalid member.
+        /// Generates an exception to be thrown when an <see cref="PorterDirective"/> attribute is placed on an invalid member.
         /// </summary>
-        /// <returns>An exception for members with invalid <see cref="ExporterDirective"/> attributes.</returns>
+        /// <returns>An exception for members with invalid <see cref="PorterDirective"/> attributes.</returns>
         private static Exception InvalidAttributeException()
         {
-            return new Exception($"{nameof(ExporterDirective)} attributes can only be placed on void methods with no parameters and properties of type {typeof(ErrorResolver<>).Name}.");
+            return new Exception($"{nameof(PorterDirective)} attributes can only be placed on void methods" +
+                $" with no parameters and properties of type {typeof(ErrorResolver<>).Name}.");
         }
 
         /// <summary>
@@ -103,7 +91,7 @@ namespace pkuManager.Common
                 if (member is null) //already consumed/dne
                     return;
 
-                ExporterDirective ed = member.GetCustomAttribute(typeof(ExporterDirective), true) as ExporterDirective;
+                PorterDirective ed = member.GetCustomAttribute(typeof(PorterDirective), true) as PorterDirective;
                 if (ed.Prerequisites?.Length > 0) //has prereqs
                 {
                     foreach (string prereq in ed.Prerequisites)
@@ -112,7 +100,7 @@ namespace pkuManager.Common
 
                 if (member.MemberType is MemberTypes.Method)
                 {
-                    MethodInfo minfo = (member as MethodInfo);
+                    MethodInfo minfo = member as MethodInfo;
                     if (minfo.ReturnType != typeof(void) && minfo.GetParameters() is not null)
                         throw InvalidAttributeException();
                     minfo.Invoke(this, null);
@@ -132,18 +120,18 @@ namespace pkuManager.Common
         }
 
         /// <summary>
-        /// Whether or not <see cref="BeforeToFile"/> was run yet.
+        /// Whether or not <see cref="FirstHalf"/> was run yet.
         /// </summary>
-        private bool beforeToFile = false;
+        private bool firstHalf = false;
 
         /// <summary>
         /// The first half of the exporting process. Runs the <see cref="ProcessingPhase.PreProcessing"/>
         /// and <see cref="ProcessingPhase.FirstPass"/> phases.<br/>
-        /// Should only be run if <see cref="CanExport"/> returns true.
+        /// Should only be run if <see cref="CanPort"/> returns true.
         /// </summary>
-        public void BeforeToFile()
+        public void FirstHalf()
         {
-            if (!CanExport())
+            if (!CanPort().canPort)
                 throw new Exception("This .pku can't be exported to this format! This should not have happened...");
 
             var members = GetExporterDirectiveMembers(ProcessingPhase.PreProcessing);
@@ -151,62 +139,58 @@ namespace pkuManager.Common
             members = GetExporterDirectiveMembers(ProcessingPhase.FirstPass);
             RunMembers(members);
 
-            beforeToFile = true;
+            firstHalf = true;
         }
 
         /// <summary>
-        /// The second half of the exporting process. Runs the <see cref="ProcessingPhase.SecondPass"/><br/>
-        /// phase and returns the exported file generated from the given <see cref="pku"/>.<br/>
-        /// Should only be run after <see cref="BeforeToFile"/>.
+        /// The second half of the exporting process. Runs the <see cref="ProcessingPhase.SecondPass"/> phase.
+        /// Should only be run after <see cref="FirstHalf"/>.
         /// </summary>
-        /// <returns>A <see cref="byte"/> array representation of the exported file.</returns>
-        public byte[] ToFile()
+        protected void SecondHalf()
         {
-            if (!beforeToFile)
-                throw new Exception($"{nameof(BeforeToFile)} has not been run yet! This should not have happened...");
+            if (!firstHalf)
+                throw new Exception($"{nameof(FirstHalf)} has not been run yet! This should not have happened...");
 
             var members = GetExporterDirectiveMembers(ProcessingPhase.SecondPass);
             RunMembers(members);
-
-            return Data.ToFile();
         }
     }
 
     /// <summary>
     /// An attribute to be placed on methods or <see cref="ErrorResolver{T}"/>s that
-    /// define the order of operations in <see cref="Exporter"/>s.
+    /// defines a <see cref=Porter"/>s order of operations.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property)]
-    public class ExporterDirective : Attribute
+    public class PorterDirective : Attribute
     {
         /// <summary>
-        /// The phase this member should be run in during the exporting process.
+        /// The phase this member should be run in during the porting process.
         /// </summary>
-        public ProcessingPhase Phase { get; init; }
+        public ProcessingPhase Phase { get; }
 
         /// <summary>
         /// A list of members, in the same phase, that are to be run before this one.
         /// </summary>
-        public string[] Prerequisites { get; init; }
+        public string[] Prerequisites { get; }
 
         /// <summary>
-        /// Creates an ExporterDirective in the given <paramref name="phase"/> with the given <paramref name="prerequisites"/>.
+        /// Creates an PorterDirective in the given <paramref name="phase"/> with the given <paramref name="prerequisites"/>.
         /// </summary>
         /// <param name="phase">The phase this member will run in.</param>
         /// <param name="prerequisites">A list of members, in the same phase, that are to be run before this one.</param>
-        public ExporterDirective(ProcessingPhase phase, params string[] prerequisites)
+        public PorterDirective(ProcessingPhase phase, params string[] prerequisites)
         {
             Phase = phase;
             Prerequisites = prerequisites;
         }
 
         /// <summary>
-        /// A phase of the exporting process.
+        /// A phase of the porting process.
         /// </summary>
         public enum ProcessingPhase
         {
             /// <summary>
-            /// For modifications to the <see cref="pkuObject"/> itself, before exporting.
+            /// Usually for dealing with <see cref="GlobalFlags"/> before porting.
             /// </summary>
             PreProcessing,
 

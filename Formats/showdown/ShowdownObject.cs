@@ -125,6 +125,15 @@ namespace pkuManager.Formats.showdown
             return Encoding.UTF8.GetBytes(txt);
         }
 
+        public override (bool, string) IsFile(byte[] file)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void FromFile(byte[] file)
+        {
+            throw new NotImplementedException();
+        }
 
         /* ------------------------------------
          * Showdown Name Encoding

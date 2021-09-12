@@ -238,7 +238,8 @@ namespace pkuManager
                             return;
                         }
 
-                        (pkuObject importedpku, ImportingWindow.ImportStatus status) = ImportingWindow.RunImportWindow(fi, pkuCollectionManager.GetGlobalFlags(), checkMode);
+                        (pkuObject importedpku, ImportingWindow.ImportStatus status, string reason) 
+                            = ImportingWindow.RunImportWindow(fi, pkuCollectionManager.GetGlobalFlags(), checkMode);
 
                         if(status == ImportingWindow.ImportStatus.Success) //sucessfull import
                         {
@@ -253,9 +254,9 @@ namespace pkuManager
                                 pkuCollectionManager.AddToCurrentBox(importedpku);
                         }
                         else if (status == ImportingWindow.ImportStatus.Invalid_File)
-                            MessageBox.Show($"{(checkMode ? "Check-in" : "Import")} from {GetUIFormatName(fi)} Failed! The selected file is not a valid {fi.name} file.");
-                        //else if (status == ImportingWindow.ImportStatus.File_Not_Chosen)
-                        //    MessageBox.Show($"{(checkMode ? "Check-in" : "Import")} from {GetUIFormatName(fi)} Failed! No file selected.");
+                            MessageBox.Show($"{(checkMode ? "Check-in" : "Import")} from {GetUIFormatName(fi)} Failed! The selected file is not a valid {fi.name} file. Reason: {reason}");
+                        //else if (status == ImportingWindow.ImportStatus.Canceled)
+                        //    MessageBox.Show($"{(checkMode ? "Check-in" : "Import")} from {GetUIFormatName(fi)} Canceled.");
                     };
                 }
 

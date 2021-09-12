@@ -6,7 +6,7 @@ using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using static pkuManager.Alerts.Alert;
-using static pkuManager.Common.ExporterDirective;
+using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.showdown
 {
@@ -20,21 +20,24 @@ namespace pkuManager.Formats.showdown
         /// to a .txt (Showdown!) file, encoded in UTF-8, with the given <paramref name="globalFlags"/>.
         /// </summary>
         /// <inheritdoc cref="Exporter(pkuObject, GlobalFlags, FormatObject)"/>
-        public ShowdownExporter(pkuObject pku, GlobalFlags globalFlags) : base(pku, globalFlags, new ShowdownObject()) { }
+        public ShowdownExporter(pkuObject pku, GlobalFlags globalFlags) : base(pku, globalFlags) { }
+
+        protected override Type DataType { get => typeof(ShowdownObject); }
 
         /// <summary>
         /// <see cref="Exporter.Data"/> casted as a <see cref="ShowdownObject"/>.
         /// </summary>
         protected ShowdownObject ShowdownData { get => Data as ShowdownObject; }
 
-        public override bool CanExport()
+        public override (bool, string) CanPort()
         {
             //Showdown doesn't support eggs (they can't exactly battle...).
             if (pku.IsEgg())
-                return false;
+                return (false, "Cannot be an Egg.");
 
             // Only Pokemon with a valid Showdown name are allowed.
-            return ShowdownObject.GetShowdownName(pku).name is not null;
+            return (ShowdownObject.GetShowdownName(pku).name is not null,
+                "Species+Form doesn't exist in Showdown, and cannot be casted to a form that does.");
         }
 
 
@@ -44,7 +47,7 @@ namespace pkuManager.Formats.showdown
         */
 
         // Battle Stat Override
-        [ExporterDirective(ProcessingPhase.PreProcessing)]
+        [PorterDirective(ProcessingPhase.PreProcessing)]
         protected virtual void ProcessBattleStatOverride()
         {
             Notes.Add(pkxUtil.PreProcess.ProcessBattleStatOverride(pku, GlobalFlags));
@@ -57,7 +60,7 @@ namespace pkuManager.Formats.showdown
         */
 
         // Showdown Name
-        [ExporterDirective(ProcessingPhase.FirstPass)]
+        [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessShowdownName()
         {
             // Notes:
@@ -73,7 +76,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // Nickname
-        [ExporterDirective(ProcessingPhase.FirstPass)]
+        [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessNickname()
         {
             // Notes:
@@ -92,7 +95,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // Gender
-        [ExporterDirective(ProcessingPhase.FirstPass)]
+        [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessGender()
         {
             // Notes:
@@ -103,7 +106,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // Item
-        [ExporterDirective(ProcessingPhase.FirstPass)]
+        [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessItem()
         {
             bool itemValid = ShowdownObject.IsItemValid(pku.Item);
@@ -115,7 +118,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // Ability
-        [ExporterDirective(ProcessingPhase.FirstPass)]
+        [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessAbility()
         {
             bool abilityValid = ShowdownObject.IsAbilityValid(pku.Ability);
@@ -126,7 +129,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // Level
-        [ExporterDirective(ProcessingPhase.FirstPass)]
+        [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessLevel()
         {
             var (level, alert) = pkxUtil.ProcessTags.ProcessNumericTag(pku.Level, pkxUtil.TagAlerts.GetLevelAlert, false, 100, 1, 100);
@@ -135,7 +138,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // Friendship
-        [ExporterDirective(ProcessingPhase.FirstPass)]
+        [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessFriendship()
         {
             var (friendship, alert) = pkxUtil.ProcessTags.ProcessNumericTag(pku.Friendship, GetFriendshipAlert, false, 255, 0, 255);
@@ -144,7 +147,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // IVs
-        [ExporterDirective(ProcessingPhase.FirstPass)]
+        [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessIVs()
         {
             int?[] vals = { pku.IVs?.HP, pku.IVs?.Attack, pku.IVs?.Defense, pku.IVs?.Sp_Attack, pku.IVs?.Sp_Defense, pku.IVs?.Speed };
@@ -154,7 +157,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // EVs
-        [ExporterDirective(ProcessingPhase.FirstPass)]
+        [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessEVs()
         {
             var (evs, alert) = pkxUtil.ProcessTags.ProcessEVs(pku);
@@ -163,7 +166,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // Nature
-        [ExporterDirective(ProcessingPhase.FirstPass)]
+        [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessNature()
         {
             ShowdownData.Nature = pkxUtil.GetNature(pku.Nature);
@@ -177,7 +180,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // Gigantamax Factor
-        [ExporterDirective(ProcessingPhase.FirstPass)]
+        [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessGigantamaxFactor()
         {
             if (pku.Gigantamax_Factor is true)
@@ -190,7 +193,7 @@ namespace pkuManager.Formats.showdown
         }
 
         // Moves
-        [ExporterDirective(ProcessingPhase.FirstPass)]
+        [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessMoves()
         {
             //doesnt get gmax moves, but showdown doesn't allow them either

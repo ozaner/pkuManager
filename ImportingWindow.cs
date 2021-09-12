@@ -1,5 +1,6 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Common;
+using pkuManager.Formats;
 using pkuManager.GUI;
 using pkuManager.pku;
 using System;
@@ -18,6 +19,8 @@ namespace pkuManager
         {
             InitializeComponent();
             UpdateDisplayText(format, ext);
+            AcceptButton = acceptButton;
+            CancelButton = null;
         }
 
         // Clears the past warning/error/note panels and populates them with the new ones.
@@ -84,55 +87,61 @@ namespace pkuManager
         {
             Success,
             Invalid_File,
-            File_Not_Chosen
+            Canceled
         }
 
         // Sets up and opens a importer window, or just auto imports if there are no questions or notes
-        public static (pkuObject, ImportStatus) RunImportWindow(Registry.FormatInfo fi, GlobalFlags flags, bool checkInMode)
+        public static (pkuObject, ImportStatus, string) RunImportWindow(Registry.FormatInfo fi, GlobalFlags flags, bool checkInMode)
         {
             string format = fi.name;
             string ext = fi.ext;
 
             Debug.WriteLine($"Attempting to import {format} (.{ext}) to .pku");
 
-            ImportingWindow importerWindow = new ImportingWindow(format, ext);
+            ImportingWindow importerWindow = new(format, ext);
 
             byte[] file = GetFile(ofd, ext);
             if (file == null) //file read was a failure
-            {
-                Debug.WriteLine($"Import failed, file not found");
-                return (null, ImportStatus.File_Not_Chosen);
-            }
+                return (null, ImportStatus.Canceled, "No file chosen.");
 
             Importer importer = (Importer)Activator.CreateInstance(fi.importer, file, flags, checkInMode);
 
-            if(!importer.canImport()) //file is invalid for this format
-            {
-                Debug.WriteLine($"Import failed, file invalid");
-                return (null, ImportStatus.Invalid_File);
-            }
+            (bool canPort, string reason) = importer.CanPort();
+            if (!canPort) //file is invalid for this format
+                return (null, ImportStatus.Invalid_File, reason);
 
-            importer.processAlertsChecked(); //importer calculates what needs to be added to alert lists
-            importerWindow.PopulateAlerts(importer.questions, importer.notes); //add these to the importerWindow
+            importer.FirstHalf(); //importer calculates what needs to be added to alert lists
+            importerWindow.PopulateAlerts(importer.Questions, importer.Notes); //add these to the importerWindow
 
             pkuObject importedPKU = null;
+            bool acceptButtonHit = false;
 
             // update accept button with proper behavior
             importerWindow.acceptButton.Click += (s, e) => {
-                importedPKU = importer.toPKUChecked();
-                importerWindow.Hide();
+                importedPKU = importer.ToPKU();
+                acceptButtonHit = true;
+                importerWindow.Close();
             };
 
-            // bypass window if nothing to ask/report
+            // if there are alerts
             if (importerWindow.questionsPanel.Controls.Count > 0 || importerWindow.notesPanel.Controls.Count > 0)
+            {
                 importerWindow.ShowDialog();
-            else
-                importedPKU = importer.toPKUChecked();
+                if (acceptButtonHit)
+                {
+                    if (importedPKU == null)
+                        throw new Exception("A null pkuObject was returned by the importer, despite canImport() passing... fix this");
 
-            if (importedPKU == null)
-                throw new Exception("A null pkuObject was returned by the importer, despite canImport() passing... fix this");
-
-            return (importedPKU, ImportStatus.Success);
+                    return (importedPKU, ImportStatus.Success, null);
+                }
+                else
+                    return (null, ImportStatus.Canceled, "Import canceled.");
+            }
+            else // bypass window if no alerts
+            {
+                importedPKU = importer.ToPKU();
+                return (importedPKU, ImportStatus.Success, null);
+            }
         }
     }
 }

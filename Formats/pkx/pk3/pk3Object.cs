@@ -17,7 +17,7 @@ namespace pkuManager.Formats.pkx.pk3
     public class pk3Object : FormatObject
     {
         /* ------------------------------------
-         * Data Block Constants
+         * Data Blocks
          * ------------------------------------
         */
         /// <summary>
@@ -31,6 +31,7 @@ namespace pkuManager.Formats.pkx.pk3
         internal const int FILE_SIZE_PARTY = 100;
 
         protected const bool BIG_ENDIANESS = false;
+        protected const int NON_SUBDATA_SIZE = FILE_SIZE_PC - 4 * BLOCK_SIZE;
         protected const int BLOCK_SIZE = 12;
         protected static readonly string[] SUBSTRUCTURE_ORDER =
         {
@@ -40,17 +41,17 @@ namespace pkuManager.Formats.pkx.pk3
             "MGAE", "MGEA", "MAGE", "MAEG", "MEGA", "MEAG",
         };
 
+        public ByteArrayManipulator NonSubData { get; protected set; } = new(NON_SUBDATA_SIZE, BIG_ENDIANESS);
+        public ByteArrayManipulator G { get; protected set; } = new(BLOCK_SIZE, BIG_ENDIANESS);
+        public ByteArrayManipulator A { get; protected set; } = new(BLOCK_SIZE, BIG_ENDIANESS);
+        public ByteArrayManipulator E { get; protected set; } = new(BLOCK_SIZE, BIG_ENDIANESS);
+        public ByteArrayManipulator M { get; protected set; } = new(BLOCK_SIZE, BIG_ENDIANESS);
+
 
         /* ------------------------------------
-         * Data Blocks
+         * File Conversion
          * ------------------------------------
         */
-        protected ByteArrayManipulator NonSubData = new(FILE_SIZE_PC - 4*BLOCK_SIZE, BIG_ENDIANESS);
-        protected ByteArrayManipulator G = new(BLOCK_SIZE, BIG_ENDIANESS);
-        protected ByteArrayManipulator A = new(BLOCK_SIZE, BIG_ENDIANESS);
-        protected ByteArrayManipulator E = new(BLOCK_SIZE, BIG_ENDIANESS);
-        protected ByteArrayManipulator M = new(BLOCK_SIZE, BIG_ENDIANESS);
-
         public override byte[] ToFile()
         {
             UpdateChecksum(); // Calculate Checksum
@@ -62,6 +63,20 @@ namespace pkuManager.Formats.pkx.pk3
             file.SetArray<byte>(subData, NON_SUBDATA_SIZE); // Last (encrypted) 48 bytes
 
             return file;
+        }
+
+        public override (bool, string) IsFile(byte[] file)
+        {
+            if (file.Length is not (FILE_SIZE_PC or FILE_SIZE_PARTY))
+                return (false, $"A .pk3 file must be {FILE_SIZE_PC} or {FILE_SIZE_PARTY} bytes long.");
+
+            return (true, null);
+        }
+
+        public override void FromFile(byte[] file)
+        {
+            NonSubData = new(file[0..NON_SUBDATA_SIZE], BIG_ENDIANESS);
+            (G, A, E, M) = UnencryptSubData(new ByteArrayManipulator(file[NON_SUBDATA_SIZE..FILE_SIZE_PC], BIG_ENDIANESS));
         }
 
 
@@ -200,6 +215,17 @@ namespace pkuManager.Formats.pkx.pk3
             Checksum = checksum;
         }
 
+        protected void ApplyXOR(ByteArrayManipulator subData)
+        {
+            uint encryptionKey = ID ^ PID;
+            for (int i = 0; i < subData.Length / 4; i++) //xor subData with key in 4 byte chunks
+            {
+                uint chunk = subData.GetUInt(4 * i);
+                chunk ^= encryptionKey;
+                subData.SetUInt(chunk, 4 * i);
+            }
+        }
+
         /// <summary>
         /// Compiles and encrypts the current <see cref="G"/>, <see cref="A"/>, <see cref="E"/>,
         /// and <see cref="M"/> blocks with the current <see cref="PID"/> and <see cref="ID"/>.
@@ -214,17 +240,23 @@ namespace pkuManager.Formats.pkx.pk3
             subData.SetBytes(E, BLOCK_SIZE * order.IndexOf('E'));
             subData.SetBytes(M, BLOCK_SIZE * order.IndexOf('M'));
 
-            uint encryptionKey = ID ^ PID;
-            for (int i = 0; i < subData.Length / 4; i++) //xor subData with key in 4 byte chunks
-            {
-                uint chunk = subData.GetUInt(4 * i);
-                chunk ^= encryptionKey;
-                subData.SetUInt(chunk, 4 * i);
-            }
-
+            ApplyXOR(subData);
             return subData;
         }
 
+        protected (ByteArrayManipulator G, ByteArrayManipulator A, ByteArrayManipulator E, ByteArrayManipulator M)
+            UnencryptSubData(ByteArrayManipulator subData)
+        {
+            ApplyXOR(subData);
+
+            string order = SUBSTRUCTURE_ORDER[PID % SUBSTRUCTURE_ORDER.Length];
+            ByteArrayManipulator G = new(subData.GetBytes(BLOCK_SIZE * order.IndexOf('G'), BLOCK_SIZE), BIG_ENDIANESS);
+            ByteArrayManipulator A = new(subData.GetBytes(BLOCK_SIZE * order.IndexOf('A'), BLOCK_SIZE), BIG_ENDIANESS);
+            ByteArrayManipulator E = new(subData.GetBytes(BLOCK_SIZE * order.IndexOf('E'), BLOCK_SIZE), BIG_ENDIANESS);
+            ByteArrayManipulator M = new(subData.GetBytes(BLOCK_SIZE * order.IndexOf('M'), BLOCK_SIZE), BIG_ENDIANESS);
+
+            return (G, A, E, M);
+        }
 
         /* ------------------------------------
          * Language Encoding
