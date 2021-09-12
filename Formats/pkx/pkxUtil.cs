@@ -22,13 +22,14 @@ namespace pkuManager.Formats.pkx
         // Enum Defaults
         public static readonly Language DEFAULT_LANGUAGE = Language.English;
         public static readonly Nature DEFAULT_NATURE = Nature.Hardy;
-        public static readonly Ball DEFAULT_BALL = Ball.Poké;
+        public static readonly Ball DEFAULT_BALL = Ball.Poké_Ball;
         public static readonly Gender DEFAULT_GENDER = Gender.Male;
 
         public static readonly int LAST_MOVE_INDEX_GEN8 = 826;
 
+
         // ----------
-        // Index/Enum to String Methods
+        // Helper Methods
         // ----------
 
         public static string GetSpeciesFromDex(int dex)
@@ -40,11 +41,6 @@ namespace pkuManager.Formats.pkx
             }
             return null;
         }
-
-
-        // ----------
-        // String to Index/Enum Methods
-        // ----------
 
         /// <summary>
         /// Returns the National dex number of the given species or null if it has none.
@@ -68,149 +64,6 @@ namespace pkuManager.Formats.pkx
                 throw new ArgumentException("Must be an official pokemon species.");
             else
                 return dex.Value;
-        }
-
-        private static T? GetEnumFromString<T>(string str) where T : struct
-        {
-            if (str == null)
-                return null;
-
-            //Get rid of spaces in string
-            str = str.Replace(' ', '_');
-
-            T? en;
-            try
-            {
-                en = (T)Enum.Parse(typeof(T), str, true);
-            }
-            catch
-            {
-                en = null;
-            }
-            return en;
-        }
-
-        /// <summary>
-        /// Returns the Nature enum that cooresponds to the given string, or null if there is no match.
-        /// </summary>
-        /// <param name="nature">One of the 25 valid natures, with any capitalization.</param>
-        /// <returns></returns>
-        public static Nature? GetNature(string nature)
-        {
-            return GetEnumFromString<Nature>(nature);
-        }
-
-        /// <summary>
-        /// Returns the Ball enum that cooresponds to the given string, or null if there is no match.
-        /// </summary>
-        /// <param name="ball">An official pokeball type (without the "ball" at the end).</param>
-        /// <returns></returns>
-        public static Ball? GetBall(string ball)
-        {
-            //remove "ball" at the end of string
-            if (ball != null && ball.ToLowerInvariant().EndsWith(" ball"))
-                ball = ball.Substring(0, ball.Length - 5);
-            return GetEnumFromString<Ball>(ball);
-        }
-
-        // Returns the gender enum of the given string. Null if gender is invalid.
-        public static Gender? GetGender(string gender, bool isTrainer)
-        {
-            Gender? genEnum = GetEnumFromString<Gender>(gender);
-            if (genEnum == Gender.Genderless && !isTrainer)
-                return null;
-            return genEnum;
-        }
-
-        // Returns ID of the given language, null if language is unofficial
-        public static Language? GetLanguage(string language)
-        {
-            return language?.ToLower() switch
-            {
-                string x when x == "japanese" || x == "jpn" => Language.Japanese,
-                string x when x == "english" || x == "eng" => Language.English,
-                string x when x == "french" || x == "fre" => Language.French,
-                string x when x == "italian" || x == "ita" => Language.Italian,
-                string x when x == "german" || x == "ger" => Language.German,
-                string x when x == "spanish" || x == "spa" => Language.Spanish,
-                string x when x == "korean" || x == "kor" => Language.Korean,
-                string x when x == "chinese simplified" || x == "chs" => Language.Chinese_Simplified,
-                string x when x == "chinese traditional" || x == "cht" => Language.Chinese_Traditional,
-                _ => null
-            };
-        }
-
-        /// <summary>
-        /// Returns a list of MarkingIndex enums cooresponding to the valid markings in the given array.
-        /// Invalid markings will be ignored. These are the markings used in in-game PC boxes.
-        /// </summary>
-        /// <param name="markingStrings">An array of box markings, with any capitalization.</param>
-        /// <returns></returns>
-        public static List<MarkingIndex> GetMarkings(string[] markingStrings)
-        {
-            //string[] lowerMarkings = new string[markingStrings.Length];
-            //for (int i = 0; i < markingStrings.Length; i++)
-            //    lowerMarkings[i] = markingStrings[i].ToLowerInvariant();
-
-            if (markingStrings == null)
-                return new List<MarkingIndex>();
-
-            List<MarkingIndex> markings = new List<MarkingIndex>();
-
-            // blue/black markings
-            if (markingStrings.Any(str => str.ToLowerInvariant() == "circle" ||
-                                          str.ToLowerInvariant() == "blue circle"))
-                markings.Add(MarkingIndex.BlueCircle);
-            if (markingStrings.Any(str => str.ToLowerInvariant() == "triangle" ||
-                                          str.ToLowerInvariant() == "blue triangle"))
-                markings.Add(MarkingIndex.BlueTriangle);
-            if (markingStrings.Any(str => str.ToLowerInvariant() == "square" ||
-                                          str.ToLowerInvariant() == "blue square"))
-                markings.Add(MarkingIndex.BlueSquare);
-            if (markingStrings.Any(str => str.ToLowerInvariant() == "heart" ||
-                                          str.ToLowerInvariant() == "blue heart"))
-                markings.Add(MarkingIndex.BlueHeart);
-            if (markingStrings.Any(str => str.ToLowerInvariant() == "star" ||
-                                          str.ToLowerInvariant() == "blue star"))
-                markings.Add(MarkingIndex.BlueStar);
-            if (markingStrings.Any(str => str.ToLowerInvariant() == "diamond" ||
-                                          str.ToLowerInvariant() == "blue diamond"))
-                markings.Add(MarkingIndex.BlueDiamond);
-
-            // pink markings
-            if (markingStrings.Any(str => str.ToLowerInvariant() == "pink circle"))
-                markings.Add(MarkingIndex.PinkCircle);
-            if (markingStrings.Any(str => str.ToLowerInvariant() == "pink triangle"))
-                markings.Add(MarkingIndex.PinkTriangle);
-            if (markingStrings.Any(str => str.ToLowerInvariant() == "pink square"))
-                markings.Add(MarkingIndex.PinkSquare);
-            if (markingStrings.Any(str => str.ToLowerInvariant() == "pink heart"))
-                markings.Add(MarkingIndex.PinkHeart);
-            if (markingStrings.Any(str => str.ToLowerInvariant() == "pink star"))
-                markings.Add(MarkingIndex.PinkStar);
-            if (markingStrings.Any(str => str.ToLowerInvariant() == "pink diamond"))
-                markings.Add(MarkingIndex.PinkDiamond);
-
-            // other markings
-            if (markingStrings.Any(str => str.ToLowerInvariant() == "favorite"))
-                markings.Add(MarkingIndex.Favorite);
-
-            return markings;
-        }
-
-        public static (HashSet<Ribbon>, bool anyInvalid) GetRibbons(string[] ribbonStrings)
-        {
-            HashSet<Ribbon> ribbons = new HashSet<Ribbon>();
-            bool anyInvalid = false;
-            foreach (string ribbonStr in ribbonStrings)
-            {
-                Ribbon? ribbon = GetEnumFromString<Ribbon>(ribbonStr);
-                if (ribbon.HasValue)
-                    ribbons.Add(ribbon.Value);
-                else
-                    anyInvalid = true;
-            }
-            return (ribbons, anyInvalid);
         }
 
         // Returns the ID of the given game version. Null if no ID is found.
@@ -243,19 +96,14 @@ namespace pkuManager.Formats.pkx
             return gen5ID; //might still be null
         }
 
-
-        // ----------
-        // Pokemon Data Util Methods
-        // ----------
-
         public static Gender GetPIDGender(int dex, uint pid)
         {
             GenderRatio gr = PokeAPIUtil.GetGenderRatio(dex);
-            if (gr == GenderRatio.ALL_FEMALE)
+            if (gr == GenderRatio.All_Female)
                 return Gender.Female;
-            else if (gr == GenderRatio.ALL_MALE)
+            else if (gr == GenderRatio.All_Male)
                 return Gender.Male;
-            else if (gr == GenderRatio.ALL_GENDERLESS)
+            else if (gr == GenderRatio.All_Genderless)
                 return Gender.Genderless;
             else if (pid % 256 < (int)gr)
                 return Gender.Female;
@@ -282,7 +130,7 @@ namespace pkuManager.Formats.pkx
                 }
                 if (gr.HasValue && gender.HasValue) // Gender Check
                 {
-                    if (gr != GenderRatio.ALL_MALE && gr != GenderRatio.ALL_FEMALE && gr != GenderRatio.ALL_GENDERLESS)
+                    if (gr != GenderRatio.All_Male && gr != GenderRatio.All_Female && gr != GenderRatio.All_Genderless)
                     {
                         if (gender == Gender.Male && pid % 256 < (int)gr) //Male but pid is Female
                             continue;
@@ -480,7 +328,7 @@ namespace pkuManager.Formats.pkx
 
             public static Alert GetLanguageAlert(AlertType at, string invalidLang = null)
             {
-                return GetEnumAlert("Language", DEFAULT_LANGUAGE.ToString(), at, invalidLang);
+                return GetEnumAlert("Language", DEFAULT_LANGUAGE.ToFormattedString(), at, invalidLang);
             }
 
             public static Alert GetOriginGameAlert(AlertType at, string originGame = null, string officialOriginGame = null)
@@ -504,7 +352,7 @@ namespace pkuManager.Formats.pkx
 
             public static Alert GetOTGenderAlert(AlertType at, string invalidGender = null)
             {
-                return GetEnumAlert("OT Gender", DEFAULT_GENDER.ToString(), at, invalidGender);
+                return GetEnumAlert("OT Gender", DEFAULT_GENDER.ToFormattedString(), at, invalidGender);
             }
 
 
@@ -537,7 +385,7 @@ namespace pkuManager.Formats.pkx
 
             public static Alert GetBallAlert(AlertType at, string invalidBall = null)
             {
-                return GetEnumAlert("Ball", DEFAULT_BALL.ToString() + " Ball", at, invalidBall);
+                return GetEnumAlert("Ball", DEFAULT_BALL.ToFormattedString(), at, invalidBall);
             }
 
 
@@ -802,7 +650,7 @@ namespace pkuManager.Formats.pkx
 
             public static Alert GetNatureAlert(AlertType at, string invalidNature = null)
             {
-                return GetEnumAlert("Nature", DEFAULT_NATURE.ToString(), at, invalidNature);
+                return GetEnumAlert("Nature", DEFAULT_NATURE.ToFormattedString(), at, invalidNature);
             }
 
             public static Alert GetEVsAlert(params AlertType[] ats)
@@ -1294,7 +1142,7 @@ namespace pkuManager.Formats.pkx
 
             public static (Language, Alert) ProcessLanguage(pkuObject pku, Language[] validLanguages)
             {
-                return ProcessEnumTag(pku.Game_Info?.Language, GetLanguage(pku.Game_Info?.Language), GetLanguageAlert, false, DEFAULT_LANGUAGE, (x) =>
+                return ProcessEnumTag(pku.Game_Info?.Language, pku.Game_Info?.Language.ToEnum<Language>(), GetLanguageAlert, false, DEFAULT_LANGUAGE, (x) =>
                 {
                     return validLanguages.Contains(x);
                 });
@@ -1302,7 +1150,9 @@ namespace pkuManager.Formats.pkx
 
             public static (Gender, Alert) ProcessOTGender(pkuObject pku)
             {
-                return ProcessEnumTag(pku.Game_Info?.Gender, GetGender(pku.Game_Info?.Gender, true), GetOTGenderAlert, false, DEFAULT_GENDER, (x) =>
+                Gender? checkedGender = pku.Game_Info?.Gender.ToEnum<Gender>();
+                checkedGender = checkedGender is Gender.Genderless ? null : checkedGender;
+                return ProcessEnumTag(pku.Game_Info?.Gender, checkedGender, GetOTGenderAlert, false, DEFAULT_GENDER, (x) =>
                 {
                     return x != Gender.Genderless;
                 });
@@ -1320,7 +1170,7 @@ namespace pkuManager.Formats.pkx
 
             public static (Ball, Alert) ProcessBall(pkuObject pku, Ball maxBall)
             {
-                return ProcessEnumTag(pku.Catch_Info?.Ball, GetBall(pku.Catch_Info?.Ball), GetBallAlert, false, DEFAULT_BALL, (x) =>
+                return ProcessEnumTag(pku.Catch_Info?.Ball, pku.Catch_Info?.Ball.ToEnum<Ball>(), GetBallAlert, false, DEFAULT_BALL, (x) =>
                 {
                     return x <= maxBall;
                 });
@@ -1435,7 +1285,7 @@ namespace pkuManager.Formats.pkx
 
             public static (Nature, Alert) ProcessNature(pkuObject pku)
             {
-                return ProcessEnumTag(pku.Nature, GetNature(pku.Nature), GetNatureAlert, false, DEFAULT_NATURE);
+                return ProcessEnumTag(pku.Nature, pku.Nature.ToEnum<Nature>(), GetNatureAlert, false, DEFAULT_NATURE);
             }
 
             //Gen 6: allow impossible genders in gen 6+ (I think they allow impossible genders...)
@@ -1448,20 +1298,20 @@ namespace pkuManager.Formats.pkx
                 GenderRatio genderRatio = PokeAPIUtil.GetGenderRatio(dex);
                 Gender? mandatoryGender = genderRatio switch
                 {
-                    GenderRatio.ALL_GENDERLESS => Gender.Genderless,
-                    GenderRatio.ALL_FEMALE => Gender.Female,
-                    GenderRatio.ALL_MALE => Gender.Male,
+                    GenderRatio.All_Genderless => Gender.Genderless,
+                    GenderRatio.All_Female => Gender.Female,
+                    GenderRatio.All_Male => Gender.Male,
                     _ => null
                 };
                 if (pku.Gender != null)
                 {
-                    Gender? readGender = GetGender(pku.Gender, false);
+                    Gender? readGender = pku.Gender.ToEnum<Gender>();
                     if (readGender.HasValue)
                     {
                         if (mandatoryGender.HasValue && mandatoryGender != readGender) //impossible gender
                         {
                             gender = mandatoryGender.Value;
-                            alert = GetGenderAlert(AlertType.MISMATCH, mandatoryGender, readGender.ToString());
+                            alert = GetGenderAlert(AlertType.MISMATCH, mandatoryGender, readGender.ToFormattedString());
                         }
                         else //no mismatch
                             gender = readGender.Value;
@@ -1743,16 +1593,16 @@ namespace pkuManager.Formats.pkx
 
             public static (HashSet<Ribbon>, Alert) ProcessRibbons(pkuObject pku, Func<Ribbon, bool> isValidRibbon)
             {
-                HashSet<Ribbon> ribbons = new HashSet<Ribbon>();
-                Alert a = null;
-                if (pku.Ribbons != null) //specified
-                {
-                    bool anyInvalid;
-                    (ribbons, anyInvalid) = GetRibbons(pku.Ribbons);
-                    ribbons.RemoveWhere(x => !isValidRibbon(x)); //removes invalid ribbons from set
-                    a = anyInvalid ? GetRibbonAlert(AlertType.INVALID) : null;
-                }
-                return (ribbons, a); //unspecified returns an empty set
+                bool anyInvalid = false;
+                HashSet<Ribbon> ribbons = pku.Ribbons.ToEnumSet<Ribbon>();
+                if(pku.Ribbons is not null)
+                    anyInvalid = pku.Ribbons.Distinct().Count() > ribbons.Count; //some ribbons not official
+
+                int oldCount = ribbons.Count;
+                ribbons.RemoveWhere(x => !isValidRibbon(x)); //removes invalid ribbons from set
+                anyInvalid = oldCount > ribbons.Count || anyInvalid;
+                
+                return (ribbons, anyInvalid ? GetRibbonAlert(AlertType.INVALID) : null);
             }
 
             //Gen 4: implement this for gen4+, slot/ability independent in all gens, EXCEPT for gen 3

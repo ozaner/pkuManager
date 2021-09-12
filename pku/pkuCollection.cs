@@ -221,7 +221,7 @@ namespace pkuManager.pku
             {
                 pku = pkuObject.Deserialize(kvp.Value).pku;
                 int? dex = pkxUtil.GetNationalDex(pku.Species);
-                Language? lang = pkxUtil.GetLanguage(pku.Game_Info?.Language);
+                Language? lang = pku.Game_Info?.Language.ToEnum<Language>();
                 string defaultName = dex.HasValue && lang.HasValue ? PokeAPIUtil.GetSpeciesNameTranslated(dex.Value, lang.Value) : pku.Species;
                 
                 slots[kvp.Key] = new SlotInfo

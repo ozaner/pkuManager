@@ -95,7 +95,7 @@ namespace pkuManager.Formats.pkx.pk3
             Alert alert;
             if (pku.Nature is null)
                 alert = GetNatureAlert(AlertType.UNSPECIFIED);
-            else if (!pkxUtil.GetNature(pku.Nature).HasValue)
+            else if (pku.Nature.ToEnum<Nature>() is null)
                 alert = GetNatureAlert(AlertType.INVALID, pku.Nature);
             else
                 (nature, alert) = pkxUtil.ProcessTags.ProcessNature(pku);
@@ -108,12 +108,12 @@ namespace pkuManager.Formats.pkx.pk3
         protected virtual void ProcessGender()
         {
             GenderRatio gr = PokeAPIUtil.GetGenderRatio(dex);
-            bool onlyOneGender = gr is GenderRatio.ALL_GENDERLESS or GenderRatio.ALL_FEMALE or GenderRatio.ALL_MALE;
+            bool onlyOneGender = gr is GenderRatio.All_Genderless or GenderRatio.All_Female or GenderRatio.All_Male;
 
             Alert alert;
             if (pku.Gender is null && !onlyOneGender) //unspecified and has more than one possible gender
                 alert = GetGenderAlert(AlertType.UNSPECIFIED);
-            else if (!pkxUtil.GetGender(pku.Gender, false).HasValue && !onlyOneGender)
+            else if (pku.Gender.ToEnum<Gender>() is null && !onlyOneGender)
                 alert = GetGenderAlert(AlertType.INVALID, null, pku.Gender);
             else
                 (gender, alert) = pkxUtil.ProcessTags.ProcessGender(pku);
@@ -229,11 +229,11 @@ namespace pkuManager.Formats.pkx.pk3
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessMarkings()
         {
-            List<MarkingIndex> markings = pkxUtil.GetMarkings(pku.Markings);
-            pk3.MarkingCircle = markings.Contains(MarkingIndex.BlueCircle);
-            pk3.MarkingSquare = markings.Contains(MarkingIndex.BlueSquare);
-            pk3.MarkingTriangle = markings.Contains(MarkingIndex.BlueTriangle);
-            pk3.MarkingHeart = markings.Contains(MarkingIndex.BlueHeart);
+            HashSet<Marking> markings = pku.Markings.ToEnumSet<Marking>();
+            pk3.MarkingCircle = markings.Contains(Marking.Blue_Circle);
+            pk3.MarkingSquare = markings.Contains(Marking.Blue_Square);
+            pk3.MarkingTriangle = markings.Contains(Marking.Blue_Triangle);
+            pk3.MarkingHeart = markings.Contains(Marking.Blue_Heart);
         }
 
         // Item
@@ -371,7 +371,7 @@ namespace pkuManager.Formats.pkx.pk3
         protected virtual void ProcessBall()
         {
             Alert alert;
-            (pk3.Ball, alert) = ((byte, Alert))pkxUtil.ProcessTags.ProcessBall(pku, Ball.Premier);
+            (pk3.Ball, alert) = ((byte, Alert))pkxUtil.ProcessTags.ProcessBall(pku, Ball.Premier_Ball);
             Warnings.Add(alert);
         }
 

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -244,6 +245,76 @@ namespace pkuManager.Utilities
 
             uint mask = (((uint)1 << length) - 1) << start;
             original = (original & ~mask) + (val.GetBits(0, length) << start);
+        }
+
+
+        // -----------------------
+        // Enum Methods
+        // -----------------------
+        /// <summary>
+        /// Converts an enum to a string, replacing underscores with spaces.
+        /// </summary>
+        /// <param name="e">An enum.</param>
+        /// <returns>The string form of <paramref name="e"/>.</returns>
+        public static string ToFormattedString(this Enum e)
+        {
+            return e.ToString().Replace('_', ' '); //Underscores are spaces
+        }
+
+        /// <summary>
+        /// Attempts to convert a string to an enum of type <typeparamref name="T"/>. Returns null if not possible.
+        /// </summary>
+        /// <typeparam name="T">An enum type.</typeparam>
+        /// <param name="str">A string representing an enum of type <typeparamref name="T"/>.</param>
+        /// <returns><paramref name="str"/> as an enum of type <typeparamref name="T"/>,
+        ///          or <see langword="null"/> if there was no match.</returns>
+        public static T? ToEnum<T>(this string str) where T : struct
+        {
+            if (!typeof(T).IsEnum) //Only Enum's allowed
+                throw new ArgumentException($"{nameof(T)} must be an {nameof(Enum)}", nameof(T));
+
+            if (str is null)
+                return null;
+
+            //Replace spaces with underscores
+            str = str.Replace(' ', '_');
+
+            //Returns enum, or null if it DNE
+            return Enum.TryParse(str, true, out T e) ? e : null;
+        }
+
+        /// <summary>
+        /// Attempts to convert an array of strings to a list of enums of type <typeparamref name="T"/>.<br/>
+        /// If some strings are not valid enums, they are excluded.
+        /// </summary>
+        /// <typeparam name="T">An enum type.</typeparam>
+        /// <param name="strs">A string representing an enum of type <typeparamref name="T"/>.</param>
+        /// <returns>A list of enums of type <typeparamref name="T"/> corresponding to the
+        ///          valid entries of <paramref name="strs"/>.</returns>
+        public static List<T> ToEnumList<T>(this string[] strs) where T : struct
+        {
+            List<T> enums = new();
+
+            foreach (string str in strs ?? Array.Empty<string>())
+            {
+                T? e = str.ToEnum<T>();
+                if (e.HasValue)
+                    enums.Add(e.Value);
+            }
+
+            return enums;
+        }
+
+        /// <summary>
+        /// Attempts to convert an array of strings to a set of enums of type <typeparamref name="T"/>.<br/>
+        /// If some strings are not valid enums, they are excluded.
+        /// </summary>
+        /// <returns>A set of enums of type <typeparamref name="T"/> corresponding to the
+        ///          valid entries of <paramref name="strs"/>.</returns>
+        /// <inheritdoc cref="ToEnumList{T}(string[])"/>
+        public static HashSet<T> ToEnumSet<T>(this string[] strs) where T : struct
+        {
+            return new(ToEnumList<T>(strs));
         }
 
 

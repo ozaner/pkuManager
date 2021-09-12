@@ -162,7 +162,7 @@ namespace pkuManager.Formats.showdown
                 //If this is a gender split form (i.e. showdown treats the genders as different forms)
                 if ((bool?)subjson.TraverseJTokenCaseInsensitive("Showdown Gender Split") is true)
                 {
-                    Gender? gender = pkxUtil.GetGender(genderUnchecked, false);
+                    Gender? gender = genderUnchecked.ToEnum<Gender>();
                     string genderStr = gender is Common.Gender.Female ? "Female" : "Male"; //Default is male
                     return (string)subjson.TraverseJTokenCaseInsensitive($"Showdown Species {genderStr}");
                 }

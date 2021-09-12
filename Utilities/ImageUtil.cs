@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
 using pkuManager.Common;
-using pkuManager.Formats.pkx;
 using pkuManager.pku;
 using System;
 using System.Collections.Generic;
@@ -102,7 +101,7 @@ namespace pkuManager.Utilities
             else
                 b_type = Block_Type.Default;
 
-            bool isFemale = pkxUtil.GetGender(pku.Gender, false) == Gender.Female;
+            bool isFemale = pku.Gender.ToEnum<Gender>() is Gender.Female;
             return GetSprite(pku.Species, DexUtil.GetCastableForms(pku), pku.Appearance ?? Array.Empty<string>(), b_type, pku.IsShiny(), isFemale, s_type);
         }
 

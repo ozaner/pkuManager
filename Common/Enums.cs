@@ -1,9 +1,10 @@
 ﻿namespace pkuManager.Common
 {
     /// <summary>
-    /// List of all Ribbons and Marks from Gens 3-8 by index number.
-    /// Contest and Battle tower ribbons from gen 3 & 4 are given negative index numbers
-    /// since they don't exist on new formats.
+    /// A Ribbon or Mark a Pokémon can have.<br/>
+    /// Index numbers correspond to those used in the official games, except the
+    /// Contest and Battle Tower ribbons from Gens 3-4.<br/>
+    /// These are given negative index numbers since they don't exist in new formats.
     /// </summary>
     public enum Ribbon
     {
@@ -169,45 +170,47 @@
     }
 
     /// <summary>
-    /// A list of the markings Pokemon can be given in the PC.
+    /// A marking a Pokémon can have displayed on their summary screen.
     /// </summary>
-    public enum MarkingIndex
+    public enum Marking
     {
-        // Blue Markings used to just be markigns before pink were introduced
-        BlueCircle,
-        BlueTriangle,
-        BlueSquare,
-        BlueHeart,
-        BlueStar,
-        BlueDiamond,
+        // Blue markings (also refer to the black markings present in Gens 3-5)
+        Blue_Circle,
+        Blue_Triangle,
+        Blue_Square,
+        Blue_Heart,
+        Blue_Star,
+        Blue_Diamond,
 
-        // Pink markings introduced in gen 6
-        PinkCircle,
-        PinkTriangle,
-        PinkSquare,
-        PinkHeart,
-        PinkStar,
-        PinkDiamond,
+        // Pink markings
+        Pink_Circle,
+        Pink_Triangle,
+        Pink_Square,
+        Pink_Heart,
+        Pink_Star,
+        Pink_Diamond,
 
         Favorite //Only in LGPE
     }
 
     /// <summary>
-    /// The different EXP growth types of a pokemon species.
+    /// An EXP growth type a Pokémon species can have.
+    /// Index numbers correspond to those used in the official games.
     /// </summary>
-    public enum EXPGrowthIndex
+    public enum GrowthRate
     {
-        MediumFast,
+        Medium_Fast,
         Erratic,
         Fluctuating,
-        MediumSlow,
+        Medium_Slow,
         Fast,
         Slow
     }
 
     /// <summary>
-    /// The index numbers of the 3 genders a pokemon can have.
-    /// OT genders can only be male or female.
+    /// A gender a Pokémon, or trainer, can have.<br/>
+    /// Note that OT genders can only be male or female, not genderless.<br/>
+    /// Index numbers correspond to those used in the official games.
     /// </summary>
     public enum Gender
     {
@@ -217,23 +220,71 @@
     }
 
     /// <summary>
-    /// A list of the different languages a pku's origin game can have.
+    /// An official language a Pokémon can have.
+    /// Index numbers correspond to those used in the official games.
     /// </summary>
     public enum Language
     {
-        Japanese, //Added in gen 1
-        English, //Added in gen 1
-        French, //Added in gen 1
-        Italian, //Added in gen 1
-        German, //Added in gen 1
-        Spanish, //Added in gen 1
-        Korean, //Added in gen 2
-        Chinese_Simplified, //Added in gen 7
-        Chinese_Traditional //Added in gen 7
+        /// <summary>
+        /// Unset language ID.<br/>
+        /// Note that Gen 5 Japanese in-game trades use this value. Great...
+        /// </summary>
+        //None = 0,
+
+        /// <summary>
+        /// Japanese (日本語)
+        /// </summary>
+        Japanese = 1,
+
+        /// <summary>
+        /// English (US/UK/AU)
+        /// </summary>
+        English = 2,
+
+        /// <summary>
+        /// French (Français)
+        /// </summary>
+        French = 3,
+
+        /// <summary>
+        /// Italian (Italiano)
+        /// </summary>
+        Italian = 4,
+
+        /// <summary>
+        /// German (Deutsch)
+        /// </summary>
+        German = 5,
+
+        /// <summary>
+        /// Unused language ID reserved for Korean in Gen 3 but never used.
+        /// </summary>
+        //Korean_Gen_3 = 6,
+
+        /// <summary>
+        /// Spanish (Español)
+        /// </summary>
+        Spanish = 7,
+
+        /// <summary>
+        /// Korean (한국어)
+        /// </summary>
+        Korean = 8,
+
+        /// <summary>
+        /// Chinese Simplified (简体中文)
+        /// </summary>
+        Chinese_Simplified = 9,
+
+        /// <summary>
+        /// Chinese Traditional (繁體中文)
+        /// </summary>
+        Chinese_Traditional = 10
     }
 
     /// <summary>
-    /// The different natures a pokemon can have in the official games. Canonical ordering.
+    /// An official nature a Pokémon can have.<br/>
+    /// Index numbers correspond to those used in the official games.
     /// </summary>
     public enum Nature
     {
@@ -265,61 +316,62 @@
     }
 
     /// <summary>
-    /// The different gender ratios pokemon species can have.
+    /// A gender ratio a Pokémon species can have.<br/>
+    /// Index numbers correspond to the gender threshold use to determine a Pokémon's gender.
     /// </summary>
     public enum GenderRatio
     {
-        ALL_MALE = 0,
-        MALE_FEMALE_7_1 = 31,
-        MALE_FEMALE_3_1 = 63,
-        MALE_FEMALE_1_1 = 127,
-        MALE_FEMALE_1_3 = 191,
-        MALE_FEMALE_1_7 = 225,
-        ALL_FEMALE = 254,
-        ALL_GENDERLESS = 255
+        All_Male = 0,
+        Male_7_Female_1 = 31,
+        Male_3_Female_1 = 63,
+        Male_1_Female_1 = 127,
+        Male_1_Female_3 = 191,
+        Male_1_Female_7 = 225,
+        All_Female = 254,
+        All_Genderless = 255
     }
 
     /// <summary>
-    /// The different pokeballs a pokemon can be captured in.
-    /// Only official balls.
+    /// An official Pokéball a Pokémon can be caught with.<br/>
+    /// Index numbers correspond to those used in the official games.
     /// </summary>
     public enum Ball
     {
-        // None = 0, //Blue Master_ Ball in DPPt
+        // None = 0, //Also Blue Master Ball in DPPt
 
-        // Gen 3: Legacy (ball type recorded starting in gen 3)
-        Master = 1,
-        Ultra = 2,
-        Great = 3,
-        Poké = 4,
-        Safari = 5,
+        // Gen 3: Legacy
+        Master_Ball = 1,
+        Ultra_Ball = 2,
+        Great_Ball = 3,
+        Poké_Ball = 4,
+        Safari_Ball = 5,
 
         // Gen 3
-        Net = 6,
-        Dive = 7,
-        Nest = 8,
-        Repeat = 9,
-        Timer = 10,
-        Luxury = 11,
-        Premier = 12,
+        Net_Ball = 6,
+        Dive_Ball = 7,
+        Nest_Ball = 8,
+        Repeat_Ball = 9,
+        Timer_Ball = 10,
+        Luxury_Ball = 11,
+        Premier_Ball = 12,
 
         // Gen 4
-        Dusk = 13,
-        Heal = 14,
-        Quick = 15,
-        Cherish = 16,
+        Dusk_Ball = 13,
+        Heal_Ball = 14,
+        Quick_Ball = 15,
+        Cherish_Ball = 16,
 
         // Gen 4: HGSS
-        Fast = 17,
-        Level = 18,
-        Lure = 19,
-        Heavy = 20,
-        Love = 21,
-        Friend = 22,
-        Moon = 23,
-        Sport = 24,
+        Fast_Ball = 17,
+        Level_Ball = 18,
+        Lure_Ball = 19,
+        Heavy_Ball = 20,
+        Love_Ball = 21,
+        Friend_Ball = 22,
+        Moon_Ball = 23,
+        Sport_Ball = 24,
 
-        Dream = 25, // Gen 5
-        Beast = 26 // Gen 7
+        Dream_Ball = 25, // Gen 5
+        Beast_Ball = 26 // Gen 7
     }
 }

@@ -102,7 +102,7 @@ namespace pkuManager.Formats.showdown
             //  - Illegal genders are ignored in legal rulesets, but used in illegal ones.
             //  - Genderless is denoted by no gender.
 
-            ShowdownData.Gender = pkxUtil.GetGender(pku.Gender, false);
+            ShowdownData.Gender = pku.Gender.ToEnum<Gender>();
         }
 
         // Item
@@ -169,7 +169,7 @@ namespace pkuManager.Formats.showdown
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessNature()
         {
-            ShowdownData.Nature = pkxUtil.GetNature(pku.Nature);
+            ShowdownData.Nature = pku.Nature.ToEnum<Nature>();
             if (ShowdownData.Nature is null)
             {
                 if (pku.Nature is null)

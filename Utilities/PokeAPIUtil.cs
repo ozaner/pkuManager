@@ -162,7 +162,7 @@ namespace pkuManager.Utilities
             if (level > 100 || level < 1)
                 throw new ArgumentException("Level must be from 1-100 for GetExpFromLevel.");
 
-            GrowthRate gr = Task.Run(() => getGrowthRateAsync(dex)).Result;
+            PokeApiNet.GrowthRate gr = Task.Run(() => getGrowthRateAsync(dex)).Result;
 
             return gr.Levels.Find(x => x.Level == level).Experience;
         }
@@ -173,7 +173,7 @@ namespace pkuManager.Utilities
             if (exp > maxEXP || exp < 0)
                 throw new ArgumentException("EXP must be from 0-maxEXP for GetLevelFromExp.");
 
-            GrowthRate gr = Task.Run(() => PokeAPIUtil.getGrowthRateAsync(dex)).Result;
+            PokeApiNet.GrowthRate gr = Task.Run(() => PokeAPIUtil.getGrowthRateAsync(dex)).Result;
 
             if (exp == maxEXP)
                 return 100;
@@ -191,21 +191,21 @@ namespace pkuManager.Utilities
             //pokeapi uses percentage species is female in eighths...
             int gr = Task.Run(() => getPokemonSpeciesAsync(dex)).Result.GenderRate;
             if (gr == 0)
-                return GenderRatio.ALL_MALE;
+                return GenderRatio.All_Male;
             else if (gr == 8)
-                return GenderRatio.ALL_FEMALE;
+                return GenderRatio.All_Female;
             else if (gr == 4)
-                return GenderRatio.MALE_FEMALE_1_1;
+                return GenderRatio.Male_1_Female_1;
             else if (gr == 6)
-                return GenderRatio.MALE_FEMALE_1_3;
+                return GenderRatio.Male_1_Female_3;
             else if (gr == 7)
-                return GenderRatio.MALE_FEMALE_1_7;
+                return GenderRatio.Male_1_Female_7;
             else if (gr == 2)
-                return GenderRatio.MALE_FEMALE_3_1;
+                return GenderRatio.Male_3_Female_1;
             else if (gr == 1)
-                return GenderRatio.MALE_FEMALE_7_1;
+                return GenderRatio.Male_7_Female_1;
             else //if (gr == -1)
-                return GenderRatio.ALL_GENDERLESS;
+                return GenderRatio.All_Genderless;
         }
 
         // ----------
@@ -242,10 +242,10 @@ namespace pkuManager.Utilities
             return await paClient.GetResourceAsync<Ability>(abilityID);
         }
 
-        public static async Task<GrowthRate> getGrowthRateAsync(int dex)
+        public static async Task<PokeApiNet.GrowthRate> getGrowthRateAsync(int dex)
         {
             PokemonSpecies species = await paClient.GetResourceAsync<PokemonSpecies>(dex); // assume dex is valid
-            GrowthRate gr = await paClient.GetResourceAsync(species.GrowthRate);
+            PokeApiNet.GrowthRate gr = await paClient.GetResourceAsync(species.GrowthRate);
             return gr;
         }
 
