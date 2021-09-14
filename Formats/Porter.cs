@@ -125,8 +125,8 @@ namespace pkuManager.Formats
         private bool firstHalf = false;
 
         /// <summary>
-        /// The first half of the exporting process. Runs the <see cref="ProcessingPhase.PreProcessing"/>
-        /// and <see cref="ProcessingPhase.FirstPass"/> phases.<br/>
+        /// The first half of the exporting process. Runs the <see cref="ProcessingPhase.FormatOverride"/>, 
+        /// <see cref="ProcessingPhase.PreProcessing"/> and <see cref="ProcessingPhase.FirstPass"/> phases.<br/>
         /// Should only be run if <see cref="CanPort"/> returns true.
         /// </summary>
         public void FirstHalf()
@@ -134,7 +134,9 @@ namespace pkuManager.Formats
             if (!CanPort().canPort)
                 throw new Exception("This .pku can't be exported to this format! This should not have happened...");
 
-            var members = GetExporterDirectiveMembers(ProcessingPhase.PreProcessing);
+            var members = GetExporterDirectiveMembers(ProcessingPhase.FormatOverride);
+            RunMembers(members);
+            members = GetExporterDirectiveMembers(ProcessingPhase.PreProcessing);
             RunMembers(members);
             members = GetExporterDirectiveMembers(ProcessingPhase.FirstPass);
             RunMembers(members);
@@ -143,7 +145,8 @@ namespace pkuManager.Formats
         }
 
         /// <summary>
-        /// The second half of the exporting process. Runs the <see cref="ProcessingPhase.SecondPass"/> phase.
+        /// The second half of the exporting process. Runs the <see cref="ProcessingPhase.SecondPass"/>
+        /// and <see cref="ProcessingPhase.PostProcessing"/> phases.<br/>
         /// Should only be run after <see cref="FirstHalf"/>.
         /// </summary>
         protected void SecondHalf()
@@ -152,6 +155,8 @@ namespace pkuManager.Formats
                 throw new Exception($"{nameof(FirstHalf)} has not been run yet! This should not have happened...");
 
             var members = GetExporterDirectiveMembers(ProcessingPhase.SecondPass);
+            RunMembers(members);
+            members = GetExporterDirectiveMembers(ProcessingPhase.PostProcessing);
             RunMembers(members);
         }
     }
@@ -207,7 +212,12 @@ namespace pkuManager.Formats
             /// <summary>
             /// For deciding on which values to use in the final file, based on user input.
             /// </summary>
-            SecondPass
+            SecondPass,
+
+            /// <summary>
+            /// For final edits/modifications to the exported file.
+            /// </summary>
+            PostProcessing
         };
     }
 }

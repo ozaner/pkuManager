@@ -5,7 +5,6 @@ using System.Linq;
 using System;
 using Newtonsoft.Json.Linq;
 using System.IO;
-using System.Text.RegularExpressions;
 
 namespace pkuManager.Formats.pkx.pk3
 {
@@ -404,10 +403,6 @@ namespace pkuManager.Formats.pkx.pk3
         {
             if (location is null)
                 return null;
-
-            // Match explicit location IDs (i.e. "\0xXX...X\")
-            if (Regex.IsMatch(location, @"^\\0x[a-fA-F0-9]+\\$"))
-                return Convert.ToByte(location[1..^1], 16);
 
             // Game must be specified to find a location (i.e. full path of a location is "Game:Location")
             if (game is null)

@@ -57,7 +57,7 @@ namespace pkuManager.Formats.showdown
         [PorterDirective(ProcessingPhase.PreProcessing)]
         protected virtual void ProcessBattleStatOverride()
         {
-            Notes.Add(pkxUtil.PreProcess.ProcessBattleStatOverride(pku, GlobalFlags));
+            Notes.Add(pkxUtil.AuxProcess.ProcessBattleStatOverride(pku, GlobalFlags));
         }
 
 

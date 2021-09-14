@@ -72,7 +72,7 @@ namespace pkuManager.Formats.pkx.pk3
         [PorterDirective(ProcessingPhase.PreProcessing)]
         protected virtual void ProcessBattleStatOverride()
         {
-            Notes.Add(pkxUtil.PreProcess.ProcessBattleStatOverride(pku, GlobalFlags));
+            Notes.Add(pkxUtil.AuxProcess.ProcessBattleStatOverride(pku, GlobalFlags));
         }
 
         // Dex # [Implicit]
@@ -526,6 +526,19 @@ namespace pkuManager.Formats.pkx.pk3
         // Fateful Encounter ErrorResolver
         [PorterDirective(ProcessingPhase.SecondPass)]
         protected virtual ErrorResolver<bool> FatefulEncounterResolver { get; set; }
+
+
+        /* ------------------------------------
+         * Post-Processing Methods
+         * ------------------------------------
+        */
+
+        // Byte Override
+        [PorterDirective(ProcessingPhase.PostProcessing)]
+        protected virtual void ProcessByteOverride()
+        {
+            Warnings.Add(pkxUtil.AuxProcess.ProcessByteOverride(pku, pk3.NonSubData, pk3.G, pk3.A, pk3.E, pk3.M));
+        }
 
 
         /* ------------------------------------

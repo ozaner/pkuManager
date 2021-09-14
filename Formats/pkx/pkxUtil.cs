@@ -7,7 +7,6 @@ using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.pkx.pkxUtil.TagAlerts;
 
@@ -155,7 +154,7 @@ namespace pkuManager.Formats.pkx
         // Exporter Stuff
         // ----------
 
-        public static class PreProcessAlerts
+        public static class AuxAlerts
         {
             public static Alert GetBattleStatAlert(bool hasStatNature, bool hasNature, string statNature, string trueNature, bool[] hyperIVs, int?[] IVs)
             {
@@ -198,6 +197,14 @@ namespace pkuManager.Formats.pkx
                 }
 
                 return msg == "" ? null : new Alert("Battle Stat Override", msg);
+            }
+            
+            public static Alert GetByteOverrideAlert(AlertType at)
+            {
+                if (at is AlertType.INVALID)
+                    return new Alert("Byte Override", "Some of the byte indices were invalid for this format. Ignoring them.");
+                else
+                    throw InvalidAlertType(at);
             }
         }
 
@@ -762,12 +769,12 @@ namespace pkuManager.Formats.pkx
             }
         }
 
-        public static class PreProcess
+        public static class AuxProcess
         {
             public static Alert ProcessBattleStatOverride(pkuObject pku, GlobalFlags flags)
             {
                 //generate alert, BEFORE modifying pku
-                Alert alert = PreProcessAlerts.GetBattleStatAlert(pku.Stat_Nature != null, pku.Nature != null, pku.Stat_Nature, pku.Nature, new bool[]
+                Alert alert = AuxAlerts.GetBattleStatAlert(pku.Stat_Nature != null, pku.Nature != null, pku.Stat_Nature, pku.Nature, new bool[]
                 {
                     pku.Hyper_Training?.HP == true,
                     pku.Hyper_Training?.Attack == true,
@@ -815,6 +822,39 @@ namespace pkuManager.Formats.pkx
                 }
                 else
                     return null;
+            }
+
+            public static Alert ProcessByteOverride(pkuObject pku, params ByteArrayManipulator[] bams)
+            {
+                bool invalid = false;
+                static bool singleBam(ByteArrayManipulator bam, Dictionary<int, byte> bo)
+                {
+                    bool invalid = false;
+                    foreach (var kvp in bo)
+                    {
+                        if (kvp.Key >= bam.Length)
+                        {
+                            invalid = true;
+                            continue;
+                        }
+                        bam.SetByte(kvp.Value, kvp.Key);
+                    }
+                    return invalid;
+                }
+                if (bams.Length > 0 && pku.Byte_Override?.Main_Data is not null)
+                    invalid &= singleBam(bams[0], pku.Byte_Override.Main_Data);
+                if (bams.Length > 1 && pku.Byte_Override?.A is not null)
+                    invalid &= singleBam(bams[1], pku.Byte_Override.A);
+                if (bams.Length > 2 && pku.Byte_Override?.B is not null)
+                    invalid &= singleBam(bams[2], pku.Byte_Override.B);
+                if (bams.Length > 3 && pku.Byte_Override?.C is not null)
+                    invalid &= singleBam(bams[3], pku.Byte_Override.C);
+                if (bams.Length > 4 && pku.Byte_Override?.D is not null)
+                    invalid &= singleBam(bams[4], pku.Byte_Override.D);
+                if (bams.Length > 5)
+                    throw new ArgumentException($"At most 5 different {nameof(ByteArrayManipulator)}s should have been passed.", nameof(bams));
+
+                return invalid ? AuxAlerts.GetByteOverrideAlert(AlertType.INVALID) : null;
             }
         }
 
@@ -1370,17 +1410,8 @@ namespace pkuManager.Formats.pkx
                 return ProcessMultiNumericTag(pku.Contest_Stats != null, vals, GetContestAlert, 255, 0, 0, true);
             }
 
-            public static (int, Alert) ProcessItem(pkuObject pku, int gen, int maxOverride = 65536)
+            public static (int, Alert) ProcessItem(pkuObject pku, int gen)
             {
-                //Manual Hex Override
-                if (pku.Item != null && Regex.IsMatch(pku.Item, @"^\\0x[a-fA-F0-9]+\\$"))
-                {
-                    int itemID = Convert.ToByte(pku.Item[1..^1], 16);
-                    if (itemID < maxOverride)
-                        return (itemID, null);
-                }
-
-                //Regular Item
                 return ProcessEnumTag(pku.Item, PokeAPIUtil.GetItemIndex(pku.Item, gen), GetItemAlert, true, 0);
             }
 

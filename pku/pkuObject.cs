@@ -113,6 +113,9 @@ namespace pkuManager.pku
         [JsonProperty("Trash Bytes")]
         public Trash_Bytes_Class Trash_Bytes { get; set; }
 
+        [JsonProperty("Byte Override")]
+        public Byte_Override_Class Byte_Override { get; set; }
+
         [JsonProperty("Format Overrides")]
         public Dictionary<string, pkuObject> Format_Overrides { get; set; }
 
@@ -305,6 +308,24 @@ namespace pkuManager.pku
 
             [JsonProperty("Heart Gauge")]
             public int? Heart_Gauge { get; set; }
+        }
+
+        public class Byte_Override_Class : pkuDictionaryTag
+        {
+            [JsonProperty("Main Data")]
+            public Dictionary<int, byte> Main_Data { get; set; }
+
+            [JsonProperty("A")]
+            public Dictionary<int, byte> A { get; set; }
+
+            [JsonProperty("B")]
+            public Dictionary<int, byte> B { get; set; }
+
+            [JsonProperty("C")]
+            public Dictionary<int, byte> C { get; set; }
+
+            [JsonProperty("D")]
+            public Dictionary<int, byte> D { get; set; }
         }
 
 
