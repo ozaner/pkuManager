@@ -115,14 +115,11 @@ namespace pkuManager.pku
 
         public class Trash_Bytes_Class : pkuDictionaryTag
         {
-            [JsonProperty("Gen")]
-            public int? Gen { get; set; }
-
             [JsonProperty("Nickname")]
-            public byte[] Nickname { get; set; }
+            public ushort[] Nickname { get; set; }
 
             [JsonProperty("OT")]
-            public byte[] OT { get; set; }
+            public ushort[] OT { get; set; }
         }
 
         public class Move : pkuDictionaryTag

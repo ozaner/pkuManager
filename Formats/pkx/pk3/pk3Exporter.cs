@@ -198,7 +198,7 @@ namespace pkuManager.Formats.pkx.pk3
         {
             Alert alert;
             Language checkedLang = pk3Object.DecodeLanguage(pk3.Language).Value;
-            (pk3.Nickname, alert, _, _) = pkxUtil.ProcessTags.ProcessNickname(pku, 3, false, checkedLang, pk3Object.MAX_NICKNAME_CHARS, 1, c => pk3Object.EncodeCharacter(c, checkedLang));
+            (pk3.Nickname, alert, _, _) = pkxUtil.ProcessTags.ProcessNickname(pku, 3, checkedLang, pk3Object.MAX_NICKNAME_CHARS, pk3Object.CHARSETS[checkedLang]);
             Warnings.Add(alert);
         }
 
@@ -208,28 +208,24 @@ namespace pkuManager.Formats.pkx.pk3
         {
             Alert alert;
             Language checkedLang = pk3Object.DecodeLanguage(pk3.Language).Value;
-            (pk3.OT, alert) = pkxUtil.ProcessTags.ProcessOT(pku, false, pk3Object.MAX_OT_CHARS, 1, c => pk3Object.EncodeCharacter(c, checkedLang));
+            (pk3.OT, alert) = pkxUtil.ProcessTags.ProcessOT(pku, pk3Object.MAX_OT_CHARS, pk3Object.CHARSETS[checkedLang]);
             Warnings.Add(alert);
         }
 
         // Trash Bytes [Requires: Nickname, OT]
         [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessNickname), nameof(ProcessOT))]
-        protected virtual void ProcessTrash()
+        protected virtual void ProcessTrashBytes()
         {
-            Alert alert;
-
-            //Get Nickname trash
-            byte[] nicknameTrash = null;
-            if (pku.Trash_Bytes?.Gen is 3 && pku.Trash_Bytes?.Nickname?.Length > 0) //If trash bytes exist and are gen 3
-                nicknameTrash = pku.Trash_Bytes.Nickname;
-
-            //Get OT trash
-            byte[] otTrash = null;
-            if (pku.Trash_Bytes?.Gen is 3 && pku.Trash_Bytes?.OT?.Length > 0) //If trash bytes exist and are gen 3
-                otTrash = pku.Trash_Bytes.OT;
-
-            (pk3.Nickname, pk3.OT, alert) = pkxUtil.ProcessTags.ProcessTrash(pk3.Nickname, nicknameTrash, pk3.OT, otTrash, new byte[] { 0xFF });
-            Warnings.Add(alert);
+            pkuObject.Trash_Bytes_Class tb = pku?.Trash_Bytes;
+            if(tb is not null)
+            {
+                ushort[] nicknameTrash = tb?.Nickname?.Length > 0 ? tb.Nickname : null;
+                ushort[] otTrash = tb?.OT?.Length > 0 ? tb.OT : null;
+                Alert alert;
+                Language checkedLang = pk3Object.DecodeLanguage(pk3.Language).Value;
+                (pk3.Nickname, pk3.OT, alert) = pkxUtil.ProcessTags.ProcessTrash(pk3.Nickname, nicknameTrash, pk3.OT, otTrash, pk3Object.CHARSETS[checkedLang]);
+                Warnings.Add(alert);
+            }
         }
 
         // Markings

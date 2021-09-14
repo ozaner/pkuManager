@@ -324,6 +324,19 @@ namespace pkuManager.Formats.pkx.pk3
         protected static readonly Dictionary<byte, char> JAPANESE_CHARSET = PK3_CHARACTER_ENCODING_DATA["Japanese"].ToObject<Dictionary<byte, char>>();
         
         /// <summary>
+        /// A map of valid pk3 languages to their respective character encodings.
+        /// </summary>
+        internal static readonly Dictionary<Language, Dictionary<byte, char>> CHARSETS = new()
+        {
+            { Common.Language.Japanese, JAPANESE_CHARSET },
+            { Common.Language.German, GERMAN_CHARSET },
+            { Common.Language.French, FRENCH_CHARSET },
+            { Common.Language.English, INTERNATIONAL_CHARSET },
+            { Common.Language.Italian, INTERNATIONAL_CHARSET },
+            { Common.Language.Spanish, INTERNATIONAL_CHARSET }
+        };
+
+        /// <summary>
         /// The maximum number of characters in a .pk3 nickname.<br/>
         /// Note that while the JPN games only display the first 5 of these, they are all stored under the hood.
         /// </summary>
@@ -333,25 +346,6 @@ namespace pkuManager.Formats.pkx.pk3
         /// The maximum number of characters in a .pk3 OT name.
         /// </summary>
         public const int MAX_OT_CHARS = 7;
-
-        /// <summary>
-        /// Encodes a character to the a gen 3 character set.
-        /// </summary>
-        /// <param name="c">The character to encode.</param>
-        /// <param name="lang">The gen 3 language to encode <see cref="c"/> in.</param>
-        /// <returns>The byte that encodes <paramref name="c"/> in <paramref name="lang"/>.</returns>
-        public static byte? EncodeCharacter(char c, Language lang)
-        {
-            Dictionary<byte, char> charset = lang switch
-            {
-                Common.Language.Japanese => JAPANESE_CHARSET,
-                Common.Language.German => GERMAN_CHARSET,
-                Common.Language.French => FRENCH_CHARSET,
-                Common.Language.English or Common.Language.Italian or Common.Language.Spanish => INTERNATIONAL_CHARSET,
-                _ => null //Korean, Chinese, and any future languages DNE in Gen 3.
-            };
-            return charset?.FirstOrDefault(x => x.Value == c).Key;
-        }
 
 
         /* ------------------------------------

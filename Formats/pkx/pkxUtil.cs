@@ -736,25 +736,29 @@ namespace pkuManager.Formats.pkx
                     throw InvalidAlertType(at);
             }
 
-            public static Alert GetTrashAlert(AlertType at, bool nickname, bool OT)
+            public static Alert GetTrashAlert(AlertType atNickname, AlertType atOT, int nickEntries, int OTEntries, int? maxVal = null)
             {
-                if (at == AlertType.OVERFLOW)
-                {
-                    string msg = "There are more trash bytes that can fit in the ";
-                    if (nickname && OT)
-                        msg += "nickname and OT";
-                    else if (nickname)
-                        msg += "nickname";
-                    else if (OT)
-                        msg += "OT";
-                    else
-                        throw new ArgumentException("There has to be an Alert for the nickname trash bytes or the OT trash bytes.");
+                if ((atNickname, atOT) is (AlertType.NONE, AlertType.NONE))
+                    throw InvalidAlertType();
 
-                    msg += ". Ignoring the bytes that don't fit.";
-                    return new Alert("Trash Bytes", msg);
-                }
-                else
-                    throw InvalidAlertType(at);
+                if((atNickname is AlertType.OVERFLOW || atOT is AlertType.OVERFLOW) && maxVal is null)
+                    throw new ArgumentException("maxVal cannot be null if there is an overflow error.", nameof(maxVal));
+
+                string msg = "";
+                if (atNickname is AlertType.OVERFLOW)
+                    msg += $"One or more of the entries in Nickname Trash Bytes is too high, the maximum value is ${maxVal}. Ignoring them.";
+                else if (atNickname is AlertType.MISMATCH)
+                    msg += $"The number of entries in the Nickname Trash Bytes must be exactly {nickEntries}. Ignoring them.";
+
+                if (msg.Length > 0 && atOT is not AlertType.NONE)
+                    msg += "\r\n\r\n";
+
+                if (atOT is AlertType.OVERFLOW)
+                    msg += $"One or more of the entries in OT Trash Bytes is too high, the maximum value is ${maxVal}. Ignoring them.";
+                else if (atOT is AlertType.MISMATCH)
+                    msg += $"The number of entries in the OT Trash Bytes must be exactly {OTEntries}. Ignoring them.";
+
+                return new Alert("Trash Bytes", msg);
             }
         }
 
@@ -814,10 +818,9 @@ namespace pkuManager.Formats.pkx
             }
         }
 
+
         public static class ProcessTags
         {
-            //Process Methods should not be creating alert strings. If the alerts were translated, these methods should work all the same.
-
             // ----------
             // Generalized Processing Methods
             // ----------
@@ -931,39 +934,39 @@ namespace pkuManager.Formats.pkx
             // String Processing Methods
             // ----------
 
+            private static ushort GetTerminator(Dictionary<ushort, char> charset)
+            {
+                return charset.FirstOrDefault(x => x.Value == '\0').Key;
+            }
+
+            private static Dictionary<ushort, char> UpCastCharset(Dictionary<byte, char> charset)
+            {
+                return charset.ToDictionary(kvp => (ushort)kvp.Key, kvp => kvp.Value);
+            }
+
             //Helper method for processnickname and processOT
             //this just encodes strings and adds a terminator, it doesn't deal with trash.
-            private static (byte[] encodedString, bool truncated, bool hasInvalidChars) EncodeString(string str, bool bigEndian, int maxLength, int bytesPerChar, Func<char, uint?> encodeChar = null)
+            private static (ushort[] encodedString, bool truncated, bool hasInvalidChars) EncodeString(string str, int maxLength, Dictionary<ushort, char> charset)
             {
-                if (bytesPerChar != 1 && bytesPerChar != 2)
-                    throw new ArgumentException("bytesPerChar must be either 1 or 2.", nameof(bytesPerChar));
-
-                //Identity encoding (i.e. unicode for gens 5+)
-                if (encodeChar == null)
-                    encodeChar = (x) => { return x; };
-
                 bool truncated = false, hasInvalidChars = false;
-                ByteArrayManipulator encodedStr = new ByteArrayManipulator(maxLength * bytesPerChar, bigEndian);
+                ushort[] encodedStr = new ushort[maxLength];
 
                 //Encode string
                 int successfulChars = 0;
-                while (str != null && str.Length > 0 && successfulChars < maxLength)
+                while (str?.Length > 0 && successfulChars < maxLength)
                 {
-                    uint? encodedChar = encodeChar(str[0]); //get next character
-                    str = str.Substring(1); //chop off current character
+                    ushort? encodedChar = charset?.FirstOrDefault(x => x.Value == str[0]).Key; //get next character
+                    str = str[1..]; //chop off current character
 
                     //if character invalid
-                    if (!encodedChar.HasValue)
+                    if (encodedChar is null)
                     {
                         hasInvalidChars = true;
                         continue;
                     }
 
                     //else character not invalid
-                    if (bytesPerChar == 1)
-                        encodedStr.SetByte((byte)encodedChar.Value, successfulChars);
-                    else
-                        encodedStr.SetUShort((ushort)encodedChar.Value, successfulChars * 2);
+                    encodedStr[successfulChars] = encodedChar.Value;
                     successfulChars++;
 
                     //stop encoding when limit reached
@@ -973,26 +976,23 @@ namespace pkuManager.Formats.pkx
 
                 //Deal with terminator
                 if (successfulChars < maxLength)
-                    if (bytesPerChar == 1)
-                        encodedStr.SetByte((byte)encodeChar('\0').Value, successfulChars);
-                    else
-                        encodedStr.SetUShort((ushort)encodeChar('\0').Value, successfulChars * 2);
+                    encodedStr[successfulChars] = GetTerminator(charset);
                 return (encodedStr, truncated, hasInvalidChars);
             }
 
-            public static (byte[] nickname, Alert nicknameAlert, bool nicknameFlag, Alert nicknameFlagAlert) ProcessNickname(pkuObject pku, int gen, bool bigEndian, Language checkedLang, int maxLength, int bytesPerChar = 2, Func<char, uint?> encodeChar = null)
+            public static (ushort[] nickname, Alert nicknameAlert, bool nicknameFlag, Alert nicknameFlagAlert) ProcessNickname(pkuObject pku, int gen, Language checkedLang, int maxLength, Dictionary<ushort, char> charset)
             {
-                byte[] name;
-                bool nicknameFlag = pku.Nickname_Flag == true;
+                ushort[] name;
+                bool nicknameFlag = pku.Nickname_Flag is true;
                 Alert alert = null;
                 Alert flagAlert = null;
                 int dex = GetNationalDexChecked(pku.Species); //must be valid at this point
 
-                if (pku.Nickname != null) //specified
+                if (pku.Nickname is not null) //specified
                 {
                     //name
                     bool truncated, invalid;
-                    (name, truncated, invalid) = EncodeString(pku.Nickname, bigEndian, maxLength, bytesPerChar, encodeChar);
+                    (name, truncated, invalid) = EncodeString(pku.Nickname, maxLength, charset);
                     if (truncated && invalid)
                         alert = GetNicknameAlert(AlertType.OVERFLOW, maxLength, AlertType.INVALID);
                     else if (truncated)
@@ -1001,7 +1001,7 @@ namespace pkuManager.Formats.pkx
                         alert = GetNicknameAlert(AlertType.INVALID);
 
                     //flag
-                    if (pku.Nickname_Flag == null)
+                    if (pku.Nickname_Flag is null)
                         nicknameFlag = true;
 
                     if (!nicknameFlag)
@@ -1015,13 +1015,13 @@ namespace pkuManager.Formats.pkx
                     if (gen < 5) //Capitalize Gens 1-4
                         defaultName = defaultName.ToUpperInvariant();
 
-                    if (gen < 8 && dex == 83) //farfetch'd uses ’ in Gens 1-7
+                    if (gen < 8 && dex is 83) //farfetch'd uses ’ in Gens 1-7
                         defaultName = defaultName.Replace('\'', '’'); //Gen 8: verify this once pokeAPI updates
 
-                    (name, _, _) = EncodeString(defaultName, bigEndian, maxLength, bytesPerChar, encodeChar); //species names shouldn't be truncated/invalid...
+                    (name, _, _) = EncodeString(defaultName, maxLength, charset); //species names shouldn't be truncated/invalid...
 
                     //flag
-                    if (pku.Nickname_Flag == null)
+                    if (pku.Nickname_Flag is null)
                         nicknameFlag = false;
 
                     if (nicknameFlag)
@@ -1031,15 +1031,22 @@ namespace pkuManager.Formats.pkx
                 return (name, alert, nicknameFlag, flagAlert);
             }
 
-            public static (byte[], Alert) ProcessOT(pkuObject pku, bool bigEndian, int maxLength, int bytesPerChar = 2, Func<char, uint?> encodeChar = null)
+            //1-byte encoding override
+            public static (byte[] nickname, Alert nicknameAlert, bool nicknameFlag, Alert nicknameFlagAlert) ProcessNickname(pkuObject pku, int gen, Language checkedLang, int maxLength, Dictionary<byte, char> charset)
             {
-                byte[] otName;
+                var (a, b, c, d) = ProcessNickname(pku, gen, checkedLang, maxLength, UpCastCharset(charset));
+                return (Array.ConvertAll(a, s => (byte)s), b, c, d);
+            }
+
+            public static (ushort[], Alert) ProcessOT(pkuObject pku, int maxLength, Dictionary<ushort, char> charset)
+            {
+                ushort[] otName;
                 Alert alert = null;
 
-                if (pku.Game_Info?.OT != null) //OT specified
+                if (pku.Game_Info?.OT is not null) //OT specified
                 {
                     bool truncated, invalid;
-                    (otName, truncated, invalid) = EncodeString(pku.Game_Info.OT, bigEndian, maxLength, bytesPerChar, encodeChar);
+                    (otName, truncated, invalid) = EncodeString(pku.Game_Info.OT, maxLength, charset);
                     if (truncated && invalid)
                         alert = GetOTAlert(maxLength, AlertType.OVERFLOW, AlertType.INVALID);
                     else if (truncated)
@@ -1049,54 +1056,59 @@ namespace pkuManager.Formats.pkx
                 }
                 else //OT not specified
                 {
-                    (otName, _, _) = EncodeString(null, bigEndian, maxLength, bytesPerChar, encodeChar); //blank array
+                    (otName, _, _) = EncodeString(null, maxLength, charset); //blank array
                     alert = GetOTAlert(AlertType.UNSPECIFIED);
                 }
                 return (otName, alert);
             }
 
-            //helper method for process trash.
-            private static (byte[], bool) ProcessTrashSingle(byte[] encodedStr, byte[] trash, byte[] terminator)
+            //1-byte encoding override
+            public static (byte[], Alert) ProcessOT(pkuObject pku, int maxLength, Dictionary<byte, char> charset)
             {
-                //Add trash after terminator
-                bool tooMuchTrash = false;
-                if (trash != null) //trash specified
-                {
-                    int trashCounter = 0;
-                    bool foundTerminator = false;
-                    for (int i = 0; i < encodedStr.Length; i++)
-                    {
-                        //terminator HAS been found
-                        if (foundTerminator && trashCounter < trash.Length)
-                        {
-                            encodedStr[i] = trash[trashCounter];
-                            trashCounter++;
-                        }
-
-                        //Find the terminator
-                        if (!foundTerminator && i % terminator.Length == 0)
-                        {
-                            bool isMatch = true;
-                            for (int j = 0; j < terminator.Length; j++)
-                                isMatch = encodedStr[i + j] == terminator[j];
-                            if (isMatch)
-                            {
-                                foundTerminator = true;
-                                i += terminator.Length - 1; //skip ahead to end of terminator
-                            }
-                        }
-                    }
-                    tooMuchTrash = trashCounter < trash.Length;
-                }
-                return (encodedStr, tooMuchTrash);
+                var (a, b) = ProcessOT(pku, maxLength, UpCastCharset(charset));
+                return (Array.ConvertAll(a, s => (byte)s), b);
             }
 
-            public static (byte[] trashedName, byte[] trashedOT, Alert) ProcessTrash(byte[] encodedName, byte[] nameTrash, byte[] encodedOT, byte[] otTrash, byte[] terminator)
+            //helper method for process trash.
+            private static (ushort[], AlertType) ProcessTrashSingle(ushort[] encodedStr, ushort[] trash, Dictionary<ushort, char> charset, ushort maxVal)
             {
-                (byte[] newName, bool nameAlert) = ProcessTrashSingle(encodedName, nameTrash, terminator);
-                (byte[] newOT, bool otAlert) = ProcessTrashSingle(encodedOT, otTrash, terminator);
-                Alert alert = nameAlert || otAlert ? GetTrashAlert(AlertType.OVERFLOW, nameAlert, otAlert) : null;
-                return (newName, newOT, alert);
+                AlertType at = AlertType.NONE;
+                if (trash is null)
+                    return (encodedStr, at);
+                else if (trash.Any(x => x > maxVal))
+                    at = AlertType.OVERFLOW;
+                else if (trash.Length != encodedStr.Length)
+                    at = AlertType.MISMATCH;
+
+                if (at is not AlertType.NONE)
+                    return (encodedStr, at);
+
+                ushort[] trashedStr = trash.Clone() as ushort[];
+                ushort terminator = GetTerminator(charset);
+                for (int i = 0; i < encodedStr.Length; i++)
+                {
+                    trashedStr[i] = encodedStr[i];
+                    if (encodedStr[i] == terminator)
+                        break;
+                }
+                return (trashedStr, at);
+            }
+
+            public static (ushort[] trashedName, ushort[] trashedOT, Alert) ProcessTrash(ushort[] encodedName, ushort[] nameTrash, ushort[] encodedOT, ushort[] otTrash, Dictionary<ushort, char> charset, ushort maxVal = ushort.MaxValue)
+            {
+                (ushort[] trashedName, AlertType atName) = ProcessTrashSingle(encodedName, nameTrash, charset, maxVal);
+                (ushort[] trashedOT, AlertType atOT) = ProcessTrashSingle(encodedOT, otTrash, charset, maxVal);
+                Alert alert = (atName, atOT) is (AlertType.NONE, AlertType.NONE) ? null : GetTrashAlert(atName, atOT, encodedName.Length, encodedOT.Length, maxVal);
+                return (trashedName, trashedOT, alert);
+            }
+
+            //1-byte encoding override
+            public static (byte[] trashedName, byte[] trashedOT, Alert) ProcessTrash(byte[] encodedName, ushort[] nameTrash, byte[] encodedOT, ushort[] otTrash, Dictionary<byte, char> charset)
+            {
+                static ushort[] castUp(byte[] a) => Array.ConvertAll(a, x => (ushort)x);
+                static byte[] castDown(ushort[] a) => Array.ConvertAll(a, x => (byte)x);
+                var (a, b, c) = ProcessTrash(castUp(encodedName), nameTrash, castUp(encodedOT), otTrash, UpCastCharset(charset), byte.MaxValue);
+                return (castDown(a), castDown(b), c);
             }
 
 
