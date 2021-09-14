@@ -27,6 +27,7 @@ namespace pkuManager.pku
         public string True_OT { get; set; }
 
         [JsonProperty("Forms")]
+        [JsonConverter(typeof(OneLineArrayConverter))]
         public string[] Forms { get; set; }
 
         [JsonProperty("Appearance")]
@@ -96,6 +97,7 @@ namespace pkuManager.pku
         public string[] Ribbons { get; set; }
 
         [JsonProperty("Markings")]
+        [JsonConverter(typeof(OneLineArrayConverter))]
         public string[] Markings { get; set; }
 
         [JsonProperty("Pokérus")]
@@ -105,6 +107,7 @@ namespace pkuManager.pku
         public Shadow_Info_Class Shadow_Info { get; set; }
 
         [JsonProperty("Shiny Leaf")]
+        [JsonConverter(typeof(OneLineArrayConverter))]
         public string[] Shiny_Leaf { get; set; }
 
         [JsonProperty("Trash Bytes")]
@@ -116,9 +119,11 @@ namespace pkuManager.pku
         public class Trash_Bytes_Class : pkuDictionaryTag
         {
             [JsonProperty("Nickname")]
+            [JsonConverter(typeof(OneLineArrayConverter))]
             public ushort[] Nickname { get; set; }
 
             [JsonProperty("OT")]
+            [JsonConverter(typeof(OneLineArrayConverter))]
             public ushort[] OT { get; set; }
         }
 
@@ -527,6 +532,23 @@ namespace pkuManager.pku
                     object value = _targetProperty.GetValue(target);
                     return IsEmpty(value) ? null : value;
                 }
+            }
+        }
+
+        private class OneLineArrayConverter : JsonConverter
+        {
+            public override bool CanWrite => true;
+
+            public override bool CanRead => false;
+
+            public override bool CanConvert(Type objectType) => true;
+
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+                => throw new NotImplementedException();
+
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            {
+                writer.WriteRawValue(JsonConvert.SerializeObject(value, Formatting.None));
             }
         }
     }
