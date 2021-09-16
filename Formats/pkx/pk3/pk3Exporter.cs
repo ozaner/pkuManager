@@ -579,10 +579,10 @@ namespace pkuManager.Formats.pkx.pk3
             string msg = $"This {pkmn} was not met in a fateful encounter. " +
                 $"Note that, in the Gen 3 games, {pkmn} will only obey the player if it was met in a fateful encounter.";
 
-            (string, string)[] choices =
+            RadioButtonAlert.RBAChoice[] choices =
             {
-                ("Keep Fateful Encounter",$"Fateful Encounter: false\n{pkmn} won't obey."),
-                ("Set Fateful Encounter",$"Fateful Encounter: true\n{pkmn} will obey.")
+                new("Keep Fateful Encounter",$"Fateful Encounter: false\n{pkmn} won't obey."),
+                new("Set Fateful Encounter",$"Fateful Encounter: true\n{pkmn} will obey.")
             };
 
             return new RadioButtonAlert("Fateful Encounter", msg, choices);

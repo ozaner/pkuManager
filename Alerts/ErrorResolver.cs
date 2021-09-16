@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace pkuManager.Alerts
 {
@@ -15,40 +16,46 @@ namespace pkuManager.Alerts
         protected RadioButtonAlert rba;
 
         /// <summary>
-        /// The values of the different choices the <see cref="rba"/> contains.
+        /// Functions that return the values of the different choices the <see cref="rba"/> contains.
         /// </summary>
-        protected readonly T[] options;
+        protected readonly Func<T>[] Options;
 
         /// <summary>
         /// An action that can be used to set the chosen value.
         /// </summary>
-        protected Action<T> setter;
+        protected Action<T> Setter;
 
         /// <summary>
         /// Creates an ErrorResolver object.
         /// </summary>
         /// <param name="alert">The relevant alert.</param>
-        /// <param name="options">An array of values coresponding to the <paramref name="alert"/>.<br/>
+        /// <param name="options">An array of functions that return values coresponding to the <paramref name="alert"/>.<br/>
         ///                       Should only have one value if <paramref name="alert"/>
         ///                       is not a <see cref="RadioButtonAlert"/>.</param>
         /// <param name="setter">A function that sets a value to the desired property.</param>
-        public ErrorResolver(Alert alert, T[] options, Action<T> setter)
+        public ErrorResolver(Alert alert, Func<T>[] options, Action<T> setter)
         {
-            this.options = options;
-            this.setter = setter;
+            Options = options;
+            Setter = setter;
 
-            if (alert is RadioButtonAlert) //A RadioButtonAlert, add to errors and initalize decision variables.
+            if (alert is RadioButtonAlert) //A RadioButtonAlert, initalize decision variables.
             {
                 rba = alert as RadioButtonAlert;
-                if (rba.choices.Length != options.Length)
+                if (rba.Choices.Length != options.Length)
                     throw new ArgumentException("Number of RadioButtonAlert choices should equal number of option values.", nameof(options));
             }
-            else //Not a RadioButtonAlert, add to warnings.
+            else //Not a RadioButtonAlert.
             {
                 if (options.Length is not 1)
                     throw new ArgumentException("Can only have 1 option for non-error Alerts.");
             }
         }
+
+        /// <param name="options">An array of values coresponding to the <paramref name="alert"/>.<br/>
+        ///                       Should only have one value if <paramref name="alert"/>
+        ///                       is not a <see cref="RadioButtonAlert"/>.</param>
+        /// <inheritdoc cref="ErrorResolver(Alert, Func{T}[], Action{T})"/>
+        public ErrorResolver(Alert alert, T[] options, Action<T> setter) : this(alert, options.Select<T, Func<T>>(x => () => x).ToArray(), setter) { }
 
         /// <summary>
         /// Finalizes and sets the value corresponding to the chosen option.
@@ -56,9 +63,9 @@ namespace pkuManager.Alerts
         public void DecideValue()
         {
             if (rba is not null)
-                setter(options[rba.getSelectedIndex()]); //get the option corresponding to the currently selected alert choice.
+                Setter(Options[rba.SelectedIndex].Invoke()); //get the option corresponding to the currently selected alert choice.
             else
-                setter(options[0]); //Not an error so only one option.
+                Setter(Options[0].Invoke()); //Not an error so only one option.
         }
     }
 }

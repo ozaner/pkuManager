@@ -412,7 +412,6 @@ namespace pkuManager.Formats.pkx
                     throw new ArgumentException("if getPIDAlert recieves a MISMATCH alert, it must also recieve the tags parameter.");
                 else if (at == AlertType.MISMATCH)
                 {
-                    (string, string)[] choices = new (string, string)[2];
                     string choice1msg = "";
                     string choice2msg = "";
                     foreach ((string name, object a, object b) in tags)
@@ -422,8 +421,11 @@ namespace pkuManager.Formats.pkx
                     }
                     choice1msg = choice1msg.Substring(0, choice1msg.Length - 1);
                     choice2msg = choice2msg.Substring(0, choice2msg.Length - 1);
-                    choices[0] = ("Use original PID", choice1msg);
-                    choices[1] = ("Generate new PID", choice2msg);
+                    RadioButtonAlert.RBAChoice[] choices =
+                    {
+                        new("Use original PID", choice1msg),
+                        new("Generate new PID", choice2msg)
+                    };
 
                     return new RadioButtonAlert("PID-Mismatch", "This pku's PID is incompatible with some of its other " +
                         "tags (in this format). Choose whether to keep the PID or generate a compatible one.", choices);
@@ -523,23 +525,23 @@ namespace pkuManager.Formats.pkx
                         throw new Exception("If the MISMATCH AlertType is given to getLevelExpAlert, then mismatchData must be given.");
 
                     // Deal with phrasing the level option
-                    (string, string)[] choices = new (string, string)[2];
+                    RadioButtonAlert.RBAChoice[] choices = new RadioButtonAlert.RBAChoice[2];
                     if (mismatchData.Value.atLevel == AlertType.OVERFLOW)
-                        choices[0] = ("Use Level Tag", $"Set to level 100, i.e. {mismatchData.Value.level100Exp} experience (rounded down because level tag was too high).");
+                        choices[0] = new("Use Level Tag", $"Set to level 100, i.e. {mismatchData.Value.level100Exp} experience (rounded down because level tag was too high).");
                     else if (mismatchData.Value.atLevel == AlertType.UNDERFLOW)
-                        choices[0] = ("Use Level Tag", $"Set to level 1, i.e. 0 experience (rounded up because level tag was too low).");
+                        choices[0] = new("Use Level Tag", $"Set to level 1, i.e. 0 experience (rounded up because level tag was too low).");
                     else if (mismatchData.Value.atLevel == AlertType.NONE)
-                        choices[0] = ("Use Level Tag", $"Set to level {mismatchData.Value.level}, i.e. {mismatchData.Value.levelToExp} exp.");
+                        choices[0] = new("Use Level Tag", $"Set to level {mismatchData.Value.level}, i.e. {mismatchData.Value.levelToExp} exp.");
                     else
                         throw new Exception("No valid AlertTypes were given to the LEVEL part of getLevelExpAlert's MISMATCH alert");
 
                     // Deal with phrasing the exp option
                     if (mismatchData.Value.atEXP == AlertType.OVERFLOW)
-                        choices[1] = ("Use Experience Tag", $"Set experience to {mismatchData.Value.level100Exp} experience, i.e. level 100 (rounded down because experience tag was too high).");
+                        choices[1] = new("Use Experience Tag", $"Set experience to {mismatchData.Value.level100Exp} experience, i.e. level 100 (rounded down because experience tag was too high).");
                     else if (mismatchData.Value.atEXP == AlertType.UNDERFLOW)
-                        choices[1] = ("Use Experience Tag", $"Set experience to 0, i.e. level 1 (rounded up because level tag was too low).");
+                        choices[1] = new("Use Experience Tag", $"Set experience to 0, i.e. level 1 (rounded up because level tag was too low).");
                     else if (mismatchData.Value.atEXP == AlertType.NONE)
-                        choices[1] = ("Use Experience Tag", $"Set experience to {mismatchData.Value.exp}, i.e. level {mismatchData.Value.expToLevel}.");
+                        choices[1] = new("Use Experience Tag", $"Set experience to {mismatchData.Value.exp}, i.e. level {mismatchData.Value.expToLevel}.");
                     else
                         throw new Exception("No valid AlertTypes were given to the EXP part of getLevelExpAlert's MISMATCH alert");
 

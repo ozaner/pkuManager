@@ -3,51 +3,69 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using static pkuManager.Alerts.RadioButtonAlert;
 
 namespace pkuManager.GUI
 {
     public class RadioAlertBox : AlertBox
     {
         // A dictionary of all the radio buttons created for each choice.
-        protected List<RadioButton> radioButtons = new List<RadioButton>();
+        protected List<RadioButton> radioButtons = new();
 
         // Creates an AlertBox with n RadioButtons for getting xor input form the user. Should be used for error boxes.
         public RadioAlertBox(RadioButtonAlert alert) : base(alert)
         {
+            // define positional variables
             int xOffset = messageTextbox.Location.X;
             int yOffset = messageTextbox.Location.Y + messageTextbox.Size.Height;
-            for (int i = 0; i < alert.choices.Length; i++)
+
+            // add each choice
+            foreach (RBAChoice rbac in alert.Choices)
             {
-                RadioButton rb = new RadioButton();
-                rb.Text = alert.choices[i].Item1;
-                rb.Font = new Font(rb.Font, FontStyle.Underline);
-                RichTextBox tb = newRichTextBox(alert.choices[i].Item2, 135);
-
-                rb.AutoSize = true;
-                //rb.Padding = new Padding(0, 0, 0, 0);
-
-                rb.Location = new Point(xOffset, yOffset);
+                // create radio button + title
+                RadioButton rb = new()
+                {
+                    Text = rbac.Title,
+                    Font = new(Font, FontStyle.Underline),
+                    AutoSize = true,
+                    Location = new(xOffset, yOffset)
+                };
                 yOffset += rb.Size.Height - 7;
-                tb.Location = new Point(xOffset + 20, yOffset);
-                yOffset += tb.Size.Height;
-
+                Controls.Add(rb);
                 radioButtons.Add(rb);
 
-                rb.CheckedChanged += (control, e) =>
-                {
-                    alert.setSelectedIndex(whichChoice());
-                };
+                //update underlying rba alert whenever selection changed.
+                rb.CheckedChanged += (control, e) => alert.SelectedIndex = WhichChoice(); 
 
-                Controls.Add(rb);
-                Controls.Add(tb);
+                // add message if it exists
+                if (rbac.Message is not null)
+                {
+                    RichTextBox tb = newRichTextBox(rbac.Message, 135);
+                    tb.Location = new(xOffset + 20, yOffset);
+                    yOffset += tb.Size.Height;
+                    Controls.Add(tb);
+                }
+
+                // add text entry box if it has one
+                if (rbac.HasTextEntry)
+                {
+                    TextBox eb = new();
+                    int extraY = rbac.Message is null ? 5 : 0;
+                    eb.Location = new(xOffset + 20, yOffset + extraY);
+                    yOffset += eb.Size.Height + extraY;
+                    Controls.Add(eb);
+
+                    //update underlying rba choice whenever text entry changed.
+                    eb.TextChanged += (s, e) => rbac.TextEntry = eb.Text?.Length is 0 ? null : eb.Text;
+                }
             }
 
-            // Check the first option so at leat one option is alwys checked.
-            radioButtons[alert.getSelectedIndex()].Checked = true;
+            //check the default option
+            radioButtons[alert.SelectedIndex].Checked = true;
         }
 
         // Returns which choice is currently selected.
-        private int whichChoice()
+        protected int WhichChoice()
         {
             int index = radioButtons.TakeWhile(r => !r.Checked).Count();
             return index;

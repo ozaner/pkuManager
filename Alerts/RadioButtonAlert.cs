@@ -2,47 +2,62 @@
 
 namespace pkuManager.Alerts
 {
+    /// <summary>
+    /// An <see cref="Alert"/> with a set of exclusive options that the user must choose form to resolve it.
+    /// </summary>
     public class RadioButtonAlert : Alert
     {
-        private int selectedIndex;
-        public (string, string)[] choices { get; set; }
+        /// <summary>
+        /// All the different choices associated with this alert.
+        /// </summary>
+        public RBAChoice[] Choices { get; }
 
         /// <summary>
-        /// Constructor for a RadioButtonAlert.
+        /// The index of the currently selected choice in <see cref="Choices"/>.
         /// </summary>
-        /// <param name="title">Title of the alert</param>
-        /// <param name="message">Body of the alert</param>
-        /// <param name="choices">An array of string doubles. The first index represent the option name, the second is the option description.</param>
-        /// <param name="initialChoice">The index of the choice that is set initially. By default it is the first (i.e. 0).</param>
-        public RadioButtonAlert(string title, string message, (string, string)[] choices, int initialChoice = 0) : base(title, message)
+        public int SelectedIndex { get; set; }
+
+        /// <summary>
+        /// Constructs an <see cref="RadioButtonAlert"/> object.
+        /// </summary>
+        /// <param name="choices">An array of choices defining this alert. Must have at least one entry.</param>
+        /// <param name="initialChoice">The index of the choice that is set initially. 0 by default.</param>
+        /// <inheritdoc cref="Alert(string, string)"/>
+        public RadioButtonAlert(string title, string message, RBAChoice[] choices, int initialChoice = 0) : base(title, message)
         {
             // Check if there is at least 1 choice
-            if (choices == null || choices.Length == 0)
-                throw new Exception("RadioButtonAlerts must have at least 1 choice (preferably 2).");
+            if (choices?.Length is not > 0)
+                throw new ArgumentException($"{nameof(choices)} must have at least 1 entry.", nameof(choices));
 
-            this.choices = choices;
-            setSelectedIndex(initialChoice);
+            Choices = choices;
+            SelectedIndex = initialChoice;
         }
 
         /// <summary>
-        /// Returns the index of the currently selected choice.
+        /// The data defining a single choice in a <see cref="RadioButtonAlert"/>.
         /// </summary>
-        /// <returns></returns>
-        public int getSelectedIndex()
+        public class RBAChoice : Alert
         {
-            return selectedIndex;
-        }
+            /// <summary>
+            /// Whether or not this choice has a text entry box associated with it.
+            /// </summary>
+            public bool HasTextEntry { get; }
 
-        /// <summary>
-        /// Select the <i>index</i>-th choice.
-        /// </summary>
-        /// <param name="index">The index of the choice to select</param>
-        public void setSelectedIndex(int index)
-        {
-            if (index > choices.Length || index < 0)
-                throw new Exception("This RadioButtonAlert only has " + choices.Length + " choices. Choice " + index + " is not valid.");
+            /// <summary>
+            /// The contents of the text entry box. Should be updated by the containing <see cref="GUI.RadioAlertBox"/>.<br/>
+            /// <see langword="null"/> if <see cref="HasTextEntry"/> is <see langword="false"/>.
+            /// </summary>
+            public string TextEntry { get; set; }
 
-            selectedIndex = index;
+            /// <summary>
+            /// Constructs an <see cref="RBAChoice"/> object.
+            /// </summary>
+            /// <param name="hasTextEntry">Whether this choice should have text entry associated with it.</param>
+            /// <inheritdoc cref="Alert(string, string)"/>
+            public RBAChoice(string title, string message, bool hasTextEntry = false) : base(title, message)
+            {
+                HasTextEntry = hasTextEntry;
+            }
         }
     }
 }
