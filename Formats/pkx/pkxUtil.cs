@@ -976,55 +976,10 @@ namespace pkuManager.Formats.pkx
             // String Processing Methods
             // ----------
 
-            private static ushort GetTerminator(Dictionary<ushort, char> charset)
+            public static (T[] nickname, Alert nicknameAlert, bool nicknameFlag, Alert nicknameFlagAlert)
+                ProcessNickname<T>(pkuObject pku, int gen, int maxLength, CharacterEncoding<T> charEnc, Language? checkedLang = null) where T : struct
             {
-                return charset.FirstOrDefault(x => x.Value == '\0').Key;
-            }
-
-            private static Dictionary<ushort, char> UpCastCharset(Dictionary<byte, char> charset)
-            {
-                return charset.ToDictionary(kvp => (ushort)kvp.Key, kvp => kvp.Value);
-            }
-
-            //Helper method for processnickname and processOT
-            //this just encodes strings and adds a terminator, it doesn't deal with trash.
-            private static (ushort[] encodedString, bool truncated, bool hasInvalidChars) EncodeString(string str, int maxLength, Dictionary<ushort, char> charset)
-            {
-                bool truncated = false, hasInvalidChars = false;
-                ushort[] encodedStr = new ushort[maxLength];
-
-                //Encode string
-                int successfulChars = 0;
-                while (str?.Length > 0 && successfulChars < maxLength)
-                {
-                    ushort? encodedChar = charset?.FirstOrDefault(x => x.Value == str[0]).Key; //get next character
-                    str = str[1..]; //chop off current character
-
-                    //if character invalid
-                    if (encodedChar is null)
-                    {
-                        hasInvalidChars = true;
-                        continue;
-                    }
-
-                    //else character not invalid
-                    encodedStr[successfulChars] = encodedChar.Value;
-                    successfulChars++;
-
-                    //stop encoding when limit reached
-                    if (successfulChars >= maxLength)
-                        break;
-                }
-
-                //Deal with terminator
-                if (successfulChars < maxLength)
-                    encodedStr[successfulChars] = GetTerminator(charset);
-                return (encodedStr, truncated, hasInvalidChars);
-            }
-
-            public static (ushort[] nickname, Alert nicknameAlert, bool nicknameFlag, Alert nicknameFlagAlert) ProcessNickname(pkuObject pku, int gen, Language checkedLang, int maxLength, Dictionary<ushort, char> charset)
-            {
-                ushort[] name;
+                T[] name;
                 bool nicknameFlag = pku.Nickname_Flag is true;
                 Alert alert = null;
                 Alert flagAlert = null;
@@ -1034,7 +989,7 @@ namespace pkuManager.Formats.pkx
                 {
                     //name
                     bool truncated, invalid;
-                    (name, truncated, invalid) = EncodeString(pku.Nickname, maxLength, charset);
+                    (name, truncated, invalid) = charEnc.Encode(pku.Nickname, maxLength, checkedLang);
                     if (truncated && invalid)
                         alert = GetNicknameAlert(AlertType.OVERFLOW, maxLength, AlertType.INVALID);
                     else if (truncated)
@@ -1052,7 +1007,7 @@ namespace pkuManager.Formats.pkx
                 else //unspecified, get default name for given language
                 {
                     //name
-                    string defaultName = PokeAPIUtil.GetSpeciesNameTranslated(dex, checkedLang);
+                    string defaultName = PokeAPIUtil.GetSpeciesNameTranslated(dex, checkedLang.Value);
 
                     if (gen < 5) //Capitalize Gens 1-4
                         defaultName = defaultName.ToUpperInvariant();
@@ -1060,7 +1015,7 @@ namespace pkuManager.Formats.pkx
                     if (gen < 8 && dex is 83) //farfetch'd uses ’ in Gens 1-7
                         defaultName = defaultName.Replace('\'', '’'); //Gen 8: verify this once pokeAPI updates
 
-                    (name, _, _) = EncodeString(defaultName, maxLength, charset); //species names shouldn't be truncated/invalid...
+                    (name, _, _) = charEnc.Encode(defaultName, maxLength, checkedLang); //species names shouldn't be truncated/invalid...
 
                     //flag
                     if (pku.Nickname_Flag is null)
@@ -1073,22 +1028,16 @@ namespace pkuManager.Formats.pkx
                 return (name, alert, nicknameFlag, flagAlert);
             }
 
-            //1-byte encoding override
-            public static (byte[] nickname, Alert nicknameAlert, bool nicknameFlag, Alert nicknameFlagAlert) ProcessNickname(pkuObject pku, int gen, Language checkedLang, int maxLength, Dictionary<byte, char> charset)
+            public static (T[], Alert)
+                ProcessOT<T>(pkuObject pku, int maxLength, CharacterEncoding<T> charEnc, Language? checkedLang = null) where T : struct
             {
-                var (a, b, c, d) = ProcessNickname(pku, gen, checkedLang, maxLength, UpCastCharset(charset));
-                return (Array.ConvertAll(a, s => (byte)s), b, c, d);
-            }
-
-            public static (ushort[], Alert) ProcessOT(pkuObject pku, int maxLength, Dictionary<ushort, char> charset)
-            {
-                ushort[] otName;
+                T[] otName;
                 Alert alert = null;
 
                 if (pku.Game_Info?.OT is not null) //OT specified
                 {
                     bool truncated, invalid;
-                    (otName, truncated, invalid) = EncodeString(pku.Game_Info.OT, maxLength, charset);
+                    (otName, truncated, invalid) = charEnc.Encode(pku.Game_Info.OT, maxLength, checkedLang);
                     if (truncated && invalid)
                         alert = GetOTAlert(maxLength, AlertType.OVERFLOW, AlertType.INVALID);
                     else if (truncated)
@@ -1098,59 +1047,36 @@ namespace pkuManager.Formats.pkx
                 }
                 else //OT not specified
                 {
-                    (otName, _, _) = EncodeString(null, maxLength, charset); //blank array
+                    (otName, _, _) = charEnc.Encode(null, maxLength, checkedLang); //blank array
                     alert = GetOTAlert(AlertType.UNSPECIFIED);
                 }
                 return (otName, alert);
             }
 
-            //1-byte encoding override
-            public static (byte[], Alert) ProcessOT(pkuObject pku, int maxLength, Dictionary<byte, char> charset)
+            public static (T[] trashedName, T[] trashedOT, Alert)
+                ProcessTrash<T>(T[] encodedName, ushort[] nameTrash, T[] encodedOT, ushort[] otTrash, CharacterEncoding<T> charEnc) where T : struct
             {
-                var (a, b) = ProcessOT(pku, maxLength, UpCastCharset(charset));
-                return (Array.ConvertAll(a, s => (byte)s), b);
-            }
-
-            //helper method for process trash.
-            private static (ushort[], AlertType) ProcessTrashSingle(ushort[] encodedStr, ushort[] trash, Dictionary<ushort, char> charset, ushort maxVal)
-            {
-                AlertType at = AlertType.NONE;
-                if (trash is null)
-                    return (encodedStr, at);
-                else if (trash.Any(x => x > maxVal))
-                    at = AlertType.OVERFLOW;
-                else if (trash.Length != encodedStr.Length)
-                    at = AlertType.MISMATCH;
-
-                if (at is not AlertType.NONE)
-                    return (encodedStr, at);
-
-                ushort[] trashedStr = trash.Clone() as ushort[];
-                ushort terminator = GetTerminator(charset);
-                for (int i = 0; i < encodedStr.Length; i++)
+                (T[], AlertType) helper(T[] encodedStr, ushort[] trash)
                 {
-                    trashedStr[i] = encodedStr[i];
-                    if (encodedStr[i] == terminator)
-                        break;
+                    AlertType at = AlertType.NONE;
+                    if (trash is null)
+                        return (encodedStr, at);
+                    else if (trash.Any(x => x > charEnc.MaxValue))
+                        at = AlertType.OVERFLOW;
+                    else if (trash.Length != encodedStr.Length)
+                        at = AlertType.MISMATCH;
+
+                    if (at is not AlertType.NONE)
+                        return (encodedStr, at);
+
+                    //T is definitely byte, ushort, or byte at this point.
+                    return (charEnc.Trash(encodedStr, trash), at);
                 }
-                return (trashedStr, at);
-            }
 
-            public static (ushort[] trashedName, ushort[] trashedOT, Alert) ProcessTrash(ushort[] encodedName, ushort[] nameTrash, ushort[] encodedOT, ushort[] otTrash, Dictionary<ushort, char> charset, ushort maxVal = ushort.MaxValue)
-            {
-                (ushort[] trashedName, AlertType atName) = ProcessTrashSingle(encodedName, nameTrash, charset, maxVal);
-                (ushort[] trashedOT, AlertType atOT) = ProcessTrashSingle(encodedOT, otTrash, charset, maxVal);
-                Alert alert = (atName, atOT) is (AlertType.NONE, AlertType.NONE) ? null : GetTrashAlert(atName, atOT, encodedName.Length, encodedOT.Length, maxVal);
+                (T[] trashedName, AlertType atName) = helper(encodedName, nameTrash);
+                (T[] trashedOT, AlertType atOT) = helper(encodedOT, otTrash);
+                Alert alert = (atName, atOT) is (AlertType.NONE, AlertType.NONE) ? null : GetTrashAlert(atName, atOT, encodedName.Length, encodedOT.Length, charEnc.MaxValue);
                 return (trashedName, trashedOT, alert);
-            }
-
-            //1-byte encoding override
-            public static (byte[] trashedName, byte[] trashedOT, Alert) ProcessTrash(byte[] encodedName, ushort[] nameTrash, byte[] encodedOT, ushort[] otTrash, Dictionary<byte, char> charset)
-            {
-                static ushort[] castUp(byte[] a) => Array.ConvertAll(a, x => (ushort)x);
-                static byte[] castDown(ushort[] a) => Array.ConvertAll(a, x => (byte)x);
-                var (a, b, c) = ProcessTrash(castUp(encodedName), nameTrash, castUp(encodedOT), otTrash, UpCastCharset(charset), byte.MaxValue);
-                return (castDown(a), castDown(b), c);
             }
 
 

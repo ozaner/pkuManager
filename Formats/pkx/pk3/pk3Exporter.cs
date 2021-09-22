@@ -198,7 +198,7 @@ namespace pkuManager.Formats.pkx.pk3
         {
             Alert alert;
             Language checkedLang = pk3Object.DecodeLanguage(pk3.Language).Value;
-            (pk3.Nickname, alert, _, _) = pkxUtil.ProcessTags.ProcessNickname(pku, 3, checkedLang, pk3Object.MAX_NICKNAME_CHARS, pk3Object.CHARSETS[checkedLang]);
+            (pk3.Nickname, alert, _, _) = pkxUtil.ProcessTags.ProcessNickname(pku, 3, pk3Object.MAX_NICKNAME_CHARS, pk3Object.CHARACTER_ENCODING, checkedLang);
             Warnings.Add(alert);
         }
 
@@ -208,7 +208,7 @@ namespace pkuManager.Formats.pkx.pk3
         {
             Alert alert;
             Language checkedLang = pk3Object.DecodeLanguage(pk3.Language).Value;
-            (pk3.OT, alert) = pkxUtil.ProcessTags.ProcessOT(pku, pk3Object.MAX_OT_CHARS, pk3Object.CHARSETS[checkedLang]);
+            (pk3.OT, alert) = pkxUtil.ProcessTags.ProcessOT(pku, pk3Object.MAX_OT_CHARS, pk3Object.CHARACTER_ENCODING, checkedLang);
             Warnings.Add(alert);
         }
 
@@ -222,8 +222,7 @@ namespace pkuManager.Formats.pkx.pk3
                 ushort[] nicknameTrash = tb?.Nickname?.Length > 0 ? tb.Nickname : null;
                 ushort[] otTrash = tb?.OT?.Length > 0 ? tb.OT : null;
                 Alert alert;
-                Language checkedLang = pk3Object.DecodeLanguage(pk3.Language).Value;
-                (pk3.Nickname, pk3.OT, alert) = pkxUtil.ProcessTags.ProcessTrash(pk3.Nickname, nicknameTrash, pk3.OT, otTrash, pk3Object.CHARSETS[checkedLang]);
+                (pk3.Nickname, pk3.OT, alert) = pkxUtil.ProcessTags.ProcessTrash(pk3.Nickname, nicknameTrash, pk3.OT, otTrash, pk3Object.CHARACTER_ENCODING);
                 Warnings.Add(alert);
             }
         }

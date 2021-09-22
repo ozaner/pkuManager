@@ -321,19 +321,18 @@ namespace pkuManager.Formats.pkx.pk3
             (JObject)PK3_CHARACTER_ENCODING_DATA["French"]
         }).ToObject<Dictionary<byte, char>>();
         protected static readonly Dictionary<byte, char> JAPANESE_CHARSET = PK3_CHARACTER_ENCODING_DATA["Japanese"].ToObject<Dictionary<byte, char>>();
-        
+
         /// <summary>
-        /// A map of valid pk3 languages to their respective character encodings.
+        /// The language dependent, 1-byte character encoding used by .pk3.
         /// </summary>
-        internal static readonly Dictionary<Language, Dictionary<byte, char>> CHARSETS = new()
-        {
-            { Common.Language.Japanese, JAPANESE_CHARSET },
-            { Common.Language.German, GERMAN_CHARSET },
-            { Common.Language.French, FRENCH_CHARSET },
-            { Common.Language.English, INTERNATIONAL_CHARSET },
-            { Common.Language.Italian, INTERNATIONAL_CHARSET },
-            { Common.Language.Spanish, INTERNATIONAL_CHARSET }
-        };
+        internal static readonly CharacterEncoding<byte> CHARACTER_ENCODING = new(0xFF,
+            (Common.Language.Japanese, JAPANESE_CHARSET),
+            (Common.Language.German, GERMAN_CHARSET),
+            (Common.Language.French, FRENCH_CHARSET),
+            (Common.Language.English, INTERNATIONAL_CHARSET),
+            (Common.Language.Italian, INTERNATIONAL_CHARSET),
+            (Common.Language.Spanish, INTERNATIONAL_CHARSET)
+        );
 
         /// <summary>
         /// The maximum number of characters in a .pk3 nickname.<br/>
