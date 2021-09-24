@@ -26,6 +26,18 @@ namespace pkuManager.Formats.pkx
 
         public static readonly int LAST_MOVE_INDEX_GEN8 = 826;
 
+        public static readonly Dictionary<Language, string> EGG_STRING = new()
+        {
+            { Language.Japanese, "タマゴ" },
+            { Language.English, "Egg" },
+            { Language.French, "Œuf" },
+            { Language.Italian, "Uovo" },
+            { Language.German, "Ei" },
+            { Language.Spanish, "Huevo" },
+            { Language.Korean, "알" },
+            { Language.Chinese_Simplified, "蛋" },
+            { Language.Chinese_Traditional, "蛋" },
+        };
 
         // ----------
         // Helper Methods
@@ -1120,7 +1132,7 @@ namespace pkuManager.Formats.pkx
                 return (id ?? 0, game, alert); //default gameID is None (0)
             }
 
-            public static (Language, Alert) ProcessLanguage(pkuObject pku, Language[] validLanguages)
+            public static (Language, Alert) ProcessLanguage(pkuObject pku, List<Language> validLanguages)
             {
                 return ProcessEnumTag(pku.Game_Info?.Language, pku.Game_Info?.Language.ToEnum<Language>(), GetLanguageAlert, false, DEFAULT_LANGUAGE, (x) =>
                 {

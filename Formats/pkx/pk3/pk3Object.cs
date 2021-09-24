@@ -86,7 +86,8 @@ namespace pkuManager.Formats.pkx.pk3
         public uint PID { get => NonSubData.GetUInt(0); set => NonSubData.SetUInt(value, 0); }
         public uint ID { get => NonSubData.GetUInt(4); set => NonSubData.SetUInt(value, 4); }
         public byte[] Nickname { get => NonSubData.GetBytes(8, 10); set => NonSubData.SetBytes(value, 8, 10); }
-        public ushort Language { get => NonSubData.GetUShort(18); set => NonSubData.SetUShort(value, 18); }
+        public byte Language { get => NonSubData.GetByte(18); set => NonSubData.SetByte(value, 18); }
+        public byte Egg_Name_Override { get => NonSubData.GetByte(19); set => NonSubData.SetByte(value, 19); }
         public byte[] OT { get => NonSubData.GetBytes(20, 7); set => NonSubData.SetBytes(value, 20, 7); }
 
         public bool MarkingCircle { get => NonSubData.GetBool(27, 0); set => NonSubData.SetBool(value, 27, 0); }
@@ -170,7 +171,7 @@ namespace pkuManager.Formats.pkx.pk3
         public byte IV_Sp_Attack { get => (byte)M.GetUIntBits(4, 20, 5); set => M.SetUIntBits(value, 4, 20, 5); }
         public byte IV_Sp_Defense { get => (byte)M.GetUIntBits(4, 25, 5); set => M.SetUIntBits(value, 4, 25, 5); }
 
-        public bool Egg { get => M.GetBool(7, 6); set => M.SetBool(value, 7, 6); }
+        public bool Is_Egg { get => M.GetBool(7, 6); set => M.SetBool(value, 7, 6); }
         public bool Ability_Slot { get => M.GetBool(7, 7); set => M.SetBool(value, 7, 7); }
 
         public byte Cool_Ribbon_Rank { get => (byte)M.GetUIntBits(8, 0, 3); set => M.SetUIntBits(value, 8, 0, 3); }
@@ -257,57 +258,24 @@ namespace pkuManager.Formats.pkx.pk3
             return (G, A, E, M);
         }
 
-        /* ------------------------------------
-         * Language Encoding
-         * ------------------------------------
-        */
-        /// <summary>
-        /// The 2-byte code that all eggs should have in their <see cref="Language"/> field prior to hatching.
-        /// </summary>
-        public const ushort EGG_LANGUAGE_ID = 0x0601;
-
-        /// <summary>
-        /// A table of gen 3 language codes, and which <see cref="Common.Language"/> enum they correspond to.
-        /// </summary>
-        public static readonly Dictionary<ushort, Language> LANGUAGE_ENCODING = new()
-        {
-            { 0x0201, Common.Language.Japanese },
-            { 0x0202, Common.Language.English },
-            { 0x0203, Common.Language.French },
-            { 0x0204, Common.Language.Italian },
-            { 0x0205, Common.Language.German },
-            //{ 0x0206, Common.Language.Korean }, //While this number was reserved for Korean, never saw usage in Gen 3.
-            { 0x0207, Common.Language.Spanish }
-        };
-
-        /// <summary>
-        /// Converts a 2-byte gen 3 language code to a <see cref="Common.Language"/> enum.
-        /// </summary>
-        /// <param name="langCode">A 2-byte gen 3 language code.</param>
-        /// <returns>The language corresponding to <paramref name="langCode"/>. Null if there is no match.</returns>
-        public static Language? DecodeLanguage(ushort langCode)
-        {
-            if (LANGUAGE_ENCODING.ContainsKey(langCode))
-                return LANGUAGE_ENCODING?[langCode];
-
-            return null; //eggs don't have a language
-        }
-
-        /// <summary>
-        /// Converts a <see cref="Common.Language"/> enum to its corresponding gen 3 language code.
-        /// </summary>
-        /// <param name="language">A language used in gen 3. An exception is thrown if this is invalid.</param>
-        /// <returns>A 2-byte gen 3 language code.</returns>
-        public static ushort EncodeLanguage(Language language)
-        {
-            return LANGUAGE_ENCODING.First(x => x.Value == language).Key;
-        }
-
 
         /* ------------------------------------
          * Character Encoding
          * ------------------------------------
         */
+        /// <summary>
+        /// A list of all languages supported in Gen 3.
+        /// </summary>
+        public static readonly List<Language> VALID_LANGUAGES = new()
+        {
+            Common.Language.Japanese,
+            Common.Language.English,
+            Common.Language.French,
+            Common.Language.Italian,
+            Common.Language.German,
+            Common.Language.Spanish
+        };
+
         protected static readonly JObject PK3_CHARACTER_ENCODING_DATA = DataUtil.GetJson("pk3CharEncoding");
         protected static readonly Dictionary<byte, char> INTERNATIONAL_CHARSET = PK3_CHARACTER_ENCODING_DATA["International"].ToObject<Dictionary<byte, char>>();
         protected static readonly Dictionary<byte, char> GERMAN_CHARSET = DataUtil.GetCombinedJson(new JObject[]
@@ -504,6 +472,12 @@ namespace pkuManager.Formats.pkx.pk3
         /// The national dex # of the last Gen 3 species (i.e. Deoxys).
         /// </summary>
         public const int LAST_DEX_NUM = 386;
+
+        /// <summary>
+        /// When <see cref="Egg_Name_Override"/> is set to this value, the pk3 nickname will<br/>
+        /// be overriden by the <see cref="pkxUtil.EGG_STRING"/> of the game's language.
+        /// </summary>
+        public const byte EGG_NAME_OVERRIDE_CONST = 0x06;
 
         /// <summary>
         /// Calculates the PP of the given move with the given number of PP Ups.

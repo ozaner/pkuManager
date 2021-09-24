@@ -4,7 +4,6 @@ using pkuManager.pku;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
@@ -54,6 +53,8 @@ namespace pkuManager.Formats.pkx.pk3
         protected Nature? nature;
         protected int? unownForm;
         protected string checkedGameName;
+        protected Language checkedLang;
+        protected bool legalGen3Egg;
 
 
         /* ------------------------------------
@@ -176,40 +177,82 @@ namespace pkuManager.Formats.pkx.pk3
                 Warnings.Add(alert);
         }
 
-        // Egg
+        // Origin Game
         [PorterDirective(ProcessingPhase.FirstPass)]
-        protected virtual void ProcessEgg()
+        protected virtual void ProcessOriginGame()
         {
-            pk3.Egg = pku.IsEgg();
+            Alert alert;
+            (pk3.Origin_Game, checkedGameName, alert) = ((byte, string, Alert))pkxUtil.ProcessTags.ProcessOriginGame(pku, 3);
+            Warnings.Add(alert);
         }
 
-        // Language [Requires: Egg]
+        // Met Location [Requires: Origin Game]
+        [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessOriginGame))]
+        protected virtual void ProcessMetLocation()
+        {
+            Alert alert;
+            (pk3.Met_Location, alert) = ((byte, Alert))pkxUtil.ProcessTags.ProcessMetLocation(pku, checkedGameName, (g, l) => pk3Object.EncodeMetLocation(g, l), pk3Object.GetDefaultLocationName(checkedGameName));
+            Warnings.Add(alert);
+        }
+
+        // Egg [Requires: Origin Game]
+        [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessOriginGame))]
+        protected virtual void ProcessEgg()
+        {
+            pk3.Is_Egg = pku.IsEgg();
+
+            //Deal with "Legal Gen 3 eggs"
+            if (pku.IsEgg() && pk3.Origin_Game != 0)
+            {
+                Language? lang = DataUtil.ToEnum<Language>(pku.Game_Info?.Language);
+                if (lang is not null && pkxUtil.EGG_STRING[lang.Value] == pku.Nickname)
+                {
+                    pk3.Egg_Name_Override = pk3Object.EGG_NAME_OVERRIDE_CONST; //override nickname to be 'egg'
+                    checkedLang = Language.Japanese;
+                    pk3.Nickname = pk3Object.CHARACTER_ENCODING
+                                    .Encode(pkxUtil.EGG_STRING[checkedLang], pk3Object.MAX_NICKNAME_CHARS, checkedLang).encodedStr;
+                    pk3.OT = pk3Object.CHARACTER_ENCODING
+                                .Encode(pku.Game_Info?.OT, pk3Object.MAX_OT_CHARS, lang.Value).encodedStr;
+                    legalGen3Egg = true;
+                }
+            }
+        }
+
+        // Language
         [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessEgg))]
         protected virtual void ProcessLanguage()
         {
-            var (language, alert) = pkxUtil.ProcessTags.ProcessLanguage(pku, pk3Object.LANGUAGE_ENCODING.Values.ToArray());
-            pk3.Language = pk3.Egg ? pk3Object.EGG_LANGUAGE_ID : pk3Object.EncodeLanguage(language);
-            Warnings.Add(alert);
+            if(!legalGen3Egg)
+            {
+                Alert alert;
+                (checkedLang, alert) = pkxUtil.ProcessTags.ProcessLanguage(pku, pk3Object.VALID_LANGUAGES);
+                Warnings.Add(alert);
+            }
+            pk3.Language = (byte)checkedLang;
         }
 
         // Nickname [Requires: Language]
         [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessLanguage))]
         protected virtual void ProcessNickname()
         {
-            Alert alert;
-            Language checkedLang = pk3Object.DecodeLanguage(pk3.Language).Value;
-            (pk3.Nickname, alert, _, _) = pkxUtil.ProcessTags.ProcessNickname(pku, 3, pk3Object.MAX_NICKNAME_CHARS, pk3Object.CHARACTER_ENCODING, checkedLang);
-            Warnings.Add(alert);
+            if (!legalGen3Egg)
+            {
+                Alert alert;
+                (pk3.Nickname, alert, _, _) = pkxUtil.ProcessTags.ProcessNickname(pku, 3, pk3Object.MAX_NICKNAME_CHARS, pk3Object.CHARACTER_ENCODING, checkedLang);
+                Warnings.Add(alert);
+            }
         }
 
         // OT [Requires: Language]
         [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessLanguage))]
         protected virtual void ProcessOT()
         {
-            Alert alert;
-            Language checkedLang = pk3Object.DecodeLanguage(pk3.Language).Value;
-            (pk3.OT, alert) = pkxUtil.ProcessTags.ProcessOT(pku, pk3Object.MAX_OT_CHARS, pk3Object.CHARACTER_ENCODING, checkedLang);
-            Warnings.Add(alert);
+            if (!legalGen3Egg)
+            {
+                Alert alert;
+                (pk3.OT, alert) = pkxUtil.ProcessTags.ProcessOT(pku, pk3Object.MAX_OT_CHARS, pk3Object.CHARACTER_ENCODING, checkedLang);
+                Warnings.Add(alert);
+            }
         }
 
         // Trash Bytes [Requires: Nickname, OT]
@@ -338,24 +381,6 @@ namespace pkuManager.Formats.pkx.pk3
         {
             Alert alert;
             (pk3.PKRS_Strain, pk3.PKRS_Days, alert) = ((byte, byte, Alert))pkxUtil.ProcessTags.ProcessPokerus(pku);
-            Warnings.Add(alert);
-        }
-
-        // Origin Game
-        [PorterDirective(ProcessingPhase.FirstPass)]
-        protected virtual void ProcessOriginGame()
-        {
-            Alert alert;
-            (pk3.Origin_Game, checkedGameName, alert) = ((byte, string, Alert))pkxUtil.ProcessTags.ProcessOriginGame(pku, 3);
-            Warnings.Add(alert);
-        }
-
-        // Met Location [Requires: Origin Game]
-        [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessOriginGame))]
-        protected virtual void ProcessMetLocation()
-        {
-            Alert alert;
-            (pk3.Met_Location, alert) = ((byte, Alert))pkxUtil.ProcessTags.ProcessMetLocation(pku, checkedGameName, (g, l) => pk3Object.EncodeMetLocation(g, l), pk3Object.GetDefaultLocationName(checkedGameName));
             Warnings.Add(alert);
         }
 
