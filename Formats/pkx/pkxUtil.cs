@@ -1355,8 +1355,18 @@ namespace pkuManager.Formats.pkx
                 return ProcessEnumTag(pku.Item, PokeAPIUtil.GetItemIndex(pku.Item, gen), GetItemAlert, true, 0);
             }
 
-            //gmax moves use a different index and cannot even be stored out of battle. Thus, they are irrelevant.
             public static (int[] moveIDs, int[] moveIndicies, Alert) ProcessMoves(pkuObject pku, int lastMoveIndex)
+            {
+                int? GetMoveID(string move)
+                {
+                    int? moveID = PokeAPIUtil.GetMoveIndex(move);
+                    return moveID > lastMoveIndex ? null : moveID;
+                }
+                return ProcessMoves(pku, GetMoveID);
+            }
+
+            //gmax moves use a different index and cannot even be stored out of battle. Thus, they are irrelevant.
+            public static (int[] moveIDs, int[] moveIndicies, Alert) ProcessMoves(pkuObject pku, Func<string, int?> GetMoveID)
             {
                 List<int> moveIndices = new List<int>(); //indicies in pku
                 int[] moveIDs = new int[4]; //index numbers for format
@@ -1371,8 +1381,7 @@ namespace pkuManager.Formats.pkx
                     {
                         if (pku.Moves[i].Name != null) //move has a name
                         {
-                            moveIDTemp = PokeAPIUtil.GetMoveIndex(pku.Moves[i].Name);
-                            moveIDTemp = moveIDTemp > lastMoveIndex ? null : moveIDTemp;
+                            moveIDTemp = GetMoveID(pku.Moves[i].Name);
                             if (moveIDTemp.HasValue && confirmedMoves < 4)
                             {
                                 moveIDs[confirmedMoves] = moveIDTemp.Value;

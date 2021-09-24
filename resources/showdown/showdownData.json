@@ -1,4 +1,8 @@
-//Updated 6/21/21
+// This json file is updated as of 9/23/21. Check against:
+// - https://github.com/smogon/pokemon-showdown/blob/master/data/moves.ts
+// - https://github.com/smogon/pokemon-showdown/blob/master/data/items.ts
+// - https://github.com/smogon/pokemon-showdown/blob/master/data/abilities.ts
+// - https://github.com/smogon/pokemon-showdown/blob/master/data/pokedex.ts
 {
     "moves": [
         "10,000,000 Volt Thunderbolt",
@@ -860,7 +864,11 @@
         "Zap Cannon",
         "Zen Headbutt",
         "Zing Zap",
-        "Zippy Zap"
+        "Zippy Zap",
+
+        //CAP
+        "Paleo Wave",
+        "Shadow Strike"
     ],
     "items": [
         "Abomasite",
@@ -1364,6 +1372,8 @@
         "Yache Berry",
         "Zap Plate",
         "Zoom Lens",
+
+        // Gen 2
         "Berserk Gene",
         "Berry",
         "Bitter Berry",
@@ -1377,6 +1387,8 @@
         "Polkadot Bow",
         "PRZ Cure Berry",
         "PSN Cure Berry",
+
+        // CAP
         "Crucibellite"
     ],
     "abilities": [
@@ -1649,6 +1661,8 @@
         "Wonder Guard",
         "Wonder Skin",
         "Zen Mode",
+
+        // CAP
         "Mountaineer",
         "Rebound",
         "Persistent"

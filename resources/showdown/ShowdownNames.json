@@ -1,18 +1,17 @@
+// This json file is associates a species' canonical PKU form name, with their Showdown form species name.
+// For example the Sinnoh Cap Pikachu form is denoted "Sinnoh Cap" by PKU, but in Showdown the species is: "Pikachu-Sinnoh".
+// The corresponding json entry is given by:
+// ------------------------------------------
+// "Pikachu": {
+//     "Forms": {
+//      "Sinnoh Cap": {
+//          "Showdown-Species": "Pikachu-Sinnoh"
+//      },
+// }
+// ------------------------------------------
+// This json file is updated as of 9/23/21. Check against https://github.com/smogon/pokemon-showdown/blob/master/data/pokedex.ts
+// Note that this does not include GMax 'forms' as they are already accounted for by the Gigantamax tag in Showdown.
 {
-    // This json file is associates a species' canonical PKU form name, with their Showdown form species name.
-    // For example the Sinnoh Cap Pikachu form is denoted "Sinnoh Cap" by PKU, but in Showdown the species is: "Pikachu-Sinnoh".
-    // The corresponding json entry is given by:
-    // ------------------------------------------
-    // "Pikachu": {
-    //     "Forms": {
-    //      "Sinnoh Cap": {
-    //          "Showdown-Species": "Pikachu-Sinnoh"
-    //      },
-    // }
-    // ------------------------------------------
-    // This json file is updated as of 6/21/21. Check against https://github.com/smogon/pokemon-showdown/blob/master/data/pokedex.ts
-    // Note that this does not include GMax 'forms' as they are already accounted for by the Gigantamax tag in Showdown.
-
     // Gen 1
     "Venusaur": {
         "Forms": {
@@ -1927,58 +1926,204 @@
     },
 
     // CAP
-    "Syclar": {},
-    "Syclant": {},
-    "Revenankh": {},
-    "Embirch": {},
-    "Flarelm": {},
-    "Pyroak": {},
-    "Breezi": {},
-    "Fidgit": {},
-    "Rebble": {},
-    "Tactite": {},
-    "Stratagem": {},
-    "Arghonaut": {},
-    "Kitsunoh": {},
-    "Cyclohm": {},
-    "Colossoil": {},
-    "Krilowatt": {},
-    "Voodoom": {},
-    "Scratchet": {},
-    "Tomohawk": {},
-    "Necturine": {},
-    "Necturna": {},
-    "Mollux": {},
-    "Cupra": {},
-    "Argalis": {},
-    "Aurumoth": {},
-    "Brattler": {},
-    "Malaconda": {},
-    "Cawdet": {},
-    "Cawmodore": {},
-    "Volkritter": {},
-    "Volkraken": {},
-    "Snugglow": {},
-    "Plasmanta": {},
-    "Floatoy": {},
-    "Caimanoe": {},
-    "Naviathan": {},
+    "Syclar": {
+        "CAP Dex": 1
+    },
+    "Syclant": {
+        "CAP Dex": 2
+    },
+    "Revenankh": {
+        "CAP Dex": 3
+    },
+    "Embirch": {
+        "CAP Dex": 4
+    },
+    "Flarelm": {
+        "CAP Dex": 5
+    },
+    "Pyroak": {
+        "CAP Dex": 6
+    },
+    "Breezi": {
+        "CAP Dex": 7
+    },
+    "Fidgit": {
+        "CAP Dex": 8
+    },
+    "Rebble": {
+        "CAP Dex": 9
+    },
+    "Tactite": {
+        "CAP Dex": 10
+    },
+    "Stratagem": {
+        "CAP Dex": 11
+    },
+    "Privatyke": {
+        "CAP Dex": 12
+    },
+    "Arghonaut": {
+        "CAP Dex": 13
+    },
+    "Kitsunoh": {
+        "CAP Dex": 14
+    },
+    "Cyclohm": {
+        "CAP Dex": 15
+    },
+    "Colossoil": {
+        "CAP Dex": 16
+    },
+    "Krilowatt": {
+        "CAP Dex": 17
+    },
+    "Voodoll": {
+        "CAP Dex": 18
+    },
+    "Voodoom": {
+        "CAP Dex": 19
+    },
+    "Scratchet": {
+        "CAP Dex": 20
+    },
+    "Tomohawk": {
+        "CAP Dex": 21
+    },
+    "Necturine": {
+        "CAP Dex": 22
+    },
+    "Necturna": {
+        "CAP Dex": 23
+    },
+    "Mollux": {
+        "CAP Dex": 24
+    },
+    "Cupra": {
+        "CAP Dex": 25
+    },
+    "Argalis": {
+        "CAP Dex": 26
+    },
+    "Aurumoth": {
+        "CAP Dex": 27
+    },
+    "Brattler": {
+        "CAP Dex": 28
+    },
+    "Malaconda": {
+        "CAP Dex": 29
+    },
+    "Cawdet": {
+        "CAP Dex": 30
+    },
+    "Cawmodore": {
+        "CAP Dex": 31
+    },
+    "Volkritter": {
+        "CAP Dex": 32
+    },
+    "Volkraken": {
+        "CAP Dex": 33
+    },
+    "Snugglow": {
+        "CAP Dex": 34
+    },
+    "Plasmanta": {
+        "CAP Dex": 35
+    },
+    "Floatoy": {
+        "CAP Dex": 36
+    },
+    "Caimanoe": {
+        "CAP Dex": 37
+    },
+    "Naviathan": {
+        "CAP Dex": 38
+    },
     "Crucibelle": {
+        "CAP Dex": 39,
         "Forms": {
             "Mega": {
                 "Showdown Name": "Crucibelle-Mega"
             }
         }
     },
-    "Pluffle": {},
-    "Kerfluffle": {},
-    "Pajantom": {},
-    "Mumbao": {},
-    "Jumbao": {},
-    "Caribolt": {},
-    "Smokomodo": {},
-    "Snaelstrom": {},
-    "Equilibra": {},
-    "Solotl": {},
-    "Astrolotl": {}
+    "Pluffle": {
+        "CAP Dex": 40
+    },
+    "Kerfluffle": {
+        "CAP Dex": 41
+    },
+    "Pajantom": {
+        "CAP Dex": 42
+    },
+    "Mumbao": {
+        "CAP Dex": 43
+    },
+    "Jumbao": {
+        "CAP Dex": 44
+    },
+    "Fawnifer": {
+        "CAP Dex": 45
+    },
+    "Electrelk": {
+        "CAP Dex": 46
+    },
+    "Caribolt": {
+        "CAP Dex": 47
+    },
+    "Smogecko": {
+        "CAP Dex": 48
+    },
+    "Smoguana": {
+        "CAP Dex": 49
+    },
+    "Smokomodo": {
+        "CAP Dex": 50
+    },
+    "Swirlpool": {
+        "CAP Dex": 51
+    },
+    "Coribalis": {
+        "CAP Dex": 52
+    },
+    "Snaelstrom": {
+        "CAP Dex": 53
+    },
+    "Justyke": {
+        "CAP Dex": 54
+    },
+    "Equilibra": {
+        "CAP Dex": 55
+    },
+    "Solotl": {
+        "CAP Dex": 56
+    },
+    "Astrolotl": {
+        "CAP Dex": 57
+    },
+    "Miasmite": {
+        "CAP Dex": 58
+    },
+    "Miasmaw": {
+        "CAP Dex": 59
+    },
+    "Chromera": {
+        "CAP Dex": 60
+    },
+    "Nohface": {
+        "CAP Dex": 61
+    },
+    "Monohm": {
+        "CAP Dex": 62
+    },
+    "Duohm": {
+        "CAP Dex": 63
+    },
+    "Dorsoil": {
+        "CAP Dex": 64
+    },
+    "Protowatt": {
+        "CAP Dex": 65
+    }
 }

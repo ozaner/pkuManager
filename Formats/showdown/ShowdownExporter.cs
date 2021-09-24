@@ -205,12 +205,9 @@ namespace pkuManager.Formats.showdown
         {
             //doesnt get gmax moves, but showdown doesn't allow them either
             List<string> moves = new();
-            (int[] moveIDs, _, Alert alert) = pkxUtil.ProcessTags.ProcessMoves(pku, pkxUtil.LAST_MOVE_INDEX_GEN8);
-            foreach (int id in moveIDs)
-            {
-                if (id is not 0)
-                    moves.Add(PokeAPIUtil.GetMoveName(id));
-            }
+            (_, int[] moveIndices, Alert alert) = pkxUtil.ProcessTags.ProcessMoves(pku, m => ShowdownObject.IsMoveValid(m) ? 1 : null);
+            foreach (int id in moveIndices)
+                moves.Add(pku.Moves[id].Name);
             ShowdownData.Moves = moves.ToArray();
             Warnings.Add(alert);
         }
