@@ -157,19 +157,19 @@ namespace pkuManager.Formats.pkx.pk3
 
         // ID
         [PorterDirective(ProcessingPhase.FirstPass)]
-        protected virtual void ProcessID()
+        protected virtual void ProcessTID()
         {
             Alert alert;
-            (pk3.ID, alert) = pkxUtil.ProcessTags.ProcessID(pku);
+            (pk3.TID, alert) = pkxUtil.ProcessTags.ProcessTID(pku);
             Warnings.Add(alert);
         }
 
         // PID [Requires: Gender, Form, Nature, ID] [ErrorResolver]
         [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessGender), nameof(ProcessForm),
-                                                    nameof(ProcessNature), nameof(ProcessID))]
+                                                    nameof(ProcessNature), nameof(ProcessTID))]
         protected virtual void ProcessPID()
         {
-            var (pids, alert) = pkxUtil.ProcessTags.ProcessPID(pku, pk3.ID, false, gender, nature, unownForm);
+            var (pids, alert) = pkxUtil.ProcessTags.ProcessPID(pku, pk3.TID, false, gender, nature, unownForm);
             PIDResolver = new ErrorResolver<uint>(alert, pids, x => pk3.PID = x);
             if (alert is RadioButtonAlert)
                 Errors.Add(alert);

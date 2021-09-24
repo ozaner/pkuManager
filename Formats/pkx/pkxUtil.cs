@@ -301,7 +301,7 @@ namespace pkuManager.Formats.pkx
             // Game Info Alert Methods
             // ----------
 
-            public static Alert GetIDAlert(AlertType at)
+            public static Alert GetTIDAlert(AlertType at)
             {
                 long val = 0;
                 if (at == AlertType.UNSPECIFIED)
@@ -1096,9 +1096,9 @@ namespace pkuManager.Formats.pkx
             // Game Info Processing Methods
             // ----------
 
-            public static (uint, Alert) ProcessID(pkuObject pku)
+            public static (uint, Alert) ProcessTID(pkuObject pku)
             {
-                return ProcessNumericTag(pku.Game_Info?.ID, GetIDAlert, false, 4294967295, 0, 0);
+                return ProcessNumericTag(pku.Game_Info?.TID, GetTIDAlert, false, 4294967295, 0, 0);
             }
 
             public static (int gameID, string game, Alert alert) ProcessOriginGame(pkuObject pku, int gen)

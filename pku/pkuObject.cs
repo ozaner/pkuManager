@@ -154,9 +154,8 @@ namespace pkuManager.pku
             [JsonProperty("Gender")]
             public string Gender { get; set; }
 
-            // The full trainer ID, or FTID, if you will.
-            [JsonProperty("ID")]
-            public uint? ID { get; set; }
+            [JsonProperty("TID")]
+            public uint? TID { get; set; }
 
             [JsonProperty("Language")]
             public string Language { get; set; }

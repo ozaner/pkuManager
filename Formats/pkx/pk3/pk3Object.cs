@@ -84,7 +84,7 @@ namespace pkuManager.Formats.pkx.pk3
          * ------------------------------------
         */
         public uint PID { get => NonSubData.GetUInt(0); set => NonSubData.SetUInt(value, 0); }
-        public uint ID { get => NonSubData.GetUInt(4); set => NonSubData.SetUInt(value, 4); }
+        public uint TID { get => NonSubData.GetUInt(4); set => NonSubData.SetUInt(value, 4); }
         public byte[] Nickname { get => NonSubData.GetBytes(8, 10); set => NonSubData.SetBytes(value, 8, 10); }
         public byte Language { get => NonSubData.GetByte(18); set => NonSubData.SetByte(value, 18); }
         public byte Egg_Name_Override { get => NonSubData.GetByte(19); set => NonSubData.SetByte(value, 19); }
@@ -217,7 +217,7 @@ namespace pkuManager.Formats.pkx.pk3
 
         protected void ApplyXOR(ByteArrayManipulator subData)
         {
-            uint encryptionKey = ID ^ PID;
+            uint encryptionKey = TID ^ PID;
             for (int i = 0; i < subData.Length / 4; i++) //xor subData with key in 4 byte chunks
             {
                 uint chunk = subData.GetUInt(4 * i);
@@ -228,7 +228,7 @@ namespace pkuManager.Formats.pkx.pk3
 
         /// <summary>
         /// Compiles and encrypts the current <see cref="G"/>, <see cref="A"/>, <see cref="E"/>,
-        /// and <see cref="M"/> blocks with the current <see cref="PID"/> and <see cref="ID"/>.
+        /// and <see cref="M"/> blocks with the current <see cref="PID"/> and <see cref="TID"/>.
         /// </summary>
         /// <returns>A 48 byte encrypted sub-data array.</returns>
         protected ByteArrayManipulator GetEncryptedSubData()
