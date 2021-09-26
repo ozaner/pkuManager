@@ -57,7 +57,7 @@ namespace pkuManager.Formats.showdown
         [PorterDirective(ProcessingPhase.PreProcessing)]
         protected virtual void ProcessBattleStatOverride()
         {
-            Notes.Add(pkxUtil.AuxProcess.ProcessBattleStatOverride(pku, GlobalFlags));
+            Notes.Add(pkxUtil.MetaTags.ApplyBattleStatOverride(pku, GlobalFlags));
         }
 
 
@@ -79,7 +79,7 @@ namespace pkuManager.Formats.showdown
                 throw new ArgumentException("Expected a pku with a valid Showdown species here.");
 
             if (casted)
-                Warnings.Add(pkxUtil.TagAlerts.GetFormAlert(AlertType.CASTED, pku.Forms));
+                Warnings.Add(pkxUtil.ExportAlerts.GetFormAlert(AlertType.CASTED, pku.Forms));
         }
 
         // Nickname
@@ -118,7 +118,7 @@ namespace pkuManager.Formats.showdown
         {
             bool itemValid = ShowdownObject.IsItemValid(pku.Item);
             if (pku.Item is not null && !itemValid) //check for invalid alert
-                Warnings.Add(pkxUtil.TagAlerts.GetItemAlert(AlertType.INVALID, pku.Item));
+                Warnings.Add(pkxUtil.ExportAlerts.GetItemAlert(AlertType.INVALID, pku.Item));
 
             if (itemValid)
                 ShowdownData.Item = pku.Item;
@@ -130,7 +130,7 @@ namespace pkuManager.Formats.showdown
         {
             bool abilityValid = ShowdownObject.IsAbilityValid(pku.Ability);
             if (pku.Ability is not null && !abilityValid) //check for invalid alert
-                Warnings.Add(pkxUtil.TagAlerts.GetAbilityAlert(AlertType.INVALID, pku.Ability, "None (Showdown will pick one)."));
+                Warnings.Add(pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.INVALID, pku.Ability, "None (Showdown will pick one)."));
             else
                 ShowdownData.Ability = pku.Ability;
         }
@@ -139,7 +139,7 @@ namespace pkuManager.Formats.showdown
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessLevel()
         {
-            var (level, alert) = pkxUtil.ProcessTags.ProcessNumericTag(pku.Level, pkxUtil.TagAlerts.GetLevelAlert, false, 100, 1, 100);
+            var (level, alert) = pkxUtil.ExportTags.ProcessNumericTag(pku.Level, pkxUtil.ExportAlerts.GetLevelAlert, false, 100, 1, 100);
             ShowdownData.Level = (byte)level;
             Warnings.Add(alert);
         }
@@ -148,7 +148,7 @@ namespace pkuManager.Formats.showdown
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessFriendship()
         {
-            var (friendship, alert) = pkxUtil.ProcessTags.ProcessNumericTag(pku.Friendship, GetFriendshipAlert, false, 255, 0, 255);
+            var (friendship, alert) = pkxUtil.ExportTags.ProcessNumericTag(pku.Friendship, GetFriendshipAlert, false, 255, 0, 255);
             ShowdownData.Friendship = (byte)friendship;
             Warnings.Add(alert);
         }
@@ -158,7 +158,7 @@ namespace pkuManager.Formats.showdown
         protected virtual void ProcessIVs()
         {
             int?[] vals = { pku.IVs?.HP, pku.IVs?.Attack, pku.IVs?.Defense, pku.IVs?.Sp_Attack, pku.IVs?.Sp_Defense, pku.IVs?.Speed };
-            var (ivs, alert) = pkxUtil.ProcessTags.ProcessMultiNumericTag(pku.IVs is not null, vals, pkxUtil.TagAlerts.GetIVsAlert, 31, 0, 31, false);
+            var (ivs, alert) = pkxUtil.ExportTags.ProcessMultiNumericTag(pku.IVs is not null, vals, pkxUtil.ExportAlerts.GetIVsAlert, 31, 0, 31, false);
             ShowdownData.IVs = Array.ConvertAll(ivs, x => (byte)x);
             Warnings.Add(alert);
         }
@@ -167,7 +167,7 @@ namespace pkuManager.Formats.showdown
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessEVs()
         {
-            var (evs, alert) = pkxUtil.ProcessTags.ProcessEVs(pku);
+            var (evs, alert) = pkxUtil.ExportTags.ProcessEVs(pku);
             ShowdownData.EVs = Array.ConvertAll(evs, x => (byte)x);
             Warnings.Add(alert);
         }
@@ -205,7 +205,7 @@ namespace pkuManager.Formats.showdown
         {
             //doesnt get gmax moves, but showdown doesn't allow them either
             List<string> moves = new();
-            (_, int[] moveIndices, Alert alert) = pkxUtil.ProcessTags.ProcessMoves(pku, m => ShowdownObject.IsMoveValid(m) ? 1 : null);
+            (_, int[] moveIndices, Alert alert) = pkxUtil.ExportTags.ProcessMoves(pku, m => ShowdownObject.IsMoveValid(m) ? 1 : null);
             foreach (int id in moveIndices)
                 moves.Add(pku.Moves[id].Name);
             ShowdownData.Moves = moves.ToArray();
@@ -228,14 +228,14 @@ namespace pkuManager.Formats.showdown
         {
             //override pkx's unspecified level of 1 to 100
             AlertType.UNSPECIFIED => new Alert("Level", "No level specified, using the default: 100."),
-            _ => pkxUtil.TagAlerts.GetLevelAlert(at)
+            _ => pkxUtil.ExportAlerts.GetLevelAlert(at)
         };
 
         public static Alert GetFriendshipAlert(AlertType at) => at switch
         {
             //override pkx's unspecified friendship of 0 to 255
-            AlertType.UNSPECIFIED => pkxUtil.TagAlerts.getNumericalAlert("Friendship", at, 255),
-            _ => pkxUtil.TagAlerts.GetFriendshipAlert(at)
+            AlertType.UNSPECIFIED => pkxUtil.ExportAlerts.GetNumericalAlert("Friendship", at, 255),
+            _ => pkxUtil.ExportAlerts.GetFriendshipAlert(at)
         };
 
         public static Alert GetNatureAlert(AlertType at, string invalidNature = null)

@@ -155,6 +155,13 @@ namespace pkuManager.Utilities
         // String Methods
         // -----------------------
         /// <summary>
+        /// Outputs <paramref name="n"/> new line sequences.
+        /// </summary>
+        /// <param name="n">The number of newline sequences to output. 1 by default.</param>
+        /// <returns><paramref name="n"/> newline sequences.</returns>
+        public static string Newline(int n = 1) => string.Concat(Enumerable.Repeat(Environment.NewLine, n));
+
+        /// <summary>
         /// Returns a concatenated string of the following form: "[str1, str2, str3, ..., strn]".<br/>
         /// Unless there is only one string, in which case that string is returned.
         /// </summary>

@@ -475,7 +475,7 @@ namespace pkuManager.Formats.pkx.pk3
 
         /// <summary>
         /// When <see cref="Egg_Name_Override"/> is set to this value, the pk3 nickname will<br/>
-        /// be overriden by the <see cref="pkxUtil.EGG_STRING"/> of the game's language.
+        /// be overriden by the <see cref="pkxUtil.EGG_NICKNAME"/> of the game's language.
         /// </summary>
         public const byte EGG_NAME_OVERRIDE_CONST = 0x06;
 

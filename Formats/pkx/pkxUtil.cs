@@ -8,25 +8,63 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using static pkuManager.Alerts.Alert;
-using static pkuManager.Formats.pkx.pkxUtil.TagAlerts;
+using static pkuManager.Formats.pkx.pkxUtil.ExportAlerts;
 
 namespace pkuManager.Formats.pkx
 {
+    /// <summary>
+    /// A utility class with common code for exporting and importing pku files to pkx formats.
+    /// </summary>
     public static class pkxUtil
     {
-        public static readonly JObject POKESTAR_DATA = DataUtil.GetJson("pokestarData"); //Gen 5: move this to pk5Util when it exists...
+        /* ------------------------------------
+         * Datadexes
+         * ------------------------------------
+        */
+        /// <summary>
+        /// Datadex containing data on all official species, their national dex #, and their default form.
+        /// </summary>
         public static readonly JObject NATIONALDEX_DATA = DataUtil.GetJson("nationaldexData");
+
+        /// <summary>
+        /// Datadex containing data on official games, their game IDs, and their generation.
+        /// </summary>
         public static readonly JObject GAME_DATA = DataUtil.GetJson("gameData");
 
-        // Enum Defaults
-        public static readonly Language DEFAULT_LANGUAGE = Language.English;
-        public static readonly Nature DEFAULT_NATURE = Nature.Hardy;
-        public static readonly Ball DEFAULT_BALL = Ball.Poké_Ball;
-        public static readonly Gender DEFAULT_GENDER = Gender.Male;
+        /// <summary>
+        /// Datadex containing data on Pokéstar species, their forms, and their Gen 5 index #'s.
+        /// </summary>
+        public static readonly JObject POKESTAR_DATA = DataUtil.GetJson("pokestarData");
 
-        public static readonly int LAST_MOVE_INDEX_GEN8 = 826;
 
-        public static readonly Dictionary<Language, string> EGG_STRING = new()
+        /* ------------------------------------
+         * Default Values
+         * ------------------------------------
+        */
+        /// <summary>
+        /// The default language used in pkx formats.
+        /// </summary>
+        public const Language DEFAULT_LANGUAGE = Language.English;
+
+        /// <summary>
+        /// The default nature used in pkx formats.
+        /// </summary>
+        public const Nature DEFAULT_NATURE = Nature.Hardy;
+
+        /// <summary>
+        /// The default ball used in pkx formats.
+        /// </summary>
+        public const Ball DEFAULT_BALL = Ball.Poké_Ball;
+
+        /// <summary>
+        /// The default gender for Pokémon and trainers used in pkx formats.
+        /// </summary>
+        public const Gender DEFAULT_GENDER = Gender.Male;
+
+        /// <summary>
+        /// Maps a <see cref="Language"/> to its translation of "Egg".
+        /// </summary>
+        public static readonly Dictionary<Language, string> EGG_NICKNAME = new()
         {
             { Language.Japanese, "タマゴ" },
             { Language.English, "Egg" },
@@ -39,220 +77,197 @@ namespace pkuManager.Formats.pkx
             { Language.Chinese_Traditional, "蛋" },
         };
 
-        // ----------
-        // Helper Methods
-        // ----------
 
-        public static string GetSpeciesFromDex(int dex)
-        {
-            foreach (var x in NATIONALDEX_DATA)
-            {
-                if ((int?)x.Value.TraverseJTokenCaseInsensitive("National Dex") == dex)
-                    return x.Key;
-            }
-            return null;
-        }
+        /* ------------------------------------
+         * Utility Methods
+         * ------------------------------------
+        */
+        /// <summary>
+        /// Gets the National dex number of the given <paramref name="species"/>.
+        /// </summary>
+        /// <param name="species">A Pokémon species name, with any capitalization.</param>
+        /// <returns>The national dex # of the given <paramref name="species"/>,
+        ///          or <see langword="null"/> if it doesn't have one.</returns>
+        public static int? GetNationalDex(string species)
+            => (int?)NATIONALDEX_DATA.TraverseJTokenCaseInsensitive(species, "National Dex");
 
         /// <summary>
-        /// Returns the National dex number of the given species or null if it has none.
+        /// Does the same as <see cref="GetNationalDex(string)"/> but with the<br/>
+        /// assumption that, <paramref name="species"/> is an official species.
         /// </summary>
-        /// <param name="species">An official Pokemon species name, with any capitalization.</param>
-        /// <returns></returns>
-        public static int? GetNationalDex(string species)
-        {
-            //uses the nationaldex.json file and not pokeapi
-            if (species == null)
-                return null;
-
-            //case insensitive species
-            return (int?)NATIONALDEX_DATA.TraverseJTokenCaseInsensitive(species, "National Dex");
-        }
-
+        /// <param name="species">An official Pokémon species, will throw an exception otherwise.</param>
+        /// <returns>The national dex # of the given <paramref name="species"/></returns>
         public static int GetNationalDexChecked(string species)
         {
             int? dex = GetNationalDex(species);
-            if (!dex.HasValue)
-                throw new ArgumentException("Must be an official pokemon species.");
-            else
-                return dex.Value;
+            return dex is null ?  throw new ArgumentException
+                ("Must be an official Pokémon species.", nameof(species)) : dex.Value;
         }
 
-        // Returns the ID of the given game version. Null if no ID is found.
-        public static (int?, int?) GetGameIDAndGen(string game)
+        /// <summary>
+        /// Gets the game ID and generation of the given <paramref name="game"/>.
+        /// </summary>
+        /// <param name="game">A game name (e.g. "Diamond").</param>
+        /// <returns>A 2-tuple of the game ID, and its generation. Null if doesn't have one.</returns>
+        public static (int?, int?) GetGameIDAndGen(string game) =>
+            ((int?, int?))(GAME_DATA.TraverseJTokenCaseInsensitive(game, "Game ID"),
+                GAME_DATA.TraverseJTokenCaseInsensitive(game, "Generation"));
+
+        /// <summary>
+        /// Returns the gender of a Pokémon with the given <paramref name="pid"/> as determined by Gens 3-5. 
+        /// </summary>
+        /// <param name="gr">The gender ratio of the Pokémon.</param>
+        /// <param name="pid">The PID of the Pokémon.</param>
+        /// <returns>The gender of a Pokémon with the given gender ratio
+        ///          and <paramref name="pid"/> in Gens 3-5.</returns>
+        public static Gender GetPIDGender(GenderRatio gr, uint pid)
         {
-            return ((int?, int?))(GAME_DATA.TraverseJTokenCaseInsensitive(game, "Game ID"), GAME_DATA.TraverseJTokenCaseInsensitive(game, "Generation"));
-        }
-
-        // Returns the gen 5 id of a pokestar species, null if it's not a pokestar species (case insensitve)
-        // TODO: move to pk5 util when it exists
-        public static int? GetPokestarID(pkuObject pku)
-        {
-            //No species, no pokestar
-            if (pku.Species == null)
-                return null;
-
-            int? gen5ID = null;
-
-            // Try getting the species+form ID (case insensitive)
-            string searchableFormName = DexUtil.GetSearchableFormName(pku);
-            if (searchableFormName != null)
-                gen5ID = (int?)POKESTAR_DATA.TraverseJTokenCaseInsensitive(pku.Species, "Forms", searchableFormName, "Gen 5 Index");
-
-            // If form is unspecified/invalid (i.e. above didn't work) then just get default form id
-            if (!gen5ID.HasValue)
-            {
-                string defaultForm = DexUtil.GetDefaultForm(pku, POKESTAR_DATA);
-                gen5ID = (int?)POKESTAR_DATA.TraverseJTokenCaseInsensitive(pku.Species, "Forms", defaultForm, "Gen 5 Index");
-            }
-            return gen5ID; //might still be null
-        }
-
-        public static Gender GetPIDGender(int dex, uint pid)
-        {
-            GenderRatio gr = PokeAPIUtil.GetGenderRatio(dex);
-            if (gr == GenderRatio.All_Female)
+            if (gr is GenderRatio.All_Female)
                 return Gender.Female;
-            else if (gr == GenderRatio.All_Male)
+            else if (gr is GenderRatio.All_Male)
                 return Gender.Male;
-            else if (gr == GenderRatio.All_Genderless)
+            else if (gr is GenderRatio.All_Genderless)
                 return Gender.Genderless;
-            else if (pid % 256 < (int)gr)
+            else if ((int)gr > pid % 256)
                 return Gender.Female;
             else
                 return Gender.Male;
         }
 
-        //doesnt account for gen6+, but doesnt really matter (since gen 5- shiny pids are a subset of gen 6+ ones)
-        public static uint GenerateRandomPID(bool shiny, uint id, GenderRatio? gr = null, Gender? gender = null, Nature? nature = null, int? unownForm = null)
+        /// <summary>
+        /// Generates a PID that satisfies the given constraints in all generations.<br/>
+        /// If a constraint is null, it will be ignored.
+        /// </summary>
+        /// <param name="shiny">The desired shinyness.</param>
+        /// <param name="tid">The Pokémon's TID.</param>
+        /// <param name="gender">The desired gender.</param>
+        /// <param name="gr">The species' gender ratio.</param>
+        /// <param name="nature">The desired nature.</param>
+        /// <param name="unownForm">The desired form, if the species is Unown.</param>
+        /// <returns>A random PID satisfying all the given constraints.</returns>
+        public static uint GenerateRandomPID(bool shiny, uint tid, Gender? gender = null,
+            GenderRatio? gr = null, Nature ? nature = null, int? unownForm = null)
         {
-            uint pid;
+            //Notice no option for ability slot.
+            //Getting legality is the user's problem. Preserving legality is pku's problem.
             while (true)
             {
-                pid = DataUtil.GetRandomUInt(); //Generate new PID candidate
-                //if (abilitySlot.HasValue) // Ability Slot Check
-                //{
-                //    if (abilitySlot.Value != (DataUtil.getBits(pid, 0) == 0))
-                //        continue;
-                //}
-                if (unownForm.HasValue) // Unown Form Check
+                uint pid = DataUtil.GetRandomUInt(); //Generate new PID candidate
+                
+                // Unown Form Check
+                if (unownForm is not null)
                 {
                     if (unownForm != pk3Object.GetUnownFormID(pid))
                         continue;
                 }
-                if (gr.HasValue && gender.HasValue) // Gender Check
+
+                // Gender Check
+                if (gender is not null && gr is null)
+                    throw new ArgumentException($"If {nameof(gender)} is specified, a gender ratio must also be specified.", nameof(gr));
+                else if (gender is not null) //gr is not null
                 {
-                    if (gr != GenderRatio.All_Male && gr != GenderRatio.All_Female && gr != GenderRatio.All_Genderless)
+                    if (gr is not (GenderRatio.All_Male or GenderRatio.All_Female or GenderRatio.All_Genderless))
                     {
-                        if (gender == Gender.Male && pid % 256 < (int)gr) //Male but pid is Female
+                        Gender pidGender = GetPIDGender(gr.Value, pid);
+
+                        //Male but pid is Female
+                        if ((gender, pidGender) is (Gender.Male, not Gender.Male))
                             continue;
-                        if (gender == Gender.Female && pid % 256 >= (int)gr) //Female but pid is Male
+
+                        //Female but pid is Male
+                        if ((gender, pidGender) is (Gender.Female, not Gender.Female))
                             continue;
                     }
                 }
-                if (nature.HasValue) // Nature Check
+
+                // Nature Check
+                if (nature is not null)
                 {
-                    if (pid % 25 != (int)nature)
+                    if ((int)nature != pid % 25)
                         continue;
                 }
-                if ((pid / 65536 ^ pid % 65536 ^ id / 65536 ^ id % 65536) < 8 != shiny) // Shiny Check
-                    continue;
 
-                return pid; // all checks out
+                // Shiny Check
+                if ((pid / 65536 ^ pid % 65536 ^ tid / 65536 ^ tid % 65536) < 8 != shiny) //In gen 6+ that 8->16.
+                    continue;                                                             //No harm keeping it 8 for backwards compat.
+
+                return pid; // everything checks out
             }
         }
 
 
-        // ----------
-        // Exporter Stuff
-        // ----------
-
-        public static class AuxAlerts
+        /* ------------------------------------
+         * Alert Generator Methods
+         * ------------------------------------
+        */
+        /// <summary>
+        /// Alert generating methods for <see cref="MetaTags"/> methods.
+        /// </summary>
+        public static class MetaAlerts
         {
-            public static Alert GetBattleStatAlert(bool hasStatNature, bool hasNature, string statNature, string trueNature, bool[] hyperIVs, int?[] IVs)
+            public static Alert GetBattleStatAlert(bool hasStatNature, bool hasNature,
+                string statNature, string trueNature, bool[] hyperIVs, int?[] IVs)
             {
                 string msg = "";
 
                 //Deal with stat nature override
                 if (hasStatNature)
-                {
-                    msg += "The pku's Nature ";
-                    if (hasNature)
-                        msg += $"({trueNature}), was replaced";
-                    else
-                        msg += "is unspecified, replacing it";
-
-                    msg += $" with it's Stat Nature ({statNature}).";
-
-                }
+                    msg += $"The pku's Nature " +
+                           (hasNature ? $"{trueNature}, was replaced" : "is unspecified, replacing it") +
+                           $" with it's Stat Nature ({statNature}).";
 
                 //Deal with hypertraining override
-                if (hyperIVs?.Length != 6 || IVs?.Length != 6)
-                    throw new ArgumentException("hyperIVs & IVs array must be of length 6 (one for each stat).");
+                if (hyperIVs?.Length is not 6 || IVs?.Length is not 6)
+                    throw new ArgumentException("hyperIVs & IVs array must be of length 6 (one for each stat).",
+                        $"{nameof(hyperIVs)} & {nameof(IVs)}");
 
                 if (hyperIVs.Contains(true)) //at least one hyper trained IV
                 {
                     if (hasStatNature)
-                        msg += "\r\n\r\n";
+                        msg += DataUtil.Newline(2);
                     msg += "Replacing the pku's ";
                     string[] stats = { "HP", "Attack", "Defense", "Sp. Attack", "Sp. Defense", "Speed" };
                     for (int i = 0; i < 6; i++)
                     {
                         if (hyperIVs[i])
-                        {
-                            if (IVs[i].HasValue)
-                                msg += $"{IVs[i]} {stats[i]} IV, ";
-                            else
-                                msg += $"unspecified {stats[i]} IV ";
-                        }
+                            msg += IVs[i].HasValue ? $"{IVs[i]} {stats[i]} IV, " : $"unspecified {stats[i]} IV ";
                     }
                     msg += "with 31s as they are Hyper Trained.";
                 }
 
-                return msg == "" ? null : new Alert("Battle Stat Override", msg);
+                return msg is "" ? null : new("Battle Stat Override", msg);
             }
-            
-            public static Alert GetByteOverrideAlert(AlertType at)
-            {
-                if (at is AlertType.INVALID)
-                    return new Alert("Byte Override", "Some of the byte indices were invalid for this format. Ignoring them.");
-                else
-                    throw InvalidAlertType(at);
-            }
+
+            public static Alert GetByteOverrideAlert() =>
+                new("Byte Override", "Some of the byte indices were invalid for this format. Ignoring them.");
         }
-
+        
         /// <summary>
-        /// Alerts pertaining to all .pkx formats.
+        /// Alert generating methods for <see cref="ExportTags"/> methods.
         /// </summary>
-        public static class TagAlerts
+        public static class ExportAlerts
         {
-            // Alert method design philosophy:
-            //      These Alert methods should take in the minimum amount of info needed.
-            //      They shouldn't perform any pku logic. They should just create a relevant alert once the alert is known.
-
             // ----------
             // Generalized Alert Methods
             // ----------
-
-            public static Alert getNumericalAlert(string name, AlertType at, long defaultVal)
+            public static Alert GetNumericalAlert(string name, AlertType at, long defaultVal) => at switch
             {
-                if (at == AlertType.UNSPECIFIED)
-                    return new Alert(name, $"{name} tag not specified, using the default of {defaultVal}.");
-                else if (at == AlertType.OVERFLOW)
-                    return new Alert(name, $"This pku's {name} is higher than the maximum. Rounding down to {defaultVal}.");
-                else if (at == AlertType.UNDERFLOW)
-                    return new Alert(name, $"This pku's {name} is lower than the minimum. Rounding up to {defaultVal}.");
-                else
-                    throw InvalidAlertType(at);
-            }
+                AlertType.OVERFLOW => new(name, $"This pku's {name} is higher than the maximum. Rounding down to {defaultVal}."),
+                AlertType.UNDERFLOW => new(name, $"This pku's {name} is lower than the minimum. Rounding up to {defaultVal}."),
+                AlertType.UNSPECIFIED => new(name, $"{name} tag not specified, using the default of {defaultVal}."),
+                _ => throw InvalidAlertType(at)
+            };
 
-            private static Alert getMultiNumericalAlert(string tag, string[] subtags, AlertType[] ats, int max, int min, int defaultVal, bool allUnspecified)
+            private static Alert GetMultiNumericalAlert(string tag, string[] subtags, AlertType[] ats,
+                int max, int min, int defaultVal, bool allUnspecified)
             {
-                if (tag == null || ats == null || subtags == null)
-                    throw new ArgumentException("tag, subtags, and ats cannot be null.");
+                if (tag is null || ats is null || subtags is null)
+                    throw new ArgumentNullException($"{nameof(tag)}, {nameof(ats)}, {nameof(subtags)}", 
+                        $"{nameof(tag)}, {nameof(ats)}, and {nameof(subtags)} cannot be null.");
                 else if (allUnspecified)
-                    return new Alert(tag, $"No {tag} were specified, setting them all to {defaultVal}.");
+                    return new(tag, $"No {tag} were specified, setting them all to {defaultVal}.");
                 else if (subtags.Length != ats.Length)
-                    throw new ArgumentException("subtags must have the same length as ats.");
+                    throw new ArgumentException($"{nameof(subtags)} must have the same length as {nameof(ats)}.", nameof(subtags));
 
                 string msgOverflow = "";
                 string msgUnderflow = "";
@@ -260,542 +275,432 @@ namespace pkuManager.Formats.pkx
 
                 for (int i = 0; i < subtags.Length; i++)
                 {
-                    if (ats[i] == AlertType.OVERFLOW)
-                        msgOverflow += $"{subtags[i]}, ";
-                    else if (ats[i] == AlertType.UNDERFLOW)
-                        msgUnderflow += $"{subtags[i]}, ";
-                    else if (ats[i] == AlertType.UNSPECIFIED)
-                        msgUnspecifed += $"{subtags[i]}, ";
-                    else if (ats[i] != AlertType.NONE)
-                        throw InvalidAlertType(ats[i]);
+                    switch (ats[i])
+                    {
+                        case AlertType.OVERFLOW:
+                            msgOverflow += $"{subtags[i]}, ";
+                            break;
+                        case AlertType.UNDERFLOW:
+                            msgUnderflow += $"{subtags[i]}, ";
+                            break;
+                        case AlertType.UNSPECIFIED:
+                            msgUnspecifed += $"{subtags[i]}, ";
+                            break;
+                        case AlertType.NONE:
+                            break;
+                        default:
+                            throw InvalidAlertType(ats[i]);
+                    }
                 }
 
                 string msg = "";
-                if (msgOverflow != "")
-                    msg += $"The {msgOverflow.Substring(0, msgOverflow.Length - 2)} tag(s) were too high. Rounding them down to {max}\r\n\r\n";
-                if (msgUnderflow != "")
-                    msg += $"The {msgUnderflow.Substring(0, msgUnderflow.Length - 2)} tag(s) were too low. Rounding them up to {min}\r\n\r\n";
-                if (msgUnspecifed != "")
-                    msg += $"The {msgUnspecifed.Substring(0, msgUnspecifed.Length - 2)} tag(s) were unspecified. Setting them to {defaultVal}\r\n\r\n";
+                if (msgOverflow is not "")
+                    msg += $"The {msgOverflow[0..^2]} tag(s) were too high. Rounding them down to {max}.";
+                if (msgUnderflow is not "")
+                    msg += (msg is not "" ? DataUtil.Newline(2) : "") + 
+                           $"The {msgUnderflow[0..^2]} tag(s) were too low. Rounding them up to {min}.";
+                if (msgUnspecifed is not "")
+                    msg += (msg is not "" ? DataUtil.Newline(2) : "") + 
+                           $"The {msgUnspecifed[0..^2]} tag(s) were unspecified. Setting them to {defaultVal}.";
 
-                if (msg == "")
-                    return null;
-                else
-                    return new Alert(tag, msg.Substring(0, msg.Length - 4) + ".");
+                return msg is "" ? null : new(tag, msg);
+            }
+
+            private static Alert GetMultiStatAlert(string name, string[] names, int max, params AlertType[] ats)
+            {
+                if (ats?.Length is not (1 or 6))
+                    throw new ArgumentException($"{nameof(ats)} must contain a single UNSPECIFIED AlertType, or six OVERFLOW/UNDERFLOW/UNSPECIFIED AlertTypes.", nameof(ats));
+                return GetMultiNumericalAlert(name, names, ats, max, 0, 0, ats.Length is 1 && ats[0] is AlertType.UNSPECIFIED);
             }
 
             private static Alert GetEnumAlert(string tagName, string defaultVal, AlertType at, string invalidVal = null)
             {
-                if (at == AlertType.UNSPECIFIED)
-                    return new Alert(tagName, $"No {tagName.ToLowerInvariant()} was specified, using the default: {defaultVal}.");
-                else if (invalidVal == null)
-                    throw new ArgumentException("Must give the invalid value if there is a specified enum Alert.");
-                else if (at == AlertType.INVALID)
-                    return new Alert(tagName, $"The {tagName.ToLowerInvariant()} \"{invalidVal}\" is not supported by this format, using the default: {defaultVal}.");
-                else
-                    throw InvalidAlertType(at);
+                if (at is AlertType.INVALID && invalidVal is null)
+                    throw new ArgumentNullException(nameof(invalidVal), $"Must give the invalid value if there is an INVALID enum Alert.");
+                return new(tagName, at switch
+                {
+                    AlertType.UNSPECIFIED => $"No {tagName.ToLowerInvariant()} was specified, using the default: {defaultVal}.",
+                    AlertType.INVALID => $"The {tagName.ToLowerInvariant()} \"{invalidVal}\" is not supported by this format, using the default: {defaultVal}.",
+                    _ => throw InvalidAlertType(at)
+                });
             }
 
 
             // ----------
             // Game Info Alert Methods
             // ----------
-
-            public static Alert GetTIDAlert(AlertType at)
+            public static Alert GetTIDAlert(AlertType at) => GetNumericalAlert("TID", at, at switch
             {
-                long val = 0;
-                if (at == AlertType.UNSPECIFIED)
-                    val = 0;
-                else if (at == AlertType.OVERFLOW)
-                    val = 4294967295;
-                else if (at == AlertType.UNDERFLOW)
-                    val = 0;
-                return getNumericalAlert("ID", at, val);
-            }
+                AlertType.UNSPECIFIED or AlertType.UNDERFLOW => 0,
+                AlertType.OVERFLOW => uint.MaxValue,
+                _ => throw InvalidAlertType(at)
+            });
 
             public static Alert GetOTAlert(int maxChars, params AlertType[] ats)
             {
                 string msg = "";
                 if (ats.Contains(AlertType.UNSPECIFIED))
-                {
-                    return new Alert("OT", $"OT was not specified, leaving blank.");
-                }
-                if (ats.Contains(AlertType.INVALID)) //invalid characters, removing
-                {
-                    msg += $"Some of the characters in the OT are invalid in this format, removing them.";
-                }
-                if (ats.Contains(AlertType.OVERFLOW)) //too many characters, truncating
-                {
-                    if (msg != "")
-                        msg += "\r\n\r\n";
-                    msg += $"OTs can only have {maxChars} characters in this format, truncating it.";
-                }
-
-                if (msg != "")
-                    return new Alert("OT", msg);
+                    msg = "OT was not specified, leaving blank.";
                 else
-                    throw InvalidAlertType();
+                {
+                    if (ats.Contains(AlertType.INVALID)) //invalid characters, removing
+                        msg += $"Some of the characters in the OT are invalid in this format, removing them.";
+                    if (ats.Contains(AlertType.OVERFLOW)) //too many characters, truncating
+                    {
+                        if (msg is not "")
+                            msg += DataUtil.Newline(2);
+                        msg += $"OTs can only have {maxChars} characters in this format, truncating it.";
+                    }
+                }
+                return msg is not "" ? new("OT", msg) : throw InvalidAlertType();
             }
 
             public static Alert GetOTAlert(params AlertType[] ats)
-            {
-                if (ats.Contains(AlertType.OVERFLOW))
-                    throw new ArgumentException("Overflow OT Alerts must include the character limit.");
-                else
-                    return GetOTAlert(-1, ats);
-            }
+                => ats.Contains(AlertType.OVERFLOW) ?
+                throw new ArgumentNullException("maxChars", "Overflow OT Alerts must include the character limit.") : GetOTAlert(-1, ats);
 
             public static Alert GetLanguageAlert(AlertType at, string invalidLang = null)
-            {
-                return GetEnumAlert("Language", DEFAULT_LANGUAGE.ToFormattedString(), at, invalidLang);
-            }
+                => GetEnumAlert("Language", DEFAULT_LANGUAGE.ToFormattedString(), at, invalidLang);
 
             public static Alert GetOriginGameAlert(AlertType at, string originGame = null, string officialOriginGame = null)
+                => new("Origin Game", at switch
             {
-                if (at == AlertType.INVALID)
+                AlertType.UNSPECIFIED => "The met location was unspecified. Using the default of None.",
+                AlertType.INVALID => (originGame, officialOriginGame) switch
                 {
-                    string msg = "";
-                    if (originGame != null && officialOriginGame != null)
-                        msg += $"Neither the specified origin game {originGame} nor the official origin game {officialOriginGame}";
-                    else if (originGame != null)
-                        msg += $"The specified origin game {originGame} doesn't";
-                    else if (officialOriginGame != null)
-                        msg += $"The specified official origin game {officialOriginGame} doesn't";
-                    return new Alert("Origin Game", msg + $" exist in this format. Using the default of None.");
-                }
-                else if (at == AlertType.UNSPECIFIED)
-                    return new Alert("Origin Game", $"The met location was unspecified. Using the default of None.");
-                else
-                    throw InvalidAlertType(at);
-            }
+                    (not null, not null) => $"Neither the specified origin game {originGame} nor the official origin game {officialOriginGame}",
+                    (not null, null) => $"The specified origin game {originGame} doesn't",
+                    (null, not null) => $"The specified official origin game {officialOriginGame} doesn't",
+                    _ => throw InvalidAlertType(at) //should be unspecified
+                } + " exist in this format. Using the default of None.",
+                _ => throw InvalidAlertType(at)
+            });
 
             public static Alert GetOTGenderAlert(AlertType at, string invalidGender = null)
-            {
-                return GetEnumAlert("OT Gender", DEFAULT_GENDER.ToFormattedString(), at, invalidGender);
-            }
+                => GetEnumAlert("OT Gender", DEFAULT_GENDER.ToFormattedString(), at, invalidGender);
 
 
             // ----------
             // Catch Info Alert Methods
             // ----------
-
             public static Alert GetMetLocationAlert(AlertType at, string defaultLoc, string invalidLocation = null)
+                => new("Met Location", at switch
             {
-                if (at == AlertType.INVALID)
-                    return new Alert("Met Location", $"The location \"{invalidLocation}\" doesn't exist in specified origin game. Using the default location: {defaultLoc ?? "None"}.");
-                else if (at == AlertType.UNSPECIFIED)
-                    return new Alert("Met Location", $"The met location was unspecified. Using the default location: {defaultLoc ?? "None"}.");
-                else
-                    throw InvalidAlertType(at);
-            }
+                AlertType.INVALID => $"The location \"{invalidLocation}\" doesn't exist in specified origin game.",
+                AlertType.UNSPECIFIED => $"The met location was unspecified.",
+                _ => throw InvalidAlertType(at)
+            } + $" Using the default location: { defaultLoc ?? "None"}.");
 
-            public static Alert GetMetLevelAlert(AlertType at)
+            public static Alert GetMetLevelAlert(AlertType at) => GetNumericalAlert("Met Level", at, at switch
             {
-                int val = 0;
-                if (at == AlertType.UNSPECIFIED)
-                    val = 0;
-                else if (at == AlertType.OVERFLOW)
-                    val = 127;
-                else if (at == AlertType.UNDERFLOW)
-                    val = 0;
-
-                return getNumericalAlert("Met Level", at, val);
-            }
+                AlertType.UNSPECIFIED or AlertType.UNDERFLOW => 0,
+                AlertType.OVERFLOW => sbyte.MaxValue,
+                _ => throw InvalidAlertType(at)
+            });
 
             public static Alert GetBallAlert(AlertType at, string invalidBall = null)
-            {
-                return GetEnumAlert("Ball", DEFAULT_BALL.ToFormattedString(), at, invalidBall);
-            }
+                => GetEnumAlert("Ball", DEFAULT_BALL.ToFormattedString(), at, invalidBall);
 
 
             // ----------
             // Pokemon Attribute Alert Methods
             // ----------
-
             public static Alert GetPIDAlert(AlertType at, List<(string, object, object)> tags = null)
             {
-                if (at == AlertType.UNSPECIFIED)
-                    return new Alert("PID", $"PID not specified, generating one that matches this pku's other tags.");
-                else if (at == AlertType.OVERFLOW)
-                    return new Alert("PID", $"This pku's PID is higher than the maximum, generating one that matches this pku's other tags.");
-                else if (at == AlertType.UNDERFLOW)
-                    return new Alert("PID", $"This pku's PID is lower than the minimum, generating one that matches this pku's other tags.");
-                else if (tags == null || tags.Count == 0)
-                    throw new ArgumentException("if getPIDAlert recieves a MISMATCH alert, it must also recieve the tags parameter.");
-                else if (at == AlertType.MISMATCH)
+                // PID-Mismatch Alert
+                if (at is AlertType.MISMATCH)
                 {
+                    if (tags?.Count is not > 0)
+                        throw new ArgumentException($"If {nameof(at)} is MISMATCH, {nameof(tags)} must be non-empty.", nameof(tags));
                     string choice1msg = "";
                     string choice2msg = "";
                     foreach ((string name, object a, object b) in tags)
                     {
-                        choice1msg += $"{name}: {a}\n";
-                        choice2msg += $"{name}: {b}\n";
+                        choice1msg += $"{name}: {a}{DataUtil.Newline()}";
+                        choice2msg += $"{name}: {b}{DataUtil.Newline()}";
                     }
-                    choice1msg = choice1msg.Substring(0, choice1msg.Length - 1);
-                    choice2msg = choice2msg.Substring(0, choice2msg.Length - 1);
+                    choice1msg = choice1msg[0..^1];
+                    choice2msg = choice2msg[0..^1];
                     RadioButtonAlert.RBAChoice[] choices =
                     {
-                        new("Use original PID", choice1msg),
-                        new("Generate new PID", choice2msg)
-                    };
+                            new("Use original PID", choice1msg),
+                            new("Generate new PID", choice2msg)
+                        };
 
                     return new RadioButtonAlert("PID-Mismatch", "This pku's PID is incompatible with some of its other " +
                         "tags (in this format). Choose whether to keep the PID or generate a compatible one.", choices);
                 }
-                else
-                    throw InvalidAlertType(at);
+
+                // PID Alert
+                return new("PID", at switch
+                {
+                    AlertType.UNSPECIFIED => "PID not specified",
+                    AlertType.OVERFLOW => "This pku's PID is higher than the maximum",
+                    AlertType.UNDERFLOW => "This pku's PID is lower than the minimum",
+                    _ => throw InvalidAlertType(at)
+                } + ", generating one that matches this pku's other tags.");
             }
 
             public static Alert GetNicknameAlert(AlertType at1, int? maxCharacters = null, AlertType at2 = AlertType.NONE)
             {
                 AlertType[] ats = new AlertType[] { at1, at2 };
                 string msg = "";
-                if (ats.Contains(AlertType.INVALID)) //invalid characters, removing
-                {
+                if (ats.Contains(AlertType.INVALID)) //some characters invalid, removing them
                     msg += $"Some of the characters in the nickname are invalid in this format, removing them.";
-                }
                 if (ats.Contains(AlertType.OVERFLOW)) //too many characters, truncating
                 {
-                    if (maxCharacters == null)
-                        throw new ArgumentNullException("maxCharacters", "maxCharacters must be specified if OVERFLOW error is given.");
-                    if (msg != "")
-                        msg += "\r\n\r\n";
+                    if (maxCharacters is null)
+                        throw new ArgumentNullException(nameof(maxCharacters), "maximum # of chars must be specified for OVERFLOW alerts.");
+                    if (msg is not "")
+                        msg += DataUtil.Newline();
                     msg += $"Nickname can only have {maxCharacters} characters in this format, truncating it.";
                 }
-
-                if (msg != "")
-                    return new Alert("Nickname", msg);
-                else
-                    throw InvalidAlertType();
+                return msg is not "" ? new("Nickname", msg) : throw InvalidAlertType();
             }
 
-            public static Alert GetNicknameFlagAlert(AlertType at, bool flagset, string defaultName = null)
+            public static Alert GetNicknameFlagAlert(bool flagset, string defaultName = null)
             {
-                if (at == AlertType.MISMATCH)
-                {
-                    if (flagset)
-                    {
-                        if (defaultName == null)
-                            throw new ArgumentException("defaultName must be specified on a MISMATCH alert where flagst == true.");
-                        return new Alert("Nickname Flag", $"This pku's Nickname Flag is true, yet it doesn't have a nickname. Setting the nickname to: {defaultName}.");
-                    }
-                    else
-                        return new Alert("Nickname Flag", "This pku's Nickname Flag is false, yet it has a nickname.");
-                }
-                else
-                    throw InvalidAlertType(at);
+                if (flagset && defaultName is null)
+                    throw new ArgumentNullException(nameof(defaultName), $"A default name must be specified on a when {nameof(flagset)} true.");
+                return new("Nickname Flag", flagset ?
+                    $"This pku's Nickname Flag is true, yet it doesn't have a nickname. Setting the nickname to: {defaultName}." :
+                    "This pku's Nickname Flag is false, yet it has a nickname.");
             }
 
-            public static Alert GetItemAlert(AlertType at, string invalidItem)
+            public static Alert GetItemAlert(AlertType at, string invalidItem) => at switch
             {
-                if (at == AlertType.INVALID)
-                    return new Alert("Item", $"The held item {invalidItem} is not valid in this format. Setting the held item to none.");
-                else
-                    throw InvalidAlertType(at);
-            }
+                AlertType.INVALID => new("Item", $"The held item {invalidItem} is not valid in this format. Setting the held item to none."),
+                _ => throw InvalidAlertType(at)
+            };
 
-            public static Alert GetLevelAlert(AlertType at)
+            public static Alert GetLevelAlert(AlertType at) => GetNumericalAlert("Level", at, at switch
             {
-                if (at == AlertType.UNSPECIFIED)
-                    return new Alert("Level", $"No level specified, using the default: 1.");
-                else if (at == AlertType.OVERFLOW)
-                    return new Alert("Level", $"This pku's level is too high. Rounding down to 100.");
-                else if (at == AlertType.UNDERFLOW)
-                    return new Alert("Level", $"This pku's level is too low. Rounding up to 1.");
-                else
-                    throw InvalidAlertType(at);
-            }
+                AlertType.UNSPECIFIED or AlertType.UNDERFLOW => 1,
+                AlertType.OVERFLOW => 100,
+                _ => throw InvalidAlertType(at)
+            });
 
             public static Alert GetEXPAlert(AlertType at, int? level100exp = null)
             {
-                if (at == AlertType.UNSPECIFIED)
-                    return new Alert("EXP", $"EXP tag not specified, using the default of 0, i.e. level 1.");
-                else if (at == AlertType.OVERFLOW)
+                if (at is AlertType.OVERFLOW && level100exp is null)
+                    throw new ArgumentNullException(nameof(level100exp), "The level 100 exp must be given for OVERFLOW alerts.");
+                return new("EXP", at switch
                 {
-                    if (!level100exp.HasValue)
-                        throw new ArgumentException("If getEXPAlert is given an OVERFLOW alert, it must also receive the species' level100exp.");
-                    return new Alert("EXP", $"This pku's EXP is higher than the maximum. Rounding down to {level100exp}, i.e. level 100.");
-                }
-                else if (at == AlertType.UNDERFLOW)
-                    return new Alert("EXP", $"This pku's EXP is lower than the minimum. Rounding up to 0, i.e. level 1.");
-                else
-                    throw InvalidAlertType(at);
+                    AlertType.UNSPECIFIED => "EXP tag not specified, using the default of 0, i.e. level 1.",
+                    AlertType.OVERFLOW => $"This pku's EXP is higher than the maximum. Rounding down to {level100exp}, i.e. level 100.",
+                    AlertType.UNDERFLOW => "This pku's EXP is lower than the minimum. Rounding up to 0, i.e. level 1.",
+                    _ => throw InvalidAlertType(at)
+                });
             }
 
-            public static Alert GetLevelExpAlert(AlertType at, (AlertType atLevel, AlertType atEXP, int level, int exp, int levelToExp, int expToLevel, int level100Exp)? mismatchData = null)
+            public static Alert GetLevelExpAlert(AlertType at, (AlertType atLevel, AlertType atEXP, 
+                int level, int exp, int levelToExp, int expToLevel, int level100Exp)? mismatchData = null)
             {
-                if (at == AlertType.UNSPECIFIED)
-                    return new Alert("Level/Experience", "Neither the level nor experience was specified. Defaulting to level 1.");
-                else if (at == AlertType.OVERFLOW) //both overflow
-                    return new Alert("Level/Experience", "Both the Level and EXP tags are too high, rounding down to level 100.");
-                else if (at == AlertType.UNDERFLOW) //both underflow
-                    return new Alert("Level/Experience", "Both the Level and EXP tags are too low, rounding up to level 1.");
-                else if (at == AlertType.MISMATCH) //mismatch (can't both be over/underflow)
+                //mismatch alert
+                if (at is AlertType.MISMATCH)
                 {
                     //levelData and expData must be given for MISMATCH alert
-                    if (!mismatchData.HasValue)
-                        throw new Exception("If the MISMATCH AlertType is given to getLevelExpAlert, then mismatchData must be given.");
+                    if (mismatchData is null)
+                        throw new ArgumentNullException(nameof(mismatchData), $"{nameof(mismatchData)} must be given for MISMATCH alerts.");
+
+                    RadioButtonAlert.RBAChoice[] choices = new RadioButtonAlert.RBAChoice[2];
 
                     // Deal with phrasing the level option
-                    RadioButtonAlert.RBAChoice[] choices = new RadioButtonAlert.RBAChoice[2];
-                    if (mismatchData.Value.atLevel == AlertType.OVERFLOW)
-                        choices[0] = new("Use Level Tag", $"Set to level 100, i.e. {mismatchData.Value.level100Exp} experience (rounded down because level tag was too high).");
-                    else if (mismatchData.Value.atLevel == AlertType.UNDERFLOW)
-                        choices[0] = new("Use Level Tag", $"Set to level 1, i.e. 0 experience (rounded up because level tag was too low).");
-                    else if (mismatchData.Value.atLevel == AlertType.NONE)
-                        choices[0] = new("Use Level Tag", $"Set to level {mismatchData.Value.level}, i.e. {mismatchData.Value.levelToExp} exp.");
-                    else
-                        throw new Exception("No valid AlertTypes were given to the LEVEL part of getLevelExpAlert's MISMATCH alert");
+                    choices[0] = new("Use Level Tag", mismatchData.Value.atLevel switch
+                    {
+                        AlertType.OVERFLOW => $"Set to level 100, i.e. {mismatchData.Value.level100Exp} experience (rounded down because level tag was too high).",
+                        AlertType.UNDERFLOW => "Set to level 1, i.e. 0 experience (rounded up because level tag was too low).",
+                        AlertType.NONE => $"Set to level {mismatchData.Value.level}, i.e. {mismatchData.Value.levelToExp} exp.",
+                        _ => throw new ArgumentException("No valid AlertTypes were given to the LEVEL part of the MISMATCH alert.", nameof(mismatchData.Value.atLevel))
+                    });
 
                     // Deal with phrasing the exp option
-                    if (mismatchData.Value.atEXP == AlertType.OVERFLOW)
-                        choices[1] = new("Use Experience Tag", $"Set experience to {mismatchData.Value.level100Exp} experience, i.e. level 100 (rounded down because experience tag was too high).");
-                    else if (mismatchData.Value.atEXP == AlertType.UNDERFLOW)
-                        choices[1] = new("Use Experience Tag", $"Set experience to 0, i.e. level 1 (rounded up because level tag was too low).");
-                    else if (mismatchData.Value.atEXP == AlertType.NONE)
-                        choices[1] = new("Use Experience Tag", $"Set experience to {mismatchData.Value.exp}, i.e. level {mismatchData.Value.expToLevel}.");
-                    else
-                        throw new Exception("No valid AlertTypes were given to the EXP part of getLevelExpAlert's MISMATCH alert");
+                    choices[1] = new("Use Experience Tag", mismatchData.Value.atEXP switch
+                    {
+                        AlertType.OVERFLOW => $"Set experience to {mismatchData.Value.level100Exp} experience, i.e. level 100 (rounded down because experience tag was too high).",
+                        AlertType.UNDERFLOW => "Set experience to 0, i.e. level 1 (rounded up because level tag was too low).",
+                        AlertType.NONE => $"Set experience to {mismatchData.Value.exp}, i.e. level {mismatchData.Value.expToLevel}.",
+                        _ => throw new ArgumentException("No valid AlertTypes were given to the EXP part the MISMATCH alert.", nameof(mismatchData.Value.atEXP))
+                    });
 
                     //put 2 options together
-                    return new RadioButtonAlert("Level/Experience", $"The given level and experience don't match. Choose which one to use.", choices);
+                    return new RadioButtonAlert("Level/Experience", "The given level and experience don't match, choose which one to use.", choices);
                 }
-                else
-                    throw InvalidAlertType(at);
+
+                //other alerts
+                return new("Level/Experience", at switch
+                {
+                    AlertType.UNSPECIFIED => "Neither the level nor experience was specified. Defaulting to level 1.",
+                    AlertType.OVERFLOW => "Both the Level and EXP tags are too high, rounding down to level 100.",
+                    AlertType.UNDERFLOW => "Both the Level and EXP tags are too low, rounding up to level 1.",
+                    _ => throw InvalidAlertType(at)
+                });
             }
 
             public static Alert GetPPUpAlert(AlertType at, (int[] overflow, int[] underflow)? invalidData = null)
             {
-                if (at == AlertType.UNSPECIFIED) //shouldn't be called, should be silent
-                    return new Alert("PP Ups", $"PP Ups tag not specified, giving each move 0 PP ups.");
-                else if (at == AlertType.INVALID)
+                string helper(int[] xFlow)
                 {
-                    if (!invalidData.HasValue || invalidData.Value.overflow.Length < 1 && invalidData.Value.underflow.Length < 1)
-                        throw new ArgumentException("If getPPUpAlert is given an INVALID alert, it must also receive invalidData and one of those arrays must be non-empty.");
-
-                    string msgOF = "";
-                    string msgUF = "";
-
-                    if (invalidData.Value.overflow.Length > 0)
-                    {
-                        msgOF += "The PP-Ups of ";
-                        msgOF += invalidData.Value.overflow.Length == 1 ? "move " : "moves "; //plural check
-                        foreach (int i in invalidData.Value.overflow) //add moves
-                            msgOF += i + 1 + ","; //starts at move 1 not move 0
-                        msgOF = msgOF.Substring(0, msgOF.Length - 1); //remove extra comma
-                        msgOF += " are too high, rounding them down to 3.";
-                    }
-                    if (invalidData.Value.underflow.Length > 0)
-                    {
-                        msgUF += "The PP-Ups of ";
-                        msgUF += invalidData.Value.underflow.Length == 1 ? "move " : "moves "; //plural check
-                        foreach (int i in invalidData.Value.underflow) //add moves
-                            msgUF += i + 1 + ","; //starts at move 1 not move 0
-                        msgUF = msgUF.Substring(0, msgUF.Length - 1); //remove extra comma
-                        msgUF += " are too low, rounding them up to 0.";
-                    }
-
-                    string msg;
-                    if (msgOF != "" && msgUF != "")
-                        msg = msgOF + "\r\n\r\n" + msgUF;
-                    else if (msgOF != "")
-                        msg = msgOF;
-                    else //must be underflow
-                        msg = msgUF;
-
-                    return new Alert("PP Ups", msg);
+                    string msgXF = "The PP-Ups of "+ (xFlow.Length is 1 ? "move " : "moves "); //plural check
+                    foreach (int i in xFlow) //add moves
+                        msgXF += i + 1 + ","; //starts at move 1 not move 0
+                    return msgXF;
                 }
-                else
-                    throw InvalidAlertType(at);
+                string msg;
+                switch (at)
+                {
+                    case AlertType.UNSPECIFIED: //shouldn't be called, should be silent
+                        msg = "PP Ups tag not specified, giving each move 0 PP ups.";
+                        break;
+                    case AlertType.INVALID:
+                        if (invalidData is null || invalidData.Value.overflow.Length < 1 && invalidData.Value.underflow.Length < 1)
+                            throw new ArgumentException($"At least one of {nameof(invalidData)} must be non-empty for INVALID alerts.", nameof(invalidData));
+                        string msgOF = null, msgUF = null;
+                        if (invalidData.Value.overflow.Length > 0)
+                            msgOF = helper(invalidData.Value.overflow)[0..^1] + " are too high, rounding them down to 3.";
+                        if (invalidData.Value.underflow.Length > 0)
+                            msgUF = helper(invalidData.Value.underflow)[0..^1] + " are too low, rounding them up to 0.";
+                        msg = string.Join(DataUtil.Newline(2), msgOF, msgUF);
+                        break;
+                    default:
+                        throw InvalidAlertType(at);
+                }
+                return new("PP Ups", msg);
             }
 
-            public static Alert GetFriendshipAlert(AlertType at)
+            public static Alert GetFriendshipAlert(AlertType at) => GetNumericalAlert("Friendship", at, at switch
             {
-                int val = 0;
-                if (at == AlertType.UNSPECIFIED)
-                    val = 0;
-                else if (at == AlertType.OVERFLOW)
-                    val = 255;
-                else if (at == AlertType.UNDERFLOW)
-                    val = 0;
-
-                return getNumericalAlert("Friendship", at, val);
-            }
+                AlertType.UNSPECIFIED or AlertType.UNDERFLOW => 0,
+                AlertType.OVERFLOW => byte.MaxValue,
+                _ => throw InvalidAlertType(at)
+            });
 
             public static Alert GetMoveAlert(AlertType at, int? movesUsed = null)
             {
-                if (at == AlertType.UNSPECIFIED) // Move tag is unspecified, or empty
-                    return new Alert("Moves", $"This pku has no moves, the Pokemon's moveset will be empty.");
-                else if (at == AlertType.INVALID) // One or more moves is invalid
+                if (at is AlertType.INVALID && movesUsed is null)
+                    throw new ArgumentNullException(nameof(movesUsed), $"Must specify how many moves used for INVALID alerts.");
+                return new("Moves", at switch
                 {
-                    if (movesUsed == null)
-                        throw new ArgumentException("Must specify movesUsed (0-4), if INVALID AlertType used.");
-
-                    string msg = movesUsed == 0 ? "None of the pku's moves are valid in this format, the Pokemon's moveset will be empty." :
-                        $"Some of the pku's moves are invalid in this format, using the first {movesUsed} valid moves.";
-                    return new Alert("Moves", msg);
-                }
-                else if(at == AlertType.OVERFLOW)
-                    return new Alert("Moves", $"This pku has more than 4 valid moves, using the first 4.");
-                else
-                    throw InvalidAlertType(at);
+                    AlertType.UNSPECIFIED => "This pku has no moves, the Pokemon's moveset will be empty.",
+                    AlertType.INVALID => movesUsed is 0 ? "None of the pku's moves are valid in this format, the Pokemon's moveset will be empty." :
+                            $"Some of the pku's moves are invalid in this format, using the first {movesUsed} valid moves.",
+                    AlertType.OVERFLOW => "This pku has more than 4 valid moves, using the first 4.",
+                    _ => throw InvalidAlertType(at)
+                });
             }
 
             public static Alert GetGenderAlert(AlertType at, Gender? correctGender = null, string invalidGender = null)
             {
-                if (at == AlertType.UNSPECIFIED) //only if it has no mandatory gender, otherwise dont even alert
-                    return new Alert("Gender", $"This species can be either male or female, yet no gender was specified. Setting to male.");
-                else if (!correctGender.HasValue || invalidGender == null)
-                    throw new ArgumentException("If getGenderAlert is given MISMATCH or INVALID, the correctGender and invalidGender must be given.");
-                else if (at == AlertType.MISMATCH) //mismatch with species
-                    return new Alert("Gender", $"This species cannot be {invalidGender}. Setting gender to {correctGender}.");
-                else if (at == AlertType.INVALID)
-                    return new Alert("Gender", $"\"{invalidGender}\" is not a valid gender. Setting gender to {correctGender}.");
-                else
-                    throw InvalidAlertType(at);
+                if (at is AlertType.MISMATCH or AlertType.INVALID && (correctGender is null || invalidGender is null))
+                    throw new ArgumentNullException($"{nameof(correctGender)}, {nameof(invalidGender)}",
+                        "The correct and invalid gender must be given for INVALID & MSIMATCH alerts.");
+                return new("Gender", at switch
+                {
+                    AlertType.UNSPECIFIED => "This species can be either male or female, yet no gender was specified." +
+                                             $" Setting to {DEFAULT_GENDER.ToFormattedString()}.",
+                    AlertType.MISMATCH => $"This species cannot be {invalidGender}. Setting gender to {correctGender}.",
+                    AlertType.INVALID => $"\"{invalidGender}\" is not a valid gender. Setting gender to {correctGender}.",
+                    _ => throw InvalidAlertType(at)
+                });
             }
 
             public static Alert GetFormAlert(AlertType at, string[] invalidForm = null)
             {
-                if (at == AlertType.UNSPECIFIED)
-                    return new Alert("Form", $"No form specified, using the default form.");
-                else if (invalidForm == null)
-                    throw new ArgumentException("Must give invalidForm if there is a specified form Alert.");
-                else if (at == AlertType.CASTED)
-                    return new Alert("Form", $"The form \"{invalidForm.ToFormattedString()}\" does not exist in this format and has been casted to its default form.");
-                else if (at == AlertType.IN_BATTLE)
-                    return new Alert("Form", $"The form \"{invalidForm.ToFormattedString()}\" only exists in-battle, using its out of battle form.");
-                else
-                    throw InvalidAlertType(at);
+                if (at is AlertType.CASTED or AlertType.IN_BATTLE && invalidForm is null)
+                    throw new ArgumentException($"{nameof(invalidForm)} must be given for CASTED and IN_BATTLE alerts.", nameof(invalidForm));
+                return new("Form", at switch
+                {
+                    AlertType.UNSPECIFIED => "No form specified, using the default form.",
+                    AlertType.CASTED => $"The form \"{invalidForm.ToFormattedString()}\" does not exist in this format and has been casted to its default form.",
+                    AlertType.IN_BATTLE => $"The form \"{invalidForm.ToFormattedString()}\" only exists in-battle, using its out of battle form.",
+                    _ => throw InvalidAlertType(at)
+                });
             }
 
             public static Alert GetNatureAlert(AlertType at, string invalidNature = null)
-            {
-                return GetEnumAlert("Nature", DEFAULT_NATURE.ToFormattedString(), at, invalidNature);
-            }
+                => GetEnumAlert("Nature", DEFAULT_NATURE.ToFormattedString(), at, invalidNature);
 
             public static Alert GetEVsAlert(params AlertType[] ats)
-            {
-                if (ats == null || ats.Length != 1 && ats.Length != 6)
-                    throw new ArgumentException("getEVsAlert() only accepts a single UNSPECFIED AlertType, or six OVERFLOW/UNDERFLOW/UNSPECIFIED AlertTypes.");
-                return getMultiNumericalAlert("EVs", new string[]
-                {
-                    "HP", "Attack", "Defense", "Sp. Attack", "Sp. Defense", "Speed"
-                }, ats, 255, 0, 0, ats.Length == 1 && ats[0] == AlertType.UNSPECIFIED);
-            }
+                => GetMultiStatAlert("EVs", new string[] { "HP", "Attack", "Defense", "Sp. Attack", "Sp. Defense", "Speed" }, byte.MaxValue, ats);
 
             public static Alert GetIVsAlert(params AlertType[] ats)
-            {
-                if (ats == null || ats.Length != 1 && ats.Length != 6)
-                    throw new ArgumentException("getIVsAlert() only accepts a single UNSPECFIED AlertType, or six OVERFLOW/UNDERFLOW/UNSPECIFIED AlertTypes.");
-                return getMultiNumericalAlert("IVs", new string[]
-                {
-                    "HP", "Attack", "Defense", "Sp. Attack", "Sp. Defense", "Speed"
-                }, ats, 31, 0, 0, ats.Length == 1 && ats[0] == AlertType.UNSPECIFIED);
-            }
+                => GetMultiStatAlert("IVs", new string[] { "HP", "Attack", "Defense", "Sp. Attack", "Sp. Defense", "Speed" }, 31, ats);
 
             public static Alert GetContestAlert(params AlertType[] ats)
-            {
-                if (ats == null || ats.Length != 1 && ats.Length != 6)
-                    throw new ArgumentException("getContestAlert() only accepts a single UNSPECFIED AlertType, or six OVERFLOW/UNDERFLOW/UNSPECIFIED AlertTypes.");
-                return getMultiNumericalAlert("Contest Stats", new string[]
-                {
-                    "Cool", "Beautiful", "Cute", "Clever", "Tough", "Sheen"
-                }, ats, 255, 0, 0, ats.Length == 1 && ats[0] == AlertType.UNSPECIFIED);
-            }
+                => GetMultiStatAlert("Contest Stats", new string[] { "Cool", "Beautiful", "Cute", "Clever", "Tough", "Sheen" }, byte.MaxValue, ats);
 
             public static Alert GetPokerusAlert(AlertType atStrain, AlertType atDays)
             {
-                if (atStrain == AlertType.NONE && atDays == AlertType.NONE)
+                if ((atStrain, atDays) is (AlertType.NONE, AlertType.NONE))
                     return null;
-
-                Alert s = null, d = null;
-                if (atStrain == AlertType.OVERFLOW)
-                    s = getNumericalAlert("Pokérus strain", atStrain, 15);
-                else if (atStrain == AlertType.UNDERFLOW)
-                    s = getNumericalAlert("Pokérus strain", atStrain, 0);
-                else if (atStrain != AlertType.NONE)
-                    InvalidAlertType(atStrain);
-
-                if (atDays == AlertType.OVERFLOW)
-                    d = getNumericalAlert("Pokérus strain", atDays, 4);
-                else if (atStrain == AlertType.UNDERFLOW)
-                    d = getNumericalAlert("Pokérus strain", atDays, 0);
-                else if (atDays != AlertType.NONE)
-                    InvalidAlertType(atDays);
-
-                string msg = "";
-                if (s != null)
-                    msg += s.Message;
-                if (msg.Length > 0)
-                    msg += "\r\n\r\n";
-                if (d != null)
-                    msg += d.Message;
-
-                return new Alert("Pokérus", msg);
+                Alert helper(string name, AlertType at, int maxVal) => at switch
+                {
+                    AlertType.OVERFLOW => GetNumericalAlert($"Pokérus {name}", at, maxVal),
+                    AlertType.UNDERFLOW => GetNumericalAlert($"Pokérus {name}", at, 0),
+                    AlertType.NONE => null,
+                    _ => throw InvalidAlertType(atStrain)
+                };
+                return new("Pokérus", string.Join(DataUtil.Newline(2), helper("strain", atStrain, 15)?.Message, helper("days", atDays, 4)?.Message));
             }
 
             public static Alert GetAbilityAlert(AlertType at, string invalidAbility = null, string defaultAbility = "None")
             {
-                if (at == AlertType.UNSPECIFIED)
-                    return new Alert("Ability", $"No ability was specified, using the default ability: {defaultAbility}.");
-                else if (invalidAbility == null)
-                    throw new ArgumentException("Must give the invalid value if there is a specified ability Alert.");
-                else if (at == AlertType.MISMATCH) //only in gen 3
-                    return new Alert("Ability", $"This species cannot have the ability {invalidAbility} in this format. Using the default ability: {defaultAbility}.");
-                else if (at == AlertType.INVALID)
-                    return new Alert("Ability", $"The ability {invalidAbility} is not supported by this format, using the default ability: {defaultAbility}.");
-                else
-                    throw InvalidAlertType(at);
+                if (at is AlertType.MISMATCH or AlertType.INVALID && invalidAbility is null)
+                    throw new ArgumentNullException(nameof(invalidAbility), "Must give the invalid ability for MISMATCH and INVALID alerts.");
+                return new("Ability", at switch
+                {
+                    AlertType.UNSPECIFIED => $"No ability was specified, using the default ability: {defaultAbility}.",
+                    AlertType.MISMATCH => $"This species cannot have the ability {invalidAbility} in this format. Using the default ability: {defaultAbility}.",
+                    AlertType.INVALID => $"The ability {invalidAbility} is not supported by this format, using the default ability: {defaultAbility}.",
+                    _ => throw InvalidAlertType(at)
+                });
             }
 
-            public static Alert GetRibbonAlert(AlertType at)
-            {
-                if (at == AlertType.INVALID)
-                    return new Alert("Ribbons", "Some of the pku's ribbons are not valid in this format. Ignoring them.");
-                else
-                    throw InvalidAlertType(at);
-            }
+            public static Alert GetRibbonAlert()
+                => new("Ribbons", "Some of the pku's ribbons are not valid in this format. Ignoring them.");
 
             public static Alert GetTrashAlert(AlertType atNickname, AlertType atOT, int nickEntries, int OTEntries, int? maxVal = null)
             {
-                if ((atNickname, atOT) is (AlertType.NONE, AlertType.NONE))
+                if (atNickname is not AlertType.OVERFLOW or AlertType.MISMATCH ||
+                    atOT is not AlertType.OVERFLOW or AlertType.MISMATCH)
                     throw InvalidAlertType();
 
-                if((atNickname is AlertType.OVERFLOW || atOT is AlertType.OVERFLOW) && maxVal is null)
-                    throw new ArgumentException("maxVal cannot be null if there is an overflow error.", nameof(maxVal));
+                if ((atNickname is AlertType.OVERFLOW || atOT is AlertType.OVERFLOW) && maxVal is null)
+                    throw new ArgumentNullException(nameof(maxVal), "Must give maximum value if there is an OVERFLOW alert.");
 
-                string msg = "";
-                if (atNickname is AlertType.OVERFLOW)
-                    msg += $"One or more of the entries in Nickname Trash Bytes is too high, the maximum value is ${maxVal}. Ignoring them.";
-                else if (atNickname is AlertType.MISMATCH)
-                    msg += $"The number of entries in the Nickname Trash Bytes must be exactly {nickEntries}. Ignoring them.";
+                string helper(string name, AlertType at, int entries) => at switch
+                {
+                    AlertType.OVERFLOW => $"One or more of the entries in {name} Trash Bytes is too high, the maximum value is ${maxVal}. Ignoring them.",
+                    AlertType.MISMATCH => $"The number of entries in the {name} Trash Bytes must be exactly {entries}. Ignoring them.",
+                    _ => null
+                };
 
-                if (msg.Length > 0 && atOT is not AlertType.NONE)
-                    msg += "\r\n\r\n";
-
-                if (atOT is AlertType.OVERFLOW)
-                    msg += $"One or more of the entries in OT Trash Bytes is too high, the maximum value is ${maxVal}. Ignoring them.";
-                else if (atOT is AlertType.MISMATCH)
-                    msg += $"The number of entries in the OT Trash Bytes must be exactly {OTEntries}. Ignoring them.";
-
-                return new Alert("Trash Bytes", msg);
+                return new("Trash Bytes", string.Join(DataUtil.Newline(2), 
+                    helper("Nickname", atNickname, nickEntries), helper("OT", atOT, OTEntries)));
             }
         }
 
-        public static class AuxProcess
+
+        /* ------------------------------------
+         * Tag Processing Methods
+         * ------------------------------------
+        */
+        /// <summary>
+        /// Methods for processing meta tags that are external to the main exporting process.
+        /// </summary>
+        public static class MetaTags
         {
-            public static Alert ProcessBattleStatOverride(pkuObject pku, GlobalFlags flags)
+            public static Alert ApplyBattleStatOverride(pkuObject pku, GlobalFlags flags)
             {
                 //generate alert, BEFORE modifying pku
-                Alert alert = AuxAlerts.GetBattleStatAlert(pku.Stat_Nature != null, pku.Nature != null, pku.Stat_Nature, pku.Nature, new bool[]
+                Alert alert = MetaAlerts.GetBattleStatAlert(pku.Stat_Nature is not null, pku.Nature is not null, pku.Stat_Nature, pku.Nature, new bool[]
                 {
-                    pku.Hyper_Training?.HP == true,
-                    pku.Hyper_Training?.Attack == true,
-                    pku.Hyper_Training?.Defense == true,
-                    pku.Hyper_Training?.Sp_Attack == true,
-                    pku.Hyper_Training?.Sp_Defense == true,
-                    pku.Hyper_Training?.Speed == true
+                    pku.Hyper_Training?.HP is true,
+                    pku.Hyper_Training?.Attack is true,
+                    pku.Hyper_Training?.Defense is true,
+                    pku.Hyper_Training?.Sp_Attack is true,
+                    pku.Hyper_Training?.Sp_Defense is true,
+                    pku.Hyper_Training?.Speed is true
                 }, new int?[]
                 {
                     pku.IVs?.HP,
@@ -806,30 +711,30 @@ namespace pkuManager.Formats.pkx
                     pku.IVs?.Speed
                 });
 
-                if (flags?.Battle_Stat_Override == true)
+                if (flags?.Battle_Stat_Override is true)
                 {
                     //If stat nature is specified, replace nature with it
-                    if (pku.Stat_Nature != null)
+                    if (pku.Stat_Nature is not null)
                         pku.Nature = pku.Stat_Nature;
 
                     //If any hyper training is specified, make sure IV object is not null.
-                    if (pku.IVs == null && (pku.Hyper_Training?.HP == true || pku.Hyper_Training?.Attack == true ||
-                                           pku.Hyper_Training?.Defense == true || pku.Hyper_Training?.Sp_Attack == true ||
-                                           pku.Hyper_Training?.Sp_Defense == true || pku.Hyper_Training?.Speed == true))
+                    if (pku.IVs is null && (pku.Hyper_Training?.HP is true || pku.Hyper_Training?.Attack is true ||
+                                           pku.Hyper_Training?.Defense is true || pku.Hyper_Training?.Sp_Attack is true ||
+                                           pku.Hyper_Training?.Sp_Defense is true || pku.Hyper_Training?.Speed is true))
                         pku.IVs ??= new pkuObject.IVs_Class();
 
                     //If any hyper training is specified, replace corresponding IVs with 31
-                    if (pku.Hyper_Training?.HP == true)
+                    if (pku.Hyper_Training?.HP is true)
                         pku.IVs.HP = 31;
-                    if (pku.Hyper_Training?.Attack == true)
+                    if (pku.Hyper_Training?.Attack is true)
                         pku.IVs.Attack = 31;
-                    if (pku.Hyper_Training?.Defense == true)
+                    if (pku.Hyper_Training?.Defense is true)
                         pku.IVs.Defense = 31;
-                    if (pku.Hyper_Training?.Sp_Attack == true)
+                    if (pku.Hyper_Training?.Sp_Attack is true)
                         pku.IVs.Sp_Attack = 31;
-                    if (pku.Hyper_Training?.Sp_Defense == true)
+                    if (pku.Hyper_Training?.Sp_Defense is true)
                         pku.IVs.Sp_Defense = 31;
-                    if (pku.Hyper_Training?.Speed == true)
+                    if (pku.Hyper_Training?.Speed is true)
                         pku.IVs.Speed = 31;
 
                     return alert;
@@ -838,7 +743,7 @@ namespace pkuManager.Formats.pkx
                     return null;
             }
 
-            public static Alert ProcessByteOverride(pkuObject pku, params ByteArrayManipulator[] bams)
+            public static Alert ApplyByteOverride(pkuObject pku, params ByteArrayManipulator[] bams)
             {
                 bool invalid = false;
                 static bool singleBam(ByteArrayManipulator bam, Dictionary<int, byte> bo)
@@ -866,20 +771,22 @@ namespace pkuManager.Formats.pkx
                 if (bams.Length > 4 && pku.Byte_Override?.D is not null)
                     invalid &= singleBam(bams[4], pku.Byte_Override.D);
                 if (bams.Length > 5)
-                    throw new ArgumentException($"At most 5 different {nameof(ByteArrayManipulator)}s should have been passed.", nameof(bams));
+                    throw new ArgumentException($"At most, 5 different BAMs should have been passed.", nameof(bams));
 
-                return invalid ? AuxAlerts.GetByteOverrideAlert(AlertType.INVALID) : null;
+                return invalid ? MetaAlerts.GetByteOverrideAlert() : null;
             }
         }
 
-
-        public static class ProcessTags
+        /// <summary>
+        /// Generalized methods for processing attributes of pkx files.
+        /// </summary>
+        public static class ExportTags
         {
             // ----------
             // Generalized Processing Methods
             // ----------
-
-            public static (int[], Alert) ProcessMultiNumericTag(bool specified, int?[] vals, Func<AlertType[], Alert> alertFunc, int max, int min, int defaultVal, bool silentUnspecified)
+            public static (int[], Alert) ProcessMultiNumericTag(bool specified, int?[] vals,
+                Func<AlertType[], Alert> alertFunc, int max, int min, int defaultVal, bool silentUnspecified)
             {
                 int[] checkedVals = new int[vals.Length];
                 Alert alert = null;
@@ -889,83 +796,38 @@ namespace pkuManager.Formats.pkx
                 {
                     for (int i = 0; i < vals.Length; i++)
                     {
-                        if (vals[i].HasValue)
+                        (checkedVals[i], valAlerts[i]) = vals[i] switch
                         {
-                            if (vals[i] > max)
-                            {
-                                checkedVals[i] = max; //max val
-                                valAlerts[i] = AlertType.OVERFLOW;
-                            }
-                            else if (vals[i] < min)
-                            {
-                                checkedVals[i] = min; //min val
-                                valAlerts[i] = AlertType.UNDERFLOW;
-                            }
-                            else //valid val
-                            {
-                                checkedVals[i] = vals[i].Value;
-                                valAlerts[i] = AlertType.NONE;
-                            }
-                        }
-                        else
-                        {
-                            checkedVals[i] = defaultVal; //default val
-                            valAlerts[i] = AlertType.UNSPECIFIED;
-                        }
+                            null => (defaultVal, AlertType.UNSPECIFIED),
+                            var x when x > max => (max, AlertType.OVERFLOW),
+                            var x when x < min => (min, AlertType.UNDERFLOW),
+                            _ => (vals[i].Value, AlertType.NONE),
+                        };
                     }
                     alert = alertFunc(valAlerts);
                 }
                 else if (!silentUnspecified)
-                    alert = alertFunc(new AlertType[] { AlertType.UNSPECIFIED });
+                    alert = alertFunc(new[] { AlertType.UNSPECIFIED });
 
                 return (checkedVals, alert);
             }
 
-            public static (int, Alert) ProcessNumericTag(int? tag, Func<AlertType, Alert> getAlertFunc, bool silentUnspecified, int max, int min, int defaultVal)
+            private static (long, Alert) ProcessNumericTag(long? tag, Func<AlertType, Alert> getAlertFunc,
+                bool silentUnspecified, long max, long min, long defaultVal) => tag switch
             {
-                int val = defaultVal;
-                Alert alert = null;
+                null => (defaultVal, silentUnspecified ? null : getAlertFunc(AlertType.UNSPECIFIED)),
+                var x when x > max => (max, getAlertFunc(AlertType.OVERFLOW)),
+                var x when x < min => (min, getAlertFunc(AlertType.UNDERFLOW)),
+                _ => (tag.Value, null)
+            };
 
-                if (tag.HasValue)
-                {
-                    if (tag > max) //overflow
-                    {
-                        val = max;
-                        alert = getAlertFunc(AlertType.OVERFLOW);
-                    }
-                    else if (tag < min) //underflow
-                        alert = getAlertFunc(AlertType.UNDERFLOW);
-                    else //tag is within valid range
-                        val = tag.Value;
-                }
-                else if (!silentUnspecified)
-                    alert = getAlertFunc(AlertType.UNSPECIFIED);
+            public static (int, Alert) ProcessNumericTag(int? tag, Func<AlertType, Alert> getAlertFunc,
+                bool silentUnspecified, int max, int min, int defaultVal)
+                => ((int, Alert))ProcessNumericTag((long?)tag, getAlertFunc, silentUnspecified, max, min, defaultVal);
 
-                return (val, alert);
-            }
-
-            public static (uint, Alert) ProcessNumericTag(uint? tag, Func<AlertType, Alert> getAlertFunc, bool silentUnspecified, uint max, uint min, uint defaultVal)
-            {
-                uint val = defaultVal;
-                Alert alert = null;
-
-                if (tag.HasValue)
-                {
-                    if (tag > max) //overflow
-                    {
-                        val = max;
-                        alert = getAlertFunc(AlertType.OVERFLOW);
-                    }
-                    else if (tag < min) //underflow
-                        alert = getAlertFunc(AlertType.UNDERFLOW);
-                    else //tag is within valid range
-                        val = tag.Value;
-                }
-                else if (!silentUnspecified)
-                    alert = getAlertFunc(AlertType.UNSPECIFIED);
-
-                return (val, alert);
-            }
+            public static (uint, Alert) ProcessNumericTag(uint? tag, Func<AlertType, Alert> getAlertFunc,
+                bool silentUnspecified, uint max, uint min, uint defaultVal)
+                => ((uint, Alert))ProcessNumericTag((long?)tag, getAlertFunc, silentUnspecified, max, min, defaultVal);
 
             private static (T, Alert) ProcessEnumTag<T>(string tag, T? tagTest, Func<AlertType, string, Alert> getAlertFunc,
                 bool silentUnspecified, T defaultVal, Func<T, bool> isValidFunc = null) where T : struct
@@ -987,7 +849,6 @@ namespace pkuManager.Formats.pkx
             // ----------
             // String Processing Methods
             // ----------
-
             public static (T[] nickname, Alert nicknameAlert, bool nicknameFlag, Alert nicknameFlagAlert)
                 ProcessNickname<T>(pkuObject pku, int gen, int maxLength, CharacterEncoding<T> charEnc, Language? checkedLang = null) where T : struct
             {
@@ -1014,7 +875,7 @@ namespace pkuManager.Formats.pkx
                         nicknameFlag = true;
 
                     if (!nicknameFlag)
-                        flagAlert = GetNicknameFlagAlert(AlertType.MISMATCH, false);
+                        flagAlert = GetNicknameFlagAlert(false);
                 }
                 else //unspecified, get default name for given language
                 {
@@ -1034,7 +895,7 @@ namespace pkuManager.Formats.pkx
                         nicknameFlag = false;
 
                     if (nicknameFlag)
-                        flagAlert = GetNicknameFlagAlert(AlertType.MISMATCH, true, defaultName);
+                        flagAlert = GetNicknameFlagAlert(true, defaultName);
                 }
 
                 return (name, alert, nicknameFlag, flagAlert);
@@ -1087,7 +948,8 @@ namespace pkuManager.Formats.pkx
 
                 (T[] trashedName, AlertType atName) = helper(encodedName, nameTrash);
                 (T[] trashedOT, AlertType atOT) = helper(encodedOT, otTrash);
-                Alert alert = (atName, atOT) is (AlertType.NONE, AlertType.NONE) ? null : GetTrashAlert(atName, atOT, encodedName.Length, encodedOT.Length, charEnc.MaxValue);
+                Alert alert = (atName, atOT) is (AlertType.NONE, AlertType.NONE) ? null :
+                    GetTrashAlert(atName, atOT, encodedName.Length, encodedOT.Length, charEnc.MaxValue);
                 return (trashedName, trashedOT, alert);
             }
 
@@ -1095,11 +957,8 @@ namespace pkuManager.Formats.pkx
             // ----------
             // Game Info Processing Methods
             // ----------
-
             public static (uint, Alert) ProcessTID(pkuObject pku)
-            {
-                return ProcessNumericTag(pku.Game_Info?.TID, GetTIDAlert, false, 4294967295, 0, 0);
-            }
+                => ProcessNumericTag(pku.Game_Info?.TID, GetTIDAlert, false, 4294967295, 0, 0);
 
             public static (int gameID, string game, Alert alert) ProcessOriginGame(pkuObject pku, int gen)
             {
@@ -1107,7 +966,7 @@ namespace pkuManager.Formats.pkx
 
                 (int? id, int? genIntroduced) = GetGameIDAndGen(pku.Game_Info?.Origin_Game); //try origin game
 
-                if (!id.HasValue) //origin game unspecified/didn't work
+                if (id is null) //origin game unspecified/didn't work
                 {
                     (id, genIntroduced) = GetGameIDAndGen(pku.Game_Info?.Official_Origin_Game); //try official origin game
                     triedOfficialOriginGame = true;
@@ -1118,146 +977,109 @@ namespace pkuManager.Formats.pkx
                     id = null;
 
                 string game;
-                if (!id.HasValue) //neither game worked
+                if (id is null) //neither game worked
                     game = null;
                 else //one game worked
                     game = triedOfficialOriginGame ? pku.Game_Info?.Official_Origin_Game : pku.Game_Info?.Origin_Game;
 
                 Alert alert = null;
-                if (pku.Game_Info?.Origin_Game == null && pku.Game_Info?.Official_Origin_Game == null) //no origin game specified
+                if (pku.Game_Info?.Origin_Game is null && pku.Game_Info?.Official_Origin_Game is null) //no origin game specified
                     alert = GetOriginGameAlert(AlertType.UNSPECIFIED);
-                else if (!id.HasValue) //origin game specified, just not valid in this gen
+                else if (id is null) //origin game specified, just not valid in this gen
                     alert = GetOriginGameAlert(AlertType.INVALID, pku.Game_Info?.Origin_Game, pku.Game_Info?.Official_Origin_Game);
 
                 return (id ?? 0, game, alert); //default gameID is None (0)
             }
 
             public static (Language, Alert) ProcessLanguage(pkuObject pku, List<Language> validLanguages)
-            {
-                return ProcessEnumTag(pku.Game_Info?.Language, pku.Game_Info?.Language.ToEnum<Language>(), GetLanguageAlert, false, DEFAULT_LANGUAGE, (x) =>
-                {
-                    return validLanguages.Contains(x);
-                });
-            }
+                => ProcessEnumTag(pku.Game_Info?.Language, pku.Game_Info?.Language.ToEnum<Language>(),
+                    GetLanguageAlert, false, DEFAULT_LANGUAGE, (x) => validLanguages.Contains(x));
 
             public static (Gender, Alert) ProcessOTGender(pkuObject pku)
             {
                 Gender? checkedGender = pku.Game_Info?.Gender.ToEnum<Gender>();
                 checkedGender = checkedGender is Gender.Genderless ? null : checkedGender;
-                return ProcessEnumTag(pku.Game_Info?.Gender, checkedGender, GetOTGenderAlert, false, DEFAULT_GENDER, (x) =>
-                {
-                    return x != Gender.Genderless;
-                });
+                return ProcessEnumTag(pku.Game_Info?.Gender, checkedGender, GetOTGenderAlert, false, DEFAULT_GENDER, (x) => x != Gender.Genderless);
             }
 
 
             // ----------
             // Catch Info Processing Methods
             // ----------
-
             public static (int, Alert) ProcessMetLevel(pkuObject pku)
-            {
-                return ProcessNumericTag(pku.Catch_Info?.Met_Level, GetMetLevelAlert, false, 127, 0, 0);
-            }
+                => ProcessNumericTag(pku.Catch_Info?.Met_Level, GetMetLevelAlert, false, 127, 0, 0);
 
             public static (Ball, Alert) ProcessBall(pkuObject pku, Ball maxBall)
+                => ProcessEnumTag(pku.Catch_Info?.Ball, pku.Catch_Info?.Ball.ToEnum<Ball>(),
+                    GetBallAlert, false, DEFAULT_BALL, (x) => x <= maxBall);
+
+            public static (int, Alert) ProcessMetLocation(pkuObject pku, string checkedGameName,
+                Func<string, string, int?> GetLocationID, string defaultLocation)
             {
-                return ProcessEnumTag(pku.Catch_Info?.Ball, pku.Catch_Info?.Ball.ToEnum<Ball>(), GetBallAlert, false, DEFAULT_BALL, (x) =>
+                checkedGameName = pku.Catch_Info?.Met_Game_Override ?? checkedGameName; //override game for met location
+                int? locID = GetLocationID(checkedGameName, pku.Catch_Info?.Met_Location); //attempted location ID
+
+                return pku.Catch_Info?.Met_Location switch
                 {
-                    return x <= maxBall;
-                });
-            }
-
-            public static (int, Alert) ProcessMetLocation(pkuObject pku, string checkedGameName, Func<string, string, int?> GetLocationID, string defaultLocation)
-            {
-                //override game for met location
-                if (pku.Catch_Info?.Met_Game_Override != null)
-                    checkedGameName = pku.Catch_Info.Met_Game_Override;
-
-                int? locID;
-
-                if (pku.Catch_Info?.Met_Location != null) //location specified
-                    locID = GetLocationID(checkedGameName, pku.Catch_Info.Met_Location);
-                else //location unspecified
-                    return (0, GetMetLocationAlert(AlertType.UNSPECIFIED, defaultLocation));
-
-                if (!locID.HasValue) //location specified but invalid
-                    return (0, GetMetLocationAlert(AlertType.INVALID, defaultLocation, pku.Catch_Info.Met_Location));
-                else //location specified and valid
-                    return (locID.Value, null);
+                    null => (0, GetMetLocationAlert(AlertType.UNSPECIFIED, defaultLocation)),
+                    _ => locID switch
+                    {
+                        null => (0, GetMetLocationAlert(AlertType.INVALID, defaultLocation, pku.Catch_Info.Met_Location)),
+                        _ => (locID.Value, null)
+                    }
+                };
             }
 
 
             // ----------
             // Pokemon Attribute Processing Methods
             // ----------
-
-            //Gen 6: account for gen6+ pid change on shiny mismatch
-            public static (uint[], Alert) ProcessPID(pkuObject pku, uint checkedID, bool gen6Plus, Gender? checkedGender = null, Nature? checkedNature = null, int? checkedUnownForm = null)
+            //TODO Gen 6: account for gen6+ pid change on shiny mismatch
+            public static (uint[], Alert) ProcessPID(pkuObject pku, uint checkedTID, bool gen6Plus,
+                Gender? checkedGender = null, Nature? checkedNature = null, int? checkedUnownForm = null)
             {
-                uint pid, newPID;
-                Alert alert = null;
-                bool pidInBounds = true;
-
-                // deal with PID bounds
-                if (!pku.PID.HasValue)
-                {
-                    pid = 0;
-                    pidInBounds = false;
-                    alert = GetPIDAlert(AlertType.UNSPECIFIED);
-                }
-                else if (pku.PID > 4294967295) //overflow
-                {
-                    pid = 4294967295;
-                    pidInBounds = false;
-                    alert = GetPIDAlert(AlertType.OVERFLOW);
-                }
-                else if (pku.PID < 0) //underflow
-                {
-                    pid = 0;
-                    pidInBounds = false;
-                    alert = GetPIDAlert(AlertType.UNDERFLOW);
-                }
-                else
-                    pid = (uint)pku.PID;
-
+                // Deal with null PID. (Always in-bounds since it is a uint)
+                (uint pid, bool pidInBounds, Alert alert) = pku.PID is null ?
+                    (uint.MinValue, false, GetPIDAlert(AlertType.UNSPECIFIED)) : (pku.PID.Value, true, null);
 
                 // Check if any value has a pid-mismatch
                 int dex = GetNationalDexChecked(pku.Species);
                 bool genderMismatch = false, natureMismatch = false, unownMismatch = false, shinyMismatch;
                 int oldunownform = 0;
-                Nature oldnature = 0;
-                Gender oldgender = 0;
+                Nature oldnature = DEFAULT_NATURE;
+                Gender oldgender = DEFAULT_GENDER;
 
-                if (checkedGender.HasValue) //gender mismatch check
+                if (checkedGender is not null) //gender mismatch check
                 {
-                    oldgender = GetPIDGender(dex, pid);
+                    oldgender = GetPIDGender(PokeAPIUtil.GetGenderRatio(dex), pid);
                     genderMismatch = checkedGender != oldgender;
                 }
-                if (checkedNature.HasValue) //nature mismatch check
+                if (checkedNature is not null) //nature mismatch check
                 {
                     oldnature = (Nature)(pid % 25);
                     natureMismatch = checkedNature != oldnature;
                 }
-                if (checkedUnownForm.HasValue) //unown form mismatch check
+                if (checkedUnownForm is not null) //unown form mismatch check
                 {
                     oldunownform = pk3Object.GetUnownFormID(pid);
                     unownMismatch = checkedUnownForm != null && checkedUnownForm != oldunownform;
                 }
                 //always check shiny
-                bool oldshiny = (checkedID / 65536 ^ checkedID % 65536 ^ pid / 65536 ^ pid % 65536) < (gen6Plus ? 16 : 8);
+                bool oldshiny = (checkedTID / 65536 ^ checkedTID % 65536 ^ pid / 65536 ^ pid % 65536) < (gen6Plus ? 16 : 8);
                 shinyMismatch = pku.IsShiny() != oldshiny;
 
                 // Deal with pid-mismatches
                 if (unownMismatch || genderMismatch || natureMismatch || shinyMismatch)
                 {
-                    newPID = GenerateRandomPID(pku.IsShiny(), checkedID, PokeAPIUtil.GetGenderRatio(dex), checkedGender, checkedNature, checkedUnownForm);
+                    uint newPID = GenerateRandomPID(pku.IsShiny(), checkedTID, checkedGender,
+                        PokeAPIUtil.GetGenderRatio(dex), checkedNature, checkedUnownForm);
 
                     if (pidInBounds) //two options: old & new, need error
                     {
-                        List<(string, object, object)> tags = new List<(string, object, object)>();
+                        List<(string, object, object)> tags = new();
                         if (unownMismatch)
-                            tags.Add(("Unown Form", pk3Object.GetUnownFormName(oldunownform), pk3Object.GetUnownFormName(checkedUnownForm.Value)));
+                            tags.Add(("Unown Form", pk3Object.GetUnownFormName(oldunownform),
+                                pk3Object.GetUnownFormName(checkedUnownForm.Value)));
                         if (genderMismatch)
                             tags.Add(("Gender", oldgender, checkedGender));
                         if (natureMismatch)
@@ -1276,17 +1098,12 @@ namespace pkuManager.Formats.pkx
             }
 
             public static (Nature, Alert) ProcessNature(pkuObject pku)
-            {
-                return ProcessEnumTag(pku.Nature, pku.Nature.ToEnum<Nature>(), GetNatureAlert, false, DEFAULT_NATURE);
-            }
+                => ProcessEnumTag(pku.Nature, pku.Nature.ToEnum<Nature>(), GetNatureAlert, false, DEFAULT_NATURE);
 
             //Gen 6: allow impossible genders in gen 6+ (I think they allow impossible genders...)
             public static (Gender, Alert) ProcessGender(pkuObject pku)
             {
                 int dex = GetNationalDexChecked(pku.Species);
-
-                Gender gender;
-                Alert alert = null;
                 GenderRatio genderRatio = PokeAPIUtil.GetGenderRatio(dex);
                 Gender? mandatoryGender = genderRatio switch
                 {
@@ -1295,65 +1112,47 @@ namespace pkuManager.Formats.pkx
                     GenderRatio.All_Male => Gender.Male,
                     _ => null
                 };
-                if (pku.Gender != null)
-                {
-                    Gender? readGender = pku.Gender.ToEnum<Gender>();
-                    if (readGender.HasValue)
-                    {
-                        if (mandatoryGender.HasValue && mandatoryGender != readGender) //impossible gender
-                        {
-                            gender = mandatoryGender.Value;
-                            alert = GetGenderAlert(AlertType.MISMATCH, mandatoryGender, readGender.ToFormattedString());
-                        }
-                        else //no mismatch
-                            gender = readGender.Value;
-                    }
-                    else //gender was invalid, just make it male (or mandatoryGender if it cant be male).
-                    {
-                        gender = mandatoryGender ?? Gender.Male;
-                        alert = GetGenderAlert(AlertType.INVALID); //invalid gender
-                    }
-                }
-                else
-                {
-                    gender = mandatoryGender ?? Gender.Male;
-                    if (!mandatoryGender.HasValue)
-                        alert = GetGenderAlert(AlertType.UNSPECIFIED); //only alert if there is no mandatory gender.
-                }
+                Gender? readGender = pku.Gender.ToEnum<Gender>();
 
-                return (gender, alert);
+                return pku.Gender switch
+                {
+                    null => mandatoryGender is null ? (DEFAULT_GENDER, GetGenderAlert(AlertType.UNSPECIFIED)) : (mandatoryGender.Value, null),
+                    _ => readGender switch //gender invalid, make it mandatory/male
+                    {
+                        null => (mandatoryGender ?? DEFAULT_GENDER, GetGenderAlert(AlertType.INVALID)), //invalid gender
+                        _ => mandatoryGender switch
+                        {
+                            var x when x is null || x == readGender => (readGender.Value, null), //matches mandatory gender/doesn't have one 
+                            _ => (mandatoryGender.Value, GetGenderAlert(AlertType.MISMATCH, mandatoryGender, readGender.ToFormattedString()))
+                        }
+                    }
+                };
             }
 
             public static (int, Alert) ProcessFriendship(pkuObject pku)
-            {
-                return ProcessNumericTag(pku.Friendship, GetFriendshipAlert, false, 255, 0, 0);
-            }
+                => ProcessNumericTag(pku.Friendship, GetFriendshipAlert, false, 255, 0, 0);
 
-            // silent on unspecified
             public static (int[], Alert) ProcessEVs(pkuObject pku)
             {
                 int?[] vals = { pku.EVs?.HP, pku.EVs?.Attack, pku.EVs?.Defense, pku.EVs?.Sp_Attack, pku.EVs?.Sp_Defense, pku.EVs?.Speed };
-                return ProcessMultiNumericTag(pku.EVs != null, vals, GetEVsAlert, 255, 0, 0, true);
+                return ProcessMultiNumericTag(pku.EVs != null, vals, GetEVsAlert, 255, 0, 0, true); // silent on unspecified
             }
 
-            // not silent on unspecified
             public static (int[], Alert) ProcessIVs(pkuObject pku)
             {
                 int?[] vals = { pku.IVs?.HP, pku.IVs?.Attack, pku.IVs?.Defense, pku.IVs?.Sp_Attack, pku.IVs?.Sp_Defense, pku.IVs?.Speed };
-                return ProcessMultiNumericTag(pku.IVs != null, vals, GetIVsAlert, 31, 0, 0, false);
+                return ProcessMultiNumericTag(pku.IVs != null, vals, GetIVsAlert, 31, 0, 0, false); // not silent on unspecified
             }
 
-            // silent on unspecified
             public static (int[], Alert) ProcessContest(pkuObject pku)
             {
-                int?[] vals = { pku.Contest_Stats?.Cool, pku.Contest_Stats?.Beauty, pku.Contest_Stats?.Cute, pku.Contest_Stats?.Clever, pku.Contest_Stats?.Tough, pku.Contest_Stats?.Sheen };
-                return ProcessMultiNumericTag(pku.Contest_Stats != null, vals, GetContestAlert, 255, 0, 0, true);
+                int?[] vals = { pku.Contest_Stats?.Cool, pku.Contest_Stats?.Beauty, pku.Contest_Stats?.Cute,
+                    pku.Contest_Stats?.Clever, pku.Contest_Stats?.Tough, pku.Contest_Stats?.Sheen };
+                return ProcessMultiNumericTag(pku.Contest_Stats != null, vals, GetContestAlert, 255, 0, 0, true); // silent on unspecified
             }
 
             public static (int, Alert) ProcessItem(pkuObject pku, int gen)
-            {
-                return ProcessEnumTag(pku.Item, PokeAPIUtil.GetItemIndex(pku.Item, gen), GetItemAlert, true, 0);
-            }
+                => ProcessEnumTag(pku.Item, PokeAPIUtil.GetItemIndex(pku.Item, gen), GetItemAlert, true, 0);
 
             public static (int[] moveIDs, int[] moveIndicies, Alert) ProcessMoves(pkuObject pku, int lastMoveIndex)
             {
@@ -1368,38 +1167,32 @@ namespace pkuManager.Formats.pkx
             //gmax moves use a different index and cannot even be stored out of battle. Thus, they are irrelevant.
             public static (int[] moveIDs, int[] moveIndicies, Alert) ProcessMoves(pkuObject pku, Func<string, int?> GetMoveID)
             {
-                List<int> moveIndices = new List<int>(); //indicies in pku
+                List<int> moveIndices = new(); //indices in pku
                 int[] moveIDs = new int[4]; //index numbers for format
                 Alert alert = null;
-                bool invalid = false;
-                if (pku.Moves != null)
+                if (pku.Moves is not null)
                 {
                     int confirmedMoves = 0;
+                    bool invalid = false;
 
-                    int? moveIDTemp;
                     for (int i = 0; i < pku.Moves.Length; i++)
                     {
-                        if (pku.Moves[i].Name != null) //move has a name
+                        if (pku.Moves[i].Name is not null) //move has a name
                         {
-                            moveIDTemp = GetMoveID(pku.Moves[i].Name);
-                            if (moveIDTemp.HasValue && confirmedMoves < 4)
+                            int? moveIDTemp = GetMoveID(pku.Moves[i].Name);
+                            if (moveIDTemp is not null && confirmedMoves < 4)
                             {
                                 moveIDs[confirmedMoves] = moveIDTemp.Value;
                                 moveIndices.Add(i);
                                 confirmedMoves++;
                             }
-                            else if(moveIDTemp == null)
+                            else if(moveIDTemp is null)
                                 invalid = true;
                         }
                     }
 
                     if (confirmedMoves != pku.Moves.Length) //not a perfect match
-                    {
-                        if(invalid)
-                            alert = GetMoveAlert(AlertType.INVALID, confirmedMoves);
-                        else //if its not invalid but numbers don't match, then must be an overflow
-                            alert = GetMoveAlert(AlertType.OVERFLOW);
-                    }
+                        alert = invalid ? GetMoveAlert(AlertType.INVALID, confirmedMoves) : GetMoveAlert(AlertType.OVERFLOW);
                 }
                 else
                     alert = GetMoveAlert(AlertType.UNSPECIFIED);
@@ -1409,15 +1202,15 @@ namespace pkuManager.Formats.pkx
 
             public static (int[], Alert) ProcessPPUps(pkuObject pku, int[] moveIndicies)
             {
+                //Calculate ppups
                 int[] ppups = new int[4];
-                Alert alert = null;
-                List<int> overflow = new List<int>();
-                List<int> underflow = new List<int>();
-                if (moveIndicies.Length > 4)
-                    throw new ArgumentException("moveIndicies should only be of length 0-4.");
+                List<int> overflow = new();
+                List<int> underflow = new();
+                if (moveIndicies?.Length > 4)
+                    throw new ArgumentException($"{nameof(moveIndicies)} should be of length 0-4.", nameof(moveIndicies));
                 for (int i = 0; i < moveIndicies.Length; i++)
                 {
-                    if ((pku?.Moves?[moveIndicies[i]]?.PP_Ups).HasValue) //this move exists and has a ppup value
+                    if (pku?.Moves?[moveIndicies[i]]?.PP_Ups is not null) //this move exists and has a ppup value
                     {
                         if (pku.Moves[moveIndicies[i]].PP_Ups > 3)
                         {
@@ -1430,156 +1223,67 @@ namespace pkuManager.Formats.pkx
                             ppups[i] = pku.Moves[moveIndicies[i]].PP_Ups.Value;
                     }
                 }
-                if (overflow.Count > 0 || underflow.Count > 0)
-                    alert = GetPPUpAlert(AlertType.INVALID, (overflow.ToArray(), underflow.ToArray()));
+
+                //Generate alert
+                Alert alert = overflow.Count > 0 || underflow.Count > 0 ? 
+                    GetPPUpAlert(AlertType.INVALID, (overflow.ToArray(), underflow.ToArray())) : null;
                 return (ppups, alert);
             }
 
             public static (uint[], Alert) ProcessEXP(pkuObject pku)
             {
-                uint exp;
-                uint? expFromLevel = null;
-                Alert alert = null;
-                int? dexTest = GetNationalDex(pku.Species); //must be valid at this point
-                if (!dexTest.HasValue)
-                    throw new ArgumentException("ProcessNickname expects an official pku species.");
-                int dex = dexTest.Value;
-
+                int dex = GetNationalDexChecked(pku.Species); //must be valid at this point
                 int level100EXP = PokeAPIUtil.GetEXPFromLevel(dex, 100);
 
                 //data collection - Level
-                int? levelChecked = null;
-                int levelAsEXP = -1;
-                AlertType atLevel = AlertType.NONE;
-                if (pku.Level.HasValue) //sets level alert, and gets levelChecked + levelAsExp
+                (int? levelChecked, int levelAsEXP, AlertType atLevel) = pku.Level switch
                 {
-                    if (pku.Level > 100) //exp overflow
-                    {
-                        levelChecked = 100;
-                        levelAsEXP = level100EXP;
-                        atLevel = AlertType.OVERFLOW;
-                    }
-                    else if (pku.Level < 1) //level underflow
-                    {
-                        levelChecked = 1;
-                        levelAsEXP = 0;
-                        atLevel = AlertType.UNDERFLOW;
-                    }
-                    else //level valid
-                    {
-                        levelChecked = pku.Level;
-                        levelAsEXP = PokeAPIUtil.GetEXPFromLevel(dex, levelChecked.Value);
-                    }
-                }
+                    null => (null, -1, AlertType.NONE), //no level specified
+                    var x when x > 100 => (100, level100EXP, AlertType.OVERFLOW), //level overflow
+                    var x when x < 1 => (1, 0, AlertType.UNDERFLOW), //level underflow
+                    _ => (pku.Level, PokeAPIUtil.GetEXPFromLevel(dex, pku.Level.Value), AlertType.NONE) //valid level
+                };
 
                 //data collection - EXP
-                int? EXPChecked = null;
-                int EXPAsLevel = -1;
-                AlertType atEXP = AlertType.NONE;
-                if (pku.EXP.HasValue) //sets EXP alert, and gets EXPChecked + EXPAsLevel
+                (int? EXPChecked, int EXPAsLevel, AlertType atEXP) = pku.EXP switch
                 {
-                    if (pku.EXP > level100EXP) //exp overflow
-                    {
-                        EXPChecked = level100EXP;
-                        EXPAsLevel = 100;
-                        atEXP = AlertType.OVERFLOW;
-                    }
-                    else if (pku.EXP < 0) //exp underflow
-                    {
-                        EXPChecked = 0;
-                        EXPAsLevel = 1;
-                        atEXP = AlertType.UNDERFLOW;
-                    }
-                    else //exp valid
-                    {
-                        EXPChecked = pku.EXP;
-                        EXPAsLevel = PokeAPIUtil.GetLevelFromEXP(dex, EXPChecked.Value);
-                    }
-                }
+                    null => (null, -1, AlertType.NONE), //no exp specified
+                    var x when x > level100EXP => (level100EXP, 100, AlertType.OVERFLOW), //exp overflow
+                    var x when x < 0 => (0, 1, AlertType.UNDERFLOW), //exp underflow
+                    _ => (pku.EXP, PokeAPIUtil.GetLevelFromEXP(dex, pku.EXP.Value), AlertType.NONE) //valid exp
+                };
 
                 //make Level-EXP alerts
-                if (EXPChecked.HasValue && levelChecked.HasValue) //both specified
+                (uint exp, uint? expFromLevel, Alert alert) = (EXPChecked, levelChecked) switch
                 {
-                    if (atLevel == AlertType.OVERFLOW && atEXP == AlertType.OVERFLOW)
+                    (null, null) => (0, null, GetLevelExpAlert(AlertType.UNSPECIFIED)),
+                    (null, not null) => ((uint)levelAsEXP, null, atLevel is AlertType.NONE ? null : GetLevelAlert(atLevel)),
+                    (not null, null) => ((uint)EXPChecked, null, atEXP is AlertType.NONE ? null : GetEXPAlert(atEXP, level100EXP)),
+                    _ => (atEXP, atLevel) switch
                     {
-                        exp = (uint)level100EXP;
-                        alert = GetLevelExpAlert(AlertType.OVERFLOW);
+                        (AlertType.OVERFLOW, AlertType.OVERFLOW) => ((uint)level100EXP, null, GetLevelExpAlert(AlertType.OVERFLOW)),
+                        (AlertType.UNDERFLOW, AlertType.UNDERFLOW) => (0, null, GetLevelExpAlert(AlertType.UNDERFLOW)),
+                        var (x, y) when x is not AlertType.NONE || y is not AlertType.NONE || EXPAsLevel != levelChecked
+                            => ((uint)(EXPChecked), (uint?)levelAsEXP, GetLevelExpAlert(AlertType.MISMATCH,
+                                (atLevel, atEXP, (int)levelChecked, (int)EXPChecked, levelAsEXP, EXPAsLevel, level100EXP))),
+                        _ => ((uint)EXPChecked, null, null)
                     }
-                    else if (atLevel == AlertType.UNDERFLOW && atEXP == AlertType.UNDERFLOW)
-                    {
-                        exp = 0;
-                        alert = GetLevelExpAlert(AlertType.UNDERFLOW);
-                    }
-                    else if (EXPAsLevel != levelChecked || atLevel != AlertType.NONE || atEXP != AlertType.NONE) //mismatch
-                    {
-                        exp = (uint)EXPChecked.Value;
-                        expFromLevel = (uint)levelAsEXP;
-                        alert = GetLevelExpAlert(AlertType.MISMATCH, ((AlertType, AlertType, int, int, int, int, int)?)(atLevel, atEXP, levelChecked, EXPChecked, levelAsEXP, EXPAsLevel, level100EXP));
-                    }
-                    else //no mismatch, no alert
-                        exp = (uint)EXPChecked;
-                }
-                else if (levelChecked.HasValue) //only level specified
-                {
-                    exp = (uint)levelAsEXP;
-                    if (atLevel != AlertType.NONE)
-                        alert = GetLevelAlert(atLevel);
-                }
-                else if (EXPChecked.HasValue) //only exp specified
-                {
-                    exp = (uint)EXPChecked;
-                    if (atEXP != AlertType.NONE)
-                        alert = GetEXPAlert(atEXP, level100EXP);
-                }
-                else //neither specified
-                {
-                    exp = 0;
-                    alert = GetLevelExpAlert(AlertType.UNSPECIFIED);
-                }
+                };
 
-                if (expFromLevel.HasValue)
-                    return (new[] { exp, expFromLevel.Value }, alert);
-                else
-                    return (new[] { exp }, alert);
+                return (expFromLevel is null ? new[]{ exp } : new[]{ exp, expFromLevel.Value }, alert);
             }
 
             public static (int strain, int days, Alert) ProcessPokerus(pkuObject pku)
             {
-                int strain = 0, days = 0;
-                AlertType atStrain = AlertType.NONE, atDays = AlertType.NONE;
-
-                if ((pku.Pokerus?.Strain).HasValue)
+                (int, AlertType) helper(int? val, int max) => val switch
                 {
-                    if (pku.Pokerus.Strain > 15) //overflow
-                    {
-                        strain = 15;
-                        atStrain = AlertType.OVERFLOW;
-                    }
-                    else if (pku.Pokerus.Strain < 0) //underflow
-                    {
-                        strain = 0;
-                        atStrain = AlertType.UNDERFLOW;
-                    }
-                    else
-                        strain = pku.Pokerus.Strain.Value;
-                }
-
-                if ((pku.Pokerus?.Days).HasValue)
-                {
-                    if (pku.Pokerus.Days > 4) //overflow
-                    {
-                        days = 4;
-                        atDays = AlertType.OVERFLOW;
-                    }
-                    else if (pku.Pokerus.Days < 0) //underflow
-                    {
-                        days = 0;
-                        atDays = AlertType.UNDERFLOW;
-                    }
-                    else
-                        days = pku.Pokerus.Days.Value;
-                }
-
+                    null => (0, AlertType.NONE),
+                    var x when x > max => (max, AlertType.OVERFLOW),
+                    var x when x < 0 => (0, AlertType.UNDERFLOW),
+                    _ => (val.Value, AlertType.NONE)
+                };
+                (int strain, AlertType atStrain) = helper(pku.Pokerus?.Strain, 15);
+                (int days, AlertType atDays) = helper(pku.Pokerus?.Days, 4);
                 return (strain, days, GetPokerusAlert(atStrain, atDays));
             }
 
@@ -1588,21 +1292,17 @@ namespace pkuManager.Formats.pkx
                 bool anyInvalid = false;
                 HashSet<Ribbon> ribbons = pku.Ribbons.ToEnumSet<Ribbon>();
                 if(pku.Ribbons is not null)
-                    anyInvalid = pku.Ribbons.Distinct().Count() > ribbons.Count; //some ribbons not official
+                    anyInvalid = pku.Ribbons.Distinct(StringComparer.InvariantCultureIgnoreCase).Count() > ribbons.Count;
 
                 int oldCount = ribbons.Count;
                 ribbons.RemoveWhere(x => !isValidRibbon(x)); //removes invalid ribbons from set
                 anyInvalid = oldCount > ribbons.Count || anyInvalid;
                 
-                return (ribbons, anyInvalid ? GetRibbonAlert(AlertType.INVALID) : null);
+                return (ribbons, anyInvalid ? GetRibbonAlert() : null);
             }
 
-            //Gen 4: implement this for gen4+, slot/ability independent in all gens, EXCEPT for gen 3
+            //TODO Gen 4: implement this for gen4+, slot/ability independent in all gens, EXCEPT for gen 3
             //public static (int abilityID, int slot, Alert) ProcessAbility(PKUObject pku, int maxAbility)
-            //{
-            //    
-            //}
         }
-
     }
 }
