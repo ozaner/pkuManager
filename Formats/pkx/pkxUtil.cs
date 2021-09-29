@@ -756,7 +756,7 @@ namespace pkuManager.Formats.pkx
                             invalid = true;
                             continue;
                         }
-                        bam.SetByte(kvp.Value, kvp.Key);
+                        bam.Set(kvp.Value, kvp.Key);
                     }
                     return invalid;
                 }

@@ -83,20 +83,20 @@ namespace pkuManager.Formats.pkx.pk3
          * Non-Subdata
          * ------------------------------------
         */
-        public uint PID { get => NonSubData.GetUInt(0); set => NonSubData.SetUInt(value, 0); }
-        public uint TID { get => NonSubData.GetUInt(4); set => NonSubData.SetUInt(value, 4); }
-        public byte[] Nickname { get => NonSubData.GetBytes(8, 10); set => NonSubData.SetBytes(value, 8, 10); }
-        public byte Language { get => NonSubData.GetByte(18); set => NonSubData.SetByte(value, 18); }
-        public byte Egg_Name_Override { get => NonSubData.GetByte(19); set => NonSubData.SetByte(value, 19); }
-        public byte[] OT { get => NonSubData.GetBytes(20, 7); set => NonSubData.SetBytes(value, 20, 7); }
+        public uint PID { get => NonSubData.Get<uint>(0); set => NonSubData.Set(value, 0); }
+        public uint TID { get => NonSubData.Get<uint>(4); set => NonSubData.Set(value, 4); }
+        public byte[] Nickname { get => NonSubData.GetArray<byte>(8, 10); set => NonSubData.SetArray(value, 8, 10); }
+        public byte Language { get => NonSubData.Get<byte>(18); set => NonSubData.Set(value, 18); }
+        public byte Egg_Name_Override { get => NonSubData.Get<byte>(19); set => NonSubData.Set(value, 19); }
+        public byte[] OT { get => NonSubData.GetArray<byte>(20, 7); set => NonSubData.SetArray(value, 20, 7); }
 
-        public bool MarkingCircle { get => NonSubData.GetBool(27, 0); set => NonSubData.SetBool(value, 27, 0); }
-        public bool MarkingSquare { get => NonSubData.GetBool(27, 1); set => NonSubData.SetBool(value, 27, 1); }
-        public bool MarkingTriangle { get => NonSubData.GetBool(27, 2); set => NonSubData.SetBool(value, 27, 2); }
-        public bool MarkingHeart { get => NonSubData.GetBool(27, 3); set => NonSubData.SetBool(value, 27, 3); }
+        public bool MarkingCircle { get => NonSubData.Get<bool>(27, 0); set => NonSubData.Set(value, 27, 0); }
+        public bool MarkingSquare { get => NonSubData.Get<bool>(27, 1); set => NonSubData.Set(value, 27, 1); }
+        public bool MarkingTriangle { get => NonSubData.Get<bool>(27, 2); set => NonSubData.Set(value, 27, 2); }
+        public bool MarkingHeart { get => NonSubData.Get<bool>(27, 3); set => NonSubData.Set(value, 27, 3); }
         // Byte 27, bits 4-7 (unused, leftover from markings byte)
 
-        protected ushort Checksum { get => NonSubData.GetUShort(28); set => NonSubData.SetUShort(value, 28); }
+        protected ushort Checksum { get => NonSubData.Get<ushort>(28); set => NonSubData.Set(value, 28); }
         // Bytes 28-29 (unused, probably padding)
 
 
@@ -104,16 +104,16 @@ namespace pkuManager.Formats.pkx.pk3
          * G: Growth Block
          * ------------------------------------
         */
-        public ushort Species { get => G.GetUShort(0); set => G.SetUShort(value, 0); }
-        public ushort Item { get => G.GetUShort(2); set => G.SetUShort(value, 2); }
-        public uint Experience { get => G.GetUInt(4); set => G.SetUInt(value, 4); }
+        public ushort Species { get => G.Get<ushort>(0); set => G.Set(value, 0); }
+        public ushort Item { get => G.Get<ushort>(2); set => G.Set(value, 2); }
+        public uint Experience { get => G.Get<uint>(4); set => G.Set(value, 4); }
 
-        public byte PP_Up_1 { get => G.GetByteBits(8, 0, 2); set => G.SetByteBits(value, 8, 0, 2); }
-        public byte PP_Up_2 { get => G.GetByteBits(8, 2, 2); set => G.SetByteBits(value, 8, 2, 2); }
-        public byte PP_Up_3 { get => G.GetByteBits(8, 4, 2); set => G.SetByteBits(value, 8, 4, 2); }
-        public byte PP_Up_4 { get => G.GetByteBits(8, 6, 2); set => G.SetByteBits(value, 8, 6, 2); }
+        public byte PP_Up_1 { get => G.Get<byte>(8, 0, 2); set => G.Set(value, 8, 0, 2); }
+        public byte PP_Up_2 { get => G.Get<byte>(8, 2, 2); set => G.Set(value, 8, 2, 2); }
+        public byte PP_Up_3 { get => G.Get<byte>(8, 4, 2); set => G.Set(value, 8, 4, 2); }
+        public byte PP_Up_4 { get => G.Get<byte>(8, 6, 2); set => G.Set(value, 8, 6, 2); }
 
-        public byte Friendship { get => G.GetByte(9); set => G.SetByte(value, 9); }
+        public byte Friendship { get => G.Get<byte>(9); set => G.Set(value, 9); }
         // Bytes 10-11 (unused, probably padding)
 
 
@@ -121,79 +121,79 @@ namespace pkuManager.Formats.pkx.pk3
          * A: Attacks Block
          * ------------------------------------
         */
-        public ushort Move_1 { get => A.GetUShort(0); set => A.SetUShort(value, 0); }
-        public ushort Move_2 { get => A.GetUShort(2); set => A.SetUShort(value, 2); }
-        public ushort Move_3 { get => A.GetUShort(4); set => A.SetUShort(value, 4); }
-        public ushort Move_4 { get => A.GetUShort(6); set => A.SetUShort(value, 6); }
+        public ushort Move_1 { get => A.Get<ushort>(0); set => A.Set(value, 0); }
+        public ushort Move_2 { get => A.Get<ushort>(2); set => A.Set(value, 2); }
+        public ushort Move_3 { get => A.Get<ushort>(4); set => A.Set(value, 4); }
+        public ushort Move_4 { get => A.Get<ushort>(6); set => A.Set(value, 6); }
 
-        public byte PP_1 { get => A.GetByte(8); set => A.SetByte(value, 8); }
-        public byte PP_2 { get => A.GetByte(9); set => A.SetByte(value, 9); }
-        public byte PP_3 { get => A.GetByte(10); set => A.SetByte(value, 10); }
-        public byte PP_4 { get => A.GetByte(11); set => A.SetByte(value, 11); }
+        public byte PP_1 { get => A.Get<byte>(8); set => A.Set(value, 8); }
+        public byte PP_2 { get => A.Get<byte>(9); set => A.Set(value, 9); }
+        public byte PP_3 { get => A.Get<byte>(10); set => A.Set(value, 10); }
+        public byte PP_4 { get => A.Get<byte>(11); set => A.Set(value, 11); }
 
 
         /* ------------------------------------
          * E: EVs & Condition Block
          * ------------------------------------
         */
-        public byte EV_HP { get => E.GetByte(0); set => E.SetByte(value, 0); }
-        public byte EV_Attack { get => E.GetByte(1); set => E.SetByte(value, 1); }
-        public byte EV_Defense { get => E.GetByte(2); set => E.SetByte(value, 2); }
-        public byte EV_Speed { get => E.GetByte(3); set => E.SetByte(value, 3); }
-        public byte EV_Sp_Attack { get => E.GetByte(4); set => E.SetByte(value, 4); }
-        public byte EV_Sp_Defense { get => E.GetByte(5); set => E.SetByte(value, 5); }
+        public byte EV_HP { get => E.Get<byte>(0); set => E.Set(value, 0); }
+        public byte EV_Attack { get => E.Get<byte>(1); set => E.Set(value, 1); }
+        public byte EV_Defense { get => E.Get<byte>(2); set => E.Set(value, 2); }
+        public byte EV_Speed { get => E.Get<byte>(3); set => E.Set(value, 3); }
+        public byte EV_Sp_Attack { get => E.Get<byte>(4); set => E.Set(value, 4); }
+        public byte EV_Sp_Defense { get => E.Get<byte>(5); set => E.Set(value, 5); }
 
-        public byte Cool { get => E.GetByte(6); set => E.SetByte(value, 6); }
-        public byte Beauty { get => E.GetByte(7); set => E.SetByte(value, 7); }
-        public byte Cute { get => E.GetByte(8); set => E.SetByte(value, 8); }
-        public byte Smart { get => E.GetByte(9); set => E.SetByte(value, 9); }
-        public byte Tough { get => E.GetByte(10); set => E.SetByte(value, 10); }
-        public byte Sheen { get => E.GetByte(11); set => E.SetByte(value, 11); }
+        public byte Cool { get => E.Get<byte>(6); set => E.Set(value, 6); }
+        public byte Beauty { get => E.Get<byte>(7); set => E.Set(value, 7); }
+        public byte Cute { get => E.Get<byte>(8); set => E.Set(value, 8); }
+        public byte Smart { get => E.Get<byte>(9); set => E.Set(value, 9); }
+        public byte Tough { get => E.Get<byte>(10); set => E.Set(value, 10); }
+        public byte Sheen { get => E.Get<byte>(11); set => E.Set(value, 11); }
 
 
         /* ------------------------------------
          * M: Misc. Block
          * ------------------------------------
         */
-        public byte PKRS_Days { get => M.GetByteBits(0, 0, 4); set => M.SetByteBits(value, 0, 0, 4); }
-        public byte PKRS_Strain { get => M.GetByteBits(0, 4, 4); set => M.SetByteBits(value, 0, 4, 4); }
+        public byte PKRS_Days { get => M.Get<byte>(0, 0, 4); set => M.Set(value, 0, 0, 4); }
+        public byte PKRS_Strain { get => M.Get<byte>(0, 4, 4); set => M.Set(value, 0, 4, 4); }
 
-        public byte Met_Location { get => M.GetByte(1); set => M.SetByte(value, 1); }
-        public byte Met_Level { get => (byte)M.GetUShortBits(2, 0, 7); set => M.SetUShortBits(value, 2, 0, 7); }
-        public byte Origin_Game { get => (byte)M.GetUShortBits(2, 7, 4); set => M.SetUShortBits(value, 2, 7, 4); }
-        public byte Ball { get => (byte)M.GetUShortBits(2, 11, 4); set => M.SetUShortBits(value, 2, 11, 4); }
-        public bool OT_Gender { get => M.GetBool(3, 7); set => M.SetBool(value, 3, 7); }
+        public byte Met_Location { get => M.Get<byte>(1); set => M.Set(value, 1); }
+        public byte Met_Level { get => (byte)M.Get<ushort>(2, 0, 7); set => M.Set<ushort>(value, 2, 0, 7); }
+        public byte Origin_Game { get => (byte)M.Get<ushort>(2, 7, 4); set => M.Set<ushort>(value, 2, 7, 4); }
+        public byte Ball { get => (byte)M.Get<ushort>(2, 11, 4); set => M.Set<ushort>(value, 2, 11, 4); }
+        public bool OT_Gender { get => M.Get<bool>(3, 7); set => M.Set(value, 3, 7); }
 
-        public byte IV_HP { get => (byte)M.GetUIntBits(4, 0, 5); set => M.SetUIntBits(value, 4, 0, 5); }
-        public byte IV_Attack { get => (byte)M.GetUIntBits(4, 5, 5); set => M.SetUIntBits(value, 4, 5, 5); }
-        public byte IV_Defense { get => (byte)M.GetUIntBits(4, 10, 5); set => M.SetUIntBits(value, 4, 10, 5); }
-        public byte IV_Speed { get => (byte)M.GetUIntBits(4, 15, 5); set => M.SetUIntBits(value, 4, 15, 5); }
-        public byte IV_Sp_Attack { get => (byte)M.GetUIntBits(4, 20, 5); set => M.SetUIntBits(value, 4, 20, 5); }
-        public byte IV_Sp_Defense { get => (byte)M.GetUIntBits(4, 25, 5); set => M.SetUIntBits(value, 4, 25, 5); }
+        public byte IV_HP { get => (byte)M.Get<uint>(4, 0, 5); set => M.Set<uint>(value, 4, 0, 5); }
+        public byte IV_Attack { get => (byte)M.Get<uint>(4, 5, 5); set => M.Set<uint>(value, 4, 5, 5); }
+        public byte IV_Defense { get => (byte)M.Get<uint>(4, 10, 5); set => M.Set<uint>(value, 4, 10, 5); }
+        public byte IV_Speed { get => (byte)M.Get<uint>(4, 15, 5); set => M.Set<uint>(value, 4, 15, 5); }
+        public byte IV_Sp_Attack { get => (byte)M.Get<uint>(4, 20, 5); set => M.Set<uint>(value, 4, 20, 5); }
+        public byte IV_Sp_Defense { get => (byte)M.Get<uint>(4, 25, 5); set => M.Set<uint>(value, 4, 25, 5); }
 
-        public bool Is_Egg { get => M.GetBool(7, 6); set => M.SetBool(value, 7, 6); }
-        public bool Ability_Slot { get => M.GetBool(7, 7); set => M.SetBool(value, 7, 7); }
+        public bool Is_Egg { get => M.Get<bool>(7, 6); set => M.Set(value, 7, 6); }
+        public bool Ability_Slot { get => M.Get<bool>(7, 7); set => M.Set(value, 7, 7); }
 
-        public byte Cool_Ribbon_Rank { get => (byte)M.GetUIntBits(8, 0, 3); set => M.SetUIntBits(value, 8, 0, 3); }
-        public byte Beauty_Ribbon_Rank { get => (byte)M.GetUIntBits(8, 3, 3); set => M.SetUIntBits(value, 8, 3, 3); }
-        public byte Cute_Ribbon_Rank { get => (byte)M.GetUIntBits(8, 6, 3); set => M.SetUIntBits(value, 8, 6, 3); }
-        public byte Smart_Ribbon_Rank { get => (byte)M.GetUIntBits(8, 9, 3); set => M.SetUIntBits(value, 8, 9, 3); }
-        public byte Tough_Ribbon_Rank { get => (byte)M.GetUIntBits(8, 12, 3); set => M.SetUIntBits(value, 8, 12, 3); }
+        public byte Cool_Ribbon_Rank { get => (byte)M.Get<uint>(8, 0, 3); set => M.Set<uint>(value, 8, 0, 3); }
+        public byte Beauty_Ribbon_Rank { get => (byte)M.Get<uint>(8, 3, 3); set => M.Set<uint>(value, 8, 3, 3); }
+        public byte Cute_Ribbon_Rank { get => (byte)M.Get<uint>(8, 6, 3); set => M.Set<uint>(value, 8, 6, 3); }
+        public byte Smart_Ribbon_Rank { get => (byte)M.Get<uint>(8, 9, 3); set => M.Set<uint>(value, 8, 9, 3); }
+        public byte Tough_Ribbon_Rank { get => (byte)M.Get<uint>(8, 12, 3); set => M.Set<uint>(value, 8, 12, 3); }
 
-        public bool Champion_Ribbon { get => M.GetBool(9, 7); set => M.SetBool(value, 9, 7); }
-        public bool Winning_Ribbon { get => M.GetBool(10, 0); set => M.SetBool(value, 10, 0); }
-        public bool Victory_Ribbon { get => M.GetBool(10, 1); set => M.SetBool(value, 10, 1); }
-        public bool Artist_Ribbon { get => M.GetBool(10, 2); set => M.SetBool(value, 10, 2); }
-        public bool Effort_Ribbon { get => M.GetBool(10, 3); set => M.SetBool(value, 10, 3); }
-        public bool Battle_Champion_Ribbon { get => M.GetBool(10, 4); set => M.SetBool(value, 10, 4); }
-        public bool Regional_Champion_Ribbon { get => M.GetBool(10, 5); set => M.SetBool(value, 10, 5); }
-        public bool National_Champion_Ribbon { get => M.GetBool(10, 6); set => M.SetBool(value, 10, 6); }
-        public bool Country_Ribbon { get => M.GetBool(10, 7); set => M.SetBool(value, 10, 7); }
-        public bool National_Ribbon { get => M.GetBool(11, 0); set => M.SetBool(value, 11, 0); }
-        public bool Earth_Ribbon { get => M.GetBool(11, 1); set => M.SetBool(value, 11, 1); }
-        public bool World_Ribbon { get => M.GetBool(11, 2); set => M.SetBool(value, 11, 2); }
+        public bool Champion_Ribbon { get => M.Get<bool>(9, 7); set => M.Set(value, 9, 7); }
+        public bool Winning_Ribbon { get => M.Get<bool>(10, 0); set => M.Set(value, 10, 0); }
+        public bool Victory_Ribbon { get => M.Get<bool>(10, 1); set => M.Set(value, 10, 1); }
+        public bool Artist_Ribbon { get => M.Get<bool>(10, 2); set => M.Set(value, 10, 2); }
+        public bool Effort_Ribbon { get => M.Get<bool>(10, 3); set => M.Set(value, 10, 3); }
+        public bool Battle_Champion_Ribbon { get => M.Get<bool>(10, 4); set => M.Set(value, 10, 4); }
+        public bool Regional_Champion_Ribbon { get => M.Get<bool>(10, 5); set => M.Set(value, 10, 5); }
+        public bool National_Champion_Ribbon { get => M.Get<bool>(10, 6); set => M.Set(value, 10, 6); }
+        public bool Country_Ribbon { get => M.Get<bool>(10, 7); set => M.Set(value, 10, 7); }
+        public bool National_Ribbon { get => M.Get<bool>(11, 0); set => M.Set(value, 11, 0); }
+        public bool Earth_Ribbon { get => M.Get<bool>(11, 1); set => M.Set(value, 11, 1); }
+        public bool World_Ribbon { get => M.Get<bool>(11, 2); set => M.Set(value, 11, 2); }
         // byte 11, bits 3-6 (unused, leftover from ribbon bytes)
-        public bool Fateful_Encounter { get => M.GetBool(11, 7); set => M.SetBool(value, 11, 7); }
+        public bool Fateful_Encounter { get => M.Get<bool>(11, 7); set => M.Set(value, 11, 7); }
 
 
         /* ------------------------------------
@@ -209,7 +209,7 @@ namespace pkuManager.Formats.pkx.pk3
             foreach (ByteArrayManipulator bam in new[] { G, A, E, M })
             {
                 for (int i = 0; i < BLOCK_SIZE / 2; i++)
-                    checksum += bam.GetUShort(i * 2);
+                    checksum += bam.Get<ushort>(i * 2);
             }
 
             Checksum = checksum;
@@ -220,9 +220,9 @@ namespace pkuManager.Formats.pkx.pk3
             uint encryptionKey = TID ^ PID;
             for (int i = 0; i < subData.Length / 4; i++) //xor subData with key in 4 byte chunks
             {
-                uint chunk = subData.GetUInt(4 * i);
+                uint chunk = subData.Get<uint>(4 * i);
                 chunk ^= encryptionKey;
-                subData.SetUInt(chunk, 4 * i);
+                subData.Set(chunk, 4 * i);
             }
         }
 
@@ -235,10 +235,10 @@ namespace pkuManager.Formats.pkx.pk3
         {
             ByteArrayManipulator subData = new(4 * BLOCK_SIZE, BIG_ENDIANESS);
             string order = SUBSTRUCTURE_ORDER[PID % SUBSTRUCTURE_ORDER.Length];
-            subData.SetBytes(G, BLOCK_SIZE * order.IndexOf('G'));
-            subData.SetBytes(A, BLOCK_SIZE * order.IndexOf('A'));
-            subData.SetBytes(E, BLOCK_SIZE * order.IndexOf('E'));
-            subData.SetBytes(M, BLOCK_SIZE * order.IndexOf('M'));
+            subData.SetArray<byte>(G, BLOCK_SIZE * order.IndexOf('G'));
+            subData.SetArray<byte>(A, BLOCK_SIZE * order.IndexOf('A'));
+            subData.SetArray<byte>(E, BLOCK_SIZE * order.IndexOf('E'));
+            subData.SetArray<byte>(M, BLOCK_SIZE * order.IndexOf('M'));
 
             ApplyXOR(subData);
             return subData;
@@ -250,10 +250,10 @@ namespace pkuManager.Formats.pkx.pk3
             ApplyXOR(subData);
 
             string order = SUBSTRUCTURE_ORDER[PID % SUBSTRUCTURE_ORDER.Length];
-            ByteArrayManipulator G = new(subData.GetBytes(BLOCK_SIZE * order.IndexOf('G'), BLOCK_SIZE), BIG_ENDIANESS);
-            ByteArrayManipulator A = new(subData.GetBytes(BLOCK_SIZE * order.IndexOf('A'), BLOCK_SIZE), BIG_ENDIANESS);
-            ByteArrayManipulator E = new(subData.GetBytes(BLOCK_SIZE * order.IndexOf('E'), BLOCK_SIZE), BIG_ENDIANESS);
-            ByteArrayManipulator M = new(subData.GetBytes(BLOCK_SIZE * order.IndexOf('M'), BLOCK_SIZE), BIG_ENDIANESS);
+            ByteArrayManipulator G = new(subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('G'), BLOCK_SIZE), BIG_ENDIANESS);
+            ByteArrayManipulator A = new(subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('A'), BLOCK_SIZE), BIG_ENDIANESS);
+            ByteArrayManipulator E = new(subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('E'), BLOCK_SIZE), BIG_ENDIANESS);
+            ByteArrayManipulator M = new(subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('M'), BLOCK_SIZE), BIG_ENDIANESS);
 
             return (G, A, E, M);
         }
