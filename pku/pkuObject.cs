@@ -312,19 +312,19 @@ namespace pkuManager.pku
         public class Byte_Override_Class : pkuDictionaryTag
         {
             [JsonProperty("Main Data")]
-            public Dictionary<int, byte> Main_Data { get; set; }
+            public Dictionary<string, JToken> Main_Data { get; set; }
 
             [JsonProperty("A")]
-            public Dictionary<int, byte> A { get; set; }
+            public Dictionary<string, JToken> A { get; set; }
 
             [JsonProperty("B")]
-            public Dictionary<int, byte> B { get; set; }
+            public Dictionary<string, JToken> B { get; set; }
 
             [JsonProperty("C")]
-            public Dictionary<int, byte> C { get; set; }
+            public Dictionary<string, JToken> C { get; set; }
 
             [JsonProperty("D")]
-            public Dictionary<int, byte> D { get; set; }
+            public Dictionary<string, JToken> D { get; set; }
         }
 
 

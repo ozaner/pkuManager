@@ -7,6 +7,7 @@ using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.pkx.pkxUtil.ExportAlerts;
 
@@ -238,8 +239,8 @@ namespace pkuManager.Formats.pkx
                 return msg is "" ? null : new("Battle Stat Override", msg);
             }
 
-            public static Alert GetByteOverrideAlert() =>
-                new("Byte Override", "Some of the byte indices were invalid for this format. Ignoring them.");
+            public static Alert GetByteOverrideAlert(List<string> invalidIndices) =>
+                new("Byte Override", $"Byte Override commands {string.Join(", ", invalidIndices)} are invalid. Ignoring them.");
         }
         
         /// <summary>
@@ -743,37 +744,156 @@ namespace pkuManager.Formats.pkx
                     return null;
             }
 
-            public static Alert ApplyByteOverride(pkuObject pku, params ByteArrayManipulator[] bams)
+            private const string BYTE_OVERRIDE_REGEXP = "^(.*) ([0-9]*)(:[0-9]*)?(:[0-9]*)?$";
+
+            private static Action GetOverrideAction<T>(string cmd, T val, ByteArrayManipulator bam)
             {
-                bool invalid = false;
-                static bool singleBam(ByteArrayManipulator bam, Dictionary<int, byte> bo)
+                Match match = Regex.Match(cmd.ToLowerInvariant(), BYTE_OVERRIDE_REGEXP);
+                if (!match.Success)
+                    return null;
+
+                //byteIndex
+                if (!int.TryParse(match.Groups[2].Value, out int byteIndex))
+                    return null;
+
+                int temp;
+
+                //bitIndex
+                int? bitIndex = null;
+                if (match.Groups[3].Value is not "")
                 {
-                    bool invalid = false;
+                    if (int.TryParse(match.Groups[3].Value[1..], out temp))
+                        bitIndex = temp;
+                    else
+                        return null;
+                }
+
+                //bitLength
+                int? bitLength = null;
+                if (match.Groups[4].Value is not "")
+                {
+                    if (int.TryParse(match.Groups[4].Value[1..], out temp))
+                        bitLength = temp;
+                    else
+                        return null;
+                }
+
+                //valid values
+                int size = ByteArrayManipulator.GetByteSize<T>();
+                if (byteIndex + size > bam.Length) return null;
+                if(bitIndex >= size*8) return null;
+                if(bitIndex + bitLength >= size*8) return null;
+
+                if (bitLength is not null)
+                    return () => bam.Set(val, byteIndex, bitIndex.Value, bitLength.Value);
+                else if (bitIndex is not null)
+                    return () => bam.Set(val, byteIndex, bitIndex.Value);
+                else
+                    return () => bam.Set(val, byteIndex);
+            }
+
+            private static Action GetOverrideAction<T>(string cmd, T[] vals, ByteArrayManipulator bam)
+            {
+                Match match = Regex.Match(cmd.ToLowerInvariant(), BYTE_OVERRIDE_REGEXP);
+                if (!match.Success)
+                    return null;
+
+                //byteIndex
+                if (!int.TryParse(match.Groups[2].Value, out int byteIndex))
+                    return null;
+
+                //bitIndex
+                int? length = null;
+                if (match.Groups[3].Value is not "")
+                {
+                    if (int.TryParse(match.Groups[3].Value[1..], out int temp))
+                        length = temp;
+                    else
+                        return null;
+                }
+
+                //valid values
+                int size = ByteArrayManipulator.GetByteSize<T>();
+                if (byteIndex + size > bam.Length) return null;
+                if (byteIndex + (length ?? vals.Length)*size > bam.Length) return null;
+
+                return length is null ?
+                    () => bam.SetArray(vals, byteIndex) :
+                    () => bam.SetArray(vals, byteIndex, length.Value);
+            }
+
+            public static (Alert, ErrorResolver<uint>) ApplyByteOverride(pkuObject pku, params ByteArrayManipulator[] bams)
+            {
+                List<Action> validIndices = new();
+                List<string> invalidIndices = new();
+                void singleBam(ByteArrayManipulator bam, Dictionary<string, JToken> bo, string name)
+                {
+                    int count = 0;
                     foreach (var kvp in bo)
                     {
-                        if (kvp.Key >= bam.Length)
+                        Match match = Regex.Match(kvp.Key.ToLowerInvariant(), BYTE_OVERRIDE_REGEXP);
+                        string type = match.Groups[1].Value;
+                        bool isArray = false;
+                        if (type.EndsWith("[]"))
                         {
-                            invalid = true;
-                            continue;
+                            type = type[0..^2];
+                            isArray = true;
                         }
-                        bam.Set(kvp.Value, kvp.Key);
+
+                        Action a = null;
+                        try
+                        {
+                            a = isArray switch
+                            {
+                                false => type switch
+                                {
+                                    "bool" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<bool>(), bam),
+                                    "byte" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<byte>(), bam),
+                                    "ushort" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<ushort>(), bam),
+                                    "char" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<char>(), bam),
+                                    "uint" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<uint>(), bam),
+                                    _ => null
+                                },
+                                true => type switch
+                                {
+                                    "bool" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<bool[]>(), bam),
+                                    "byte" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<byte[]>(), bam),
+                                    "ushort" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<ushort[]>(), bam),
+                                    "char" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<char[]>(), bam),
+                                    "uint" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<uint[]>(), bam),
+                                    _ => null
+                                }
+                            };
+                        }
+                        catch { }
+
+                        if(a is not null)
+                            validIndices.Add(a);
+                        else
+                            invalidIndices.Add($"{name}: {count}");
+                        count++;
                     }
-                    return invalid;
                 }
                 if (bams.Length > 0 && pku.Byte_Override?.Main_Data is not null)
-                    invalid &= singleBam(bams[0], pku.Byte_Override.Main_Data);
+                    singleBam(bams[0], pku.Byte_Override.Main_Data, "Main Data");
                 if (bams.Length > 1 && pku.Byte_Override?.A is not null)
-                    invalid &= singleBam(bams[1], pku.Byte_Override.A);
+                    singleBam(bams[1], pku.Byte_Override.A, "A");
                 if (bams.Length > 2 && pku.Byte_Override?.B is not null)
-                    invalid &= singleBam(bams[2], pku.Byte_Override.B);
+                    singleBam(bams[2], pku.Byte_Override.B, "B");
                 if (bams.Length > 3 && pku.Byte_Override?.C is not null)
-                    invalid &= singleBam(bams[3], pku.Byte_Override.C);
+                    singleBam(bams[3], pku.Byte_Override.C, "C");
                 if (bams.Length > 4 && pku.Byte_Override?.D is not null)
-                    invalid &= singleBam(bams[4], pku.Byte_Override.D);
+                    singleBam(bams[4], pku.Byte_Override.D, "D");
                 if (bams.Length > 5)
                     throw new ArgumentException($"At most, 5 different BAMs should have been passed.", nameof(bams));
 
-                return invalid ? MetaAlerts.GetByteOverrideAlert() : null;
+                Alert alert = invalidIndices.Any() ? MetaAlerts.GetByteOverrideAlert(invalidIndices) : null;
+                ErrorResolver<uint> er = new(null, new uint[] { 0 }, (_) =>
+                {
+                    foreach (Action a in validIndices)
+                        a.Invoke();
+                });
+                return (alert, er);
             }
         }
 

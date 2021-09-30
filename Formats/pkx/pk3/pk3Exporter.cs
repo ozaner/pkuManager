@@ -533,6 +533,15 @@ namespace pkuManager.Formats.pkx.pk3
                 Warnings.Add(alert);
         }
 
+        // Byte Override [ErrorResolver]
+        [PorterDirective(ProcessingPhase.FirstPass)]
+        protected virtual void ProcessByteOverride()
+        {
+            Alert a;
+            (a, ByteOverrideResolver) = pkxUtil.MetaTags.ApplyByteOverride(pku, pk3.NonSubData, pk3.G, pk3.A, pk3.E, pk3.M);
+            Warnings.Add(a);
+        }
+
 
         /* ------------------------------------
          * Error Resolvers
@@ -557,12 +566,9 @@ namespace pkuManager.Formats.pkx.pk3
          * ------------------------------------
         */
 
-        // Byte Override
+        // Byte Override ErrorResolver
         [PorterDirective(ProcessingPhase.PostProcessing)]
-        protected virtual void ProcessByteOverride()
-        {
-            Warnings.Add(pkxUtil.MetaTags.ApplyByteOverride(pku, pk3.NonSubData, pk3.G, pk3.A, pk3.E, pk3.M));
-        }
+        protected virtual ErrorResolver<uint> ByteOverrideResolver { get; set; }
 
 
         /* ------------------------------------
