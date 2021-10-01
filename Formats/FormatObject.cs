@@ -13,13 +13,6 @@
         public abstract byte[] ToFile();
 
         /// <summary>
-        /// Determines whether the given file is a valid instance of this format.
-        /// </summary>
-        /// <param name="file">A file.</param>
-        /// <returns>Whether or not this file is valid, and a reason if it's not.</returns>
-        public abstract (bool isValid, string reason) IsFile(byte[] file);
-
-        /// <summary>
         /// Fills in the details using a file version of this format,
         /// overwriting any data that was there previously.
         /// </summary>

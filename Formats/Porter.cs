@@ -22,15 +22,9 @@ namespace pkuManager.Formats
         protected GlobalFlags GlobalFlags { get; }
 
         /// <summary>
-        /// The type of the <see cref="Data"/> that this porter makes use of.<br/>
-        /// Type must be a child of <see cref="FormatObject"/>.
-        /// </summary>
-        protected abstract Type DataType { get; }
-
-        /// <summary>
         /// A data structure representing the non-pku format.
         /// </summary>
-        protected FormatObject Data { get; }
+        protected abstract FormatObject Data { get; }
 
         /// <summary>
         /// A list of notes to be displayed on the porter window.<br/>
@@ -47,7 +41,6 @@ namespace pkuManager.Formats
         {
             this.pku = pku ?? throw new ArgumentException("Can't initialize an exporter with a null .pku!");
             GlobalFlags = globalFlags;
-            Data = (FormatObject)Activator.CreateInstance(DataType);
         }
 
         /// <summary>

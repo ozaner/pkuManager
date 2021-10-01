@@ -26,9 +26,9 @@ namespace pkuManager.Formats
         public List<Alert> Questions { get; } = new();
 
         /// <summary>
-        /// Reference to passed file for <see cref="CanPort"/> to check.
+        /// Reference to the passed file.
         /// </summary>
-        private byte[] file;
+        protected byte[] File { get; }
 
         /// <summary>
         /// The base importer constructor.
@@ -36,29 +36,9 @@ namespace pkuManager.Formats
         /// <inheritdoc cref="Porter(pkuObject, GlobalFlags, FormatObject)"/>
         public Importer(byte[] file, GlobalFlags globalFlags, bool checkInMode) : base(new(), globalFlags)
         {
+            File = file;
             CheckInMode = checkInMode;
-
-            // if file isn't valid, importer won't ever reach ToPKU.
-            this.file = file;
-            if (Data.IsFile(file).isValid)
-                DataType.GetMethod(nameof(FormatObject.FromFile)).Invoke(Data, new[] { file });
         }
-
-        public sealed override (bool canPort, string reason) CanPort()
-        {
-            (bool isValid, string reason) = Data.IsFile(file);
-            if (!isValid)
-                return (false, reason);
-            else
-                return CanImport();
-        }
-
-        /// <summary>
-        /// Determines whether or not the given file can be imported to the desired format and a
-        /// reason why if it cannot, assuming it passed <see cref="FormatObject.IsFile(byte[])"/>.
-        /// </summary>
-        /// <inheritdoc cref="CanPort"/>
-        public abstract (bool isValid, string reason) CanImport();
 
         /// <summary>
         /// Returns the imported <see cref="pkuObject"/> generated from the given file.<br/>

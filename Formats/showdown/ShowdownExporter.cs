@@ -22,12 +22,7 @@ namespace pkuManager.Formats.showdown
         /// <inheritdoc cref="Exporter(pkuObject, GlobalFlags, FormatObject)"/>
         public ShowdownExporter(pkuObject pku, GlobalFlags globalFlags) : base(pku, globalFlags) { }
 
-        protected override Type DataType { get => typeof(ShowdownObject); }
-
-        /// <summary>
-        /// <see cref="Exporter.Data"/> casted as a <see cref="ShowdownObject"/>.
-        /// </summary>
-        protected ShowdownObject ShowdownData { get => Data as ShowdownObject; }
+        protected override ShowdownObject Data { get; } = new();
 
         public override (bool, string) CanPort()
         {
@@ -74,8 +69,8 @@ namespace pkuManager.Formats.showdown
             //  - Combination of species and form tags (and gender for Meowstic & Indeedee)
 
             bool casted;
-            (ShowdownData.ShowdownName, casted) = ShowdownObject.GetShowdownName(pku);
-            if (ShowdownData.ShowdownName is null)
+            (Data.ShowdownName, casted) = ShowdownObject.GetShowdownName(pku);
+            if (Data.ShowdownName is null)
                 throw new ArgumentException("Expected a pku with a valid Showdown species here.");
 
             if (casted)
@@ -93,11 +88,11 @@ namespace pkuManager.Formats.showdown
             //  - Leading spaces are ignored
 
             if (pku.Nickname is "") //empty counts as null
-                ShowdownData.Nickname = null;
+                Data.Nickname = null;
             else
-                ShowdownData.Nickname = pku.Nickname;
+                Data.Nickname = pku.Nickname;
 
-            if (ShowdownData.Nickname?.Length > 0 && ShowdownData.Nickname[0] is ' ') //if first character is a space
+            if (Data.Nickname?.Length > 0 && Data.Nickname[0] is ' ') //if first character is a space
                 Warnings.Add(GetNicknameAlert(AlertType.INVALID));
         }
 
@@ -109,7 +104,7 @@ namespace pkuManager.Formats.showdown
             //  - Illegal genders are ignored in legal rulesets, but used in illegal ones.
             //  - Genderless is denoted by no gender.
 
-            ShowdownData.Gender = pku.Gender.ToEnum<Gender>();
+            Data.Gender = pku.Gender.ToEnum<Gender>();
         }
 
         // Item
@@ -121,7 +116,7 @@ namespace pkuManager.Formats.showdown
                 Warnings.Add(pkxUtil.ExportAlerts.GetItemAlert(AlertType.INVALID, pku.Item));
 
             if (itemValid)
-                ShowdownData.Item = pku.Item;
+                Data.Item = pku.Item;
         }
 
         // Ability
@@ -132,7 +127,7 @@ namespace pkuManager.Formats.showdown
             if (pku.Ability is not null && !abilityValid) //check for invalid alert
                 Warnings.Add(pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.INVALID, pku.Ability, "None (Showdown will pick one)."));
             else
-                ShowdownData.Ability = pku.Ability;
+                Data.Ability = pku.Ability;
         }
 
         // Level
@@ -140,7 +135,7 @@ namespace pkuManager.Formats.showdown
         protected virtual void ProcessLevel()
         {
             var (level, alert) = pkxUtil.ExportTags.ProcessNumericTag(pku.Level, pkxUtil.ExportAlerts.GetLevelAlert, false, 100, 1, 100);
-            ShowdownData.Level = (byte)level;
+            Data.Level = (byte)level;
             Warnings.Add(alert);
         }
 
@@ -149,7 +144,7 @@ namespace pkuManager.Formats.showdown
         protected virtual void ProcessFriendship()
         {
             var (friendship, alert) = pkxUtil.ExportTags.ProcessNumericTag(pku.Friendship, GetFriendshipAlert, false, 255, 0, 255);
-            ShowdownData.Friendship = (byte)friendship;
+            Data.Friendship = (byte)friendship;
             Warnings.Add(alert);
         }
 
@@ -159,7 +154,7 @@ namespace pkuManager.Formats.showdown
         {
             int?[] vals = { pku.IVs?.HP, pku.IVs?.Attack, pku.IVs?.Defense, pku.IVs?.Sp_Attack, pku.IVs?.Sp_Defense, pku.IVs?.Speed };
             var (ivs, alert) = pkxUtil.ExportTags.ProcessMultiNumericTag(pku.IVs is not null, vals, pkxUtil.ExportAlerts.GetIVsAlert, 31, 0, 31, false);
-            ShowdownData.IVs = Array.ConvertAll(ivs, x => (byte)x);
+            Data.IVs = Array.ConvertAll(ivs, x => (byte)x);
             Warnings.Add(alert);
         }
 
@@ -168,7 +163,7 @@ namespace pkuManager.Formats.showdown
         protected virtual void ProcessEVs()
         {
             var (evs, alert) = pkxUtil.ExportTags.ProcessEVs(pku);
-            ShowdownData.EVs = Array.ConvertAll(evs, x => (byte)x);
+            Data.EVs = Array.ConvertAll(evs, x => (byte)x);
             Warnings.Add(alert);
         }
 
@@ -176,8 +171,8 @@ namespace pkuManager.Formats.showdown
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessNature()
         {
-            ShowdownData.Nature = pku.Nature.ToEnum<Nature>();
-            if (ShowdownData.Nature is null)
+            Data.Nature = pku.Nature.ToEnum<Nature>();
+            if (Data.Nature is null)
             {
                 if (pku.Nature is null)
                     Warnings.Add(GetNatureAlert(AlertType.UNSPECIFIED));
@@ -192,8 +187,8 @@ namespace pkuManager.Formats.showdown
         {
             if (pku.Gigantamax_Factor is true)
             {
-                if (ShowdownObject.IsGMaxValid(ShowdownData.ShowdownName))
-                    ShowdownData.Gigantamax_Factor = true;
+                if (ShowdownObject.IsGMaxValid(Data.ShowdownName))
+                    Data.Gigantamax_Factor = true;
                 else
                     Warnings.Add(GetGMaxAlert(AlertType.INVALID));
             }
@@ -208,7 +203,7 @@ namespace pkuManager.Formats.showdown
             (_, int[] moveIndices, Alert alert) = pkxUtil.ExportTags.ProcessMoves(pku, m => ShowdownObject.IsMoveValid(m) ? 1 : null);
             foreach (int id in moveIndices)
                 moves.Add(pku.Moves[id].Name);
-            ShowdownData.Moves = moves.ToArray();
+            Data.Moves = moves.ToArray();
             Warnings.Add(alert);
         }
 

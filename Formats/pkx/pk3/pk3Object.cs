@@ -149,14 +149,6 @@ namespace pkuManager.Formats.pkx.pk3
             return file;
         }
 
-        public override (bool, string) IsFile(byte[] file)
-        {
-            if (file.Length is not (FILE_SIZE_PC or FILE_SIZE_PARTY))
-                return (false, $"A .pk3 file must be {FILE_SIZE_PC} or {FILE_SIZE_PARTY} bytes long.");
-
-            return (true, null);
-        }
-
         public override void FromFile(byte[] file)
         {
             NonSubData.SetArray(file, 0, NON_SUBDATA_SIZE);
