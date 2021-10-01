@@ -92,9 +92,7 @@ namespace pkuManager.Formats.pkx.pk3
         // Species
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessSpecies()
-        {
-            pk3.Species = (ushort)PokeAPIUtil.GetSpeciesIndex(dex, 3);
-        }
+            => pk3.Species.Set((ushort)PokeAPIUtil.GetSpeciesIndex(dex, 3));
 
         // Nature [Implicit]
         [PorterDirective(ProcessingPhase.FirstPass)]
@@ -159,8 +157,8 @@ namespace pkuManager.Formats.pkx.pk3
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessTID()
         {
-            Alert alert;
-            (pk3.TID, alert) = pkxUtil.ExportTags.ProcessTID(pku);
+            var (tid, alert) = pkxUtil.ExportTags.ProcessTID(pku);
+            pk3.TID.Set(tid);
             Warnings.Add(alert);
         }
 
@@ -170,7 +168,7 @@ namespace pkuManager.Formats.pkx.pk3
         protected virtual void ProcessPID()
         {
             var (pids, alert) = pkxUtil.ExportTags.ProcessPID(pku, pk3.TID, false, gender, nature, unownForm);
-            PIDResolver = new ErrorResolver<uint>(alert, pids, x => pk3.PID = x);
+            PIDResolver = new ErrorResolver<uint>(alert, pids, x => pk3.PID.Set(x));
             if (alert is RadioButtonAlert)
                 Errors.Add(alert);
             else
@@ -181,8 +179,9 @@ namespace pkuManager.Formats.pkx.pk3
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessOriginGame()
         {
-            Alert alert;
-            (pk3.Origin_Game, checkedGameName, alert) = ((byte, string, Alert))pkxUtil.ExportTags.ProcessOriginGame(pku, 3);
+            var (origingame, gamename, alert) = pkxUtil.ExportTags.ProcessOriginGame(pku, 3);
+            pk3.Origin_Game.Set((ushort)origingame);
+            checkedGameName = gamename;
             Warnings.Add(alert);
         }
 
@@ -190,8 +189,8 @@ namespace pkuManager.Formats.pkx.pk3
         [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessOriginGame))]
         protected virtual void ProcessMetLocation()
         {
-            Alert alert;
-            (pk3.Met_Location, alert) = ((byte, Alert))pkxUtil.ExportTags.ProcessMetLocation(pku, checkedGameName, (g, l) => pk3Object.EncodeMetLocation(g, l), pk3Object.GetDefaultLocationName(checkedGameName));
+            var (location, alert) = pkxUtil.ExportTags.ProcessMetLocation(pku, checkedGameName, (g, l) => pk3Object.EncodeMetLocation(g, l), pk3Object.GetDefaultLocationName(checkedGameName));
+            pk3.Met_Location.Set((byte)location);
             Warnings.Add(alert);
         }
 
@@ -199,20 +198,20 @@ namespace pkuManager.Formats.pkx.pk3
         [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessOriginGame))]
         protected virtual void ProcessEgg()
         {
-            pk3.Is_Egg = pku.IsEgg();
+            pk3.Is_Egg.Set(pku.IsEgg());
 
             //Deal with "Legal Gen 3 eggs"
-            if (pku.IsEgg() && pk3.Origin_Game != 0)
+            if (pku.IsEgg() && pk3.Origin_Game.Get() is not 0)
             {
                 Language? lang = DataUtil.ToEnum<Language>(pku.Game_Info?.Language);
                 if (lang is not null && pkxUtil.EGG_NICKNAME[lang.Value] == pku.Nickname)
                 {
-                    pk3.Egg_Name_Override = pk3Object.EGG_NAME_OVERRIDE_CONST; //override nickname to be 'egg'
+                    pk3.Egg_Name_Override.Set(pk3Object.EGG_NAME_OVERRIDE_CONST); //override nickname to be 'egg'
                     checkedLang = Language.Japanese;
-                    pk3.Nickname = pk3Object.CHARACTER_ENCODING
-                                    .Encode(pkxUtil.EGG_NICKNAME[checkedLang], pk3Object.MAX_NICKNAME_CHARS, checkedLang).encodedStr;
-                    pk3.OT = pk3Object.CHARACTER_ENCODING
-                                .Encode(pku.Game_Info?.OT, pk3Object.MAX_OT_CHARS, lang.Value).encodedStr;
+                    pk3.Nickname.Set(pk3Object.CHARACTER_ENCODING
+                                    .Encode(pkxUtil.EGG_NICKNAME[checkedLang], pk3Object.MAX_NICKNAME_CHARS, checkedLang).encodedStr);
+                    pk3.OT.Set(pk3Object.CHARACTER_ENCODING
+                                .Encode(pku.Game_Info?.OT, pk3Object.MAX_OT_CHARS, lang.Value).encodedStr);
                     legalGen3Egg = true;
                 }
             }
@@ -228,7 +227,7 @@ namespace pkuManager.Formats.pkx.pk3
                 (checkedLang, alert) = pkxUtil.ExportTags.ProcessLanguage(pku, pk3Object.VALID_LANGUAGES);
                 Warnings.Add(alert);
             }
-            pk3.Language = (byte)checkedLang;
+            pk3.Language.Set((byte)checkedLang);
         }
 
         // Nickname [Requires: Language]
@@ -237,8 +236,8 @@ namespace pkuManager.Formats.pkx.pk3
         {
             if (!legalGen3Egg)
             {
-                Alert alert;
-                (pk3.Nickname, alert, _, _) = pkxUtil.ExportTags.ProcessNickname(pku, 3, pk3Object.MAX_NICKNAME_CHARS, pk3Object.CHARACTER_ENCODING, checkedLang);
+                var (nick, alert, _, _) = pkxUtil.ExportTags.ProcessNickname(pku, 3, pk3Object.MAX_NICKNAME_CHARS, pk3Object.CHARACTER_ENCODING, checkedLang);
+                pk3.Nickname.Set(nick);
                 Warnings.Add(alert);
             }
         }
@@ -249,8 +248,8 @@ namespace pkuManager.Formats.pkx.pk3
         {
             if (!legalGen3Egg)
             {
-                Alert alert;
-                (pk3.OT, alert) = pkxUtil.ExportTags.ProcessOT(pku, pk3Object.MAX_OT_CHARS, pk3Object.CHARACTER_ENCODING, checkedLang);
+                var (ot, alert) = pkxUtil.ExportTags.ProcessOT(pku, pk3Object.MAX_OT_CHARS, pk3Object.CHARACTER_ENCODING, checkedLang);
+                pk3.OT.Set(ot);
                 Warnings.Add(alert);
             }
         }
@@ -264,8 +263,9 @@ namespace pkuManager.Formats.pkx.pk3
             {
                 ushort[] nicknameTrash = tb?.Nickname?.Length > 0 ? tb.Nickname : null;
                 ushort[] otTrash = tb?.OT?.Length > 0 ? tb.OT : null;
-                Alert alert;
-                (pk3.Nickname, pk3.OT, alert) = pkxUtil.ExportTags.ProcessTrash(pk3.Nickname, nicknameTrash, pk3.OT, otTrash, pk3Object.CHARACTER_ENCODING);
+                var (nick, ot, alert) = pkxUtil.ExportTags.ProcessTrash(pk3.Nickname, nicknameTrash, pk3.OT, otTrash, pk3Object.CHARACTER_ENCODING);
+                pk3.Nickname.Set(nick);
+                pk3.OT.Set(ot);
                 Warnings.Add(alert);
             }
         }
@@ -275,19 +275,19 @@ namespace pkuManager.Formats.pkx.pk3
         protected virtual void ProcessMarkings()
         {
             HashSet<Marking> markings = pku.Markings.ToEnumSet<Marking>();
-            pk3.MarkingCircle = markings.Contains(Marking.Blue_Circle);
-            pk3.MarkingSquare = markings.Contains(Marking.Blue_Square);
-            pk3.MarkingTriangle = markings.Contains(Marking.Blue_Triangle);
-            pk3.MarkingHeart = markings.Contains(Marking.Blue_Heart);
+            pk3.MarkingCircle.Set(markings.Contains(Marking.Blue_Circle));
+            pk3.MarkingSquare.Set(markings.Contains(Marking.Blue_Square));
+            pk3.MarkingTriangle.Set(markings.Contains(Marking.Blue_Triangle));
+            pk3.MarkingHeart.Set(markings.Contains(Marking.Blue_Heart));
         }
 
         // Item
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessItem()
         {
-            var temp = pkxUtil.ExportTags.ProcessItem(pku, 3);
-            pk3.Item = (ushort)temp.Item1;
-            Warnings.Add(temp.Item2);
+            var (item, alert) = pkxUtil.ExportTags.ProcessItem(pku, 3);
+            pk3.Item.Set((ushort)item);
+            Warnings.Add(alert);
         }
 
         // Experience [ErrorResolver]
@@ -295,7 +295,7 @@ namespace pkuManager.Formats.pkx.pk3
         protected virtual void ProcessExperience()
         {
             var (options, alert) = pkxUtil.ExportTags.ProcessEXP(pku);
-            ExperienceResolver = new ErrorResolver<uint>(alert, options, x => pk3.Experience = x);
+            ExperienceResolver = new ErrorResolver<uint>(alert, options, x => pk3.Experience.Set(x));
             if (alert is RadioButtonAlert)
                 Errors.Add(alert);
             else
@@ -309,10 +309,7 @@ namespace pkuManager.Formats.pkx.pk3
             int[] moves;
             Alert alert;
             (moves, moveIndices, alert) = pkxUtil.ExportTags.ProcessMoves(pku, pk3Object.LAST_MOVE_ID);
-            pk3.Move_1 = (ushort)moves[0];
-            pk3.Move_2 = (ushort)moves[1];
-            pk3.Move_3 = (ushort)moves[2];
-            pk3.Move_4 = (ushort)moves[3];
+            pk3.Moves.Set(Array.ConvertAll(moves, x => (ushort)x));
             Warnings.Add(alert);
         }
 
@@ -321,10 +318,10 @@ namespace pkuManager.Formats.pkx.pk3
         protected virtual void ProcessPPUps()
         {
             var (ppups, alert) = pkxUtil.ExportTags.ProcessPPUps(pku, moveIndices);
-            pk3.PP_Up_1 = (byte)ppups[0];
-            pk3.PP_Up_2 = (byte)ppups[1];
-            pk3.PP_Up_3 = (byte)ppups[2];
-            pk3.PP_Up_4 = (byte)ppups[3];
+            pk3.PP_Up_1.Set((byte)ppups[0]);
+            pk3.PP_Up_2.Set((byte)ppups[1]);
+            pk3.PP_Up_3.Set((byte)ppups[2]);
+            pk3.PP_Up_4.Set((byte)ppups[3]);
             Warnings.Add(alert);
         }
 
@@ -332,18 +329,22 @@ namespace pkuManager.Formats.pkx.pk3
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessPP()
         {
-            pk3.PP_1 = pk3Object.CalculatePP(pk3.Move_1, pk3.PP_Up_1);
-            pk3.PP_2 = pk3Object.CalculatePP(pk3.Move_2, pk3.PP_Up_2);
-            pk3.PP_3 = pk3Object.CalculatePP(pk3.Move_3, pk3.PP_Up_3);
-            pk3.PP_4 = pk3Object.CalculatePP(pk3.Move_4, pk3.PP_Up_4);
+            ushort[] moves = pk3.Moves;
+            pk3.PP.Set(new[]
+            {
+                pk3Object.CalculatePP(moves[0], pk3.PP_Up_1),
+                pk3Object.CalculatePP(moves[1], pk3.PP_Up_2),
+                pk3Object.CalculatePP(moves[2], pk3.PP_Up_3),
+                pk3Object.CalculatePP(moves[3], pk3.PP_Up_4),
+            });
         }
 
         // Friendship
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessFriendship()
         {
-            Alert alert;
-            (pk3.Friendship, alert) = ((byte, Alert))pkxUtil.ExportTags.ProcessFriendship(pku);
+            var (friendship, alert) = pkxUtil.ExportTags.ProcessFriendship(pku);
+            pk3.Friendship.Set((byte)friendship);
             Warnings.Add(alert);
         }
 
@@ -352,12 +353,12 @@ namespace pkuManager.Formats.pkx.pk3
         protected virtual void ProcessEVs()
         {
             var (evs, alert) = pkxUtil.ExportTags.ProcessEVs(pku);
-            pk3.EV_HP = (byte)evs[0];
-            pk3.EV_Attack = (byte)evs[1];
-            pk3.EV_Defense = (byte)evs[2];
-            pk3.EV_Sp_Attack = (byte)evs[3];
-            pk3.EV_Sp_Defense = (byte)evs[4];
-            pk3.EV_Speed = (byte)evs[5];
+            pk3.EV_HP.Set((byte)evs[0]);
+            pk3.EV_Attack.Set((byte)evs[1]);
+            pk3.EV_Defense.Set((byte)evs[2]);
+            pk3.EV_Sp_Attack.Set((byte)evs[3]);
+            pk3.EV_Sp_Defense.Set((byte)evs[4]);
+            pk3.EV_Speed.Set((byte)evs[5]);
             Warnings.Add(alert);
         }
 
@@ -366,12 +367,12 @@ namespace pkuManager.Formats.pkx.pk3
         protected virtual void ProcessContestStats()
         {
             var (contest, alert) = pkxUtil.ExportTags.ProcessContest(pku);
-            pk3.Cool = (byte)contest[0];
-            pk3.Beauty = (byte)contest[1];
-            pk3.Cute = (byte)contest[2];
-            pk3.Smart = (byte)contest[3];
-            pk3.Tough = (byte)contest[4];
-            pk3.Sheen = (byte)contest[5];
+            pk3.Cool.Set((byte)contest[0]);
+            pk3.Beauty.Set((byte)contest[1]);
+            pk3.Cute.Set((byte)contest[2]);
+            pk3.Smart.Set((byte)contest[3]);
+            pk3.Tough.Set((byte)contest[4]);
+            pk3.Sheen.Set((byte)contest[5]);
             Warnings.Add(alert);
         }
 
@@ -379,8 +380,9 @@ namespace pkuManager.Formats.pkx.pk3
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessPokerus()
         {
-            Alert alert;
-            (pk3.PKRS_Strain, pk3.PKRS_Days, alert) = ((byte, byte, Alert))pkxUtil.ExportTags.ProcessPokerus(pku);
+            var (strain, days, alert) = pkxUtil.ExportTags.ProcessPokerus(pku);
+            pk3.PKRS_Strain.Set((byte)strain);
+            pk3.PKRS_Days.Set((byte)days);
             Warnings.Add(alert);
         }
 
@@ -388,8 +390,8 @@ namespace pkuManager.Formats.pkx.pk3
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessMetLevel()
         {
-            Alert alert;
-            (pk3.Met_Level, alert) = ((byte, Alert))pkxUtil.ExportTags.ProcessMetLevel(pku);
+            var (level, alert) = ((byte, Alert))pkxUtil.ExportTags.ProcessMetLevel(pku);
+            pk3.Met_Level.Set((byte)level);
             Warnings.Add(alert);
         }
 
@@ -397,8 +399,8 @@ namespace pkuManager.Formats.pkx.pk3
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessBall()
         {
-            Alert alert;
-            (pk3.Ball, alert) = ((byte, Alert))pkxUtil.ExportTags.ProcessBall(pku, Ball.Premier_Ball);
+            var (ball, alert) = pkxUtil.ExportTags.ProcessBall(pku, Ball.Premier_Ball);
+            pk3.Ball.Set((byte)ball);
             Warnings.Add(alert);
         }
 
@@ -407,7 +409,7 @@ namespace pkuManager.Formats.pkx.pk3
         protected virtual void ProcessOTGender()
         {
             var (gender, alert) = pkxUtil.ExportTags.ProcessOTGender(pku);
-            pk3.OT_Gender = gender is Gender.Female; //male otherwise
+            pk3.OT_Gender.Set (gender is Gender.Female); //male otherwise
             Warnings.Add(alert);
         }
 
@@ -416,12 +418,12 @@ namespace pkuManager.Formats.pkx.pk3
         protected virtual void ProcessIVs()
         {
             var (ivs, alert) = pkxUtil.ExportTags.ProcessIVs(pku);
-            pk3.IV_HP = (byte)ivs[0];
-            pk3.IV_Attack = (byte)ivs[1];
-            pk3.IV_Defense = (byte)ivs[2];
-            pk3.IV_Sp_Attack = (byte)ivs[3];
-            pk3.IV_Sp_Defense = (byte)ivs[4];
-            pk3.IV_Speed = (byte)ivs[5];
+            pk3.IV_HP.Set((byte)ivs[0]);
+            pk3.IV_Attack.Set((byte)ivs[1]);
+            pk3.IV_Defense.Set((byte)ivs[2]);
+            pk3.IV_Sp_Attack.Set((byte)ivs[3]);
+            pk3.IV_Sp_Defense.Set((byte)ivs[4]);
+            pk3.IV_Speed.Set((byte)ivs[5]);
             Warnings.Add(alert);
         }
 
@@ -437,26 +439,26 @@ namespace pkuManager.Formats.pkx.pk3
                 int? abilityID = PokeAPIUtil.GetAbilityIndex(pku.Ability);
                 if (abilityID is null or > 76) //unofficial ability OR gen4+ ability
                 {
-                    pk3.Ability_Slot = false;
+                    pk3.Ability_Slot.Set(false);
                     alert = pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.INVALID, pku.Ability, defaultAbility);
                 }
                 else //gen 3- ability
                 {
                     (bool slot1valid, bool slot2valid) = pk3Object.IsAbilityValid(dex, abilityID.Value);
                     if (slot1valid) //ability corresponds to slot 1
-                        pk3.Ability_Slot = false;
+                        pk3.Ability_Slot.Set(false);
                     else if (slot2valid) //ability corresponds to slot 2
-                        pk3.Ability_Slot = true;
+                        pk3.Ability_Slot.Set(true);
                     else //ability is impossible on this species, fallback on slot 1
                     {
-                        pk3.Ability_Slot = false;
+                        pk3.Ability_Slot.Set(false);
                         alert = pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.MISMATCH, pku.Ability, defaultAbility);
                     }
                 }
             }
             else //ability unspecified
             {
-                pk3.Ability_Slot = false;
+                pk3.Ability_Slot.Set(false);
                 alert = pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.UNSPECIFIED, pku.Ability, defaultAbility);
             }
             Warnings.Add(alert);
@@ -489,25 +491,25 @@ namespace pkuManager.Formats.pkx.pk3
             }
 
             //Add contest ribbons
-            pk3.Cool_Ribbon_Rank = pk3Object.GetRibbonRank(Ribbon.Cool_G3, ribbons);
-            pk3.Beauty_Ribbon_Rank = pk3Object.GetRibbonRank(Ribbon.Beauty_G3, ribbons);
-            pk3.Cute_Ribbon_Rank = pk3Object.GetRibbonRank(Ribbon.Cute_G3, ribbons);
-            pk3.Smart_Ribbon_Rank = pk3Object.GetRibbonRank(Ribbon.Smart_G3, ribbons);
-            pk3.Tough_Ribbon_Rank = pk3Object.GetRibbonRank(Ribbon.Tough_G3, ribbons);
+            pk3.Cool_Ribbon_Rank.Set(pk3Object.GetRibbonRank(Ribbon.Cool_G3, ribbons));
+            pk3.Beauty_Ribbon_Rank.Set(pk3Object.GetRibbonRank(Ribbon.Beauty_G3, ribbons));
+            pk3.Cute_Ribbon_Rank.Set(pk3Object.GetRibbonRank(Ribbon.Cute_G3, ribbons));
+            pk3.Smart_Ribbon_Rank.Set(pk3Object.GetRibbonRank(Ribbon.Smart_G3, ribbons));
+            pk3.Tough_Ribbon_Rank.Set(pk3Object.GetRibbonRank(Ribbon.Tough_G3, ribbons));
 
             //Add other ribbons
-            pk3.Champion_Ribbon = ribbons.Contains(Ribbon.Champion);
-            pk3.Winning_Ribbon = ribbons.Contains(Ribbon.Winning);
-            pk3.Victory_Ribbon = ribbons.Contains(Ribbon.Victory);
-            pk3.Artist_Ribbon = ribbons.Contains(Ribbon.Artist);
-            pk3.Effort_Ribbon = ribbons.Contains(Ribbon.Effort);
-            pk3.Battle_Champion_Ribbon = ribbons.Contains(Ribbon.Battle_Champion);
-            pk3.Regional_Champion_Ribbon = ribbons.Contains(Ribbon.Regional_Champion);
-            pk3.National_Champion_Ribbon = ribbons.Contains(Ribbon.National_Champion);
-            pk3.Country_Ribbon = ribbons.Contains(Ribbon.Country);
-            pk3.National_Ribbon = ribbons.Contains(Ribbon.National);
-            pk3.Earth_Ribbon = ribbons.Contains(Ribbon.Earth);
-            pk3.World_Ribbon = ribbons.Contains(Ribbon.World);
+            pk3.Champion_Ribbon.Set(ribbons.Contains(Ribbon.Champion));
+            pk3.Winning_Ribbon.Set(ribbons.Contains(Ribbon.Winning));
+            pk3.Victory_Ribbon.Set(ribbons.Contains(Ribbon.Victory));
+            pk3.Artist_Ribbon.Set(ribbons.Contains(Ribbon.Artist));
+            pk3.Effort_Ribbon.Set(ribbons.Contains(Ribbon.Effort));
+            pk3.Battle_Champion_Ribbon.Set(ribbons.Contains(Ribbon.Battle_Champion));
+            pk3.Regional_Champion_Ribbon.Set(ribbons.Contains(Ribbon.Regional_Champion));
+            pk3.National_Champion_Ribbon.Set(ribbons.Contains(Ribbon.National_Champion));
+            pk3.Country_Ribbon.Set(ribbons.Contains(Ribbon.Country));
+            pk3.National_Ribbon.Set(ribbons.Contains(Ribbon.National));
+            pk3.Earth_Ribbon.Set(ribbons.Contains(Ribbon.Earth));
+            pk3.World_Ribbon.Set(ribbons.Contains(Ribbon.World));
 
             Warnings.Add(a);
         }
@@ -526,7 +528,7 @@ namespace pkuManager.Formats.pkx.pk3
             else
                 options = new[] { pku.Catch_Info?.Fateful_Encounter is true };
 
-            FatefulEncounterResolver = new ErrorResolver<bool>(alert, options, x => pk3.Fateful_Encounter = x);
+            FatefulEncounterResolver = new ErrorResolver<bool>(alert, options, x => pk3.Fateful_Encounter.Set(x));
             if (alert is RadioButtonAlert)
                 Errors.Add(alert);
             else
