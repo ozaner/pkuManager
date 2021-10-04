@@ -1,31 +1,37 @@
-﻿namespace pkuManager.Utilities
+﻿using pkuManager.Utilities;
+
+namespace pkuManager.Formats.Fields
 {
-    public abstract class BAMProperty<T>
+    public abstract class BAMField<T> : INumeric<T>
     {
         protected ByteArrayManipulator BAM;
         protected int ByteIndex { get; }
         protected int TypeSize { get; }
 
+        public T MaxValue { get; }
+        public T MinValue { get; }
+
         //common constructor
-        protected BAMProperty(ByteArrayManipulator bam, int byteIndex)
+        protected BAMField(ByteArrayManipulator bam, int byteIndex)
         {
             TypeSize = ByteArrayManipulator.GetByteSize<T>(); //also checks if T is valid
             BAM = bam;
             ByteIndex = byteIndex;
+            (MinValue, MaxValue) = INumericField<T>.Caster(0, (1L << GetBitCount()) - 1);
         }
 
         protected abstract int GetBitCount();
-
-        public uint GetMaxValue() => (uint)((1L << GetBitCount()) - 1);
+        public abstract string GetOverride();
     }
 
-    public abstract class BAMValue<T> : BAMProperty<T>
+    public abstract class BAMValue<T> : BAMField<T>, INumericField<T>
     {
         protected BAMValue(ByteArrayManipulator bam, int byteIndex) : base(bam, byteIndex) { }
+
         public static implicit operator T(BAMValue<T> value) => value.Get();
+
         public abstract T Get();
         public abstract void Set(T val);
-        public abstract (string, T) GetOverride();
     }
 
     public class BAMByteValue<T> : BAMValue<T>
@@ -34,9 +40,9 @@
 
         public override void Set(T val) => BAM.Set(val, ByteIndex);
         public override T Get() => BAM.Get<T>(ByteIndex);
-        public override (string, T) GetOverride()
-            => ($"{typeof(T).Name} {ByteIndex}", Get());
+
         protected override int GetBitCount() => TypeSize * 8;
+        public override string GetOverride() => $"{typeof(T).Name} {ByteIndex}";
     }
 
     public class BAMBitValue<T> : BAMValue<T>
@@ -49,28 +55,36 @@
             BitIndex = bitIndex;
             BitLength = bitLength;
         }
-
+        
         public override void Set(T val) => BAM.Set(val, ByteIndex, BitIndex, BitLength);
         public override T Get() => BAM.Get<T>(ByteIndex, BitIndex, BitLength);
-        public override (string, T) GetOverride()
-            => ($"{typeof(T).Name} {ByteIndex}:{BitIndex}{(BitLength is 1 ? 1 : "")}", Get());
+
         protected override int GetBitCount() => BitLength;
+        public override string GetOverride() => $"{typeof(T).Name} {ByteIndex}:{BitIndex}{(BitLength is 1 ? 1 : "")}";
     }
 
-    public class BAMArray<T> : BAMProperty<T>
+    public class BAMArray<T> : BAMField<T>, INumericArray<T>
     {
-        protected int Length { get; }
+        public int Length { get; }
 
         public BAMArray(ByteArrayManipulator bam, int byteIndex, int length) : base(bam, byteIndex)
-        {
-            Length = length;
-        }
+            => Length = length;
+
         public static implicit operator T[](BAMArray<T> value) => value.Get();
+
+        public T this[int index]
+        {
+            get => Get(index);
+            set => Set(value, index);
+        }
 
         public void Set(T[] vals) => BAM.SetArray(vals, ByteIndex, Length);
         public T[] Get() => BAM.GetArray<T>(ByteIndex, Length);
-        public (string, T[]) GetOverride()
-            => ($"{typeof(T).Name}[] {ByteIndex}:{Length}", Get());
+
+        public T Get(int index) => BAM.Get<T>(ByteIndex + TypeSize * index);
+        public void Set(T val, int index) => BAM.Set(val, ByteIndex + TypeSize * index);
+        
         protected override int GetBitCount() => TypeSize * Length;
+        public override string GetOverride() => $"{typeof(T).Name}[] {ByteIndex}:{Length}";
     }
 }

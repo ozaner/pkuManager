@@ -5,6 +5,7 @@ using System.Linq;
 using System;
 using Newtonsoft.Json.Linq;
 using System.IO;
+using pkuManager.Formats.Fields;
 
 namespace pkuManager.Formats.pkx.pk3
 {

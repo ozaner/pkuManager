@@ -326,7 +326,7 @@ namespace pkuManager.Utilities
 
 
         // -----------------------
-        // GUI Methods
+        // Misc. Methods
         // -----------------------
         /// <summary>
         /// Opens a dialog window to obtain some string input from the user.
@@ -378,5 +378,15 @@ namespace pkuManager.Utilities
             value = textBox.Text;
             return dialogResult;
         }
+
+        /// <summary>
+        /// Casts <paramref name="obj"/> to the given generic type <typeparamref name="T"/>.<br/>
+        /// Will throw an exception if cast is invalid.
+        /// </summary>
+        /// <typeparam name="T">The type to cast <paramref name="obj"/> to.</typeparam>
+        /// <param name="obj">An object to be casted.</param>
+        /// <returns><paramref name="obj"/> casted as type <typeparamref name="T"/>.</returns>
+        public static T CastTo<T>(this object obj)
+            => (T)Convert.ChangeType(obj, typeof(T));
     }
 }
