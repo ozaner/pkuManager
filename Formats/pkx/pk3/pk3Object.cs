@@ -99,36 +99,36 @@ namespace pkuManager.Formats.pkx.pk3
             PKRS_Strain = new(M, 0, 4, 4);
             Met_Location = new(M, 1);
             Met_Level = new(M, 2, 0, 7);
-            Origin_Game = new(M, 2, 7, 4); // within byte 2 and 3
+            Origin_Game = new(M, 2, 7, 4);
             Ball = new(M, 2, 11, 4);
-            OT_Gender = new(M, 3, 7);
+            OT_Gender = new(M, 2, 15);
             IV_HP = new(M, 4, 0, 5);
-            IV_Attack = new(M, 4, 5, 5); //within byte 4 and 5
+            IV_Attack = new(M, 4, 5, 5);
             IV_Defense = new(M, 4, 10, 5);
-            IV_Speed = new(M, 4, 15, 5); //within byte 5 and 6
-            IV_Sp_Attack = new(M, 4, 20, 5); //within byte 6 and 7
+            IV_Speed = new(M, 4, 15, 5);
+            IV_Sp_Attack = new(M, 4, 20, 5);
             IV_Sp_Defense = new(M, 4, 25, 5);
-            Is_Egg = new(M, 7, 6);
-            Ability_Slot = new(M, 7, 7);
+            Is_Egg = new(M, 4, 30);
+            Ability_Slot = new(M, 4, 31);
             Cool_Ribbon_Rank = new(M, 8, 0, 3);
             Beauty_Ribbon_Rank = new(M, 8, 3, 3);
-            Cute_Ribbon_Rank = new(M, 8, 6, 3); //within byte 8 and 9
+            Cute_Ribbon_Rank = new(M, 8, 6, 3);
             Smart_Ribbon_Rank = new(M, 8, 9, 3);
             Tough_Ribbon_Rank = new(M, 8, 12, 3);
-            Champion_Ribbon = new(M, 9, 7);
-            Winning_Ribbon = new(M, 10, 0);
-            Victory_Ribbon = new(M, 10, 1);
-            Artist_Ribbon = new(M, 10, 2);
-            Effort_Ribbon = new(M, 10, 3);
-            Battle_Champion_Ribbon = new(M, 10, 4);
-            Regional_Champion_Ribbon = new(M, 10, 5);
-            National_Champion_Ribbon = new(M, 10, 6);
-            Country_Ribbon = new(M, 10, 7);
-            National_Ribbon = new(M, 11, 0);
-            Earth_Ribbon = new(M, 11, 1);
-            World_Ribbon = new(M, 11, 2);
-            Unused_D = new(M, 11, 3, 4); //leftover from ribbon bytes
-            Fateful_Encounter = new(M, 11, 7);
+            Champion_Ribbon = new(M, 8, 15);
+            Winning_Ribbon = new(M, 8, 16);
+            Victory_Ribbon = new(M, 8, 17);
+            Artist_Ribbon = new(M, 8, 18);
+            Effort_Ribbon = new(M, 8, 19);
+            Battle_Champion_Ribbon = new(M, 8, 20);
+            Regional_Champion_Ribbon = new(M, 8, 21);
+            National_Champion_Ribbon = new(M, 8, 22);
+            Country_Ribbon = new(M, 8, 23);
+            National_Ribbon = new(M, 8, 24);
+            Earth_Ribbon = new(M, 8, 25);
+            World_Ribbon = new(M, 8, 26);
+            Unused_D = new(M, 8, 27, 4); //leftover from ribbon bytes
+            Fateful_Encounter = new(M, 8, 31);
         }
 
 
@@ -226,25 +226,25 @@ namespace pkuManager.Formats.pkx.pk3
 
         public BAMByteValue<byte> Met_Location { get; }
 
-        public BAMBitValue<ushort> Met_Level { get; }
-        public BAMBitValue<ushort> Origin_Game { get; }
-        public BAMBitValue<ushort> Ball { get; }
+        public BAMBitValue<byte> Met_Level { get; }
+        public BAMBitValue<byte> Origin_Game { get; }
+        public BAMBitValue<byte> Ball { get; }
         public BAMBitValue<bool> OT_Gender { get; }
 
-        public BAMBitValue<uint> IV_HP { get; }
-        public BAMBitValue<uint> IV_Attack { get; }
-        public BAMBitValue<uint> IV_Defense { get; }
-        public BAMBitValue<uint> IV_Speed { get; }
-        public BAMBitValue<uint> IV_Sp_Attack { get; }
-        public BAMBitValue<uint> IV_Sp_Defense { get; }
+        public BAMBitValue<byte> IV_HP { get; }
+        public BAMBitValue<byte> IV_Attack { get; }
+        public BAMBitValue<byte> IV_Defense { get; }
+        public BAMBitValue<byte> IV_Speed { get; }
+        public BAMBitValue<byte> IV_Sp_Attack { get; }
+        public BAMBitValue<byte> IV_Sp_Defense { get; }
         public BAMBitValue<bool> Is_Egg { get; }
         public BAMBitValue<bool> Ability_Slot { get; }
 
-        public BAMBitValue<ushort> Cool_Ribbon_Rank { get; }
-        public BAMBitValue<ushort> Beauty_Ribbon_Rank { get; }
-        public BAMBitValue<ushort> Cute_Ribbon_Rank { get; }
-        public BAMBitValue<ushort> Smart_Ribbon_Rank { get; }
-        public BAMBitValue<ushort> Tough_Ribbon_Rank { get; }
+        public BAMBitValue<byte> Cool_Ribbon_Rank { get; }
+        public BAMBitValue<byte> Beauty_Ribbon_Rank { get; }
+        public BAMBitValue<byte> Cute_Ribbon_Rank { get; }
+        public BAMBitValue<byte> Smart_Ribbon_Rank { get; }
+        public BAMBitValue<byte> Tough_Ribbon_Rank { get; }
         public BAMBitValue<bool> Champion_Ribbon { get; }
         public BAMBitValue<bool> Winning_Ribbon { get; }
         public BAMBitValue<bool> Victory_Ribbon { get; }

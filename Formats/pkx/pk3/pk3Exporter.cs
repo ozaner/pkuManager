@@ -175,7 +175,7 @@ namespace pkuManager.Formats.pkx.pk3
         protected virtual void ProcessOriginGame()
         {
             var (origingame, gamename, alert) = pkxUtil.ExportTags.ProcessOriginGame(pku, 3);
-            Data.Origin_Game.Set((ushort)origingame);
+            Data.Origin_Game.Set((byte)origingame);
             checkedGameName = gamename;
             Warnings.Add(alert);
         }

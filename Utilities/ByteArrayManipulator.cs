@@ -88,24 +88,26 @@ namespace pkuManager.Utilities
         /// Reads a bit level-value stored within an unsigned integer from the byte array.
         /// </summary>
         /// <param name="byteIndex">The index of the unsigned integer the value is stored in.</param>
-        /// <param name="byteLength">The length of the unsigned integer in bytes. Must be a value from 0-4.</param>
         /// <param name="bitIndex">The index of the value's first bit relative to <paramref name="byteIndex"/>.</param>
         /// <param name="bitLength">The length of the value in bits.</param>
         /// <returns>A <paramref name="bitLength"/> unsigned value starting
         ///          <paramref name="bitIndex"/> bits after <paramref name="byteIndex"/>.</returns>
-        private uint GetInt(int byteIndex, int byteLength, int bitIndex, int bitLength)
+        private uint GetInt(int byteIndex, int bitIndex, int bitLength)
         {
-            if (byteLength > 4 || byteLength < 0)
-                throw new ArgumentException($"{nameof(byteLength)} must be a value from 0-4.", nameof(byteLength));
+            if (bitIndex is < 0 or > 32)
+                throw new ArgumentException($"{nameof(bitIndex)} must be a value from 0-32.", nameof(bitIndex));
 
-            if (bitIndex > byteLength * 8 || bitIndex < 0)
-                throw new ArgumentException($"{nameof(bitIndex)} must be a value from 0-{byteLength * 8}.", nameof(bitIndex));
+            if (bitIndex + bitLength is < 0 or > 32)
+                throw new ArgumentException($"{nameof(bitIndex)} + {nameof(bitLength)} must be anything from 0-32.", nameof(bitLength));
 
-            if (bitIndex + bitLength > byteLength * 8 || bitIndex + bitLength < 0)
-                throw new ArgumentException($"{nameof(bitIndex)} + {nameof(bitLength)} must be anything from 0-{byteLength * 8}.", nameof(bitLength));
-
-            uint source = GetInt(byteIndex, byteLength);
-            return source.GetBits(bitIndex, bitLength);
+            uint sum = 0;
+            for (int i = 0; i < bitLength; i++)
+            {
+                int by = byteIndex + (bitIndex + i) / 8;
+                int bi = (bitIndex + i) % 8;
+                sum += (uint)((ByteArray[by] >> bi) & 1) << i;
+            }
+            return sum;
         }
 
         /// <summary>
@@ -127,7 +129,7 @@ namespace pkuManager.Utilities
         /// <param name="bitLength">The length of the value in bits.</param>
         /// <inheritdoc cref="Get{T}(int)"/>
         public T Get<T>(int byteIndex, int bitIndex, int bitLength = 1)
-            => (T)Convert.ChangeType(GetInt(byteIndex, GetByteSize<T>(), bitIndex, bitLength), typeof(T));
+            => (T)Convert.ChangeType(GetInt(byteIndex, bitIndex, bitLength), typeof(T));
 
         /// <summary>
         /// Reads an array of values of type <typeparamref name="T"/> from <see cref="ByteArray"/>.
@@ -166,23 +168,24 @@ namespace pkuManager.Utilities
         /// Writes a bit level-value stored within an unsigned integer to the byte array.
         /// </summary>
         /// <param name="byteIndex">The index of the unsigned integer the value is stored in.</param>
-        /// <param name="byteLength">The length of the unsigned integer in bytes. Must be a value from 0-4.</param>
         /// <param name="bitIndex">The index of the value's first bit relative to <paramref name="byteIndex"/>.</param>
         /// <param name="bitLength">The length of the value in bits. Must be a value from 0-32.</param>
-        private void SetInt(uint value, int byteIndex, int byteLength, int bitIndex, int bitLength)
+        private void SetInt(uint value, int byteIndex, int bitIndex, int bitLength)
         {
-            if (byteLength > 4 || byteLength < 0)
-                throw new ArgumentException($"{nameof(byteLength)} must be a value from 0-4.", nameof(byteLength));
-
-            if (bitIndex > byteLength * 8 || bitIndex < 0)
+            if (bitIndex is < 0 or > 32)
                 throw new ArgumentException($"{nameof(bitIndex)} must be a value from 0-32.", nameof(bitIndex));
 
-            if (bitIndex + bitLength > byteLength * 8 || bitIndex + bitLength < 0)
+            if (bitIndex + bitLength is < 0 or > 32)
                 throw new ArgumentException($"{nameof(bitIndex)} + {nameof(bitLength)} must be anything from 0-32.", nameof(bitLength));
 
-            uint destination = GetInt(byteIndex, byteLength);
-            destination.SetBits(value, bitIndex, bitLength);
-            SetInt(destination, byteIndex, byteLength);
+            for (int i = 0; i < bitLength; i++)
+            {
+                int by = byteIndex + (bitIndex + i) / 8;
+                int bi = (bitIndex + i) % 8;
+                uint temp = ByteArray[by];
+                temp.SetBits(value.GetBits(i, 1), bi, 1);
+                ByteArray[by] = (byte)temp;
+            }
         }
 
         /// <summary>
@@ -200,7 +203,7 @@ namespace pkuManager.Utilities
         /// starting at the <paramref name="bitIndex"/> of <paramref name="byteIndex"/>.
         /// </summary>
         public void Set<T>(T value, int byteIndex, int bitIndex, int bitLength = 1)
-            => SetInt((uint)Convert.ChangeType(value, typeof(uint)), byteIndex, GetByteSize<T>(), bitIndex, bitLength);
+            => SetInt((uint)Convert.ChangeType(value, typeof(uint)), byteIndex, bitIndex, bitLength);
 
         /// <summary>
         /// Writes an array of values of type <typeparamref name="T"/> to
