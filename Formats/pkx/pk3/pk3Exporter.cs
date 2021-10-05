@@ -31,8 +31,8 @@ namespace pkuManager.Formats.pkx.pk3
                 return (false, "Must be a species from Gen 3.");
 
             // Screen Form
-            if (!DexUtil.IsFormDefault(pku) && !DexUtil.CanCastPKU(pku, pk3Object.VALID_FORMS)) // If form isn't default, and uncastable
-                return (false, "Must be a form that exists in Gen 3.");
+            if (!pku.IsFormDefault() && !DexUtil.CanCastPKU(pku, pk3Object.VALID_FORMS))
+                return (false, "Must be a form that exists in Gen 3."); // If form isn't default, and uncastable
 
             // Screen Shadow Pokemon
             if (pku.IsShadow())

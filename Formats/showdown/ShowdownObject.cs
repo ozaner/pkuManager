@@ -194,7 +194,7 @@ namespace pkuManager.Formats.showdown
 
             // No showdown name found in ShowdownNames.json
             //TODO: make showdownNames.json have ALL species...
-            if (DexUtil.IsFormDefault(pku))
+            if (pku.IsFormDefault())
                 return (pku.Species, false); //If it's a default form, just assume Showdown name is species name
             else
                 return (null, false); //no valid form/appearance found
