@@ -335,7 +335,8 @@ namespace pkuManager.pku
 
         /// <summary>
         /// Merges two pkuObjects, overriding the non-null entries
-        /// of <paramref name="pkuA"/> with <paramref name="pkuB"/>.
+        /// of <paramref name="pkuA"/> with <paramref name="pkuB"/>.<br/>
+        /// Note that this does not merge arrays.
         /// </summary>
         /// <param name="pkuA">The base of the merge.</param>
         /// <param name="pkuB">The pku that will be layered on top of <paramref name="pkuA"/>.</param>
@@ -353,7 +354,8 @@ namespace pkuManager.pku
 
         /// <summary>
         /// Merges a pkuObject with one of its format overrides, if it exists.<br/>
-        /// See <see cref="Merge(pkuObject, pkuObject)"/>.
+        /// See <see cref="Merge(pkuObject, pkuObject)"/>.<br/>
+        /// Note that this does not merge arrays.
         /// </summary>
         /// <param name="pku">The pku to be merged.</param>
         /// <param name="format">The name of the format override to merge with <paramref name="pku"/>.</param>

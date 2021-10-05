@@ -22,26 +22,33 @@ namespace pkuManager.Utilities
         /// <param name="filename">The filename of the desired JSON (sans the ".json").</param>
         /// <returns>A <see cref="JObject"/> representation of the specified JSON file.</returns>
         public static JObject GetJson(string filename)
-        {
-            return JObject.Parse(Properties.Resources.ResourceManager.GetString(filename));
-        }
+            => JObject.Parse(Properties.Resources.ResourceManager.GetString(filename));
 
         /// <summary>
         /// Merges a collection of JObjects.
         /// </summary>
+        /// <param name="mergeArrays">Whether or not to merge or replace array values.</param>
         /// <param name="jobjs">The JObjects to be merged, with later entires overwriting previous ones.</param>
         /// <returns>A JObject that is a combination of all the <paramref name="jobjs"/>. Null if it is null/empty</returns>
-        public static JObject GetCombinedJson(params JObject[] jobjs)
+        public static JObject GetCombinedJson(bool mergeArrays, params JObject[] jobjs)
         {
-            if (jobjs == null || jobjs.Length == 0)
+            if (jobjs?.Length is not > 0)
                 return null;
+
+            JsonMergeSettings jms = new()
+            {
+                MergeArrayHandling = mergeArrays ? MergeArrayHandling.Union : MergeArrayHandling.Replace
+            };
 
             JObject combined = (JObject)jobjs[0].DeepClone();
             foreach (JObject s in jobjs.Skip(1))
-                combined.Merge(s);
+                combined.Merge(s, jms);
 
             return combined;
         }
+
+        /// <inheritdoc cref="GetCombinedJson(bool, JObject[])"/>
+        public static JObject GetCombinedJson(params JObject[] jobjs) => GetCombinedJson(false, jobjs);
 
         /// <summary>
         /// Reads a value from a JToken using a list of keys, in a case-insensitive manner.<br/>
