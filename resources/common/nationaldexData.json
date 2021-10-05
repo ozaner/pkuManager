@@ -68,7 +68,7 @@
     "Raticate": {
         "National Dex": 20,
         "Forms": {
-            "Alolan-Totem": {
+            "Alolan|Totem": {
                 "Castable to": ["Alolan"]
             }
         }
@@ -336,7 +336,7 @@
     "Marowak": {
         "National Dex": 105,
         "Forms": {
-            "Alolan-Totem": {
+            "Alolan|Totem": {
                 "Castable to": [ "Alolan" ]
             }
         }
@@ -2567,10 +2567,10 @@
             "Disguised": {
                 "Default": true
             },
-            "Disguised-Totem": {
+            "Disguised|Totem": {
                 "Castable to": [ "Disguised" ]
             },
-            "Busted-Totem": {
+            "Busted|Totem": {
                 "Castable to": [ "Busted" ]
             }
         }

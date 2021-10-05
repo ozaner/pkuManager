@@ -63,7 +63,7 @@
             "Alolan": {
                 "Showdown Species": "Raticate-Alola"
             },
-            "Alolan-Totem": {
+            "Alolan|Totem": {
                 "Showdown Species": "Raticate-Alola-Totem"
             }
         }
@@ -298,7 +298,7 @@
             "Alolan": {
                 "Showdown Species": "Marowak-Alola"
             },
-            "Alolan-Totem": {
+            "Alolan|Totem": {
                 "Showdown Species": "Marowak-Alola-Totem"
             }
         }
@@ -967,10 +967,10 @@
             "Zen Mode": {
                 "Showdown Species": "Darmanitan-Zen"
             }, //in-battle only
-            "Galarian-Standard Mode": {
+            "Galarian|Standard Mode": {
                 "Showdown Species": "Darmanitan-Galar"
             },
-            "Galarian-Zen Mode": {
+            "Galarian|Zen Mode": {
                 "Showdown Species": "Darmanitan-Galar-Zen"
             } //in-battle only
         }
@@ -1522,25 +1522,25 @@
             "Violet": {
                 "Showdown Species": "Minior-Violet"
             },
-            "Meteor-Red": {
+            "Meteor|Red": {
                 "Showdown Species": "Minior-Meteor"
             },
-            "Meteor-Orange": {
+            "Meteor|Orange": {
                 "Showdown Species": "Minior-Meteor"
             },
-            "Meteor-Yellow": {
+            "Meteor|Yellow": {
                 "Showdown Species": "Minior-Meteor"
             },
-            "Green-Meteor": {
+            "Green|Meteor": {
                 "Showdown Species": "Minior-Meteor"
             },
-            "Blue-Meteor": {
+            "Blue|Meteor": {
                 "Showdown Species": "Minior-Meteor"
             },
-            "Indigo-Meteor": {
+            "Indigo|Meteor": {
                 "Showdown Species": "Minior-Meteor"
             },
-            "Meteor-Violet": {
+            "Meteor|Violet": {
                 "Showdown Species": "Minior-Meteor"
             }
         }
@@ -1560,10 +1560,10 @@
             "Busted": {
                 "Showdown Species": "Mimikyu-Busted"
             }, //in-battle only
-            "Totem-Disguised": {
+            "Totem|Disguised": {
                 "Showdown Species": "Mimikyu-Totem"
             },
-            "Totem-Busted": {
+            "Totem|Busted": {
                 "Showdown Species": "Mimikyu-Busted-Totem"
             } //in-battle only
         }

@@ -55,7 +55,7 @@ namespace pkuManager.Utilities
             string[] formsSorted = (string[])forms.Clone();
             Array.Sort(formsSorted, StringComparer.OrdinalIgnoreCase);
             foreach (string form in formsSorted)
-                searchableForm += form + "-";
+                searchableForm += form + "|";
 
             return searchableForm.Remove(searchableForm.Length - 1);
         }
