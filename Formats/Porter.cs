@@ -12,6 +12,11 @@ namespace pkuManager.Formats
     public abstract class Porter
     {
         /// <summary>
+        /// The name of the format this porter operates on.
+        /// </summary>
+        protected abstract string FormatName { get; }
+
+        /// <summary>
         /// The pku file being ported.
         /// </summary>
         protected pkuObject pku { get; set; }

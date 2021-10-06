@@ -15,7 +15,7 @@ namespace pkuManager.Formats.pkx.pk3
     /// </summary>
     public class pk3Exporter : Exporter
     {
-        public const string FORMAT_NAME = "pk3";
+        protected override string FormatName { get => "pk3"; }
 
         /// <summary>
         /// Creates an exporter that will attempt to export <paramref name="pku"/>
@@ -29,7 +29,7 @@ namespace pkuManager.Formats.pkx.pk3
         public override (bool canPort, string reason) CanPort()
         {
             // Screen National Dex #
-            if (DexUtil.GetSpeciesIndex(pku.Species, FORMAT_NAME) is null)
+            if (DexUtil.GetSpeciesIndex(pku.Species, FormatName) is null)
                 return (false, "Must be a species from Gen 3."); //Only species gen 3 and below are allowed
 
             // Screen Form
@@ -89,7 +89,7 @@ namespace pkuManager.Formats.pkx.pk3
         // Species
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessSpecies()
-            => Data.Species.Set((ushort)DexUtil.GetSpeciesIndex(pku.Species, FORMAT_NAME));
+            => Data.Species.Set((ushort)DexUtil.GetSpeciesIndex(pku.Species, FormatName));
 
         // Nature [Implicit]
         [PorterDirective(ProcessingPhase.FirstPass)]

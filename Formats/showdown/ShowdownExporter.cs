@@ -15,6 +15,8 @@ namespace pkuManager.Formats.showdown
     /// </summary>
     public class ShowdownExporter : Exporter
     {
+        protected override string FormatName { get => "Showdown"; }
+
         /// <summary>
         /// Creates an exporter that will attempt to export <paramref name="pku"/>
         /// to a .txt (Showdown!) file, encoded in UTF-8, with the given <paramref name="globalFlags"/>.
@@ -45,7 +47,7 @@ namespace pkuManager.Formats.showdown
         [PorterDirective(ProcessingPhase.FormatOverride)]
         protected virtual void ProcessFormatOverride()
         {
-            pku = pkuObject.MergeFormatOverride(pku, "Showdown");
+            pku = pkuObject.MergeFormatOverride(pku, FormatName);
         }
 
         // Battle Stat Override

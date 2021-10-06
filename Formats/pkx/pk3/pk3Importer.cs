@@ -5,6 +5,8 @@ namespace pkuManager.Formats.pkx.pk3
 {
     public class pk3Importer : Importer
     {
+        protected override string FormatName { get => "pk3"; }
+
         protected override pk3Object Data { get; } = new();
 
         public pk3Importer(byte[] file, GlobalFlags globalFlags, bool checkInMode) : base(file, globalFlags, checkInMode) { }
