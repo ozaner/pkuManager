@@ -3,8 +3,6 @@ using pkuManager.Common;
 using pkuManager.pku;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Net;
 
 namespace pkuManager.Utilities
 {
@@ -24,7 +22,7 @@ namespace pkuManager.Utilities
         /// A JSON index of all Pokemon species sprites used in pkuManager.<br/>
         /// Compiled from the <see cref="SPRITE_INDICES_URL">sprite-indicies.json</see> file on the pkuSprite repo.
         /// </summary>
-        private static readonly JObject MASTER_SPRITE_INDEX = GetMasterSpriteIndex(SPRITE_INDICES_URL);
+        private static readonly JObject MASTER_SPRITE_INDEX = DexUtil.GetMasterDatadex(SPRITE_INDICES_URL);
 
         /// <summary>
         /// The different types of sprites listed in the <see cref="MASTER_SPRITE_INDEX"/>.
@@ -44,44 +42,6 @@ namespace pkuManager.Utilities
             Default,
             Egg,
             Shadow
-        }
-
-        /// <summary>
-        /// Compiles a master sprite index from all the sprite indices listed in the given url.
-        /// </summary>
-        /// <param name="spriteIndicesURL">A URL to a .json file containing a list of URLS to sprite indices.</param>
-        /// <returns></returns>
-        private static JObject GetMasterSpriteIndex(string spriteIndicesURL)
-        {
-            JObject masterSpriteIndex = new JObject(); //init with empty sprite index
-            WebClient client = new WebClient();
-            try
-            {
-                //Download sprite-indices.json
-                string spriteIndiciesStr = client.DownloadString(spriteIndicesURL);
-                JObject spriteIndiciesJSON = JObject.Parse(spriteIndiciesStr);
-
-                foreach (var kvp in spriteIndiciesJSON)
-                {
-                    try
-                    {
-                        //Download <sprite-index>.json
-                        string spriteIndexStr = client.DownloadString((string)kvp.Value);
-                        JObject spriteIndexJSON = JObject.Parse(spriteIndexStr);
-
-                        masterSpriteIndex = DataUtil.GetCombinedJson(masterSpriteIndex, spriteIndexJSON);
-                    }
-                    catch
-                    {
-                        Debug.WriteLine($"Failed to read {kvp.Key} sprite index...");
-                    }
-                }
-            }
-            catch
-            {
-                Debug.WriteLine("Failed to read sprite-indices.json...");
-            }
-            return masterSpriteIndex;
         }
 
         /// <summary>

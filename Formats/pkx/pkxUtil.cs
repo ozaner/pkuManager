@@ -23,11 +23,6 @@ namespace pkuManager.Formats.pkx
          * ------------------------------------
         */
         /// <summary>
-        /// Datadex containing data on all official species, their national dex #, and their default form.
-        /// </summary>
-        public static readonly JObject NATIONALDEX_DATA = DataUtil.GetJson("nationaldexData");
-
-        /// <summary>
         /// Datadex containing data on official games, their game IDs, and their generation.
         /// </summary>
         public static readonly JObject GAME_DATA = DataUtil.GetJson("gameData");
@@ -90,7 +85,7 @@ namespace pkuManager.Formats.pkx
         /// <returns>The national dex # of the given <paramref name="species"/>,
         ///          or <see langword="null"/> if it doesn't have one.</returns>
         public static int? GetNationalDex(string species)
-            => (int?)NATIONALDEX_DATA.TraverseJTokenCaseInsensitive(species, "National Dex");
+            => (int?)Registry.SPECIES_DEX.TraverseJTokenCaseInsensitive(species, "National Dex");
 
         /// <summary>
         /// Does the same as <see cref="GetNationalDex(string)"/> but with the<br/>

@@ -166,8 +166,8 @@ namespace pkuManager.Formats.showdown
             }
 
             // Species must be defined
-            if (pkxUtil.NATIONALDEX_DATA.TraverseJTokenCaseInsensitive(pku.Species) is null || //only official species...
-                SHOWDOWN_DATA.TraverseJTokenCaseInsensitive(pku.Species) is null)              //and pokestar+cap species are allowed
+            if (pkxUtil.GetNationalDex(pku.Species) is null ||                    //only official species...
+                SHOWDOWN_DATA.TraverseJTokenCaseInsensitive(pku.Species) is null) //and pokestar+cap species are allowed
                 return (null, false); //not a valid species
 
             // Species is valid past this point

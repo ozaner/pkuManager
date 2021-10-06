@@ -2,26 +2,62 @@
 using pkuManager.pku;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Net;
 
 namespace pkuManager.Utilities
 {
     public static class DexUtil
     {
         /// <summary>
-        /// Given a species and a species <paramref name="datadex"/>, will return the default form of the given species.<br/>
+        /// Compiles a master datadex from the given <paramref name="url"/>.
+        /// </summary>
+        /// <param name="url">A raw url to an uncompiled master datadex file.</param>
+        /// <returns>The compiled master datadex from the <paramref name="url"/>.</returns>
+        public static JObject GetMasterDatadex(string url)
+        {
+            JObject masterDatadex = new();
+            WebClient client = new();
+            try
+            {
+                //Download the uncompiled master-datadex.json
+                JObject uncompiledJSON = JObject.Parse(client.DownloadString(url));
+
+                foreach (var kvp in uncompiledJSON)
+                {
+                    try
+                    {
+                        //Download datadex.json
+                        JObject datadexJSON = JObject.Parse(client.DownloadString((string)kvp.Value));
+                        masterDatadex = DataUtil.GetCombinedJson(true, masterDatadex, datadexJSON);
+                    }
+                    catch
+                    {
+                        Debug.WriteLine($"Failed to read {kvp.Key} datadex...");
+                    }
+                }
+            }
+            catch
+            {
+                Debug.WriteLine("Failed to read a master datadex...");
+            }
+            return masterDatadex;
+        }
+
+        /// <summary>
+        /// Searches for the the default form of the given species.<br/>
         /// If the default form is unnamed (e.g. Bulbasaur) then the empty string will be returned.
         /// </summary>
         /// <param name="species">The species whose default form is to be retrieved.</param>
-        /// <param name="datadex">The json data of all the relevant species.</param>
         /// <returns>The default form for this species or, if none found, the empty string.</returns>
-        public static string GetDefaultForm(string species, JObject datadex)
+        public static string GetDefaultForm(string species)
         {
             //Species must be defined
             if (species is null)
                 return null;
 
-            JToken formsCheck = datadex.TraverseJTokenCaseInsensitive(species, "Forms");
+            JToken formsCheck = Registry.MASTER_DEX.TraverseJTokenCaseInsensitive(species, "Forms");
             if (formsCheck is null)
                 return ""; // No listed forms, default is just "" (i.e. base form)
 
@@ -35,11 +71,6 @@ namespace pkuManager.Utilities
             }
             return ""; // There are forms, but no listed default. Default is just "" (i.e. base form)
         }
-
-        /// <param name="pku">A pku whose species' default form is desired.</param>
-        /// <inheritdoc cref="GetDefaultForm(string, JObject)"/>
-        public static string GetDefaultForm(pkuObject pku)
-            => GetDefaultForm(pku.Species, Registry.MASTER_DEX);
 
         /// <summary>
         /// Returns a concatenated string of the given form array for use in searching through datadexes.
@@ -78,15 +109,14 @@ namespace pkuManager.Utilities
             => datadex.TraverseJTokenCaseInsensitive(species, "Forms", searchableForm) is not null;
 
         /// <summary>
-        /// Gets a list of all form names the given pku can be casted to
-        /// (including its specified form) according to the <seealso cref="Registry.MASTER_DEX"/>.
+        /// Gets a list of all form names the given pku can be casted to, including its current form.<br/>
         /// Null and empty form arrays are treated as default forms.
         /// </summary>
         /// <param name="pku">The pku whose castable forms are to be retrieved.</param>
         /// <returns>A list of all forms the given pku can be casted too.</returns>
         public static List<string> GetCastableForms(pkuObject pku)
         {
-            string searchableFormName = GetSearchableFormName(pku) ?? GetDefaultForm(pku);
+            string searchableFormName = GetSearchableFormName(pku) ?? GetDefaultForm(pku.Species);
             List<string> castableFormList = new() { searchableFormName };
             castableFormList.AddRange(Registry.MASTER_DEX.TraverseJTokenCaseInsensitive(
                 pku.Species, "Forms", searchableFormName, "Castable to"
@@ -100,7 +130,7 @@ namespace pkuManager.Utilities
         /// <param name="pku">The pku to check.</param>
         /// <returns>Whether or not <paramref name="pku"/> has its default form.</returns>
         public static bool IsFormDefault(this pkuObject pku)
-            => pku.Forms?.Length is not > 0 || GetSearchableFormName(pku) == GetDefaultForm(pku);
+            => pku.Forms?.Length is not > 0 || GetSearchableFormName(pku) == GetDefaultForm(pku.Species);
 
         /// <summary>
         /// Checks if the given <paramref name="pku"/> can be casted to a form in the given <paramref name="datadex"/>.

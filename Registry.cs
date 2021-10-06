@@ -32,11 +32,15 @@ namespace pkuManager
             new FormatInfo("Showdown!", "txt", null, typeof(ShowdownExporter), true)
         };
 
+        private const string MASTER_DEX_BASE = "https://raw.githubusercontent.com/project-pku/pkuData/main/master-dexes/master";
+
+        public static readonly JObject SPECIES_DEX = DexUtil.GetMasterDatadex($"{MASTER_DEX_BASE}SpeciesDex.json");
+
         // A JObject of all the species data for different formats.
         // Currently needed to declare the default form for a species.
         public static readonly JObject MASTER_DEX = DataUtil.GetCombinedJson(true, new JObject[]
         {
-            pkxUtil.NATIONALDEX_DATA,
+            SPECIES_DEX,
             pkxUtil.POKESTAR_DATA,
             ShowdownObject.SHOWDOWN_DATA //includes Showdown CAP species
         });
