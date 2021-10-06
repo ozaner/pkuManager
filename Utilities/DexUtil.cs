@@ -140,5 +140,15 @@ namespace pkuManager.Utilities
         /// <returns>Whether or not <paramref name="pku"/> can be casted to a form in <paramref name="datadex"/>.</returns>
         public static bool CanCastPKU(pkuObject pku, JObject datadex)
             => GetCastableForms(pku).Any(form => FormExists(pku.Species, form, datadex));
+
+        /// <summary>
+        /// Gets the given species' index number in the given format,
+        /// according to <see cref="Registry.SPECIES_DEX"/>.
+        /// </summary>
+        /// <param name="species">The name of the species.</param>
+        /// <param name="format">The format the index corresponds to.</param>
+        /// <returns>The index number of <paramref name="species"/> in <paramref name="format"/>.</returns>
+        public static int? GetSpeciesIndex(string species, string format)
+            => (int?)Registry.SPECIES_DEX.TraverseJTokenCaseInsensitive(species, "Indices", format);
     }
 }

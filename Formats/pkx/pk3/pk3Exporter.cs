@@ -15,6 +15,8 @@ namespace pkuManager.Formats.pkx.pk3
     /// </summary>
     public class pk3Exporter : Exporter
     {
+        public const string FORMAT_NAME = "pk3";
+
         /// <summary>
         /// Creates an exporter that will attempt to export <paramref name="pku"/>
         /// to a .pk3 file with the given <paramref name="globalFlags"/>.
@@ -27,8 +29,8 @@ namespace pkuManager.Formats.pkx.pk3
         public override (bool canPort, string reason) CanPort()
         {
             // Screen National Dex #
-            if (pkxUtil.GetNationalDex(pku.Species) > pk3Object.LAST_DEX_NUM) //Only species gen 3 and below are allowed
-                return (false, "Must be a species from Gen 3.");
+            if (DexUtil.GetSpeciesIndex(pku.Species, FORMAT_NAME) is null)
+                return (false, "Must be a species from Gen 3."); //Only species gen 3 and below are allowed
 
             // Screen Form
             if (!pku.IsFormDefault() && !DexUtil.CanCastPKU(pku, pk3Object.VALID_FORMS))
@@ -87,7 +89,7 @@ namespace pkuManager.Formats.pkx.pk3
         // Species
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessSpecies()
-            => Data.Species.Set((ushort)PokeAPIUtil.GetSpeciesIndex(dex, 3));
+            => Data.Species.Set((ushort)DexUtil.GetSpeciesIndex(pku.Species, FORMAT_NAME));
 
         // Nature [Implicit]
         [PorterDirective(ProcessingPhase.FirstPass)]

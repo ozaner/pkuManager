@@ -14,24 +14,6 @@ namespace pkuManager.Utilities
         // Wrapped Info Methods
         // ----------
 
-        public static int? GetSpeciesIndex(int dex, int gen)
-        {
-            string game = gen switch
-            {
-                3 => "ruby",
-                _ => throw new Exception("Method not implemented for this generation")
-            };
-            try
-            {
-                // Note: doesnt use form info, but no official game has seperate indicies for different pokemon variants.
-                return Task.Run(() => getPokemonAsync(dex)).Result.GameIndicies.Find(x => x.Version.Name == game)?.GameIndex;
-            }
-            catch
-            {
-                return null; //dex # invalid
-            }
-        }
-
         public static int? GetItemIndex(string item, int gen)
         {
             if (item == null)

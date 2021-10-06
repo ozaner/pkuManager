@@ -532,11 +532,6 @@ namespace pkuManager.Formats.pkx.pk3
         internal const ushort LAST_MOVE_ID = 354;
 
         /// <summary>
-        /// The national dex # of the last Gen 3 species (i.e. Deoxys).
-        /// </summary>
-        public const int LAST_DEX_NUM = 386;
-
-        /// <summary>
         /// When <see cref="Egg_Name_Override"/> is set to this value, the pk3 nickname will<br/>
         /// be overriden by the <see cref="pkxUtil.EGG_NICKNAME"/> of the game's language.
         /// </summary>
@@ -607,7 +602,7 @@ namespace pkuManager.Formats.pkx.pk3
 
             for (int i = 1; i <= 385; i++) //For each Gen 3 Pokemon (except deoxys)
             {
-                int index = PokeAPIUtil.GetSpeciesIndex(i, 3).Value; //These are all valid pokedex #s
+                int index = (int)DexUtil.GetSpeciesIndex(pkxUtil.GetSpeciesName(i), "pk3"); //These are all valid pokedex #s
                 byte slot1 = ROM[offset + 28 * (index - 1) + 22];
                 byte slot2 = ROM[offset + 28 * (index - 1) + 23];
 

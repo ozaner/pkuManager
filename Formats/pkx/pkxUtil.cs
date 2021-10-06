@@ -101,6 +101,16 @@ namespace pkuManager.Formats.pkx
         }
 
         /// <summary>
+        /// Gets the English name of the species with the given <paramref name="dex"/> #.
+        /// </summary>
+        /// <param name="dex">The national dex # of the desired species.</param>
+        /// <returns>The English name of the species with the <paramref name="dex"/> #.
+        ///          Null if there is no match.</returns>
+        public static string GetSpeciesName(int dex)
+            => (Registry.SPECIES_DEX.Children().First(species => (int?)(species as JProperty)
+                .Value.TraverseJTokenCaseInsensitive("National Dex") == dex) as JProperty)?.Name;
+
+        /// <summary>
         /// Gets the game ID and generation of the given <paramref name="game"/>.
         /// </summary>
         /// <param name="game">A game name (e.g. "Diamond").</param>
