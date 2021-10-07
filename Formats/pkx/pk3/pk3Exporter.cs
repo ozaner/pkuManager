@@ -28,13 +28,9 @@ namespace pkuManager.Formats.pkx.pk3
 
         public override (bool canPort, string reason) CanPort()
         {
-            // Screen National Dex #
-            if (DexUtil.GetSpeciesIndex(pku.Species, FormatName) is null)
-                return (false, "Must be a species from Gen 3."); //Only species gen 3 and below are allowed
-
-            // Screen Form
-            if (!pku.IsFormDefault() && !DexUtil.CanCastPKU(pku, pk3Object.VALID_FORMS))
-                return (false, "Must be a form that exists in Gen 3."); // If form isn't default, and uncastable
+            // Screen Species & Form
+            if (!pku.ExistsInFormat(FormatName))
+                return (false, "Must be a species & form that exists in Gen 3."); // If form isn't default, and uncastable
 
             // Screen Shadow Pokemon
             if (pku.IsShadow())

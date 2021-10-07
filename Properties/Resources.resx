@@ -124,9 +124,6 @@
   <data name="gameData" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\common\gamedata.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
-  <data name="gen3Forms" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\gen3\gen3forms.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
   <data name="gen3Locations" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\gen3\gen3locations.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>

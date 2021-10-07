@@ -490,8 +490,6 @@ namespace pkuManager.Formats.pkx.pk3
          * Form Encoding 
          * ------------------------------------
         */
-        public static readonly JObject VALID_FORMS = DataUtil.GetJson("gen3Forms");
-
         /// <summary>
         /// Gets the form ID of an Unown with the given PID in Gen 3.
         /// </summary>
