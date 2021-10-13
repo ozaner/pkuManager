@@ -425,34 +425,29 @@ namespace pkuManager.Formats.pkx.pk3
         protected virtual void ProcessAbilitySlot()
         {
             Alert alert = null;
-            int defaultAbilityID = (int)pk3Object.PK3_ABILITY_DATA["" + dex]["1"];
-            string defaultAbility = PokeAPIUtil.GetAbility(defaultAbilityID);
+            string[] abilitySlots = Registry.SPECIES_DEX.TraverseJTokenCaseInsensitive(pku.Species, "Gen 3 Ability Slots").ToObject<string[]>();
             if (pku.Ability is not null) //ability specified
             {
                 int? abilityID = PokeAPIUtil.GetAbilityIndex(pku.Ability);
                 if (abilityID is null or > 76) //unofficial ability OR gen4+ ability
                 {
                     Data.Ability_Slot.Set(false);
-                    alert = pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.INVALID, pku.Ability, defaultAbility);
+                    alert = pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.INVALID, pku.Ability, abilitySlots[0]);
                 }
                 else //gen 3- ability
                 {
-                    (bool slot1valid, bool slot2valid) = pk3Object.IsAbilityValid(dex, abilityID.Value);
-                    if (slot1valid) //ability corresponds to slot 1
-                        Data.Ability_Slot.Set(false);
-                    else if (slot2valid) //ability corresponds to slot 2
-                        Data.Ability_Slot.Set(true);
-                    else //ability is impossible on this species, fallback on slot 1
-                    {
-                        Data.Ability_Slot.Set(false);
-                        alert = pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.MISMATCH, pku.Ability, defaultAbility);
-                    }
+                    bool isSlot1 = abilityID == PokeAPIUtil.GetAbilityIndex(abilitySlots[0]);
+                    bool isSlot2 = abilitySlots.Length > 1 && abilityID == PokeAPIUtil.GetAbilityIndex(abilitySlots[1]);
+                    Data.Ability_Slot.Set(isSlot2); //else false (i.e. slot 1, or invalid)
+
+                    if(!isSlot1 && !isSlot2) //ability is impossible on this species, alert
+                        alert = pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.MISMATCH, pku.Ability, abilitySlots[0]);
                 }
             }
             else //ability unspecified
             {
                 Data.Ability_Slot.Set(false);
-                alert = pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.UNSPECIFIED, pku.Ability, defaultAbility);
+                alert = pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.UNSPECIFIED, pku.Ability, abilitySlots[0]);
             }
             Warnings.Add(alert);
         }

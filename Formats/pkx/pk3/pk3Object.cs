@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using Newtonsoft.Json.Linq;
-using System.IO;
 using pkuManager.Formats.Fields;
 
 namespace pkuManager.Formats.pkx.pk3
@@ -462,31 +461,6 @@ namespace pkuManager.Formats.pkx.pk3
 
 
         /* ------------------------------------
-         * Ability Encoding 
-         * ------------------------------------
-        */
-        public static readonly JObject PK3_ABILITY_DATA = DataUtil.GetJson("pk3Abilities");
-
-        /// <summary>
-        /// Returns whether the given ability is possible in each of the given species' ability slots.
-        /// </summary>
-        /// <param name="dex">The national dex # of the species to be checked.</param>
-        /// <param name="abilityID">The ability ID of the ability to be checked.</param>
-        /// <returns>A 2-tuple of bools. The first/second bool is true if the ability
-        ///          is consistent with slot1/slot2 respectively.</returns>
-        public static (bool slot1, bool slot2) IsAbilityValid(int dex, int abilityID)
-        {
-            if (dex is < 1 or > 386) //must be a valid gen 3 dex
-                throw new ArgumentException("pk3Util.GetAbilityID must be given a valid gen 3 dex number.");
-
-            int slot1 = (int)PK3_ABILITY_DATA["" + dex]["1"];
-            int? slot2 = (int?)PK3_ABILITY_DATA["" + dex]?["2"];
-
-            return (slot1 == abilityID, slot2 == abilityID);
-        }
-
-
-        /* ------------------------------------
          * Form Encoding 
          * ------------------------------------
         */
@@ -583,40 +557,6 @@ namespace pkuManager.Formats.pkx.pk3
                              Ribbon.Winning or Ribbon.Victory or Ribbon.Artist or Ribbon.Effort or 
                              Ribbon.Battle_Champion or Ribbon.Regional_Champion or Ribbon.National_Champion or 
                              Ribbon.Country or Ribbon.National or Ribbon.Earth or Ribbon.World;
-        }
-
-        /// <summary>
-        /// Given a GBA ROM, creates a JObject of the different possible ability IDs a pokemon species can have.
-        /// </summary>
-        /// <param name="path">Path to a main series Pokemon GBA ROM.</param>
-        /// <param name="offset">The starting index of the species table in this ROM.</param>
-        /// <returns>A JObject with the ability table given by the ROM.
-        ///          Note that in it, species and abilities are referenced by index #.</returns>
-        public static JObject ProduceGBAAbilityDex(string path, int offset)
-        {
-            // offset = 0x3203E8 for Emerald[U]
-            byte[] ROM = File.ReadAllBytes(path);
-            JObject abiltyDex = new();
-
-            for (int i = 1; i <= 385; i++) //For each Gen 3 Pokemon (except deoxys)
-            {
-                int index = (int)DexUtil.GetSpeciesIndex(pkxUtil.GetSpeciesName(i), "pk3"); //These are all valid pokedex #s
-                byte slot1 = ROM[offset + 28 * (index - 1) + 22];
-                byte slot2 = ROM[offset + 28 * (index - 1) + 23];
-
-                // Adjust for Air Lock (77 in Gen 3 -> 76 in Gen 4+)
-                slot1 = slot1 == 77 ? (byte)76 : slot1;
-                slot2 = slot2 == 77 ? (byte)76 : slot2;
-
-                // Add Entry to AbilityDex
-                JObject jo = new();
-                jo.Add("1", slot1);
-                if (slot2 != 0) //No entry for blank Slot 2's
-                    jo.Add("2", slot2);
-                abiltyDex.Add("" + i, jo);
-            }
-
-            return abiltyDex;
         }
     }
 }
