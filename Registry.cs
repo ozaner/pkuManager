@@ -41,8 +41,7 @@ namespace pkuManager
         public static readonly JObject MASTER_DEX = DataUtil.GetCombinedJson(true, new JObject[]
         {
             SPECIES_DEX,
-            pkxUtil.POKESTAR_DATA,
-            ShowdownObject.SHOWDOWN_DATA //includes Showdown CAP species
+            pkxUtil.POKESTAR_DATA
         });
     }
 }

@@ -33,8 +33,7 @@ namespace pkuManager.Formats.showdown
                 return (false, "Cannot be an Egg.");
 
             // Only Pokemon with a valid Showdown name are allowed.
-            return (ShowdownObject.GetShowdownName(pku).name is not null,
-                "Species+Form doesn't exist in Showdown, and cannot be casted to a form that does.");
+            return (ShowdownObject.GetShowdownName(pku) is not null, "Species/Form/Appearance doesn't exist in Showdown.");
         }
 
 
@@ -70,13 +69,7 @@ namespace pkuManager.Formats.showdown
             // Notes:
             //  - Combination of species and form tags (and gender for Meowstic & Indeedee)
 
-            bool casted;
-            (Data.ShowdownName, casted) = ShowdownObject.GetShowdownName(pku);
-            if (Data.ShowdownName is null)
-                throw new ArgumentException("Expected a pku with a valid Showdown species here.");
-
-            if (casted)
-                Warnings.Add(pkxUtil.ExportAlerts.GetFormAlert(AlertType.CASTED, pku.Forms));
+            Data.ShowdownName = ShowdownObject.GetShowdownName(pku);
         }
 
         // Nickname

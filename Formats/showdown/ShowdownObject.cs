@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
 using pkuManager.Common;
-using pkuManager.Formats.pkx;
 using pkuManager.pku;
 using pkuManager.Utilities;
 using System;
@@ -130,85 +129,54 @@ namespace pkuManager.Formats.showdown
             throw new NotImplementedException();
         }
 
-        /* ------------------------------------
-         * Showdown Name Encoding
-         * ------------------------------------
-        */
-        /// <summary>
-        /// A JObject corresponding to <i>just</i> the ShowdownNames.json data for the Showdown format.
-        /// Includes Showdown names for non-"" forms and for all appearances.
-        /// Also includes names for all CAP species.
-        /// </summary>
-        public static readonly JObject SHOWDOWN_DATA = DataUtil.GetJson("ShowdownNames");
-
-        /// <summary>
-        /// <para>
-        /// Gets the Showdown name of a given pku. If form is invalid, but can be casted, the first valid casted form will be chosen.
-        /// If castable override isn't on, pku with invalid forms will return null.
-        /// </para>
-        /// e.g. Called on a pku with "Species": "Pikachu", "Forms": ["Cosplay"], and "Appearance": "Libre Outfit" would return "Pikachu-Libre".
-        /// </summary>
-        /// <param name="pku">The pku whose Showdown name is to be determined.</param>
-        /// <returns>The pku's Showdown name, and a bool of whether its form was casted.</returns>
-        public static (string name, bool casted) GetShowdownName(pkuObject pku)
-        {
-            static string GetGenderedShowdownName(JToken subjson, string genderUnchecked)
-            {
-                //If this is a gender split form (i.e. showdown treats the genders as different forms)
-                if ((bool?)subjson.TraverseJTokenCaseInsensitive("Showdown Gender Split") is true)
-                {
-                    Gender? gender = genderUnchecked.ToEnum<Gender>();
-                    string genderStr = gender is Common.Gender.Female ? "Female" : "Male"; //Default is male
-                    return (string)subjson.TraverseJTokenCaseInsensitive($"Showdown Species {genderStr}");
-                }
-                else
-                    return (string)subjson.TraverseJTokenCaseInsensitive("Showdown Species");
-            }
-
-            // Species must be defined
-            if (pkxUtil.GetNationalDex(pku.Species) is null ||                    //only official species...
-                SHOWDOWN_DATA.TraverseJTokenCaseInsensitive(pku.Species) is null) //and pokestar+cap species are allowed
-                return (null, false); //not a valid species
-
-            // Species is valid past this point
-
-            // Try to get a Showdown name based off the pku's species/form/appearance
-            string showdownName;
-            List<string> castableForms = DexUtil.GetCastableForms(pku);
-            foreach (string searchableForm in castableForms)
-            {
-                JToken formJson = SHOWDOWN_DATA.TraverseJTokenCaseInsensitive(pku.Species, "Forms", searchableForm);
-                foreach (string acc in pku.Appearance ?? Array.Empty<string>())
-                {
-                    JToken appearancejson = formJson.TraverseJTokenCaseInsensitive("Appearance", acc);
-                    showdownName = GetGenderedShowdownName(appearancejson, pku.Gender);
-                    if (showdownName is not null)
-                        return (showdownName, searchableForm.EqualsCaseInsensitive(castableForms[0])); //found valid form+appearance
-                }
-
-                //all appearances failed for this form, try null appearance
-                showdownName = GetGenderedShowdownName(formJson, pku.Gender);
-                if (showdownName is not null)
-                    return (showdownName, searchableForm.EqualsCaseInsensitive(castableForms[0])); //found valid form+appearance
-            }
-
-            // No showdown name found in ShowdownNames.json
-            //TODO: make showdownNames.json have ALL species...
-            if (pku.IsFormDefault())
-                return (pku.Species, false); //If it's a default form, just assume Showdown name is species name
-            else
-                return (null, false); //no valid form/appearance found
-        }
-
 
         /* ------------------------------------
-         * Verify Showdown Battle Data
+         * Read Showdown Data
          * ------------------------------------
         */
         /// <summary>
         /// A datadex of all the items, moves, abilities, and Gmax species that appear in Showdown's database.
         /// </summary>
         protected static readonly JObject SHOWDOWN_BATTLE_DATA = DataUtil.GetJson("ShowdownData");
+
+        /// <summary>
+        /// Searches the <see cref="Registry.SPECIES_DEX"/> for the
+        /// Showdown name of a given pku's species/form/appearance.
+        /// </summary>
+        /// <param name="pku">The pku whose Showdown name is to be determined.</param>
+        /// <returns><paramref name="pku"/>'s Showdown name.</returns>
+        public static string GetShowdownName(pkuObject pku)
+        {
+            var apps = pku.GetSearchableAppearances();
+            foreach (string app in apps)
+            {
+                List<string> searchTerms = new()
+                {
+                    pku.Species,
+                    "Forms",
+                    pku.GetSearchableForm()
+                };
+                if (app is not null)
+                {
+                    searchTerms.Add("Appearance");
+                    searchTerms.Add(app);
+                }
+                bool? genderSplit = (bool?)Registry.SPECIES_DEX.TraverseJTokenCaseInsensitive(searchTerms.Append("Showdown Gender Split").ToArray());
+                if (genderSplit is true)
+                {
+                    Gender? gender = pku.Gender.ToEnum<Gender>();
+                    string genderStr = gender is Common.Gender.Female ? "Female" : "Male"; //Default is male
+                    searchTerms.Add($"Showdown Name {genderStr}");
+                }
+                else
+                    searchTerms.Add("Showdown Name");
+
+                string sdName = (string)Registry.SPECIES_DEX.TraverseJTokenCaseInsensitive(searchTerms.ToArray());
+                if (sdName is not null)
+                    return sdName;
+            }
+            return null; //no match
+        }
 
         /// <summary>
         /// Helper method to check if some <paramref name="datum"/> exists in
