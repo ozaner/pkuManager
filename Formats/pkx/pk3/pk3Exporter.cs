@@ -127,7 +127,7 @@ namespace pkuManager.Formats.pkx.pk3
             Alert alert = null; //to return
             if (pku.Forms is not null)
             {
-                string properFormName = DexUtil.GetSearchableFormName(pku).ToLowerInvariant();
+                string properFormName = pku.GetSearchableForm().ToLowerInvariant();
                 if (dex is 201 && pku.Forms.Length is 1 && Regex.IsMatch(properFormName, "[a-z!?]")) //unown
                 {
                     if (properFormName[0] is '?')

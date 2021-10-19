@@ -212,6 +212,22 @@ namespace pkuManager.Utilities
             return (str1, str2) is (null, null) || str1.Equals(str2, StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <summary>
+        /// Concatenates an array of strings in lexicographical order, each delimited by '|'.<br/>
+        /// Null values are ignored.
+        /// </summary>
+        /// <param name="strs">The strings to be concatenated.</param>
+        /// <returns>The values of <paramref name="strs"/> concatenated.</returns>
+        public static string JoinLexical(params string[] strs)
+        {
+            var strs2 = strs?.Where(x => x != null).ToArray();
+            if (strs2?.Length is not > 0)
+                return null;
+
+            Array.Sort(strs2, StringComparer.OrdinalIgnoreCase);
+            return string.Join('|', strs);
+        }
+
 
         // -----------------------
         // Value Type Methods

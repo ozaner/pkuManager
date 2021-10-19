@@ -69,33 +69,22 @@ namespace pkuManager.Utilities
         }
 
         /// <summary>
-        /// Returns a concatenated string of the given form array for use in searching through datadexes.
+        /// Returns the searchable form of a pku's forms array for use in searching through datadexes.
         /// </summary>
         /// <param name="pku">The pku whose form is to be formatted.</param>
         /// <returns>The searchable form name, or the default form if form array is empty or null.</returns>
-        public static string GetSearchableFormName(pkuObject pku)
-        {
-            if (pku.Forms?.Length is not > 0)
-                return GetDefaultForm(pku.Species);
-
-            string searchableForm = "";
-            string[] formsSorted = (string[])pku.Forms.Clone();
-            Array.Sort(formsSorted, StringComparer.OrdinalIgnoreCase);
-            foreach (string form in formsSorted)
-                searchableForm += form + "|";
-
-            return searchableForm.Remove(searchableForm.Length - 1);
-        }
+        public static string GetSearchableForm(this pkuObject pku)
+            => pku.Forms?.Length is not > 0 ? GetDefaultForm(pku.Species) : DataUtil.JoinLexical(pku.Forms);
 
         /// <summary>
-        /// Gets a list of all form names the given pku can be casted to, including its current form.<br/>
+        /// Gets a list of all form names the given <paramref name="pku"/> can be casted to, including its current form.<br/>
         /// Null and empty form arrays are treated as default forms.
         /// </summary>
         /// <param name="pku">The pku whose castable forms are to be retrieved.</param>
         /// <returns>A list of all forms the given pku can be casted too.</returns>
         public static List<string> GetCastableForms(pkuObject pku)
         {
-            string searchableFormName = GetSearchableFormName(pku);
+            string searchableFormName = pku.GetSearchableForm();
             List<string> castableFormList = new() { searchableFormName };
             castableFormList.AddRange(Registry.MASTER_DEX.TraverseJTokenCaseInsensitive(
                 pku.Species, "Forms", searchableFormName, "Castable to"
@@ -109,7 +98,37 @@ namespace pkuManager.Utilities
         /// <param name="pku">The pku to check.</param>
         /// <returns>Whether or not <paramref name="pku"/> has its default form.</returns>
         public static bool IsFormDefault(this pkuObject pku)
-            => GetSearchableFormName(pku) == GetDefaultForm(pku.Species);
+            => pku.GetSearchableForm() == GetDefaultForm(pku.Species);
+
+        /// <summary>
+        /// Enumerates all the different subsets of appearances
+        /// of the given <paramref name="pku"/>'s appearance array.<br/>
+        /// The algorithm for deciding the order of each possible subset is like counting backward in binary...
+        /// </summary>
+        /// <param name="pku">The pku whose appearances are to be enumerated.</param>
+        /// <returns>An enumerator of <paramref name="pku"/>'s different appearance combinations.</returns>
+        public static IEnumerable<string> GetSearchableAppearances(this pkuObject pku)
+        {
+            if (pku.Appearance?.Length is not > 0)
+            {
+                yield return null;
+                yield break;
+            }
+
+            int effectiveSize = pku.Appearance.Length > 63 ? 64 : pku.Appearance.Length;
+            ulong powesize = effectiveSize is 64 ? ulong.MaxValue : ((ulong)1 << effectiveSize)-1;
+            for (ulong i = 0; i <= powesize; i++)
+            {
+                List<string> apps = new();
+                for (int j = 0; j < effectiveSize; j++)
+                {
+                    if ((i & ((ulong)1 << j)) is 0) //reversed 0 and 1 so loop could go form 0 to powsize
+                        apps.Add(pku.Appearance[j]);
+                }
+                yield return DataUtil.JoinLexical(apps.ToArray());
+            }
+            yield return null; //no appearance
+        }
 
         /// <summary>
         /// Searches the <see cref="Registry.SPECIES_DEX"/> for whether the given
@@ -121,16 +140,21 @@ namespace pkuManager.Utilities
         /// <returns>Whether or not the given pku's species/form exists in the given format.</returns>
         public static bool ExistsInFormat(this pkuObject pku, string format, bool ignoreCasting = false)
         {
-            bool helper(string form)
+            bool helper(string form, string appearance)
             {
-                string[] formats = Registry.SPECIES_DEX.TraverseJTokenCaseInsensitive
-                    (pku.Species, "Forms", form, "Exists in")?.ToObject<string[]>();
+                string[] formats = appearance is null ?
+                    Registry.SPECIES_DEX.TraverseJTokenCaseInsensitive(pku.Species, "Forms", form, "Exists in")?.ToObject<string[]>() :
+                    Registry.SPECIES_DEX.TraverseJTokenCaseInsensitive(pku.Species, "Forms", form, "Appearance", appearance, "Exists in")?.ToObject<string[]>();
                 return formats?.Contains(format) is true;
             }
-            if (ignoreCasting)
-                return helper(GetSearchableFormName(pku));
-            else
-                return GetCastableForms(pku).Any(form => helper(form));
+
+            var apps = pku.GetSearchableAppearances();
+            foreach(string app in apps)
+            {
+                if (ignoreCasting ? helper(pku.GetSearchableForm(), app) : GetCastableForms(pku).Any(form => helper(form, app)))
+                    return true;
+            }
+            return false;
         }
 
         /// <summary>
