@@ -27,11 +27,6 @@ namespace pkuManager.Formats.pkx
         /// </summary>
         public static readonly JObject GAME_DATA = DataUtil.GetJson("gameData");
 
-        /// <summary>
-        /// Datadex containing data on Pokéstar species, their forms, and their Gen 5 index #'s.
-        /// </summary>
-        public static readonly JObject POKESTAR_DATA = DataUtil.GetJson("pokestarData");
-
 
         /* ------------------------------------
          * Default Values

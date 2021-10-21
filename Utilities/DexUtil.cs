@@ -53,7 +53,7 @@ namespace pkuManager.Utilities
         /// <returns>The default form for this species or, if none found, the empty string.</returns>
         public static string GetDefaultForm(string species)
         {
-            JToken formsCheck = Registry.MASTER_DEX.TraverseJTokenCaseInsensitive(species, "Forms");
+            JToken formsCheck = Registry.SPECIES_DEX.TraverseJTokenCaseInsensitive(species, "Forms");
             if (formsCheck is null)
                 return ""; // No listed forms, default is just "" (i.e. base form)
 
@@ -86,7 +86,7 @@ namespace pkuManager.Utilities
         {
             string searchableFormName = pku.GetSearchableForm();
             List<string> castableFormList = new() { searchableFormName };
-            castableFormList.AddRange(Registry.MASTER_DEX.TraverseJTokenCaseInsensitive(
+            castableFormList.AddRange(Registry.SPECIES_DEX.TraverseJTokenCaseInsensitive(
                 pku.Species, "Forms", searchableFormName, "Castable to"
             )?.ToObject<List<string>>() ?? new List<string>());
             return castableFormList;
