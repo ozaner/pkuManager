@@ -106,7 +106,7 @@ namespace pkuManager.Formats.showdown
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessItem()
         {
-            bool itemValid = ShowdownObject.IsItemValid(pku.Item);
+            bool itemValid = Registry.ITEM_DEX.ExistsIn(FormatName, pku.Item);
             if (pku.Item is not null && !itemValid) //check for invalid alert
                 Warnings.Add(pkxUtil.ExportAlerts.GetItemAlert(AlertType.INVALID, pku.Item));
 
@@ -118,9 +118,9 @@ namespace pkuManager.Formats.showdown
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessAbility()
         {
-            bool abilityValid = ShowdownObject.IsAbilityValid(pku.Ability);
+            bool abilityValid = Registry.ABILITY_DEX.ExistsIn(FormatName, pku.Ability);
             if (pku.Ability is not null && !abilityValid) //check for invalid alert
-                Warnings.Add(pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.INVALID, pku.Ability, "None (Showdown will pick one)."));
+                Warnings.Add(pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.INVALID, pku.Ability, "None (Showdown will pick one)"));
             else
                 Data.Ability = pku.Ability;
         }
@@ -180,13 +180,7 @@ namespace pkuManager.Formats.showdown
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessGigantamaxFactor()
         {
-            if (pku.Gigantamax_Factor is true)
-            {
-                if (ShowdownObject.IsGMaxValid(Data.ShowdownName))
-                    Data.Gigantamax_Factor = true;
-                else
-                    Warnings.Add(GetGMaxAlert(AlertType.INVALID));
-            }
+            Data.Gigantamax_Factor = pku.Gigantamax_Factor is true;
         }
 
         // Moves
@@ -195,7 +189,7 @@ namespace pkuManager.Formats.showdown
         {
             //doesnt get gmax moves, but showdown doesn't allow them either
             List<string> moves = new();
-            (_, int[] moveIndices, Alert alert) = pkxUtil.ExportTags.ProcessMoves(pku, m => ShowdownObject.IsMoveValid(m) ? 1 : null);
+            (_, int[] moveIndices, Alert alert) = pkxUtil.ExportTags.ProcessMoves(pku, m => Registry.MOVE_DEX.ExistsIn(FormatName, m) ? 1 : null);
             foreach (int id in moveIndices)
                 moves.Add(pku.Moves[id].Name);
             Data.Moves = moves.ToArray();
@@ -246,11 +240,5 @@ namespace pkuManager.Formats.showdown
             else
                 throw InvalidAlertType(at);
         }
-
-        public static Alert GetGMaxAlert(AlertType at) => at switch
-        {
-            AlertType.INVALID => new Alert("Gigantamax Factor", "This species does not have a Gigantamax form in this format. Setting Gigantamax factor to false."),
-            _ => throw InvalidAlertType(at)
-        };
     }
 }

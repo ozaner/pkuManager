@@ -29,7 +29,7 @@ namespace pkuManager.Formats.pkx.pk3
         public override (bool canPort, string reason) CanPort()
         {
             // Screen Species & Form
-            if (!pku.ExistsInFormat(FormatName))
+            if (!pku.SpeciesExistsIn(FormatName))
                 return (false, "Must be a species & form that exists in Gen 3."); // If form isn't default, and uncastable
 
             // Screen Shadow Pokemon

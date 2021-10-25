@@ -1,11 +1,9 @@
-﻿using Newtonsoft.Json.Linq;
-using pkuManager.Common;
+﻿using pkuManager.Common;
 using pkuManager.pku;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Text;
 
 namespace pkuManager.Formats.showdown
@@ -131,14 +129,9 @@ namespace pkuManager.Formats.showdown
 
 
         /* ------------------------------------
-         * Read Showdown Data
+         * Showdown Utility
          * ------------------------------------
         */
-        /// <summary>
-        /// A datadex of all the items, moves, abilities, and Gmax species that appear in Showdown's database.
-        /// </summary>
-        protected static readonly JObject SHOWDOWN_BATTLE_DATA = DataUtil.GetJson("ShowdownData");
-
         /// <summary>
         /// Searches the <see cref="Registry.SPECIES_DEX"/> for the
         /// Showdown name of a given pku's species/form/appearance.
@@ -176,140 +169,6 @@ namespace pkuManager.Formats.showdown
                     return sdName;
             }
             return null; //no match
-        }
-
-        /// <summary>
-        /// Helper method to check if some <paramref name="datum"/> exists in
-        /// the <paramref name="type"/> list in <see cref="SHOWDOWN_BATTLE_DATA"/>.
-        /// </summary>
-        /// <param name="type">The type of <paramref name="datum"/> to check
-        ///                    (i.e. "items", "moves", "abilities, and "gmax").</param>
-        /// <param name="datum">The datum to be checked for in the <paramref name="type"/> list.</param>
-        /// <returns>Whether the given <paramref name="datum"/> exists in <see cref="SHOWDOWN_BATTLE_DATA"/>
-        ///          (in the <paramref name="type"/> list) or not.</returns>
-        protected static bool IsDatumValid(string type, string datum)
-        {
-            if (datum is null)
-                return true;
-
-            return Array.Exists(SHOWDOWN_BATTLE_DATA.TraverseJTokenCaseInsensitive(type).ToObject<string[]>(),
-                x => x.ToLowerInvariant() == datum.ToLowerInvariant());
-        }
-
-        /// <summary>
-        /// Whether the given item is in the Showdown! database.
-        /// </summary>
-        /// <param name="item">The item to check.</param>
-        /// <returns>Whether the item is valid or not.</returns>
-        public static bool IsItemValid(string item)
-        {
-            return IsDatumValid("items", item);
-        }
-
-        /// <summary>
-        /// Whether the given move is in the Showdown! database.
-        /// </summary>
-        /// <param name="move">The move to check.</param>
-        /// <returns>Whether the move is valid or not.</returns>
-        public static bool IsMoveValid(string move)
-        {
-            return IsDatumValid("moves", move);
-        }
-
-        /// <summary>
-        /// Whether the given ability is in the Showdown! database.
-        /// </summary>
-        /// <param name="ability">The ability to check.</param>
-        /// <returns>Whether the ability is valid or not.</returns>
-        public static bool IsAbilityValid(string ability)
-        {
-            return IsDatumValid("abilities", ability);
-        }
-
-        /// <summary>
-        /// Whether the given species has a gigantamax form in the Showdown! database.
-        /// </summary>
-        /// <param name="species">The species to check.</param>
-        /// <returns>Whether the species is Gigantamaxable or not.</returns>
-        public static bool IsGMaxValid(string species)
-        {
-            return IsDatumValid("gmax", species);
-        }
-
-
-        /* ------------------------------------
-         * Update Showdown Battle Data
-         * ------------------------------------
-        */
-        private static readonly string GithubDexData = @"https://raw.githubusercontent.com/smogon/pokemon-showdown/master/data/pokedex.ts";
-        private static readonly string GithubTextData = @"https://raw.githubusercontent.com/smogon/pokemon-showdown/master/data/text/";
-        private static readonly string MoveFile = "moves.ts", AbilityFile = "abilities.ts", ItemFile = "items.ts";
-
-        private static JObject ParseJSONFromShowdownRepo(string url)
-        {
-            // Download file to string
-            string fileString;
-            using WebClient client = new();
-            fileString = client.DownloadString(url);
-
-            // Convert typescript constant declaration to JSON:
-
-            // Remove first line of text and replace it with '{'
-            fileString = '{' + fileString[(fileString.IndexOf("\n") + 1)..];
-
-            // Remove last line of text and add a '}' to the end
-            fileString = fileString.Remove(fileString.TrimEnd().LastIndexOf("\n")) + '}';
-
-            //Create final trimmed dex object
-            JObject fileObject = JObject.Parse(fileString);
-
-            return fileObject;
-        }
-        private static List<string> PullShowdownGMaxSpecies()
-        {
-            JObject fileObject = ParseJSONFromShowdownRepo(GithubDexData);
-            List<string> listOfNames = new();
-            foreach (var c in fileObject)
-            {
-                if (c.Value.TraverseJTokenCaseInsensitive("canGigantamax") is not null) //has GMax
-                {
-                    listOfNames.Add((string)c.Value.TraverseJTokenCaseInsensitive("name"));
-                    string[] cosmeticForms = c.Value.TraverseJTokenCaseInsensitive("cosmeticFormes")?.ToObject<string[]>();
-                    if (cosmeticForms?.Length > 0)
-                        listOfNames.AddRange(cosmeticForms);
-                }
-            }
-            listOfNames.RemoveAll(x => x is null); //get rid of null entries (there shouldn't be any but just in case)
-            return listOfNames;
-        }
-        private static List<string> PullShowdownDataHelper(string url)
-        {
-            JObject fileObject = ParseJSONFromShowdownRepo(url);
-            List<string> listOfNames = new();
-            foreach (var c in fileObject)
-                listOfNames.Add((string)c.Value.TraverseJTokenCaseInsensitive("name"));
-            return listOfNames;
-        }
-
-        /// <summary>
-        /// Pulls the current item, move, and ability data from the 
-        /// <see href="https://github.com/smogon/pokemon-showdown/tree/master/data/text">Showdown Github</see>.
-        /// </summary>
-        /// <returns>A JObject with data on the valid moves, abilities, items, and gmax species in Showdown.</returns>
-        public static JObject PullShowdownData()
-        {
-            List<string> moves = PullShowdownDataHelper(GithubTextData + MoveFile);
-            List<string> items = PullShowdownDataHelper(GithubTextData + ItemFile);
-            List<string> abilities = PullShowdownDataHelper(GithubTextData + AbilityFile);
-            List<string> gmax = PullShowdownGMaxSpecies();
-            JObject showdownData = new()
-            {
-                { "moves", JToken.FromObject(moves) },
-                { "items", JToken.FromObject(items) },
-                { "abilities", JToken.FromObject(abilities) },
-                { "gmax", JToken.FromObject(gmax) }
-            };
-            return showdownData;
         }
     }
 }

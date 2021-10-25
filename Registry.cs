@@ -34,5 +34,8 @@ namespace pkuManager
         private const string MASTER_DEX_BASE = "https://raw.githubusercontent.com/project-pku/pkuData/main/master-dexes/master";
 
         public static readonly JObject SPECIES_DEX = DexUtil.GetMasterDatadex($"{MASTER_DEX_BASE}SpeciesDex.json");
+        public static readonly JObject ABILITY_DEX = DexUtil.GetMasterDatadex($"{MASTER_DEX_BASE}AbilityDex.json");
+        public static readonly JObject MOVE_DEX = DexUtil.GetMasterDatadex($"{MASTER_DEX_BASE}MoveDex.json");
+        public static readonly JObject ITEM_DEX = DexUtil.GetMasterDatadex($"{MASTER_DEX_BASE}ItemDex.json");
     }
 }

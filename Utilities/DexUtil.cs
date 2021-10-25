@@ -138,14 +138,17 @@ namespace pkuManager.Utilities
         /// <param name="format">The desired format.</param>
         /// <param name="ignoreCasting">Whether or not to account for form casting.</param>
         /// <returns>Whether or not the given pku's species/form exists in the given format.</returns>
-        public static bool ExistsInFormat(this pkuObject pku, string format, bool ignoreCasting = false)
+        public static bool SpeciesExistsIn(this pkuObject pku, string format, bool ignoreCasting = false)
         {
             bool helper(string form, string appearance)
             {
-                string[] formats = appearance is null ?
-                    Registry.SPECIES_DEX.TraverseJTokenCaseInsensitive(pku.Species, "Forms", form, "Exists in")?.ToObject<string[]>() :
-                    Registry.SPECIES_DEX.TraverseJTokenCaseInsensitive(pku.Species, "Forms", form, "Appearance", appearance, "Exists in")?.ToObject<string[]>();
-                return formats?.Contains(format) is true;
+                List<string> keys = new(){ pku.Species, "Forms", form };
+                if(appearance is not null)
+                {
+                    keys.Add("Appearance");
+                    keys.Add(appearance);
+                }
+                return Registry.SPECIES_DEX.ExistsIn(format, keys.ToArray());
             }
 
             var apps = pku.GetSearchableAppearances();
@@ -155,6 +158,23 @@ namespace pkuManager.Utilities
                     return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Searches the given <paramref name="dex"/> is the object the
+        /// <paramref name="keys"/> point to exist in the given format.
+        /// </summary>
+        /// <param name="dex">A datadex.</param>
+        /// <param name="format">A storage format.</param>
+        /// <param name="keys">The path of the object in <paramref name="dex"/>.</param>
+        /// <returns></returns>
+        public static bool ExistsIn(this JObject dex, string format, params string[] keys)
+        {
+            string[] arr = dex.TraverseJTokenCaseInsensitive(keys.Append("Exists in").ToArray())?.ToObject<string[]>();
+            if (arr is null)
+                return false;
+            
+            return Array.Exists(arr, x => DataUtil.EqualsCaseInsensitive(x, format));
         }
 
         /// <summary>
