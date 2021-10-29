@@ -85,7 +85,7 @@ namespace pkuManager.Formats.pkx.pk3
         // Species
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessSpecies()
-            => Data.Species.Set((ushort)DexUtil.GetSpeciesIndex(pku.Species, FormatName));
+            => Data.Species.Set((ushort)DexUtil.GetSpeciesIndex(pku, FormatName));
 
         // Nature [Implicit]
         [PorterDirective(ProcessingPhase.FirstPass)]
@@ -425,7 +425,7 @@ namespace pkuManager.Formats.pkx.pk3
         protected virtual void ProcessAbilitySlot()
         {
             Alert alert = null;
-            string[] abilitySlots = Registry.SPECIES_DEX.TraverseJTokenCaseInsensitive(pku.Species, "Gen 3 Ability Slots").ToObject<string[]>();
+            string[] abilitySlots = Registry.SPECIES_DEX.ReadDataDex<string[]>(pku.Species, "Gen 3 Ability Slots");
             if (pku.Ability is not null) //ability specified
             {
                 int? abilityID = PokeAPIUtil.GetAbilityIndex(pku.Ability);

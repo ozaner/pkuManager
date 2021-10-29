@@ -80,7 +80,7 @@ namespace pkuManager.Formats.pkx
         /// <returns>The national dex # of the given <paramref name="species"/>,
         ///          or <see langword="null"/> if it doesn't have one.</returns>
         public static int? GetNationalDex(string species)
-            => (int?)Registry.SPECIES_DEX.TraverseJTokenCaseInsensitive(species, "National Dex");
+            => Registry.SPECIES_DEX.ReadDataDex<int?>(species, "National Dex");
 
         /// <summary>
         /// Does the same as <see cref="GetNationalDex(string)"/> but with the<br/>
@@ -102,8 +102,7 @@ namespace pkuManager.Formats.pkx
         /// <returns>The English name of the species with the <paramref name="dex"/> #.
         ///          Null if there is no match.</returns>
         public static string GetSpeciesName(int dex)
-            => (Registry.SPECIES_DEX.Children().First(species => (int?)(species as JProperty)
-                .Value.TraverseJTokenCaseInsensitive("National Dex") == dex) as JProperty)?.Name;
+            => Registry.SPECIES_DEX.SearchDataDex<int?>(dex, "$x", "National Dex");
 
         /// <summary>
         /// Gets the game ID and generation of the given <paramref name="game"/>.
@@ -111,8 +110,7 @@ namespace pkuManager.Formats.pkx
         /// <param name="game">A game name (e.g. "Diamond").</param>
         /// <returns>A 2-tuple of the game ID, and its generation. Null if doesn't have one.</returns>
         public static (int?, int?) GetGameIDAndGen(string game) =>
-            ((int?, int?))(GAME_DATA.TraverseJTokenCaseInsensitive(game, "Game ID"),
-                GAME_DATA.TraverseJTokenCaseInsensitive(game, "Generation"));
+            (GAME_DATA.ReadDataDex<int?>(game, "Game ID"), GAME_DATA.ReadDataDex<int?>(game, "Generation"));
 
         /// <summary>
         /// Returns the gender of a Pokémon with the given <paramref name="pid"/> as determined by Gens 3-5. 

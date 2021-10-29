@@ -138,37 +138,22 @@ namespace pkuManager.Formats.showdown
         /// </summary>
         /// <param name="pku">The pku whose Showdown name is to be determined.</param>
         /// <returns><paramref name="pku"/>'s Showdown name.</returns>
-        public static string GetShowdownName(pkuObject pku)
+        public static string GetShowdownName(pkuObject pku, bool ignoreCasting = false)
         {
-            var apps = pku.GetSearchableAppearances();
-            foreach (string app in apps)
+            //Check for gender split
+            bool? genderSplit = Registry.SPECIES_DEX.ReadSpeciesDex<bool?>(pku, ignoreCasting, "Showdown Gender Split");
+            if(genderSplit is true)
             {
-                List<string> searchTerms = new()
-                {
-                    pku.Species,
-                    "Forms",
-                    pku.GetSearchableForm()
-                };
-                if (app is not null)
-                {
-                    searchTerms.Add("Appearance");
-                    searchTerms.Add(app);
-                }
-                bool? genderSplit = (bool?)Registry.SPECIES_DEX.TraverseJTokenCaseInsensitive(searchTerms.Append("Showdown Gender Split").ToArray());
-                if (genderSplit is true)
-                {
-                    Gender? gender = pku.Gender.ToEnum<Gender>();
-                    string genderStr = gender is Common.Gender.Female ? "Female" : "Male"; //Default is male
-                    searchTerms.Add($"Showdown Name {genderStr}");
-                }
-                else
-                    searchTerms.Add("Showdown Name");
+                Gender? gender = pku.Gender.ToEnum<Gender>();
+                string genderStr = gender is Common.Gender.Female ? "Female" : "Male"; //Default is male
 
-                string sdName = (string)Registry.SPECIES_DEX.TraverseJTokenCaseInsensitive(searchTerms.ToArray());
-                if (sdName is not null)
-                    return sdName;
+                //this could be bad iff a "Showdown Name {genderStr}" appears in a earlier apperance w/o Showdown Gender Split
+                //that would be a data error though...
+                return Registry.SPECIES_DEX.ReadSpeciesDex<string>(pku, ignoreCasting, $"Showdown Name {genderStr}");
             }
-            return null; //no match
+
+            //No gender split
+            return Registry.SPECIES_DEX.ReadSpeciesDex<string>(pku, ignoreCasting, "Showdown Name");
         }
     }
 }

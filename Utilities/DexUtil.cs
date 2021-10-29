@@ -10,11 +10,15 @@ namespace pkuManager.Utilities
 {
     public static class DexUtil
     {
+        /* ------------------------------------
+         * Generic DataDex Methods
+         * ------------------------------------
+        */
         /// <summary>
         /// Compiles a master datadex from the given <paramref name="url"/>.
         /// </summary>
         /// <param name="url">A raw url to an uncompiled master datadex file.</param>
-        /// <returns>The compiled master datadex from the <paramref name="url"/>.</returns>
+        /// <returns>The compiled datadex from the <paramref name="url"/>.</returns>
         public static JObject GetMasterDatadex(string url)
         {
             JObject masterDatadex = new();
@@ -46,68 +50,138 @@ namespace pkuManager.Utilities
         }
 
         /// <summary>
-        /// Searches for the the default form of the given species.<br/>
-        /// If the default form is unnamed (e.g. Bulbasaur) then the empty string will be returned.
+        /// Searches the contents of a <paramref name="datadex"/> with the given <paramref name="keys"/>.<br/>
+        /// If no object exists at the given location, <see langword="null"/> will be returned.<br/>
+        /// Throws an exception if an object does exist but can't be casted to <typeparamref name="T"/>.<br/>
+        /// Note that direct array indexing is not yet implemented.
         /// </summary>
-        /// <param name="species">The species whose default form is to be retrieved.</param>
-        /// <returns>The default form for this species or, if none found, the empty string.</returns>
-        public static string GetDefaultForm(string species)
+        /// <typeparam name="T">The type of the value to be read.</typeparam>
+        /// <param name="datadex">The datadex being read.</param>
+        /// <param name="keys">The location of the desired value in <paramref name="datadex"/>.</param>
+        /// <returns>The value pointed at by <paramref name="keys"/>, or <see langword="null"/> if it doesn't exist.</returns>
+        public static T ReadDataDex<T>(this JObject datadex, params string[] keys)
         {
-            JToken formsCheck = Registry.SPECIES_DEX.TraverseJTokenCaseInsensitive(species, "Forms");
-            if (formsCheck is null)
-                return ""; // No listed forms, default is just "" (i.e. base form)
-
-            JObject forms = formsCheck is JObject ? (formsCheck as JObject) : throw new ArgumentException("Invalid Data, Forms should be a JObject.");
-
-            foreach (var j in forms)
+            JObject temp = datadex;
+            for (int i = 0; i < keys.Length; i++)
             {
-                bool? isDefault = (bool?)j.Value.TraverseJTokenCaseInsensitive("Default");
-                if (isDefault is true) //"default" exists and is true
-                    return j.Key; //default form found
+                //null isn't a valid key
+                if (keys[i] is null || temp is null)
+                    return default;
+
+                // try searching local for key
+                if(temp.ContainsKey(keys[i]))
+                {
+                    var value = temp[keys[i]];
+                    if(i >= keys.Length - 1) //last key
+                    {
+                        try { return value.ToObject<T>(); } //return whatever the value is
+                        catch { return default; }//can't return the value, doesn't match the type
+                    }
+                    else //not last key, should be a dict
+                    {
+                        if (value is JObject valueJObj) //is a dict
+                            temp = valueJObj; //continue loop
+                        else //isn't a dict
+                            return default; //failure, return null
+                        
+                        //TODO: add direct array indexing, i.e. else if(value is JArray valueJArr)
+                    }
+                }
+                // no local key found, look for possible override
+                else if (temp.ContainsKey("$override"))
+                {
+                    List<string> remote_keys = new(temp["$override"].ToObject<string[]>());
+                    remote_keys.AddRange(keys.Skip(i));
+                    return datadex.ReadDataDex<T>(remote_keys.ToArray());
+                }             
+                else //key not found, no potential override
+                   return default; //failure, return null
             }
-            return ""; // There are forms, but no listed default. Default is just "" (i.e. base form)
+            return default; //shouldn't get here
         }
 
         /// <summary>
-        /// Returns the searchable form of a pku's forms array for use in searching through datadexes.
+        /// Returns the key that, when substituted in for "$x",
+        /// has <paramref name="value"/> matching the value at <paramref name="keys"/>.
         /// </summary>
-        /// <param name="pku">The pku whose form is to be formatted.</param>
-        /// <returns>The searchable form name, or the default form if form array is empty or null.</returns>
-        public static string GetSearchableForm(this pkuObject pku)
-            => pku.Forms?.Length is not > 0 ? GetDefaultForm(pku.Species) : DataUtil.JoinLexical(pku.Forms);
+        /// <typeparam name="T">The type of the value to be read.</typeparam>
+        /// <param name="datadex">The datadex being read.</param>
+        /// <param name="keys">The location of the desired value in <paramref name="datadex"/>.</param>
+        /// <param name="value">The value to search for.</param>
+        /// <returns>The key that when substituted into the "$x" term, results in <paramref name="value"/> matching.</returns>
+        public static string SearchDataDex<T>(this JObject datadex, T value, params string[] keys)
+        {
+            int splitIndex = Array.IndexOf(keys, "$x");
+            if (splitIndex is -1)
+                throw new ArgumentException("keys neeeds at least one \"$x\" key", nameof(keys));
+
+            JObject fh = splitIndex is 0 ? datadex : datadex.ReadDataDex<JObject>(keys.Take(splitIndex).ToArray());
+            foreach(var x in fh ?? new())
+            {
+                if (x.Key is "$override") //search override last
+                    continue;
+                keys[splitIndex]=x.Key;
+                T res = datadex.ReadDataDex<T>(keys);
+                if (value.Equals(res))
+                    return x.Key; //match found
+            }
+            keys[splitIndex] = "$x"; //put $x back in split index
+            
+            // no local key found, look for possible override
+            if (fh?.ContainsKey("$override") is true) //search override if it exists
+            {
+                List<string> remote_keys = new(fh["$override"].ToObject<string[]>());
+                remote_keys.AddRange(keys.Skip(splitIndex));
+                return datadex.SearchDataDex(value, remote_keys.ToArray());
+            }
+            return null; //no match
+        }
 
         /// <summary>
-        /// Gets a list of all form names the given <paramref name="pku"/> can be casted to, including its current form.<br/>
+        /// Checks if <paramref name="format"/> exists  in the "Exists in" array
+        /// at the location given by <paramref name="keys"/> in <paramref name="dex"/>.
+        /// </summary>
+        /// <param name="dex">A datadex.</param>
+        /// <param name="format">A storage format.</param>
+        /// <param name="keys">The path of the object in <paramref name="dex"/>.</param>
+        /// <returns>Whether or not the object at the given location exists in the given format.</returns>
+        public static bool ExistsIn(this JObject dex, string format, params string[] keys)
+        {
+            string[] arr = dex.ReadDataDex<string[]>(keys.Append("Exists in").ToArray());
+            if (arr is null)
+                return false;
+            return Array.Exists(arr, x => x.EqualsCaseInsensitive(format));
+        }
+
+
+        /* ------------------------------------
+         * SpeciesDex Methods
+         * ------------------------------------
+        */
+        /// <summary>
+        /// Gets a list of all form names the given <paramref name="pku"/> can be casted to, starting with its current form.<br/>
         /// Null and empty form arrays are treated as default forms.
         /// </summary>
         /// <param name="pku">The pku whose castable forms are to be retrieved.</param>
-        /// <returns>A list of all forms the given pku can be casted too.</returns>
-        public static List<string> GetCastableForms(pkuObject pku)
+        /// <returns>A list of all forms the given <paramref name="pku"/> can be casted to.</returns>
+        public static List<string> GetCastableForms(this pkuObject pku)
         {
             string searchableFormName = pku.GetSearchableForm();
             List<string> castableFormList = new() { searchableFormName };
-            castableFormList.AddRange(Registry.SPECIES_DEX.TraverseJTokenCaseInsensitive(
+            castableFormList.AddRange(Registry.SPECIES_DEX.ReadDataDex<List<string>>(
                 pku.Species, "Forms", searchableFormName, "Castable to"
-            )?.ToObject<List<string>>() ?? new List<string>());
+            ) ?? new List<string>());
             return castableFormList;
         }
 
         /// <summary>
-        /// Checks if the given <paramref name="pku"/>'s form is the default for its species.
-        /// </summary>
-        /// <param name="pku">The pku to check.</param>
-        /// <returns>Whether or not <paramref name="pku"/> has its default form.</returns>
-        public static bool IsFormDefault(this pkuObject pku)
-            => pku.GetSearchableForm() == GetDefaultForm(pku.Species);
-
-        /// <summary>
         /// Enumerates all the different subsets of appearances
         /// of the given <paramref name="pku"/>'s appearance array.<br/>
-        /// The algorithm for deciding the order of each possible subset is like counting backward in binary...
+        /// This method enumerates the appearance combos in the canonical order.
         /// </summary>
         /// <param name="pku">The pku whose appearances are to be enumerated.</param>
         /// <returns>An enumerator of <paramref name="pku"/>'s different appearance combinations.</returns>
-        public static IEnumerable<string> GetSearchableAppearances(this pkuObject pku)
+        private static IEnumerable<string> GetSearchableAppearances(pkuObject pku)
         {
             if (pku.Appearance?.Length is not > 0)
             {
@@ -116,7 +190,7 @@ namespace pkuManager.Utilities
             }
 
             int effectiveSize = pku.Appearance.Length > 63 ? 64 : pku.Appearance.Length;
-            ulong powesize = effectiveSize is 64 ? ulong.MaxValue : ((ulong)1 << effectiveSize)-1;
+            ulong powesize = effectiveSize is 64 ? ulong.MaxValue : ((ulong)1 << effectiveSize) - 1;
             for (ulong i = 0; i <= powesize; i++)
             {
                 List<string> apps = new();
@@ -131,6 +205,74 @@ namespace pkuManager.Utilities
         }
 
         /// <summary>
+        /// Searches for the the default form of the given species.<br/>
+        /// If the default form is unnamed (e.g. Bulbasaur) then the empty string will be returned.
+        /// </summary>
+        /// <param name="species">The species whose default form is to be retrieved.</param>
+        /// <returns>The default form for this species or, if none found, the empty string.</returns>
+        private static string GetDefaultForm(string species)
+        {
+            JObject forms = Registry.SPECIES_DEX.ReadDataDex<JObject>(species, "Forms");
+            if (forms is null) // No listed forms, default is just "" (i.e. base form)
+                return "";
+
+            foreach (var form in forms)
+            {
+                bool? isDefault = Registry.SPECIES_DEX.ReadDataDex<bool?>(species, "Forms", form.Key, "Default");
+                if (isDefault is true)
+                    return form.Key;
+            }
+            return ""; //No form was listed as default, default is ""
+        }
+
+        /// <summary>
+        /// Returns the searchable form of the <paramref name="pku"/>'s forms array for use in searching through datadexes.
+        /// </summary>
+        /// <param name="pku">The pku whose form is to be formatted.</param>
+        /// <returns>The searchable form name, or the default form if form array is empty or null.</returns>
+        public static string GetSearchableForm(this pkuObject pku)
+            => pku.Forms?.Length is not > 0 ? GetDefaultForm(pku.Species) : DataUtil.JoinLexical(pku.Forms);
+
+        /// <summary>
+        /// Like <see cref="ReadDataDex{T}(JObject, string[])"/> but searches through the<br/>
+        /// appearances, form(s), then species level of a species entry with the given keys.
+        /// </summary>
+        /// <param name="dex">The species dex to read.</param>
+        /// <param name="pku">The pku whose species/form/appearance is to be used.</param>
+        /// <param name="ignoreCasting">Whether to other castable forms of the <paramref name="pku"/> if its form fails.</param>
+        /// <inheritdoc cref="ReadDataDex{T}(JObject, string[])"/>
+        public static T ReadSpeciesDex<T>(this JObject dex, pkuObject pku, bool ignoreCasting, params string[] keys)
+        {
+            T helper(string form, string appearance)
+            {
+                List<string> sp_keys = new() { pku.Species, "Forms", form };
+                if (appearance is not null)
+                {
+                    sp_keys.Add("Appearance");
+                    sp_keys.Add(appearance);
+                }
+                sp_keys.AddRange(keys);
+                return dex.ReadDataDex<T>(sp_keys.ToArray());
+            }
+
+            List<string> forms = ignoreCasting ? new() { pku.GetSearchableForm() } : pku.GetCastableForms();
+            var apps = GetSearchableAppearances(pku);
+
+            foreach (string form in forms)
+            {
+                foreach (string app in apps)
+                {
+                    T obj = helper(form, app);
+                    if (obj is not null)
+                        return obj; //match found
+                }
+            }
+
+            //nothing found in a form/appearance. try species level
+            return dex.ReadDataDex<T>(keys.Prepend(pku.Species).ToArray());
+        }
+
+        /// <summary>
         /// Searches the <see cref="Registry.SPECIES_DEX"/> for whether the given
         /// pku's species/form/appearance exists in the given format.
         /// </summary>
@@ -140,51 +282,21 @@ namespace pkuManager.Utilities
         /// <returns>Whether or not the given pku's species/form exists in the given format.</returns>
         public static bool SpeciesExistsIn(this pkuObject pku, string format, bool ignoreCasting = false)
         {
-            bool helper(string form, string appearance)
-            {
-                List<string> keys = new(){ pku.Species, "Forms", form };
-                if(appearance is not null)
-                {
-                    keys.Add("Appearance");
-                    keys.Add(appearance);
-                }
-                return Registry.SPECIES_DEX.ExistsIn(format, keys.ToArray());
-            }
-
-            var apps = pku.GetSearchableAppearances();
-            foreach(string app in apps)
-            {
-                if (ignoreCasting ? helper(pku.GetSearchableForm(), app) : GetCastableForms(pku).Any(form => helper(form, app)))
-                    return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Searches the given <paramref name="dex"/> is the object the
-        /// <paramref name="keys"/> point to exist in the given format.
-        /// </summary>
-        /// <param name="dex">A datadex.</param>
-        /// <param name="format">A storage format.</param>
-        /// <param name="keys">The path of the object in <paramref name="dex"/>.</param>
-        /// <returns></returns>
-        public static bool ExistsIn(this JObject dex, string format, params string[] keys)
-        {
-            string[] arr = dex.TraverseJTokenCaseInsensitive(keys.Append("Exists in").ToArray())?.ToObject<string[]>();
+            string[] arr = Registry.SPECIES_DEX.ReadSpeciesDex<string[]>(pku, ignoreCasting, "Exists in");
             if (arr is null)
                 return false;
-            
-            return Array.Exists(arr, x => DataUtil.EqualsCaseInsensitive(x, format));
+            return Array.Exists(arr, x => x.EqualsCaseInsensitive(format));
         }
 
         /// <summary>
-        /// Gets the given species' index number in the given format,
-        /// according to <see cref="Registry.SPECIES_DEX"/>.
+        /// Searches <see cref="Registry.SPECIES_DEX"/> for the given <paramref name="pku"/>'s index number in the<br/>
+        /// given format, according to it's species as well as form/appearance if applicable.
         /// </summary>
-        /// <param name="species">The name of the species.</param>
+        /// <param name="pku">The pku.</param>
         /// <param name="format">The format the index corresponds to.</param>
-        /// <returns>The index number of <paramref name="species"/> in <paramref name="format"/>.</returns>
-        public static int? GetSpeciesIndex(string species, string format)
-            => (int?)Registry.SPECIES_DEX.TraverseJTokenCaseInsensitive(species, "Indices", format);
+        /// <param name="ignoreCasting">Whether or not to ignore the other forms pku can be casted to.</param>
+        /// <returns>The index number of the <paramref name="pku"/> in <paramref name="format"/>.</returns>
+        public static int? GetSpeciesIndex(pkuObject pku, string format, bool ignoreCasting = false)
+            => Registry.SPECIES_DEX.ReadSpeciesDex<int?>(pku, ignoreCasting, "Indices", format);
     }
 }

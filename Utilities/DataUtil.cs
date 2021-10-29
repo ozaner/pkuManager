@@ -51,26 +51,6 @@ namespace pkuManager.Utilities
         public static JObject GetCombinedJson(params JObject[] jobjs) => GetCombinedJson(false, jobjs);
 
         /// <summary>
-        /// Reads a value from a JToken using a list of keys, in a case-insensitive manner.<br/>
-        /// If the traversal reaches a value/array, it is returned and the rest of the keys are ignored.
-        /// </summary>
-        /// <param name="jobj">The JToken to read from.</param>
-        /// <param name="keys">An array of keys to traverse <paramref name="jobj"/> with.</param>
-        /// <returns>The resulting value of the traversal. Null if no value was found.</returns>
-        public static JToken TraverseJTokenCaseInsensitive(this JToken jobj, params string[] keys)
-        {
-            JToken temp = jobj;
-            foreach (string k in keys)
-            {
-                if (!(temp is JObject))
-                    break;
-                temp = ((JObject)temp)?.GetValue(k, StringComparison.OrdinalIgnoreCase);
-            }
-
-            return temp;
-        }
-
-        /// <summary>
         /// Recursively prunes a <see cref="JToken"/> of all its null properties.
         /// </summary>
         /// <param name="root">The root of the JToken to be pruned.</param>
