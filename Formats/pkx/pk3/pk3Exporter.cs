@@ -201,10 +201,10 @@ namespace pkuManager.Formats.pkx.pk3
                 {
                     Data.Egg_Name_Override.Set(pk3Object.EGG_NAME_OVERRIDE_CONST); //override nickname to be 'egg'
                     checkedLang = Language.Japanese;
-                    Data.Nickname.Set(pk3Object.CHARACTER_ENCODING
-                                    .Encode(pkxUtil.EGG_NICKNAME[checkedLang], pk3Object.MAX_NICKNAME_CHARS, checkedLang).encodedStr);
-                    Data.OT.Set(pk3Object.CHARACTER_ENCODING
-                                .Encode(pku.Game_Info?.OT, pk3Object.MAX_OT_CHARS, lang.Value).encodedStr);
+                    Data.Nickname.Set(DexUtil.CharEncoding<byte>.Encode
+                        (pkxUtil.EGG_NICKNAME[checkedLang], pk3Object.MAX_NICKNAME_CHARS, FormatName, checkedLang).encodedStr);
+                    Data.OT.Set(DexUtil.CharEncoding<byte>.Encode
+                        (pku.Game_Info?.OT, pk3Object.MAX_OT_CHARS, FormatName, lang.Value).encodedStr);
                     legalGen3Egg = true;
                 }
             }
@@ -229,7 +229,7 @@ namespace pkuManager.Formats.pkx.pk3
         {
             if (!legalGen3Egg)
             {
-                var (nick, alert, _, _) = pkxUtil.ExportTags.ProcessNickname(pku, 3, pk3Object.MAX_NICKNAME_CHARS, pk3Object.CHARACTER_ENCODING, checkedLang);
+                var (nick, alert, _, _) = pkxUtil.ExportTags.ProcessNickname<byte>(pku, 3, pk3Object.MAX_NICKNAME_CHARS, FormatName, checkedLang);
                 Data.Nickname.Set(nick);
                 Warnings.Add(alert);
             }
@@ -241,7 +241,7 @@ namespace pkuManager.Formats.pkx.pk3
         {
             if (!legalGen3Egg)
             {
-                var (ot, alert) = pkxUtil.ExportTags.ProcessOT(pku, pk3Object.MAX_OT_CHARS, pk3Object.CHARACTER_ENCODING, checkedLang);
+                var (ot, alert) = pkxUtil.ExportTags.ProcessOT<byte>(pku, pk3Object.MAX_OT_CHARS, FormatName, checkedLang);
                 Data.OT.Set(ot);
                 Warnings.Add(alert);
             }
@@ -256,7 +256,7 @@ namespace pkuManager.Formats.pkx.pk3
             {
                 ushort[] nicknameTrash = tb?.Nickname?.Length > 0 ? tb.Nickname : null;
                 ushort[] otTrash = tb?.OT?.Length > 0 ? tb.OT : null;
-                var (nick, ot, alert) = pkxUtil.ExportTags.ProcessTrash(Data.Nickname, nicknameTrash, Data.OT, otTrash, pk3Object.CHARACTER_ENCODING);
+                var (nick, ot, alert) = pkxUtil.ExportTags.ProcessTrash<byte>(Data.Nickname, nicknameTrash, Data.OT, otTrash, FormatName, checkedLang);
                 Data.Nickname.Set(nick);
                 Data.OT.Set(ot);
                 Warnings.Add(alert);

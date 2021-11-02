@@ -968,7 +968,7 @@ namespace pkuManager.Formats.pkx
             // String Processing Methods
             // ----------
             public static (T[] nickname, Alert nicknameAlert, bool nicknameFlag, Alert nicknameFlagAlert)
-                ProcessNickname<T>(pkuObject pku, int gen, int maxLength, CharacterEncoding<T> charEnc, Language? checkedLang = null) where T : struct
+                ProcessNickname<T>(pkuObject pku, int gen, int maxLength, string format, Language? checkedLang = null) where T : struct
             {
                 T[] name;
                 bool nicknameFlag = pku.Nickname_Flag is true;
@@ -980,7 +980,7 @@ namespace pkuManager.Formats.pkx
                 {
                     //name
                     bool truncated, invalid;
-                    (name, truncated, invalid) = charEnc.Encode(pku.Nickname, maxLength, checkedLang);
+                    (name, truncated, invalid) = DexUtil.CharEncoding<T>.Encode(pku.Nickname, maxLength, format, checkedLang);
                     if (truncated && invalid)
                         alert = GetNicknameAlert(AlertType.OVERFLOW, maxLength, AlertType.INVALID);
                     else if (truncated)
@@ -1006,7 +1006,7 @@ namespace pkuManager.Formats.pkx
                     if (gen < 8 && dex is 83) //farfetch'd uses ’ in Gens 1-7
                         defaultName = defaultName.Replace('\'', '’'); //Gen 8: verify this once pokeAPI updates
 
-                    (name, _, _) = charEnc.Encode(defaultName, maxLength, checkedLang); //species names shouldn't be truncated/invalid...
+                    (name, _, _) = DexUtil.CharEncoding<T>.Encode(defaultName, maxLength, format, checkedLang); //species names shouldn't be truncated/invalid...
 
                     //flag
                     if (pku.Nickname_Flag is null)
@@ -1020,7 +1020,7 @@ namespace pkuManager.Formats.pkx
             }
 
             public static (T[], Alert)
-                ProcessOT<T>(pkuObject pku, int maxLength, CharacterEncoding<T> charEnc, Language? checkedLang = null) where T : struct
+                ProcessOT<T>(pkuObject pku, int maxLength, string format, Language? checkedLang = null) where T : struct
             {
                 T[] otName;
                 Alert alert = null;
@@ -1028,7 +1028,7 @@ namespace pkuManager.Formats.pkx
                 if (pku.Game_Info?.OT is not null) //OT specified
                 {
                     bool truncated, invalid;
-                    (otName, truncated, invalid) = charEnc.Encode(pku.Game_Info.OT, maxLength, checkedLang);
+                    (otName, truncated, invalid) = DexUtil.CharEncoding<T>.Encode(pku.Game_Info.OT, maxLength, format, checkedLang);
                     if (truncated && invalid)
                         alert = GetOTAlert(maxLength, AlertType.OVERFLOW, AlertType.INVALID);
                     else if (truncated)
@@ -1038,21 +1038,22 @@ namespace pkuManager.Formats.pkx
                 }
                 else //OT not specified
                 {
-                    (otName, _, _) = charEnc.Encode(null, maxLength, checkedLang); //blank array
+                    (otName, _, _) = DexUtil.CharEncoding<T>.Encode(null, maxLength, format, checkedLang); //blank array
                     alert = GetOTAlert(AlertType.UNSPECIFIED);
                 }
                 return (otName, alert);
             }
 
             public static (T[] trashedName, T[] trashedOT, Alert)
-                ProcessTrash<T>(T[] encodedName, ushort[] nameTrash, T[] encodedOT, ushort[] otTrash, CharacterEncoding<T> charEnc) where T : struct
+                ProcessTrash<T>(T[] encodedName, ushort[] nameTrash, T[] encodedOT, ushort[] otTrash, string format, Language? checkedLang = null) where T : struct
             {
+                ushort max = DataUtil.GetMaxValue<T>().CastTo<ushort>();
                 (T[], AlertType) helper(T[] encodedStr, ushort[] trash)
                 {
                     AlertType at = AlertType.NONE;
                     if (trash is null)
                         return (encodedStr, at);
-                    else if (trash.Any(x => x > charEnc.MaxValue))
+                    else if (trash.Any(x => x > max))
                         at = AlertType.OVERFLOW;
                     else if (trash.Length != encodedStr.Length)
                         at = AlertType.MISMATCH;
@@ -1061,13 +1062,13 @@ namespace pkuManager.Formats.pkx
                         return (encodedStr, at);
 
                     //T is definitely byte, ushort, or byte at this point.
-                    return (charEnc.Trash(encodedStr, trash), at);
+                    return (DexUtil.CharEncoding<T>.Trash(encodedStr, trash, format, checkedLang), at);
                 }
 
                 (T[] trashedName, AlertType atName) = helper(encodedName, nameTrash);
                 (T[] trashedOT, AlertType atOT) = helper(encodedOT, otTrash);
                 Alert alert = (atName, atOT) is (AlertType.NONE, AlertType.NONE) ? null :
-                    GetTrashAlert(atName, atOT, encodedName.Length, encodedOT.Length, charEnc.MaxValue);
+                    GetTrashAlert(atName, atOT, encodedName.Length, encodedOT.Length, max);
                 return (trashedName, trashedOT, alert);
             }
 

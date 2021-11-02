@@ -1,10 +1,12 @@
 ﻿using Newtonsoft.Json.Linq;
+using pkuManager.Common;
 using pkuManager.pku;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Text;
 
 namespace pkuManager.Utilities
 {
@@ -298,5 +300,139 @@ namespace pkuManager.Utilities
         /// <returns>The index number of the <paramref name="pku"/> in <paramref name="format"/>.</returns>
         public static int? GetSpeciesIndex(pkuObject pku, string format, bool ignoreCasting = false)
             => Registry.SPECIES_DEX.ReadSpeciesDex<int?>(pku, ignoreCasting, "Indices", format);
+
+
+        /* ------------------------------------
+         * Character Encoding Methods
+         * ------------------------------------
+        */
+        public static class CharEncoding<T> where T: struct
+        {
+            private static bool IsLangDependent(string format)
+                => Registry.FORMAT_DEX.ReadDataDex<bool?>(format, "Character Encoding", "Language Dependent") is true;
+
+            private static T GetTerminator(string format, Language? language = null)
+                => GetCodepoint('\u0000', format, language).Value;
+
+            /// <summary>
+            /// Searches for the codepoint associated with the given char.
+            /// </summary>
+            /// <param name="c">The character to search.</param>
+            /// <param name="format">The format being encoded to.</param>
+            /// <param name="language">The language to search. Assumed to exist in this <paramref name="format"/>.</param>
+            /// <returns>The codepoint that <paramref name="c"/> maps to, or null if none is found.</returns>
+            private static T? GetCodepoint(char c, string format, Language? language = null)
+            {
+                string langStr = IsLangDependent(format) ? language.ToFormattedString() : "All";
+                return Registry.FORMAT_DEX.SearchDataDex(c, format, "Character Encoding", langStr, "$x").CastTo<T?>(); //should be byte/ushort
+            }
+
+            /// <summary>
+            /// Searches for the <see langword="char"/> associated with the given <paramref name="codepoint"/>.
+            /// </summary>
+            /// <param name="codepoint">The codepoint to search.</param>
+            /// <param name="format">The format being encoded to.</param>
+            /// <param name="language">The language to search. Assumed to exist in this <paramref name="format"/>.</param>
+            /// <returns>The <see langword="char"/> that <paramref name="codepoint"/> maps to,
+            ///          or null if none is found.</returns>
+            private static char? GetChar(T codepoint, string format, Language? language = null)
+            {
+                string langStr = IsLangDependent(format) ? language.ToFormattedString() : "All";
+                return Registry.FORMAT_DEX.ReadDataDex<char?>(format, "Character Encoding", langStr, codepoint.ToString());
+            }
+
+            /// <summary>
+            /// Encodes a given string, ending with the terminator
+            /// if the maximum length is not reached. Padded with 0s.<br/>
+            /// </summary>
+            /// <param name="str">The string to be encoded.</param>
+            /// <param name="maxLength">The desired length of the encoded string.</param>
+            /// <param name="format">The format being encoded to.</param>
+            /// <param name="language">The language to encode <paramref name="str"/>, if <paramref name="format"/>
+            ///                        is language dependent. Null otherwise.</param>
+            /// <returns>The encoded form of <paramref name="str"/>.</returns>
+            public static (T[] encodedStr, bool truncated, bool hasInvalidChars)
+                Encode(string str, int maxLength, string format, Language? language = null)
+            {
+                bool truncated = false, hasInvalidChars = false;
+                T[] encodedStr = new T[maxLength];
+
+                //Encode string
+                int successfulChars = 0;
+                while (str?.Length > 0 && successfulChars < maxLength)
+                {
+                    T? encodedChar = GetCodepoint(str[0], format, language); //get next character
+                    str = str[1..]; //chop off current character
+
+                    //if character invalid
+                    if (encodedChar is null)
+                    {
+                        hasInvalidChars = true;
+                        continue;
+                    }
+
+                    //else character not invalid
+                    encodedStr[successfulChars] = encodedChar.Value;
+                    successfulChars++;
+
+                    //stop encoding when limit reached
+                    if (successfulChars >= maxLength)
+                        break;
+                }
+
+                //Deal with terminator
+                if (successfulChars < maxLength)
+                    encodedStr[successfulChars] = GetTerminator(format, language); //terminator
+                return (encodedStr, truncated, hasInvalidChars);
+            }
+
+            /// <summary>
+            /// Decodes a given encoded string, stopping at the first instance of the terminator.<br/>
+            /// If an invalid language is passed, an exception will be thrown.
+            /// </summary>
+            /// <param name="encodedStr">A string encoded with this character encoding.</param>
+            /// <param name="format">The format being decoded from.</param>
+            /// <param name="language">The language <paramref name="encodedStr"/> was encoded with, if <paramref name="format"/>
+            ///                        is language dependent. Null otherwise.</param>
+            /// <returns>The string decoded from <paramref name="encodedStr"/>.</returns>
+            public static string Decode(T[] encodedStr, string format, Language? language = null)
+            {
+                StringBuilder sb = new();
+                foreach (T e in encodedStr)
+                {
+                    if (e.Equals(GetTerminator(format, language)))
+                        break;
+                    char? c = GetChar(e, format, language);
+                    if (c is not null)
+                        sb.Append(c.Value);
+                }
+                return sb.ToString();
+            }
+
+            /// <summary>
+            /// Overlays the given <paramref name="encodedStr"/> over the given <paramref name="trash"/> array.
+            /// </summary>
+            /// <param name="encodedStr">An encoded string.</param>
+            /// <param name="trash">The trash bytes to be applied to <paramref name="encodedStr"/>.</param>
+            /// <param name="format">The format being decoded from.</param>
+            /// <param name="language">The language <paramref name="encodedStr"/> was encoded with, if <paramref name="format"/>
+            ///                        is language dependent. Null otherwise.</param>
+            /// <returns>The encoded string 'trashed' with the given trash bytes.</returns>
+            public static T[] Trash(T[] encodedStr, ushort[] trash, string format, Language? language = null)
+            {
+                //cast ushort trash to generic T
+                T[] trashedStr = Array.ConvertAll(trash.Clone() as ushort[],
+                    x => (T)Convert.ChangeType(x, typeof(T)));
+
+                trashedStr = trashedStr[0..encodedStr.Length];
+                for (int i = 0; i < encodedStr.Length; i++)
+                {
+                    trashedStr[i] = encodedStr[i];
+                    if (encodedStr[i].Equals(GetTerminator(format, language)))
+                        break;
+                }
+                return trashedStr;
+            }
+        }
     }
 }

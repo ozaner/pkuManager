@@ -37,5 +37,6 @@ namespace pkuManager
         public static readonly JObject ABILITY_DEX = DexUtil.GetMasterDatadex($"{MASTER_DEX_BASE}AbilityDex.json");
         public static readonly JObject MOVE_DEX = DexUtil.GetMasterDatadex($"{MASTER_DEX_BASE}MoveDex.json");
         public static readonly JObject ITEM_DEX = DexUtil.GetMasterDatadex($"{MASTER_DEX_BASE}ItemDex.json");
+        public static readonly JObject FORMAT_DEX = DexUtil.GetMasterDatadex($"{MASTER_DEX_BASE}FormatDex.json");
     }
 }

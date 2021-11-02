@@ -139,9 +139,6 @@
   <data name="pc2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\pc2.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="pk3CharEncoding" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\gen3\pk3\pk3charencoding.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
   <data name="selection" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\sprites\selection.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>

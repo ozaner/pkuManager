@@ -1,4 +1,6 @@
-﻿namespace pkuManager.Formats.Fields
+﻿using pkuManager.Utilities;
+
+namespace pkuManager.Formats.Fields
 {
     public class BasicField<T> : IFormatField<T>
     {
@@ -34,7 +36,7 @@
         public T MinValue { get; }
 
         public NumericField()
-            => (MinValue, MaxValue) = INumeric<T>.GetDefaultExtrema();
+            => (MinValue, MaxValue) = (DataUtil.GetMinValue<T>(), DataUtil.GetMaxValue<T>());
         public NumericField(T max) : base()
             => MaxValue = max;
         public NumericField(T max, T min)
@@ -47,7 +49,7 @@
         public T MinValue { get; }
 
         public NumericArray()
-            => (MinValue, MaxValue) = INumeric<T>.GetDefaultExtrema();
+            => (MinValue, MaxValue) = (DataUtil.GetMinValue<T>(), DataUtil.GetMaxValue<T>());
         public NumericArray(T max) : base()
             => MaxValue = max;
         public NumericArray(T max, T min)

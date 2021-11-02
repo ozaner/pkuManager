@@ -17,7 +17,7 @@ namespace pkuManager.Formats.Fields
             TypeSize = ByteArrayManipulator.GetByteSize<T>(); //also checks if T is valid
             BAM = bam;
             ByteIndex = byteIndex;
-            (MinValue, MaxValue) = INumericField<T>.Caster(0, (1L << GetBitCount()) - 1);
+            (MinValue, MaxValue) = (0.CastTo<T>(), ((1L << GetBitCount()) - 1).CastTo<T>()); //doesn't work for ulong...
         }
 
         protected abstract int GetBitCount();

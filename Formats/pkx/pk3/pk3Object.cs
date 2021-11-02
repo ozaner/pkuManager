@@ -338,32 +338,6 @@ namespace pkuManager.Formats.pkx.pk3
             Common.Language.Spanish
         };
 
-        protected static readonly JObject PK3_CHARACTER_ENCODING_DATA = DataUtil.GetJson("pk3CharEncoding");
-        protected static readonly Dictionary<byte, char> INTERNATIONAL_CHARSET = PK3_CHARACTER_ENCODING_DATA["International"].ToObject<Dictionary<byte, char>>();
-        protected static readonly Dictionary<byte, char> GERMAN_CHARSET = DataUtil.GetCombinedJson(new JObject[]
-        {
-            (JObject)PK3_CHARACTER_ENCODING_DATA["International"],
-            (JObject)PK3_CHARACTER_ENCODING_DATA["German"]
-        }).ToObject<Dictionary<byte, char>>();
-        protected static readonly Dictionary<byte, char> FRENCH_CHARSET = DataUtil.GetCombinedJson(new JObject[]
-        {
-            (JObject)PK3_CHARACTER_ENCODING_DATA["International"],
-            (JObject)PK3_CHARACTER_ENCODING_DATA["French"]
-        }).ToObject<Dictionary<byte, char>>();
-        protected static readonly Dictionary<byte, char> JAPANESE_CHARSET = PK3_CHARACTER_ENCODING_DATA["Japanese"].ToObject<Dictionary<byte, char>>();
-
-        /// <summary>
-        /// The language dependent, 1-byte character encoding used by .pk3.
-        /// </summary>
-        internal static readonly CharacterEncoding<byte> CHARACTER_ENCODING = new(0xFF,
-            (Common.Language.Japanese, JAPANESE_CHARSET),
-            (Common.Language.German, GERMAN_CHARSET),
-            (Common.Language.French, FRENCH_CHARSET),
-            (Common.Language.English, INTERNATIONAL_CHARSET),
-            (Common.Language.Italian, INTERNATIONAL_CHARSET),
-            (Common.Language.Spanish, INTERNATIONAL_CHARSET)
-        );
-
         /// <summary>
         /// The maximum number of characters in a .pk3 nickname.<br/>
         /// Note that while the JPN games only display the first 5 of these, they are all stored under the hood.

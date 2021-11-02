@@ -390,6 +390,65 @@ namespace pkuManager.Utilities
         /// <param name="obj">An object to be casted.</param>
         /// <returns><paramref name="obj"/> casted as type <typeparamref name="T"/>.</returns>
         public static T CastTo<T>(this object obj)
-            => (T)Convert.ChangeType(obj, typeof(T));
+        {
+            var t = typeof(T);
+
+            //nullable check
+            if (t.IsGenericType && t.GetGenericTypeDefinition().Equals(typeof(Nullable<>)))
+            {
+                if (obj is null) //if its a null nullable, return null
+                    return default;
+
+                t = Nullable.GetUnderlyingType(t); //if not then just act like its not nullable.
+            }
+            
+            return (T)Convert.ChangeType(obj, t);
+        }
+
+        // returns the maximum value of the given numeric type
+        public static T GetMaxValue<T>()
+        {
+            object maxValue = Type.GetTypeCode(typeof(T)) switch
+            {
+                TypeCode.Byte => byte.MaxValue,
+                TypeCode.Char => char.MaxValue,
+                TypeCode.SByte => sbyte.MaxValue,
+                TypeCode.Int16 => short.MaxValue,
+                TypeCode.Int32 => int.MaxValue,
+                TypeCode.Int64 => long.MaxValue,
+                TypeCode.UInt16 => ushort.MaxValue,
+                TypeCode.UInt32 => uint.MaxValue,
+                TypeCode.UInt64 => ulong.MaxValue,
+                TypeCode.Single => float.MaxValue,
+                TypeCode.Double => double.MaxValue,
+                TypeCode.Decimal => decimal.MaxValue,
+                TypeCode.DateTime => DateTime.MaxValue,
+                _ => default(T), //don't know/not numeric
+            };
+            return (T)maxValue;
+        }
+
+        // returns the minimum value of the given numeric type
+        public static T GetMinValue<T>()
+        {
+            object maxValue = Type.GetTypeCode(typeof(T)) switch
+            {
+                TypeCode.Byte => byte.MinValue,
+                TypeCode.Char => char.MinValue,
+                TypeCode.SByte => sbyte.MinValue,
+                TypeCode.Int16 => short.MinValue,
+                TypeCode.Int32 => int.MinValue,
+                TypeCode.Int64 => long.MinValue,
+                TypeCode.UInt16 => ushort.MinValue,
+                TypeCode.UInt32 => uint.MinValue,
+                TypeCode.UInt64 => ulong.MinValue,
+                TypeCode.Single => float.MinValue,
+                TypeCode.Double => double.MinValue,
+                TypeCode.Decimal => decimal.MinValue,
+                TypeCode.DateTime => DateTime.MinValue,
+                _ => default(T), //don't know/not numeric
+            };
+            return (T)maxValue;
+        }
     }
 }
