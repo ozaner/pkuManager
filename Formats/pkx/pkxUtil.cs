@@ -19,16 +19,6 @@ namespace pkuManager.Formats.pkx
     public static class pkxUtil
     {
         /* ------------------------------------
-         * Datadexes
-         * ------------------------------------
-        */
-        /// <summary>
-        /// Datadex containing data on official games, their game IDs, and their generation.
-        /// </summary>
-        public static readonly JObject GAME_DATA = DataUtil.GetJson("gameData");
-
-
-        /* ------------------------------------
          * Default Values
          * ------------------------------------
         */
@@ -103,14 +93,6 @@ namespace pkuManager.Formats.pkx
         ///          Null if there is no match.</returns>
         public static string GetSpeciesName(int dex)
             => Registry.SPECIES_DEX.SearchDataDex<int?>(dex, "$x", "National Dex");
-
-        /// <summary>
-        /// Gets the game ID and generation of the given <paramref name="game"/>.
-        /// </summary>
-        /// <param name="game">A game name (e.g. "Diamond").</param>
-        /// <returns>A 2-tuple of the game ID, and its generation. Null if doesn't have one.</returns>
-        public static (int?, int?) GetGameIDAndGen(string game) =>
-            (GAME_DATA.ReadDataDex<int?>(game, "Game ID"), GAME_DATA.ReadDataDex<int?>(game, "Generation"));
 
         /// <summary>
         /// Returns the gender of a Pokémon with the given <paramref name="pid"/> as determined by Gens 3-5. 
@@ -1079,35 +1061,34 @@ namespace pkuManager.Formats.pkx
             public static (uint, Alert) ProcessTID(pkuObject pku)
                 => ProcessNumericTag(pku.Game_Info?.TID, GetTIDAlert, false, 4294967295, 0, 0);
 
+            //For processing origin games in main series games.
             public static (int gameID, string game, Alert alert) ProcessOriginGame(pkuObject pku, int gen)
             {
-                bool triedOfficialOriginGame = false;
-
-                (int? id, int? genIntroduced) = GetGameIDAndGen(pku.Game_Info?.Origin_Game); //try origin game
-
-                if (id is null) //origin game unspecified/didn't work
+                (bool ms, int? gamegen, int? id, string game) helper(string game)
                 {
-                    (id, genIntroduced) = GetGameIDAndGen(pku.Game_Info?.Official_Origin_Game); //try official origin game
-                    triedOfficialOriginGame = true;
+                    bool ms = DexUtil.ReadGameDex<bool?>(game, "Main Series") is true;
+                    int? gamegen = DexUtil.ReadGameDex<int?>(game, "Generation");
+                    int? id = DexUtil.ReadGameDex<int?>(game, "Game ID");
+                    return (ms, gamegen, id, game);
                 }
 
-                // Future games don't exist in past generations
-                if (genIntroduced > gen)
-                    id = null;
+                // if both unspecified
+                if (pku.Game_Info?.Origin_Game is null && pku.Game_Info?.Official_Origin_Game is null) 
+                    return (0, null, GetOriginGameAlert(AlertType.UNSPECIFIED));
 
-                string game;
-                if (id is null) //neither game worked
-                    game = null;
-                else //one game worked
-                    game = triedOfficialOriginGame ? pku.Game_Info?.Official_Origin_Game : pku.Game_Info?.Origin_Game;
+                // at least one specified
+                (bool ms, int? gamegen, int? id, string game) = helper(pku.Game_Info?.Origin_Game);
+                if(!ms) //origin game failed, try official origin game
+                    (ms, gamegen, id, game) = helper(pku.Game_Info?.Official_Origin_Game);
 
-                Alert alert = null;
-                if (pku.Game_Info?.Origin_Game is null && pku.Game_Info?.Official_Origin_Game is null) //no origin game specified
-                    alert = GetOriginGameAlert(AlertType.UNSPECIFIED);
-                else if (id is null) //origin game specified, just not valid in this gen
-                    alert = GetOriginGameAlert(AlertType.INVALID, pku.Game_Info?.Origin_Game, pku.Game_Info?.Official_Origin_Game);
+                // if both are not main series or are in future gens
+                if (!ms || gamegen > gen)
+                    return (0, null, GetOriginGameAlert(AlertType.INVALID, pku.Game_Info?.Origin_Game, pku.Game_Info?.Official_Origin_Game));
 
-                return (id ?? 0, game, alert); //default gameID is None (0)
+                if (id is null)
+                    throw new Exception("pkuData Error: A Game marked as \"Main Series\" does not have a \"Game ID\".");
+
+                return (id.Value, game, null); //no alert
             }
 
             public static (Language, Alert) ProcessLanguage(pkuObject pku, List<Language> validLanguages)

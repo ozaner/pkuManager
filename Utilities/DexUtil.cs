@@ -157,6 +157,34 @@ namespace pkuManager.Utilities
 
 
         /* ------------------------------------
+         * GameDex Methods
+         * ------------------------------------
+        */
+        /// <summary>
+        /// Like <see cref="ReadDataDex{T}(JObject, string[])"/> acting on a virtual GameDex.<br/>
+        /// Searches all "[Format]"/"Games" tags for the given <paramref name="keys"/> (which should start with a game name).
+        /// </summary>
+        /// <inheritdoc cref="ReadDataDex{T}(JObject, string[])"/>
+        public static T ReadGameDex<T>(params string[] keys)
+        {
+            List<string> temp = new(keys);
+            temp.Insert(0, ""); //dummy format
+            temp.Insert(1, "Games");
+            string[] new_keys = temp.ToArray();
+
+            //search each format for this game and keys
+            foreach (var kvp in Registry.FORMAT_DEX)
+            {
+                new_keys[0] = kvp.Key; //format name
+                var res = Registry.FORMAT_DEX.ReadDataDex<T>(new_keys);
+                if (res is not null)
+                    return res;
+            }
+            return default;
+        }
+
+
+        /* ------------------------------------
          * SpeciesDex Methods
          * ------------------------------------
         */
