@@ -346,7 +346,7 @@ namespace pkuManager.pku
         {
             JObject a = JObject.FromObject(pkuA);
             JObject b = JObject.FromObject(pkuB);
-            var (p, e) = Deserialize(DataUtil.GetCombinedJson(a, b).ToString());
+            var (p, e) = Deserialize(DataUtil.CombineJson(false, a, b).ToString());
             if (e is not null)
                 throw new ArgumentException($"The merged pku isn't valid: {e}");
             return p;

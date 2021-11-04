@@ -17,12 +17,12 @@ namespace pkuManager.Utilities
         // JSON Methods
         // -----------------------
         /// <summary>
-        /// Merges a collection of JObjects.
+        /// Combines a collection of JObjects into a new JObject.
         /// </summary>
         /// <param name="mergeArrays">Whether or not to merge or replace array values.</param>
         /// <param name="jobjs">The JObjects to be merged, with later entires overwriting previous ones.</param>
-        /// <returns>A JObject that is a combination of all the <paramref name="jobjs"/>. Null if it is null/empty</returns>
-        public static JObject GetCombinedJson(bool mergeArrays, params JObject[] jobjs)
+        /// <returns>A <b>new</b> JObject that is a combination of all the <paramref name="jobjs"/>. Null if it is null/empty</returns>
+        public static JObject CombineJson(bool mergeArrays, params JObject[] jobjs)
         {
             if (jobjs?.Length is not > 0)
                 return null;
@@ -32,15 +32,12 @@ namespace pkuManager.Utilities
                 MergeArrayHandling = mergeArrays ? MergeArrayHandling.Union : MergeArrayHandling.Replace
             };
 
-            JObject combined = (JObject)jobjs[0].DeepClone();
-            foreach (JObject s in jobjs.Skip(1))
+            JObject combined = new();
+            foreach (JObject s in jobjs)
                 combined.Merge(s, jms);
 
             return combined;
         }
-
-        /// <inheritdoc cref="GetCombinedJson(bool, JObject[])"/>
-        public static JObject GetCombinedJson(params JObject[] jobjs) => GetCombinedJson(false, jobjs);
 
         /// <summary>
         /// Recursively prunes a <see cref="JToken"/> of all its null properties.
@@ -323,6 +320,18 @@ namespace pkuManager.Utilities
         // -----------------------
         // Misc. Methods
         // -----------------------
+        /// <summary>
+        /// Shows a message box with the given <paramref name="title"/> and
+        /// <paramref name="message"/>, then terminates the application.
+        /// </summary>
+        /// <param name="title">The title of the message box.</param>
+        /// <param name="message">The message of the message box.</param>
+        public static void TerminateProgram(string title, string message)
+        {
+            MessageBox.Show(message, title);
+            Environment.Exit(1);
+        }
+
         /// <summary>
         /// Opens a dialog window to obtain some string input from the user.
         /// </summary>

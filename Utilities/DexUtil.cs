@@ -16,6 +16,14 @@ namespace pkuManager.Utilities
          * Generic DataDex Methods
          * ------------------------------------
         */
+        //Array merging JsonMergeSettings.
+        private static readonly JsonMergeSettings JMS = new() { MergeArrayHandling = MergeArrayHandling.Union };
+
+        private const string DataDexFailureTitle = "DataDex Read Failure";
+        private const string DataDexFailureMessage = "Failed to read one or more datadexes, terminating pkuManager.\n\n" +
+                                                     "Are you sure you're connected to the internet?\n" +
+                                                     "pkuManager requires an internet connection.";
+
         /// <summary>
         /// Compiles a master datadex from the given <paramref name="url"/>.
         /// </summary>
@@ -36,16 +44,18 @@ namespace pkuManager.Utilities
                     {
                         //Download datadex.json
                         JObject datadexJSON = JObject.Parse(client.DownloadString((string)kvp.Value));
-                        masterDatadex = DataUtil.GetCombinedJson(true, masterDatadex, datadexJSON);
+                        masterDatadex.Merge(datadexJSON, JMS);
                     }
                     catch
                     {
+                        DataUtil.TerminateProgram(DataDexFailureTitle, DataDexFailureMessage);
                         Debug.WriteLine($"Failed to read {kvp.Key} datadex...");
                     }
                 }
             }
             catch
             {
+                DataUtil.TerminateProgram(DataDexFailureTitle, DataDexFailureMessage);
                 Debug.WriteLine("Failed to read a master datadex...");
             }
             return masterDatadex;
