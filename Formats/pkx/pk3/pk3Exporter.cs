@@ -182,7 +182,7 @@ namespace pkuManager.Formats.pkx.pk3
         [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessOriginGame))]
         protected virtual void ProcessMetLocation()
         {
-            var (location, alert) = pkxUtil.ExportTags.ProcessMetLocation(pku, checkedGameName, (g, l) => pk3Object.EncodeMetLocation(g, l), pk3Object.GetDefaultLocationName(checkedGameName));
+            var (location, alert) = pkxUtil.ExportTags.ProcessMetLocation(pku, checkedGameName);
             Data.Met_Location.Set((byte)location);
             Warnings.Add(alert);
         }

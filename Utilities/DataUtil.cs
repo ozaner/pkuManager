@@ -17,14 +17,6 @@ namespace pkuManager.Utilities
         // JSON Methods
         // -----------------------
         /// <summary>
-        /// Loads JSON files from <see cref="Properties.Resources"/>.
-        /// </summary>
-        /// <param name="filename">The filename of the desired JSON (sans the ".json").</param>
-        /// <returns>A <see cref="JObject"/> representation of the specified JSON file.</returns>
-        public static JObject GetJson(string filename)
-            => JObject.Parse(Properties.Resources.ResourceManager.GetString(filename));
-
-        /// <summary>
         /// Merges a collection of JObjects.
         /// </summary>
         /// <param name="mergeArrays">Whether or not to merge or replace array values.</param>

@@ -160,6 +160,12 @@ namespace pkuManager.Utilities
          * GameDex Methods
          * ------------------------------------
         */
+        private static IEnumerable<List<string>> GetAllFormatGames()
+        {
+            foreach (var kvp in Registry.FORMAT_DEX)
+                yield return new() { kvp.Key, "Games" };
+        }
+
         /// <summary>
         /// Like <see cref="ReadDataDex{T}(JObject, string[])"/> acting on a virtual GameDex.<br/>
         /// Searches all "[Format]"/"Games" tags for the given <paramref name="keys"/> (which should start with a game name).
@@ -167,20 +173,33 @@ namespace pkuManager.Utilities
         /// <inheritdoc cref="ReadDataDex{T}(JObject, string[])"/>
         public static T ReadGameDex<T>(params string[] keys)
         {
-            List<string> temp = new(keys);
-            temp.Insert(0, ""); //dummy format
-            temp.Insert(1, "Games");
-            string[] new_keys = temp.ToArray();
-
-            //search each format for this game and keys
-            foreach (var kvp in Registry.FORMAT_DEX)
+            var formats = GetAllFormatGames();
+            foreach (var game_keys in formats)
             {
-                new_keys[0] = kvp.Key; //format name
-                var res = Registry.FORMAT_DEX.ReadDataDex<T>(new_keys);
+                game_keys.AddRange(keys);
+                T res = Registry.FORMAT_DEX.ReadDataDex<T>(game_keys.ToArray());
                 if (res is not null)
                     return res;
             }
             return default;
+        }
+
+        /// <summary>
+        /// Like <see cref="SearchDataDex{T}(JObject, T, string[])"/> acting on a virtual GameDex.<br/>
+        /// Searches all "[Format]"/"Games" tags for the "$x" in the given <paramref name="keys"/> (which should start with a game name).
+        /// </summary>
+        /// <inheritdoc cref="SearchDataDex{T}(JObject, T, string[])"/>
+        public static string SearchGameDex<T>(T value, params string[] keys)
+        {
+            var formats = GetAllFormatGames();
+            foreach (var game_keys in formats)
+            {
+                game_keys.AddRange(keys);
+                string res = Registry.FORMAT_DEX.SearchDataDex<T>(value, game_keys.ToArray());
+                if (res is not null)
+                    return res;
+            }
+            return null;
         }
 
 

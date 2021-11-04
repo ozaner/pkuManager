@@ -121,9 +121,6 @@
   <data name="checkedOut" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\sprites\checkedout.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="gen3Locations" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\gen3\gen3locations.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
   <data name="grassbox" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\sprites\grassbox.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>

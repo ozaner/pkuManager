@@ -1113,18 +1113,18 @@ namespace pkuManager.Formats.pkx
                 => ProcessEnumTag(pku.Catch_Info?.Ball, pku.Catch_Info?.Ball.ToEnum<Ball>(),
                     GetBallAlert, false, DEFAULT_BALL, (x) => x <= maxBall);
 
-            public static (int, Alert) ProcessMetLocation(pkuObject pku, string checkedGameName,
-                Func<string, string, int?> GetLocationID, string defaultLocation)
+            public static (int, Alert) ProcessMetLocation(pkuObject pku, string checkedGameName)
             {
                 checkedGameName = pku.Catch_Info?.Met_Game_Override ?? checkedGameName; //override game for met location
-                int? locID = GetLocationID(checkedGameName, pku.Catch_Info?.Met_Location); //attempted location ID
-
+                bool succ = int.TryParse(DexUtil.SearchGameDex(pku.Catch_Info?.Met_Location, checkedGameName, "Locations", "$x"), out int temp);
+                int? locID = succ ? temp : null;
+                string defaultLoc = DexUtil.ReadGameDex<string>(checkedGameName, "Locations", "0") ?? "None";
                 return pku.Catch_Info?.Met_Location switch
                 {
-                    null => (0, GetMetLocationAlert(AlertType.UNSPECIFIED, defaultLocation)),
+                    null => (0, GetMetLocationAlert(AlertType.UNSPECIFIED, defaultLoc)),
                     _ => locID switch
                     {
-                        null => (0, GetMetLocationAlert(AlertType.INVALID, defaultLocation, pku.Catch_Info.Met_Location)),
+                        null => (0, GetMetLocationAlert(AlertType.INVALID, defaultLoc, pku.Catch_Info.Met_Location)),
                         _ => (locID.Value, null)
                     }
                 };

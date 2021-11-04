@@ -3,7 +3,6 @@ using pkuManager.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 using System;
-using Newtonsoft.Json.Linq;
 using pkuManager.Formats.Fields;
 
 namespace pkuManager.Formats.pkx.pk3
@@ -348,90 +347,6 @@ namespace pkuManager.Formats.pkx.pk3
         /// The maximum number of characters in a .pk3 OT name.
         /// </summary>
         public const int MAX_OT_CHARS = 7;
-
-
-        /* ------------------------------------
-         * Met Location Encoding
-         * ------------------------------------
-        */
-        protected static readonly JObject PK3_LOCATION_DATA = DataUtil.GetJson("gen3Locations");
-        protected static readonly Dictionary<byte?, string> RS_LOCATION_TABLE = DataUtil.GetCombinedJson(new[]
-        {
-            (JObject)PK3_LOCATION_DATA["Base"],
-            (JObject)PK3_LOCATION_DATA["RS"]
-        }).ToObject<Dictionary<byte?, string>>();
-        protected static readonly Dictionary<byte?, string> FRLG_LOCATION_TABLE = DataUtil.GetCombinedJson(new []
-        {
-            (JObject)PK3_LOCATION_DATA["Base"],
-            (JObject)PK3_LOCATION_DATA["FRLG"]
-        }).ToObject<Dictionary<byte?, string>>();
-        protected static readonly Dictionary<byte?, string> E_LOCATION_TABLE = DataUtil.GetCombinedJson(new []
-        {
-            (JObject)PK3_LOCATION_DATA["Base"],
-            (JObject)PK3_LOCATION_DATA["RS"],
-            (JObject)PK3_LOCATION_DATA["E"]
-        }).ToObject<Dictionary<byte?, string>>();
-        protected static readonly Dictionary<int?, string> COLO_LOCATION_TABLE = DataUtil.GetCombinedJson(new []
-        {
-            (JObject)PK3_LOCATION_DATA["Base"],
-            (JObject)PK3_LOCATION_DATA["Colo"]
-        }).ToObject<Dictionary<int?, string>>();
-        protected static readonly Dictionary<int?, string> XD_LOCATION_TABLE = DataUtil.GetCombinedJson(new []
-{
-            (JObject)PK3_LOCATION_DATA["Base"],
-            (JObject)PK3_LOCATION_DATA["XD"]
-        }).ToObject<Dictionary<int?, string>>();
-
-        /// <summary>
-        /// Gets the default location of the given gen 3 <paramref name="game"/>.
-        /// </summary>
-        /// <param name="game">A gen 3 game.</param>
-        /// <returns>The default location of <paramref name="game"/>.</returns>
-        public static string GetDefaultLocationName(string game) => game?.ToLowerInvariant() switch
-        {
-            "ruby" or "sapphire" => RS_LOCATION_TABLE[0],
-            "emerald" => E_LOCATION_TABLE[0],
-            "xd" => XD_LOCATION_TABLE[0],
-
-            "firered" or "leafgreen" or "colosseum" or _ => null
-        };
-
-        /// <summary>
-        /// Gets the gen 3 ID of the given <paramref name="location"/> for the given <paramref name="game"/>.
-        /// </summary>
-        /// <param name="game">A gen 3 game.</param>
-        /// <param name="location">A location in <paramref name="game"/>.</param>
-        /// <returns>The location ID, or null if the game/location combo is invalid.</returns>
-        public static byte? EncodeMetLocation(string game, string location)
-        {
-            if (location is null)
-                return null;
-
-            // Game must be specified to find a location (i.e. full path of a location is "Game:Location")
-            if (game is null)
-                return null;
-
-            // Get .pk3 Game Location
-            var locationTableGBA = game.ToLowerInvariant() switch
-            {
-                "ruby" or "sapphire" => RS_LOCATION_TABLE,
-                "firered" or "leafgreen" => FRLG_LOCATION_TABLE,
-                "emerald" => E_LOCATION_TABLE,
-                _ => null,//invalid game
-            };
-            if(locationTableGBA is not null)
-                return locationTableGBA?.FirstOrDefault(x => x.Value.ToLowerInvariant() == location.ToLowerInvariant()).Key;
-
-            var locationTableGCN = game.ToLowerInvariant() switch
-            {
-                "colosseum" => COLO_LOCATION_TABLE,
-                "xd" => XD_LOCATION_TABLE,
-                _ => null,//invalid game
-            };
-
-            //GCN locations need to be truncated.
-            return (byte?)locationTableGCN?.FirstOrDefault(x => x.Value.ToLowerInvariant() == location.ToLowerInvariant()).Key;
-        }
 
 
         /* ------------------------------------
