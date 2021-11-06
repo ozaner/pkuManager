@@ -172,7 +172,7 @@ namespace pkuManager.Formats.pkx.pk3
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessOriginGame()
         {
-            var (origingame, gamename, alert) = pkxUtil.ExportTags.ProcessOriginGame(pku, 3);
+            var (origingame, gamename, alert) = pkxUtil.ExportTags.ProcessOriginGame(pku, FormatName);
             Data.Origin_Game.Set((byte)origingame);
             checkedGameName = gamename;
             Warnings.Add(alert);

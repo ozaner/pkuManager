@@ -165,6 +165,39 @@ namespace pkuManager.Utilities
             return Array.Exists(arr, x => x.EqualsCaseInsensitive(format));
         }
 
+        // Common GetIndex code, that allows inner looping of keys (e.g. species combos) and outer looping of formats (e.g. pk3 -> main-series)
+        private static int? GetIndex(this JObject dex, string format, IEnumerable<List<string>> other_keys)
+        {
+            //get chain of indices to be searched.
+            List<string> indexChain = new() { format };
+            string[] indexParents = Registry.FORMAT_DEX.ReadDataDex<string[]>(format, "Parent Indices");
+            if (indexParents is not null)
+                indexChain.AddRange(indexParents);
+
+            foreach (string link in indexChain)
+            {
+                foreach (var keys in other_keys)
+                {
+                    List<string> temp = new(keys) { "Indices", link };
+                    int? index = dex.ReadDataDex<int?>(temp.ToArray());
+                    if (index is not null)
+                        return index;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the index number of whatever <paramref name="keys"/> points to for the <paramref name="format"/>.<br/>
+        /// If format fails, tries the format's "Parent Indices".
+        /// </summary>
+        /// <param name="dex">A datadex.</param>
+        /// <param name="format">A storage format.</param>
+        /// <param name="keys">The path of the object in <paramref name="dex"/>.</param>
+        /// <returns>Whether or not the object at the given location exists in the given format.</returns>
+        public static int? GetIndex(this JObject dex, string format, params string[] keys)
+            => dex.GetIndex(format, new List<List<string>>() { keys.ToList() });
+
 
         /* ------------------------------------
          * GameDex Methods
@@ -210,6 +243,41 @@ namespace pkuManager.Utilities
                     return res;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Like <see cref="ExistsIn(JObject, string, string[])"/> acting on a virtual GameDex.<br/>
+        /// <param name="game">The game to check for existence in <paramref name="format"/>.</param>
+        /// </summary>
+        /// <inheritdoc cref="ExistsIn(JObject, string, string[])"/>
+        public static bool GameExistsIn(string game, string format)
+        {
+            var formats = GetAllFormatGames();
+            foreach (var game_keys in formats)
+            {
+                game_keys.Add(game);
+                if (Registry.FORMAT_DEX.ExistsIn(format, game_keys.ToArray()))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Like <see cref="GetIndex(JObject, string, string[])"/> acting on a virtual GameDex.<br/>
+        /// <param name="game">The game to get the index of in <paramref name="format"/>.</param>
+        /// </summary>
+        /// <inheritdoc cref="GetIndex(JObject, string, string[])"/>
+        public static int? GetGameIndex(string game, string format)
+        {
+            IEnumerable<List<string>> helper()
+            {
+                foreach (var formats in GetAllFormatGames())
+                {
+                    formats.Add(game);
+                    yield return formats;
+                }
+            }
+            return Registry.FORMAT_DEX.GetIndex(format, helper());
         }
 
 
@@ -292,6 +360,30 @@ namespace pkuManager.Utilities
         public static string GetSearchableForm(this pkuObject pku)
             => pku.Forms?.Length is not > 0 ? GetDefaultForm(pku.Species) : DataUtil.JoinLexical(pku.Forms);
 
+        // Iterates through all key prefixes of species/form/appearances. Used to search through the SpeciesDex. 
+        private static IEnumerable<List<string>> GetSearchablePKUCombos(this JObject dex, pkuObject pku, bool ignoreCasting)
+        {
+            List<string> helper(string form, string appearance)
+            {
+                List<string> keys = new() { pku.Species, "Forms", form };
+                if (appearance is not null)
+                {
+                    keys.Add("Appearance");
+                    keys.Add(appearance);
+                }
+                return keys;
+            }
+
+            List<string> forms = ignoreCasting ? new() { pku.GetSearchableForm() } : pku.GetCastableForms();
+            var apps = GetSearchableAppearances(pku);
+
+            foreach (string form in forms)
+                foreach (string app in apps)
+                    yield return helper(form, app);
+            
+            yield return new() { pku.Species }; //all forms/appearnces failed, try base species.
+        }
+
         /// <summary>
         /// Like <see cref="ReadDataDex{T}(JObject, string[])"/> but searches through the<br/>
         /// appearances, form(s), then species level of a species entry with the given keys.
@@ -302,33 +394,15 @@ namespace pkuManager.Utilities
         /// <inheritdoc cref="ReadDataDex{T}(JObject, string[])"/>
         public static T ReadSpeciesDex<T>(this JObject dex, pkuObject pku, bool ignoreCasting, params string[] keys)
         {
-            T helper(string form, string appearance)
+            var combos = dex.GetSearchablePKUCombos(pku, ignoreCasting);
+            foreach (var combo in combos)
             {
-                List<string> sp_keys = new() { pku.Species, "Forms", form };
-                if (appearance is not null)
-                {
-                    sp_keys.Add("Appearance");
-                    sp_keys.Add(appearance);
-                }
-                sp_keys.AddRange(keys);
-                return dex.ReadDataDex<T>(sp_keys.ToArray());
+                combo.AddRange(keys);
+                T obj = dex.ReadDataDex<T>(combo.ToArray());
+                if (obj is not null)
+                    return obj;
             }
-
-            List<string> forms = ignoreCasting ? new() { pku.GetSearchableForm() } : pku.GetCastableForms();
-            var apps = GetSearchableAppearances(pku);
-
-            foreach (string form in forms)
-            {
-                foreach (string app in apps)
-                {
-                    T obj = helper(form, app);
-                    if (obj is not null)
-                        return obj; //match found
-                }
-            }
-
-            //nothing found in a form/appearance. try species level
-            return dex.ReadDataDex<T>(keys.Prepend(pku.Species).ToArray());
+            return default;
         }
 
         /// <summary>
@@ -341,10 +415,12 @@ namespace pkuManager.Utilities
         /// <returns>Whether or not the given pku's species/form exists in the given format.</returns>
         public static bool SpeciesExistsIn(this pkuObject pku, string format, bool ignoreCasting = false)
         {
-            string[] arr = Registry.SPECIES_DEX.ReadSpeciesDex<string[]>(pku, ignoreCasting, "Exists in");
-            if (arr is null)
-                return false;
-            return Array.Exists(arr, x => x.EqualsCaseInsensitive(format));
+            var combos = Registry.SPECIES_DEX.GetSearchablePKUCombos(pku, ignoreCasting);
+            foreach (var combo in combos)
+                if (Registry.SPECIES_DEX.ExistsIn(format, combo.ToArray()))
+                    return true;
+            
+            return false;
         }
 
         /// <summary>
@@ -356,7 +432,7 @@ namespace pkuManager.Utilities
         /// <param name="ignoreCasting">Whether or not to ignore the other forms pku can be casted to.</param>
         /// <returns>The index number of the <paramref name="pku"/> in <paramref name="format"/>.</returns>
         public static int? GetSpeciesIndex(pkuObject pku, string format, bool ignoreCasting = false)
-            => Registry.SPECIES_DEX.ReadSpeciesDex<int?>(pku, ignoreCasting, "Indices", format);
+            => Registry.SPECIES_DEX.GetIndex(format, Registry.SPECIES_DEX.GetSearchablePKUCombos(pku, ignoreCasting));
 
 
         /* ------------------------------------

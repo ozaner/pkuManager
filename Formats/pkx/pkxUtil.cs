@@ -70,7 +70,7 @@ namespace pkuManager.Formats.pkx
         /// <returns>The national dex # of the given <paramref name="species"/>,
         ///          or <see langword="null"/> if it doesn't have one.</returns>
         public static int? GetNationalDex(string species)
-            => Registry.SPECIES_DEX.ReadDataDex<int?>(species, "National Dex");
+            => Registry.SPECIES_DEX.ReadDataDex<int?>(species, "Indices", "main-series");
 
         /// <summary>
         /// Does the same as <see cref="GetNationalDex(string)"/> but with the<br/>
@@ -92,7 +92,7 @@ namespace pkuManager.Formats.pkx
         /// <returns>The English name of the species with the <paramref name="dex"/> #.
         ///          Null if there is no match.</returns>
         public static string GetSpeciesName(int dex)
-            => Registry.SPECIES_DEX.SearchDataDex<int?>(dex, "$x", "National Dex");
+            => Registry.SPECIES_DEX.SearchDataDex<int?>(dex, "$x", "Indices", "main-series");
 
         /// <summary>
         /// Returns the gender of a Pokémon with the given <paramref name="pid"/> as determined by Gens 3-5. 
@@ -1062,14 +1062,13 @@ namespace pkuManager.Formats.pkx
                 => ProcessNumericTag(pku.Game_Info?.TID, GetTIDAlert, false, 4294967295, 0, 0);
 
             //For processing origin games in main series games.
-            public static (int gameID, string game, Alert alert) ProcessOriginGame(pkuObject pku, int gen)
+            public static (int gameID, string game, Alert alert) ProcessOriginGame(pkuObject pku, string format)
             {
-                (bool ms, int? gamegen, int? id, string game) helper(string game)
+                (int? id, string game) helper(string game)
                 {
-                    bool ms = DexUtil.ReadGameDex<bool?>(game, "Main Series") is true;
-                    int? gamegen = DexUtil.ReadGameDex<int?>(game, "Generation");
-                    int? id = DexUtil.ReadGameDex<int?>(game, "Game ID");
-                    return (ms, gamegen, id, game);
+                    if (DexUtil.GameExistsIn(game, format))
+                        return (DexUtil.GetGameIndex(game, format), game);
+                    return (null, game);
                 }
 
                 // if both unspecified
@@ -1077,16 +1076,13 @@ namespace pkuManager.Formats.pkx
                     return (0, null, GetOriginGameAlert(AlertType.UNSPECIFIED));
 
                 // at least one specified
-                (bool ms, int? gamegen, int? id, string game) = helper(pku.Game_Info?.Origin_Game);
-                if(!ms) //origin game failed, try official origin game
-                    (ms, gamegen, id, game) = helper(pku.Game_Info?.Official_Origin_Game);
+                (int? id, string game) = helper(pku.Game_Info?.Origin_Game);
+                if(id is null) //origin game failed, try official origin game
+                    (id, game) = helper(pku.Game_Info?.Official_Origin_Game);
 
-                // if both are not main series or are in future gens
-                if (!ms || gamegen > gen)
-                    return (0, null, GetOriginGameAlert(AlertType.INVALID, pku.Game_Info?.Origin_Game, pku.Game_Info?.Official_Origin_Game));
-
+                // if both have no id in this format
                 if (id is null)
-                    throw new Exception("pkuData Error: A Game marked as \"Main Series\" does not have a \"Game ID\".");
+                    return (0, null, GetOriginGameAlert(AlertType.INVALID, pku.Game_Info?.Origin_Game, pku.Game_Info?.Official_Origin_Game));
 
                 return (id.Value, game, null); //no alert
             }
