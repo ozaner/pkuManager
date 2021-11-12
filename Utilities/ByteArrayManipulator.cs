@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace pkuManager.Utilities
 {
@@ -65,162 +66,197 @@ namespace pkuManager.Utilities
 
 
         /* ------------------------------------
-         * Reading Methods
+         * Reading Methods - Single Value
          * ------------------------------------
         */
         /// <summary>
         /// Reads an unsigned value from the byte array.
         /// </summary>
         /// <param name="byteIndex">The index of the value.</param>
-        /// <param name="byteLength">The length of the value in bytes. Must be a value from 0-4.</param>
+        /// <param name="byteLength">The length of the value in bytes.</param>
         /// <returns>The <paramref name="byteLength"/> unsigned value at <paramref name="byteIndex"/>.</returns>
-        private uint GetInt(int byteIndex, int byteLength)
+        public BigInteger Get(int byteIndex, int byteLength)
         {
-            uint powerOfTwo(int n) => (uint)1 << n;
-            uint sum = 0;
+            BigInteger sum = 0;
             for (int i = 0; i < byteLength; i++)
-                sum += ByteArray[byteIndex + i] * powerOfTwo(8 * (BigEndian ? (byteLength - 1 - i) : i));
+                sum += ByteArray[byteIndex + i] * BigInteger.Pow(2, 8 * (BigEndian ? (byteLength - 1 - i) : i));
 
             return sum;
         }
 
         /// <summary>
-        /// Reads a bit level-value stored within an unsigned integer from the byte array.
+        /// Reads a bit level-value stored from the byte array.
         /// </summary>
-        /// <param name="byteIndex">The index of the unsigned integer the value is stored in.</param>
-        /// <param name="bitIndex">The index of the value's first bit relative to <paramref name="byteIndex"/>.</param>
+        /// <param name="byteIndex">The index of the first byte the value is stored in.</param>
+        /// <param name="bitIndex">The index of the value's first bit relative
+        ///                        to <paramref name="byteIndex"/>.</param>
         /// <param name="bitLength">The length of the value in bits.</param>
         /// <returns>A <paramref name="bitLength"/> unsigned value starting
         ///          <paramref name="bitIndex"/> bits after <paramref name="byteIndex"/>.</returns>
-        private uint GetInt(int byteIndex, int bitIndex, int bitLength)
+        public BigInteger Get(int byteIndex, int bitIndex, int bitLength)
         {
-            if (bitIndex is < 0 or > 32)
-                throw new ArgumentException($"{nameof(bitIndex)} must be a value from 0-32.", nameof(bitIndex));
-
-            if (bitIndex + bitLength is < 0 or > 32)
-                throw new ArgumentException($"{nameof(bitIndex)} + {nameof(bitLength)} must be anything from 0-32.", nameof(bitLength));
-
-            uint sum = 0;
+            BigInteger sum = 0;
             for (int i = 0; i < bitLength; i++)
             {
                 int by = byteIndex + (bitIndex + i) / 8;
                 int bi = (bitIndex + i) % 8;
-                sum += (uint)((ByteArray[by] >> bi) & 1) << i;
+                sum += (BigInteger)((ByteArray[by] >> bi) & 1) << i;
             }
             return sum;
         }
 
-        /// <summary>
-        /// Reads a value of type <typeparamref name="T"/> from
-        /// <see cref="ByteArray"/> at the <paramref name="byteIndex"/>.
-        /// </summary>
-        /// <typeparam name="T">A supported BAM value type.</typeparam>
-        /// <param name="byteIndex">The index of the value.</param>
-        /// <returns>The value at the given location.</returns>
-        public T Get<T>(int byteIndex)
-            => (T)Convert.ChangeType(GetInt(byteIndex, GetByteSize<T>()), typeof(T));
+        /// <typeparam name="T">The type of the value to read/be returned.</typeparam>
+        /// <inheritdoc cref="Get(int, int)"/>
+        public T Get<T>(int byteIndex) where T : struct
+            => Get(byteIndex, GetByteSize<T>()).BigIntegerTo<T>();
 
-        /// <summary>
-        /// Reads a value of type <typeparamref name="T"/> from <see cref="ByteArray"/>
-        /// starting at the <paramref name="bitIndex"/> of <paramref name="byteIndex"/>.
-        /// </summary>
-        /// <param name="byteIndex">The index of the <typeparamref name="T"/> the value is stored in.</param>
-        /// <param name="bitIndex">The index of the value's first bit relative to <paramref name="byteIndex"/>.</param>
-        /// <param name="bitLength">The length of the value in bits.</param>
-        /// <inheritdoc cref="Get{T}(int)"/>
-        public T Get<T>(int byteIndex, int bitIndex, int bitLength = 1)
-            => (T)Convert.ChangeType(GetInt(byteIndex, bitIndex, bitLength), typeof(T));
-
-        /// <summary>
-        /// Reads an array of values of type <typeparamref name="T"/> from <see cref="ByteArray"/>.
-        /// </summary>
-        /// <typeparam name="T">A supported BAM value type.</typeparam>
-        /// <param name="byteIndex">The index of the first entry in the array.</param>
-        /// <param name="length">The number of entries in the array.</param>
-        /// <returns>An array of values starting at the given location.</returns>
-        public T[] GetArray<T>(int byteIndex, int length)
-        {
-            T[] arr = new T[length];
-            for (int i = 0; i < length; i++)
-                arr[i] = Get<T>(byteIndex + i * GetByteSize<T>());
-            return arr;
-        }
+        /// <typeparam name="T">The type of the value to be returned.</typeparam>
+        /// <inheritdoc cref="Get(int, int, int)"/>
+        public T Get<T>(int byteIndex, int bitIndex, int bitLength) where T : struct
+            => Get(byteIndex, bitIndex, bitLength).BigIntegerTo<T>();
 
 
         /* ------------------------------------
-         * Writing Methods
+         * Reading Methods - Arrays
          * ------------------------------------
         */
         /// <summary>
-        /// Writes an unsigned integer to the byte array.<br/>
+        /// Reads an array of unsigned values from the byte array.
+        /// </summary>
+        /// <param name="byteIndex">The index of the first value.</param>
+        /// <param name="byteLength">The length of each value in bytes.</param>
+        /// <param name="length">The number of elements in the array.</param>
+        /// <returns>An array of values read from the byte array, specified by the parameters.</returns>
+        public BigInteger[] GetArray(int byteIndex, int byteLength, int length)
+        {
+            BigInteger[] arr = new BigInteger[length];
+            for (int i = 0; i < length; i++)
+                arr[i] = Get(byteIndex + i * byteLength, byteLength);
+            return arr;
+        }
+
+        /// <summary>
+        /// Reads an array of bit level-values stored in the byte array.
+        /// </summary>
+        /// <param name="byteIndex">The index of the first byte the first value is stored in.</param>
+        /// <param name="bitIndex">The index of the first value's first bit relative
+        ///                        to <paramref name="byteIndex"/>.</param>
+        /// <param name="bitLength">The length of each value in bits.</param>
+        /// <inheritdoc cref="GetArray(int, int, int)"/>
+        public BigInteger[] GetArray(int byteIndex, int bitIndex, int bitLength, int length)
+        {
+            BigInteger[] arr = new BigInteger[length];
+            for (int i = 0; i < length; i++)
+                arr[i] = Get(byteIndex, bitIndex + i * bitLength, bitLength);
+            return arr;
+        }
+
+        /// <typeparam name="T">The type of the values to read/be returned.</typeparam>
+        /// <inheritdoc cref="GetArray(int, int, int)"/>
+        public T[] GetArray<T>(int byteIndex, int length) where T : struct
+            => Array.ConvertAll(GetArray(byteIndex, GetByteSize<T>(), length), x => x.BigIntegerTo<T>());
+
+        /// <typeparam name="T">The type of the values to be returned.</typeparam>
+        /// <inheritdoc cref="GetArray(int, int, int, int)"/>
+        public T[] GetArray<T>(int byteIndex, int bitIndex, int bitLength, int length) where T : struct
+            => Array.ConvertAll(GetArray(byteIndex, bitIndex, bitLength, length), x => x.BigIntegerTo<T>());
+
+
+        /* ------------------------------------
+         * Writing Methods - Single Value
+         * ------------------------------------
+        */
+        /// <summary>
+        /// Writes an unsigned value to the byte array.<br/>
         /// Note that overflow will be truncated.
         /// </summary>
-        /// <param name="value">The value to be set.</param>
-        /// <param name="byteIndex">The index the value will be stored in.</param>
-        /// <param name="byteLength">The length of the value in bytes. Must be a value from 1-4.</param>
-        private void SetInt(uint value, int byteIndex, int byteLength)
+        /// <param name="value">The value to be set, must be positive.</param>
+        /// <param name="byteIndex">The index of the value.</param>
+        /// <param name="byteLength">The length of the value in bytes.</param>
+        public void Set(BigInteger value, int byteIndex, int byteLength)
         {
             for (int i = 0; i < byteLength; i++)
                 ByteArray[byteIndex + i] = (byte)((value >> (8 * (BigEndian ? (byteLength - 1 - i) : i))) & 0xFF);
         }
 
         /// <summary>
-        /// Writes a bit level-value stored within an unsigned integer to the byte array.
+        /// Writes an array of bit level-values to the byte array.<br/>
+        /// Note that overflow will be truncated.
         /// </summary>
-        /// <param name="byteIndex">The index of the unsigned integer the value is stored in.</param>
-        /// <param name="bitIndex">The index of the value's first bit relative to <paramref name="byteIndex"/>.</param>
-        /// <param name="bitLength">The length of the value in bits. Must be a value from 0-32.</param>
-        private void SetInt(uint value, int byteIndex, int bitIndex, int bitLength)
+        /// <param name="value">The value to be set, must be positive.</param>
+        /// <param name="byteIndex">The index of the first byte the value is stored in.</param>
+        /// <param name="bitIndex">The index of the first value's first bit relative
+        ///                        to <paramref name="byteIndex"/>.</param>
+        /// <param name="bitLength">The length of each value in bits.</param>
+        public void Set(BigInteger value, int byteIndex, int bitIndex, int bitLength)
         {
-            if (bitIndex is < 0 or > 32)
-                throw new ArgumentException($"{nameof(bitIndex)} must be a value from 0-32.", nameof(bitIndex));
-
-            if (bitIndex + bitLength is < 0 or > 32)
-                throw new ArgumentException($"{nameof(bitIndex)} + {nameof(bitLength)} must be anything from 0-32.", nameof(bitLength));
-
             for (int i = 0; i < bitLength; i++)
             {
                 int by = byteIndex + (bitIndex + i) / 8;
                 int bi = (bitIndex + i) % 8;
-                uint temp = ByteArray[by];
+                BigInteger temp = ByteArray[by];
                 temp.SetBits(value.GetBits(i, 1), bi, 1);
                 ByteArray[by] = (byte)temp;
             }
         }
 
-        /// <summary>
-        /// Writes a value of type <typeparamref name="T"/> to
-        /// <see cref="ByteArray"/> at the <paramref name="byteIndex"/>.
-        /// </summary>
         /// <typeparam name="T">A supported BAM value type.</typeparam>
-        /// <param name="value">The value to set.</param>
-        /// <param name="byteIndex">The index the value is to be stored in.</param>
-        public void Set<T>(T value, int byteIndex)
-            => SetInt((uint)Convert.ChangeType(value, typeof(uint)), byteIndex, GetByteSize<T>());
+        /// <inheritdoc cref="Set(BigInteger, int, int)"/>
+        public void Set<T>(T value, int byteIndex) where T : struct
+            => Set(value.ToBigInteger(), byteIndex, GetByteSize<T>());
 
-        /// <summary>
-        /// Writes a value of type <typeparamref name="T"/> to <see cref="ByteArray"/>
-        /// starting at the <paramref name="bitIndex"/> of <paramref name="byteIndex"/>.
-        /// </summary>
-        public void Set<T>(T value, int byteIndex, int bitIndex, int bitLength = 1)
-            => SetInt((uint)Convert.ChangeType(value, typeof(uint)), byteIndex, bitIndex, bitLength);
-
-        /// <summary>
-        /// Writes an array of values of type <typeparamref name="T"/> to
-        /// <see cref="ByteArray"/> starting at <paramref name="byteIndex"/>.
-        /// </summary>
         /// <typeparam name="T">A supported BAM value type.</typeparam>
-        /// <param name="values">The values to be set.</param>
-        /// <param name="byteIndex">The index of the first entry in the array.</param>
-        /// <param name="length">The number of entries in the array.</param>
-        public void SetArray<T>(T[] values, int byteIndex, int length)
+        /// <inheritdoc cref="Set(BigInteger, int, int, int)"/>
+        public void Set<T>(T value, int byteIndex, int bitIndex, int bitLength) where T : struct
+            => Set(value.ToBigInteger(), byteIndex, bitIndex, bitLength);
+
+
+        /* ------------------------------------
+         * Writing Methods - Arrays
+         * ------------------------------------
+        */
+        /// <summary>
+        /// Writes an array of unsigned values to the byte array.<br/>
+        /// Note that overflow will be truncated.
+        /// </summary>
+        /// <param name="values">The array of values to be set, must all be positive.</param>
+        /// <param name="byteIndex">The index of the value.</param>
+        /// <param name="byteLength">The length of the value in bytes.</param>
+        /// <param name="length">The number of elements in the array.
+        ///                      Uses the length of <paramref name="values"/> by default.</param>
+        public void SetArray(int byteIndex, int byteLength, BigInteger[] values, int? length = null)
         {
+            if (length is null)
+                length = values.Length;
             for (int i = 0; i < length; i++)
-                Set(values[i], byteIndex + i * GetByteSize<T>());
+                Set(values[i], byteIndex + i * byteLength, byteLength);
         }
 
-        /// <inheritdoc cref="SetArray{T}(T[], int, int)"/>
-        public void SetArray<T>(T[] values, int byteIndex)
-            => SetArray(values, byteIndex, values.Length);
+        /// <summary>
+        /// Writes an array of bit level-values to the byte array.<br/>
+        /// Note that overflow will be truncated.
+        /// </summary>
+        /// <param name="byteIndex">The index of the first byte the first value is stored in.</param>
+        /// <param name="bitIndex">The index of the first value's first bit relative
+        ///                        to <paramref name="byteIndex"/>.</param>
+        /// <param name="bitLength">The length of each value in bits.</param>
+        /// <inheritdoc cref="SetArray(int, int, BigInteger[], int?)"/>
+        public void SetArray(int byteIndex, int bitIndex, int bitLength, BigInteger[] values, int? length = null)
+        {
+            if (length is null)
+                length = values.Length;
+            for (int i = 0; i < length; i++)
+                Set(values[i], byteIndex, bitIndex + i * bitLength, bitLength);
+        }
+
+        /// <typeparam name="T">A supported BAM value type.</typeparam>
+        /// <inheritdoc cref="SetArray(int, int, BigInteger[], int?)"/>
+        public void SetArray<T>(int byteIndex, T[] values, int? length = null) where T : struct
+            => SetArray(byteIndex, GetByteSize<T>(), Array.ConvertAll(values, x => x.ToBigInteger()), length);
+
+        /// <typeparam name="T">A supported BAM value type.</typeparam>
+        /// <inheritdoc cref="SetArray(int, int, int, BigInteger[], int?)"/>
+        public void SetArray<T>(int byteIndex, int bitIndex, int bitLength, T[] values, int? length = null) where T : struct
+            => SetArray(byteIndex, bitIndex, bitLength, Array.ConvertAll(values, x => x.ToBigInteger()), length);
     }
 }

@@ -7,6 +7,7 @@ using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text.RegularExpressions;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.pkx.pkxUtil.ExportAlerts;
@@ -724,87 +725,71 @@ namespace pkuManager.Formats.pkx
                     return null;
             }
 
-            private const string BYTE_OVERRIDE_REGEXP = "^(.*) ([0-9]*)(:[0-9]*)?(:[0-9]*)?$";
-
-            private static Action GetOverrideAction<T>(string cmd, T val, ByteArrayManipulator bam)
-            {
-                Match match = Regex.Match(cmd.ToLowerInvariant(), BYTE_OVERRIDE_REGEXP);
-                if (!match.Success)
-                    return null;
-
-                //byteIndex
-                if (!int.TryParse(match.Groups[2].Value, out int byteIndex))
-                    return null;
-
-                int temp;
-
-                //bitIndex
-                int? bitIndex = null;
-                if (match.Groups[3].Value is not "")
-                {
-                    if (int.TryParse(match.Groups[3].Value[1..], out temp))
-                        bitIndex = temp;
-                    else
-                        return null;
-                }
-
-                //bitLength
-                int? bitLength = null;
-                if (match.Groups[4].Value is not "")
-                {
-                    if (int.TryParse(match.Groups[4].Value[1..], out temp))
-                        bitLength = temp;
-                    else
-                        return null;
-                }
-
-                //valid values
-                int size = ByteArrayManipulator.GetByteSize<T>();
-                if (byteIndex + size > bam.Length) return null;
-                if(bitIndex >= size*8) return null;
-                if(bitIndex + bitLength >= size*8) return null;
-
-                if (bitLength is not null)
-                    return () => bam.Set(val, byteIndex, bitIndex.Value, bitLength.Value);
-                else if (bitIndex is not null)
-                    return () => bam.Set(val, byteIndex, bitIndex.Value);
-                else
-                    return () => bam.Set(val, byteIndex);
-            }
-
-            private static Action GetOverrideAction<T>(string cmd, T[] vals, ByteArrayManipulator bam)
-            {
-                Match match = Regex.Match(cmd.ToLowerInvariant(), BYTE_OVERRIDE_REGEXP);
-                if (!match.Success)
-                    return null;
-
-                //byteIndex
-                if (!int.TryParse(match.Groups[2].Value, out int byteIndex))
-                    return null;
-
-                //bitIndex
-                int? length = null;
-                if (match.Groups[3].Value is not "")
-                {
-                    if (int.TryParse(match.Groups[3].Value[1..], out int temp))
-                        length = temp;
-                    else
-                        return null;
-                }
-
-                //valid values
-                int size = ByteArrayManipulator.GetByteSize<T>();
-                if (byteIndex + size > bam.Length) return null;
-                if (byteIndex + (length ?? vals.Length)*size > bam.Length) return null;
-
-                return length is null ?
-                    () => bam.SetArray(vals, byteIndex) :
-                    () => bam.SetArray(vals, byteIndex, length.Value);
-            }
-
             public static (Alert, ErrorResolver<uint>) ApplyByteOverride(pkuObject pku, params ByteArrayManipulator[] bams)
             {
-                List<Action> validIndices = new();
+                const string BYTE_OVERRIDE_REGEXP = "^(.*) ([0-9]*)(:[0-9]*)?(:[0-9]*)?$";
+                static BigInteger? valueChecker(JToken tok, int startByte, int secondValue, int? bitLength, int bamLength)
+                {
+                    BigInteger newVal;
+                    if (tok is JValue val && val.Type is JTokenType.Integer)
+                        newVal = val.ToBigInteger();
+                    else
+                        return null; //invalid value
+
+                    //make sure values won't crash when put into BAM.Set
+                    if (newVal.Sign < 0) return null; //must be nonnegative
+
+                    //stay within bam
+                    bool bitType = bitLength is not null;
+                    if (!bitType && startByte + secondValue > bamLength) return null;
+                    if (bitType && startByte
+                        + (secondValue + bitLength) / 8 //how many bytes is value
+                        + (secondValue + (secondValue + bitLength) % 8) / 8 //account for value spilling out of first byte
+                        > bamLength) return null;
+
+                    return newVal;
+                }
+                static Action getOverrideAction(JToken val, ByteArrayManipulator bam, int startByte, int secondValue, int? bitLength)
+                {
+                    //cast value to an integer
+                    BigInteger newVal;
+                    BigInteger? temp = valueChecker(val, startByte, secondValue, bitLength, bam.Length);
+                    if (temp is null)
+                        return null;
+                    else
+                        newVal = temp.Value;
+
+                    bool bitType = bitLength is not null;
+                    if (bitType)
+                        return () => bam.Set(newVal, startByte, secondValue, bitLength.Value);
+                    else
+                        return () => bam.Set(newVal, startByte, secondValue);
+                }
+                static Action getOverrideActionArray(JArray vals, ByteArrayManipulator bam, int startByte, int secondValue, int? bitLength)
+                {
+                    bool bitType = bitLength is not null;
+
+                    //cast values to integers
+                    BigInteger[] newVals = new BigInteger[vals.Count];
+                    for (int i = 0; i < newVals.Length; i++)
+                    {
+                        BigInteger? temp = bitType ? 
+                            valueChecker(vals[i], startByte, secondValue + i*bitLength.Value, bitLength, bam.Length) :
+                            valueChecker(vals[i], startByte + i*secondValue, secondValue, bitLength, bam.Length);
+
+                        if (temp is null)
+                            return null;
+                        else
+                            newVals[i] = temp.Value;
+                    }
+
+                    if (bitType)
+                        return () => bam.SetArray(startByte, secondValue, bitLength.Value, newVals);
+                    else
+                        return () => bam.SetArray(startByte, secondValue, newVals);
+                }
+                
+                List<Action> validCommands = new();
                 List<string> invalidIndices = new();
                 void singleBam(ByteArrayManipulator bam, Dictionary<string, JToken> bo, string name)
                 {
@@ -812,48 +797,50 @@ namespace pkuManager.Formats.pkx
                     foreach (var kvp in bo)
                     {
                         Match match = Regex.Match(kvp.Key.ToLowerInvariant(), BYTE_OVERRIDE_REGEXP);
-                        string type = match.Groups[1].Value;
-                        bool isArray = false;
-                        if (type.EndsWith("[]"))
+                        string cmdType = match.Groups[1].Value; //command name
+
+                        //startByte
+                        if (!int.TryParse(match.Groups[2].Value, out int startByte))
+                            goto Failed;
+
+                        //second value (startBit or byteLength)
+                        if (!int.TryParse(match.Groups[3].Value[1..], out int secondValue))
+                            goto Failed;
+
+                        //bitLength (if it has one)
+                        int? bitLength = null;
+                        if (match.Groups[4].Value is not "")
                         {
-                            type = type[0..^2];
-                            isArray = true;
+                            if (int.TryParse(match.Groups[4].Value[1..], out int temp))
+                                bitLength = temp;
+                            else
+                                goto Failed;
                         }
 
-                        Action a = null;
-                        try
-                        {
-                            a = isArray switch
-                            {
-                                false => type switch
-                                {
-                                    "bool" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<bool>(), bam),
-                                    "byte" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<byte>(), bam),
-                                    "ushort" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<ushort>(), bam),
-                                    "char" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<char>(), bam),
-                                    "uint" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<uint>(), bam),
-                                    _ => null
-                                },
-                                true => type switch
-                                {
-                                    "bool" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<bool[]>(), bam),
-                                    "byte" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<byte[]>(), bam),
-                                    "ushort" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<ushort[]>(), bam),
-                                    "char" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<char[]>(), bam),
-                                    "uint" => GetOverrideAction(kvp.Key, kvp.Value.ToObject<uint[]>(), bam),
-                                    _ => null
-                                }
-                            };
-                        }
-                        catch { }
+                        //invalid command check
+                        if (!cmdType.EqualsCaseInsensitive("Set") && !cmdType.EqualsCaseInsensitive("Set Array"))
+                            goto Failed;
 
-                        if(a is not null)
-                            validIndices.Add(a);
-                        else
-                            invalidIndices.Add($"{name}: {count}");
+                        Action a = kvp.Value.Type is JTokenType.Array ?
+                            getOverrideActionArray((JArray)kvp.Value, bam, startByte, secondValue, bitLength) :
+                            getOverrideAction(kvp.Value, bam, startByte, secondValue, bitLength);
+
+                        //values invalid
+                        if (a is null)
+                            goto Failed;
+
+                        //command valid
+                        validCommands.Add(a);
                         count++;
+                        continue;
+
+                    Failed:
+                        invalidIndices.Add($"{name}: {count}");
+                        count++;
+                        continue;
                     }
                 }
+
                 if (bams.Length > 0 && pku.Byte_Override?.Main_Data is not null)
                     singleBam(bams[0], pku.Byte_Override.Main_Data, "Main Data");
                 if (bams.Length > 1 && pku.Byte_Override?.A is not null)
@@ -868,9 +855,9 @@ namespace pkuManager.Formats.pkx
                     throw new ArgumentException($"At most, 5 different BAMs should have been passed.", nameof(bams));
 
                 Alert alert = invalidIndices.Any() ? MetaAlerts.GetByteOverrideAlert(invalidIndices) : null;
-                ErrorResolver<uint> er = new(null, new uint[] { 0 }, (_) =>
+                ErrorResolver<uint> er = new(null, new uint[] { 0 }, _ =>
                 {
-                    foreach (Action a in validIndices)
+                    foreach (Action a in validCommands)
                         a.Invoke();
                 });
                 return (alert, er);
@@ -1029,7 +1016,13 @@ namespace pkuManager.Formats.pkx
             public static (T[] trashedName, T[] trashedOT, Alert)
                 ProcessTrash<T>(T[] encodedName, ushort[] nameTrash, T[] encodedOT, ushort[] otTrash, string format, Language? checkedLang = null) where T : struct
             {
-                ushort max = DataUtil.GetMaxValue<T>().CastTo<ushort>();
+                ushort max = Type.GetTypeCode(typeof(T)) switch
+                {
+                    TypeCode.Byte => ushort.MaxValue,
+                    TypeCode.UInt16 => ushort.MaxValue,
+                    TypeCode.Char => char.MaxValue,
+                    _ => throw new ArgumentException("only 1-byte, 2-byte, and unicode encodings are supported.", nameof(T))
+                };
                 (T[], AlertType) helper(T[] encodedStr, ushort[] trash)
                 {
                     AlertType at = AlertType.NONE;

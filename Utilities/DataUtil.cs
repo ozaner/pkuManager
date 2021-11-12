@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Windows.Forms;
 
 namespace pkuManager.Utilities
@@ -214,37 +215,98 @@ namespace pkuManager.Utilities
         }
 
         /// <summary>
-        /// Reads a contigous region of bits in a uint.
+        /// Reads a contigous region of bits in an unsigned integer.
         /// </summary>
-        /// <param name="original">The uint whose bits are to be read.</param>
-        /// <param name="start">The index of the first bit to be read. A value from 0-31.</param>
-        /// <param name="length">The length of the bit string to read.
-        ///                      This value + <paramref name="start"/> must be less than 32.</param>
+        /// <param name="value">The value whose bits are to be read. Must be nonnegative.</param>
+        /// <param name="start">The index of the first bit to be read.</param>
+        /// <param name="length">The length of the bit string to read.</param>
         /// <returns>The value the specified region of bits represents.</returns>
-        public static uint GetBits(this uint original, int start, int length)
+        public static BigInteger GetBits(this BigInteger value, int start, int length)
         {
-            if (length + start > 32 || start < 0 || start > 32 || length < 0)
-                throw new ArgumentException("start must be between 0-32, length must be positive, length+start be larger than 32.");
+            if (value.Sign < 0)
+                throw new ArgumentOutOfRangeException(nameof(value), "value must be nonnegative.");
+            return (value >> start) & ((BigInteger.One << length) - 1);
+        }
 
-            return (original >> start) & (((uint)1 << length) - 1);
+        /// <inheritdoc cref="GetBits(BigInteger, int, int)"/>
+        public static uint GetBits(this uint value, int start, int length)
+            => (uint)GetBits((BigInteger)value, start, length);
+
+        /// <summary>
+        /// Sets a region of bits in an unsigned integer to a given value.
+        /// </summary>
+        /// <param name="value">The uint whose bits are to be set.</param>
+        /// <param name="new_value">The value to be set.</param>
+        /// <param name="start">The index of the first bit to be set.</param>
+        /// <param name="length">The length of the bit string to set.</param>
+        public static void SetBits(this ref BigInteger value, BigInteger new_value, int start, int length)
+        {
+            if (value.Sign < 0)
+                throw new ArgumentOutOfRangeException(nameof(value), "value must be nonnegative.");
+            else if (new_value.Sign < 0)
+                throw new ArgumentOutOfRangeException(nameof(new_value), "new_value must be nonnegative.");
+            BigInteger mask = ((BigInteger.One << length) - 1) << start;
+            value = (value & ~mask) + (new_value.GetBits(0, length) << start);
+        }
+
+        /// <inheritdoc cref="SetBits(ref BigInteger, BigInteger, int, int)"/>
+        public static void SetBits(this ref uint value, uint new_value, int start, int length)
+        {
+            BigInteger temp = value;
+            SetBits(ref temp, new_value, start, length);
+            value = (uint)temp;
         }
 
         /// <summary>
-        /// Sets a region of bits in a uint to a given value.
+        /// Casts an integral value type, or JValue, to a BigInteger.
         /// </summary>
-        /// <param name="original">The uint whose bits are to be set.</param>
-        /// <param name="val">The value to be set.</param>
-        /// <param name="start">The index of the first bit to be set. A value from 0-31.</param>
-        /// <param name="length">The length of the bit string to set.
-        ///                      This value + <paramref name="start"/> must be less than 32.</param>
-        public static void SetBits(this ref uint original, uint val, int start, int length)
+        /// <param name="val">The value to cast.</param>
+        /// <returns><paramref name="val"/> as a BigInteger.</returns>
+        /// <exception cref="ArgumentException"><paramref name="val"/> is not a supported integral type.</exception>
+        public static BigInteger ToBigInteger(this ValueType val) => val switch
         {
-            if (start > 32 || start < 0 || length + start > 32 || length < 0)
-                throw new ArgumentException("start must be between 0-32 inclusive, length must be positive, length must be between 1-32.");
+            bool x => x ? BigInteger.One : BigInteger.Zero,
+            char x => x,
+            byte x => x,
+            sbyte x => x,
+            ushort x => x,
+            short x => x,
+            uint x => x,
+            int x => x,
+            ulong x => x,
+            long x => x,
+            _ => throw new ArgumentException("obj must be an integral valuetype, or JValue.", nameof(val)),
+        };
 
-            uint mask = (((uint)1 << length) - 1) << start;
-            original = (original & ~mask) + (val.GetBits(0, length) << start);
-        }
+        /// <inheritdoc cref="ToBigInteger(ValueType)"/>
+        public static BigInteger ToBigInteger(this JValue val) => Type.GetTypeCode(val.Value.GetType()) switch
+        {
+            TypeCode.UInt64 => (ulong)val.Value,
+            TypeCode.Int64 => (long)val.Value,
+            _ => throw new ArgumentException("obj must be an integral valuetype, or JValue.", nameof(val))
+        };
+
+        /// <summary>
+        /// Casts a BigInteger to an integral value type <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">An integral value type.</typeparam>
+        /// <param name="val">The value to cast.</param>
+        /// <returns><paramref name="val"/> casted to type <typeparamref name="T"/>.</returns>
+        /// <exception cref="ArgumentException"><typeparamref name="T"/> is not a supported value type.</exception>
+        public static T BigIntegerTo<T>(this BigInteger val) where T : struct => Type.GetTypeCode(typeof(T)) switch
+        {
+            TypeCode.Boolean => (T)(object)(val > BigInteger.Zero), // positive is true
+            TypeCode.Char => (T)(object)(char)val,
+            TypeCode.Byte => (T)(object)(byte)val,
+            TypeCode.SByte => (T)(object)(sbyte)val,
+            TypeCode.UInt16 => (T)(object)(ushort)val,
+            TypeCode.Int16 => (T)(object)(short)val,
+            TypeCode.UInt32 => (T)(object)(uint)val,
+            TypeCode.Int32 => (T)(object)(int)val,
+            TypeCode.UInt64 => (T)(object)(ulong)val,
+            TypeCode.Int64 => (T)(object)(long)val,
+            _ => throw new ArgumentException("T must be a integral valuetype.", nameof(T)),
+        };
 
 
         // -----------------------
@@ -406,50 +468,28 @@ namespace pkuManager.Utilities
             return (T)Convert.ChangeType(obj, t);
         }
 
-        // returns the maximum value of the given numeric type
-        public static T GetMaxValue<T>()
-        {
-            object maxValue = Type.GetTypeCode(typeof(T)) switch
-            {
-                TypeCode.Byte => byte.MaxValue,
-                TypeCode.Char => char.MaxValue,
-                TypeCode.SByte => sbyte.MaxValue,
-                TypeCode.Int16 => short.MaxValue,
-                TypeCode.Int32 => int.MaxValue,
-                TypeCode.Int64 => long.MaxValue,
-                TypeCode.UInt16 => ushort.MaxValue,
-                TypeCode.UInt32 => uint.MaxValue,
-                TypeCode.UInt64 => ulong.MaxValue,
-                TypeCode.Single => float.MaxValue,
-                TypeCode.Double => double.MaxValue,
-                TypeCode.Decimal => decimal.MaxValue,
-                TypeCode.DateTime => DateTime.MaxValue,
-                _ => default(T), //don't know/not numeric
-            };
-            return (T)maxValue;
-        }
+        /// <summary>
+        /// Composes two funcs with the appripriate typings.
+        /// </summary>
+        /// <typeparam name="T1">Domain of f1.</typeparam>
+        /// <typeparam name="T2">Codomain of f1/Domain of f2.</typeparam>
+        /// <typeparam name="T3">Codomain of f2.</typeparam>
+        /// <param name="f1">A function from <typeparamref name="T1"/> to <typeparamref name="T2"/>.</param>
+        /// <param name="f2">A function from <typeparamref name="T2"/> to <typeparamref name="T3"/>.</param>
+        /// <returns>The composition of f1 and f2.</returns>
+        public static Func<T1, T3> Compose<T1, T2, T3>(this Func<T1, T2> f1, Func<T2, T3> f2)
+            => x => f2(f1(x));
 
-        // returns the minimum value of the given numeric type
-        public static T GetMinValue<T>()
+        /// <summary>
+        /// Permutates a list with the given pair swaps.
+        /// </summary>
+        /// <typeparam name="T">The type of the list.</typeparam>
+        /// <param name="list">A list implementing IList.</param>
+        /// <param name="perms">A list of indices to swap in list.</param>
+        public static void Permutate<T>(this IList<T> list, params (int, int)[] perms)
         {
-            object maxValue = Type.GetTypeCode(typeof(T)) switch
-            {
-                TypeCode.Byte => byte.MinValue,
-                TypeCode.Char => char.MinValue,
-                TypeCode.SByte => sbyte.MinValue,
-                TypeCode.Int16 => short.MinValue,
-                TypeCode.Int32 => int.MinValue,
-                TypeCode.Int64 => long.MinValue,
-                TypeCode.UInt16 => ushort.MinValue,
-                TypeCode.UInt32 => uint.MinValue,
-                TypeCode.UInt64 => ulong.MinValue,
-                TypeCode.Single => float.MinValue,
-                TypeCode.Double => double.MinValue,
-                TypeCode.Decimal => decimal.MinValue,
-                TypeCode.DateTime => DateTime.MinValue,
-                _ => default(T), //don't know/not numeric
-            };
-            return (T)maxValue;
+            foreach ((int x, int y) in perms)
+                (list[x], list[y]) = (list[y], list[x]);
         }
     }
 }

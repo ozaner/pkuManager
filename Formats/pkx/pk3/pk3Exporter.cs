@@ -160,7 +160,7 @@ namespace pkuManager.Formats.pkx.pk3
                                                     nameof(ProcessNature), nameof(ProcessTID))]
         protected virtual void ProcessPID()
         {
-            var (pids, alert) = pkxUtil.ExportTags.ProcessPID(pku, Data.TID, false, gender, nature, unownForm);
+            var (pids, alert) = pkxUtil.ExportTags.ProcessPID(pku, Data.TID.Get<uint>(), false, gender, nature, unownForm);
             PIDResolver = new ErrorResolver<uint>(alert, pids, x => Data.PID.Set(x));
             if (alert is RadioButtonAlert)
                 Errors.Add(alert);
@@ -194,7 +194,7 @@ namespace pkuManager.Formats.pkx.pk3
             Data.Is_Egg.Set(pku.IsEgg());
 
             //Deal with "Legal Gen 3 eggs"
-            if (pku.IsEgg() && Data.Origin_Game.Get() is not 0)
+            if (pku.IsEgg() && Data.Origin_Game.Get() != 0)
             {
                 Language? lang = DataUtil.ToEnum<Language>(pku.Game_Info?.Language);
                 if (lang is not null && pkxUtil.EGG_NICKNAME[lang.Value] == pku.Nickname)
@@ -256,7 +256,7 @@ namespace pkuManager.Formats.pkx.pk3
             {
                 ushort[] nicknameTrash = tb?.Nickname?.Length > 0 ? tb.Nickname : null;
                 ushort[] otTrash = tb?.OT?.Length > 0 ? tb.OT : null;
-                var (nick, ot, alert) = pkxUtil.ExportTags.ProcessTrash<byte>(Data.Nickname, nicknameTrash, Data.OT, otTrash, FormatName, checkedLang);
+                var (nick, ot, alert) = pkxUtil.ExportTags.ProcessTrash(Data.Nickname.Get<byte>(), nicknameTrash, Data.OT.Get<byte>(), otTrash, FormatName, checkedLang);
                 Data.Nickname.Set(nick);
                 Data.OT.Set(ot);
                 Warnings.Add(alert);
@@ -311,10 +311,7 @@ namespace pkuManager.Formats.pkx.pk3
         protected virtual void ProcessPPUps()
         {
             var (ppups, alert) = pkxUtil.ExportTags.ProcessPPUps(pku, moveIndices);
-            Data.PP_Up_1.Set((byte)ppups[0]);
-            Data.PP_Up_2.Set((byte)ppups[1]);
-            Data.PP_Up_3.Set((byte)ppups[2]);
-            Data.PP_Up_4.Set((byte)ppups[3]);
+            Data.PP_Ups.Set(ppups);
             Warnings.Add(alert);
         }
 
@@ -322,13 +319,13 @@ namespace pkuManager.Formats.pkx.pk3
         [PorterDirective(ProcessingPhase.FirstPass)]
         protected virtual void ProcessPP()
         {
-            ushort[] moves = Data.Moves;
+            ushort[] moves = Data.Moves.Get<ushort>();
             Data.PP.Set(new[]
             {
-                pk3Object.CalculatePP(moves[0], Data.PP_Up_1),
-                pk3Object.CalculatePP(moves[1], Data.PP_Up_2),
-                pk3Object.CalculatePP(moves[2], Data.PP_Up_3),
-                pk3Object.CalculatePP(moves[3], Data.PP_Up_4),
+                pk3Object.CalculatePP(moves[0], Data.PP_Ups.Get<byte>(0)),
+                pk3Object.CalculatePP(moves[1], Data.PP_Ups.Get<byte>(1)),
+                pk3Object.CalculatePP(moves[2], Data.PP_Ups.Get<byte>(2)),
+                pk3Object.CalculatePP(moves[3], Data.PP_Ups.Get<byte>(3)),
             });
         }
 
@@ -346,12 +343,7 @@ namespace pkuManager.Formats.pkx.pk3
         protected virtual void ProcessEVs()
         {
             var (evs, alert) = pkxUtil.ExportTags.ProcessEVs(pku);
-            Data.EV_HP.Set((byte)evs[0]);
-            Data.EV_Attack.Set((byte)evs[1]);
-            Data.EV_Defense.Set((byte)evs[2]);
-            Data.EV_Sp_Attack.Set((byte)evs[3]);
-            Data.EV_Sp_Defense.Set((byte)evs[4]);
-            Data.EV_Speed.Set((byte)evs[5]);
+            Data.EVs.Set(evs);
             Warnings.Add(alert);
         }
 
@@ -360,12 +352,7 @@ namespace pkuManager.Formats.pkx.pk3
         protected virtual void ProcessContestStats()
         {
             var (contest, alert) = pkxUtil.ExportTags.ProcessContest(pku);
-            Data.Cool.Set((byte)contest[0]);
-            Data.Beauty.Set((byte)contest[1]);
-            Data.Cute.Set((byte)contest[2]);
-            Data.Smart.Set((byte)contest[3]);
-            Data.Tough.Set((byte)contest[4]);
-            Data.Sheen.Set((byte)contest[5]);
+            Data.Contest_Stats.Set(contest);
             Warnings.Add(alert);
         }
 
@@ -411,12 +398,7 @@ namespace pkuManager.Formats.pkx.pk3
         protected virtual void ProcessIVs()
         {
             var (ivs, alert) = pkxUtil.ExportTags.ProcessIVs(pku);
-            Data.IV_HP.Set((byte)ivs[0]);
-            Data.IV_Attack.Set((byte)ivs[1]);
-            Data.IV_Defense.Set((byte)ivs[2]);
-            Data.IV_Sp_Attack.Set((byte)ivs[3]);
-            Data.IV_Sp_Defense.Set((byte)ivs[4]);
-            Data.IV_Speed.Set((byte)ivs[5]);
+            Data.IVs.Set(ivs);
             Warnings.Add(alert);
         }
 
