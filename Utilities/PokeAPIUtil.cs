@@ -4,243 +4,217 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace pkuManager.Utilities
+namespace pkuManager.Utilities;
+
+public static class PokeAPIUtil
 {
-    public static class PokeAPIUtil
+    private static readonly PokeApiClient paClient = new(); // PokeAPI Client
+
+    /* ------------------------------------
+     * Wrapped Info Methods
+     * ------------------------------------
+    */
+    public static int? GetItemIndex(string item, int gen)
     {
-        public static readonly PokeApiClient paClient = new PokeApiClient(); // Shared PokeAPI Client
+        if (item is null)
+            return null;
 
-        // ----------
-        // Wrapped Info Methods
-        // ----------
-
-        public static int? GetItemIndex(string item, int gen)
+        string searchItem = item.ToLowerInvariant().Replace(' ', '-'); // lower case and replace spaces with dashes
+        try
         {
-            if (item == null)
-                return null;
-
-            string searchItem = item.ToLowerInvariant().Replace(' ', '-'); // lower case and replace spaces with dashes
-            try
-            {
-                return Task.Run(() => getItemIndexAsync(searchItem, gen)).Result;
-            }
-            catch
-            {
-                return null; //item does not exist in gen (or maybe its formatting doesn't match pokeapi)
-            }
+            return Task.Run(() => getItemIndexAsync(searchItem, gen)).Result;
         }
-
-        public static int? GetAbilityIndex(string ability)
+        catch
         {
-            if (ability == null)
-                return null;
-
-            string searchAbility = ability.ToLowerInvariant().Replace(' ', '-'); // lower case and replace spaces with dashes
-            try
-            {
-                Ability ab = Task.Run(() => getAbilityAsync(searchAbility)).Result;
-                if (!ab.IsMainSeries)
-                    return null; //only main series abilities
-                return ab.Id;
-            }
-            catch
-            {
-                return null; //ability DNE
-            }
+            return null; //item does not exist in gen (or maybe its formatting doesn't match pokeapi)
         }
+    }
 
-        public static string GetAbility(int abilityID)
+    public static int? GetAbilityIndex(string ability)
+    {
+        if (ability is null)
+            return null;
+
+        string searchAbility = ability.ToLowerInvariant().Replace(' ', '-'); // lower case and replace spaces with dashes
+        try
         {
-            try
-            {
-                Ability ab = Task.Run(() => getAbilityAsync(abilityID)).Result;
-                if (!ab.IsMainSeries)
-                    return null; //only main series abilities
-                return ab.Names.Find(x => x.Language.Name == "en").Name;
-            }
-            catch
-            {
-                return null; //ability DNE
-            }
+            Ability ab = Task.Run(() => getAbilityAsync(searchAbility)).Result;
+            if (!ab.IsMainSeries)
+                return null; //only main series abilities
+            return ab.Id;
         }
-
-        //maybe make an overload of this to accommodate custom valid move lists (only mainline example is gen 8).
-        public static int? GetMoveIndex(string move)
+        catch
         {
-            if (move == null)
-                return null;
-
-            string searchMove = move.ToLower().Replace(' ', '-'); // lower case and replace spaces with dashes
-            try
-            {
-                return Task.Run(() => getMoveIndexAsync(searchMove)).Result.Id;
-            }
-            catch
-            {
-                return null; //unofficial move
-            }
+            return null; //ability DNE
         }
+    }
 
-        public static int? GetMoveBasePP(int moveID)
+    public static string GetAbility(int abilityID)
+    {
+        try
         {
-            try
-            {
-                return Task.Run(() => getMoveIndexAsync(moveID)).Result.Pp;
-            }
-            catch
-            {
-                return null; //move does not exist
-            }
+            Ability ab = Task.Run(() => getAbilityAsync(abilityID)).Result;
+            if (!ab.IsMainSeries)
+                return null; //only main series abilities
+            return ab.Names.Find(x => x.Language.Name == "en").Name;
         }
-
-        public static string GetMoveName(int moveID)
+        catch
         {
-            try
-            {
-                Move moveObj = Task.Run(() => getMoveIndexAsync(moveID)).Result;
-                return moveObj.Names.FirstOrDefault(x => x.Language.Name == "en").Name;
-            }
-            catch
-            {
-                return null; //move does not exist
-            }
+            return null; //ability DNE
         }
+    }
 
-        public static string GetSpeciesNameTranslated(int dex, Common.Language lang)
+    //maybe make an overload of this to accommodate custom valid move lists (only mainline example is gen 8).
+    public static int? GetMoveIndex(string move)
+    {
+        if (move is null)
+            return null;
+
+        string searchMove = move.ToLower().Replace(' ', '-'); // lower case and replace spaces with dashes
+        try
         {
-            string langID = lang switch
-            {
-                Common.Language.Japanese => "ja-Hrkt",
-                Common.Language.English => "en",
-                Common.Language.French => "fr",
-                Common.Language.Italian => "it",
-                Common.Language.German => "de",
-                Common.Language.Spanish => "es",
-                Common.Language.Korean => "ko",
-                Common.Language.Chinese_Simplified => "zh-Hans",
-                Common.Language.Chinese_Traditional => "zh-Hant",
-                _ => throw new ArgumentException("GetSpeciesNameTranslated is missing a language...")
-            };
-
-            try
-            {
-                return Task.Run(() => getPokemonSpeciesAsync(dex)).Result.Names.Find(x => x.Language.Name == langID).Name;
-            }
-            catch
-            {
-                return null; //dex # invalid/name doesn't exist in this language...
-            }
+            return Task.Run(() => getMoveIndexAsync(searchMove)).Result.Id;
         }
-
-        /// <summary>
-        /// Returns the minimum EXP the given Pokemon species must have at the given level.
-        /// Makes use of PokeAPI.
-        /// </summary>
-        /// <param name="dex">The national dex # of the desired species. Must be official.</param>
-        /// <param name="level">The level of the species. Must be between 1-100.</param>
-        /// <returns></returns>
-        public static int GetEXPFromLevel(int dex, int level)
+        catch
         {
-            if (level > 100 || level < 1)
-                throw new ArgumentException("Level must be from 1-100 for GetExpFromLevel.");
-
-            PokeApiNet.GrowthRate gr = Task.Run(() => getGrowthRateAsync(dex)).Result;
-
-            return gr.Levels.Find(x => x.Level == level).Experience;
+            return null; //unofficial move
         }
+    }
 
-        public static int GetLevelFromEXP(int dex, int exp)
+    public static int? GetMoveBasePP(int moveID)
+    {
+        try
         {
-            int maxEXP = GetEXPFromLevel(dex, 100);
-            if (exp > maxEXP || exp < 0)
-                throw new ArgumentException("EXP must be from 0-maxEXP for GetLevelFromExp.");
-
-            PokeApiNet.GrowthRate gr = Task.Run(() => PokeAPIUtil.getGrowthRateAsync(dex)).Result;
-
-            if (exp == maxEXP)
-                return 100;
-
-            return gr.Levels.Find(x => exp < x.Experience).Level - 1;
+            return Task.Run(() => getMoveIndexAsync(moveID)).Result.Pp;
         }
-
-        /// <summary>
-        /// Returns the GenderRatio of the species with the given national dex number.
-        /// </summary>
-        /// <param name="dex">The dex number of the species.</param>
-        /// <returns></returns>
-        public static GenderRatio GetGenderRatio(int dex)
+        catch
         {
-            //pokeapi uses percentage species is female in eighths...
-            int gr = Task.Run(() => getPokemonSpeciesAsync(dex)).Result.GenderRate;
-            if (gr == 0)
-                return GenderRatio.All_Male;
-            else if (gr == 8)
-                return GenderRatio.All_Female;
-            else if (gr == 4)
-                return GenderRatio.Male_1_Female_1;
-            else if (gr == 6)
-                return GenderRatio.Male_1_Female_3;
-            else if (gr == 7)
-                return GenderRatio.Male_1_Female_7;
-            else if (gr == 2)
-                return GenderRatio.Male_3_Female_1;
-            else if (gr == 1)
-                return GenderRatio.Male_7_Female_1;
-            else //if (gr == -1)
-                return GenderRatio.All_Genderless;
+            return null; //move does not exist
         }
+    }
 
-        // ----------
-        // API Call Methods
-        // ----------
-
-        public static async Task<PokemonSpecies> getPokemonSpeciesAsync(int dex)
+    public static string GetMoveName(int moveID)
+    {
+        try
         {
-            return await paClient.GetResourceAsync<PokemonSpecies>(dex);
+            Move moveObj = Task.Run(() => getMoveIndexAsync(moveID)).Result;
+            return moveObj.Names.FirstOrDefault(x => x.Language.Name is "en").Name;
         }
-
-        public static async Task<Pokemon> getPokemonAsync(int dex)
+        catch
         {
-            return await paClient.GetResourceAsync<Pokemon>(dex);
+            return null; //move does not exist
         }
+    }
 
-        public static async Task<Move> getMoveIndexAsync(int moveID)
+    public static string GetSpeciesNameTranslated(int dex, Common.Language lang)
+    {
+        string langID = lang switch
         {
-            return await paClient.GetResourceAsync<Move>(moveID);
-        }
+            Common.Language.Japanese => "ja-Hrkt",
+            Common.Language.English => "en",
+            Common.Language.French => "fr",
+            Common.Language.Italian => "it",
+            Common.Language.German => "de",
+            Common.Language.Spanish => "es",
+            Common.Language.Korean => "ko",
+            Common.Language.Chinese_Simplified => "zh-Hans",
+            Common.Language.Chinese_Traditional => "zh-Hant",
+            _ => throw new ArgumentException("GetSpeciesNameTranslated is missing a language...")
+        };
 
-        public static async Task<Move> getMoveIndexAsync(string move)
+        try
         {
-            return await paClient.GetResourceAsync<Move>(move);
+            return Task.Run(() => getPokemonSpeciesAsync(dex)).Result.Names.Find(x => x.Language.Name == langID).Name;
         }
+        catch
+        {
+            return null; //dex # invalid/name doesn't exist in this language...
+        }
+    }
 
-        public static async Task<Ability> getAbilityAsync(string ability)
-        {
-            return await paClient.GetResourceAsync<Ability>(ability);
-        }
+    /// <summary>
+    /// Gets the minimum EXP the given Pokemon species must have at the given level.
+    /// </summary>
+    /// <param name="dex">The national dex # of the desired species. Must be official.</param>
+    /// <param name="level">The level of the species. Must be between 1-100.</param>
+    /// <returns>The minimum EXP a species must have at <paramref name="level"/>.</returns>
+    public static int GetEXPFromLevel(int dex, int level)
+    {
+        if (level is > 100 or < 1)
+            throw new ArgumentException("Level must be from 1-100 for GetExpFromLevel.");
 
-        public static async Task<Ability> getAbilityAsync(int abilityID)
-        {
-            return await paClient.GetResourceAsync<Ability>(abilityID);
-        }
+        PokeApiNet.GrowthRate gr = Task.Run(() => getGrowthRateAsync(dex)).Result;
 
-        public static async Task<PokeApiNet.GrowthRate> getGrowthRateAsync(int dex)
-        {
-            PokemonSpecies species = await paClient.GetResourceAsync<PokemonSpecies>(dex); // assume dex is valid
-            PokeApiNet.GrowthRate gr = await paClient.GetResourceAsync(species.GrowthRate);
-            return gr;
-        }
+        return gr.Levels.Find(x => x.Level == level).Experience;
+    }
 
-        private static async Task<int> getItemIndexAsync(string item, int gen)
+    public static int GetLevelFromEXP(int dex, int exp)
+    {
+        int maxEXP = GetEXPFromLevel(dex, 100);
+        if (exp > maxEXP || exp < 0)
+            throw new ArgumentException("EXP must be from 0-maxEXP for GetLevelFromExp.");
+
+        PokeApiNet.GrowthRate gr = Task.Run(() => getGrowthRateAsync(dex)).Result;
+
+        if (exp == maxEXP)
+            return 100;
+
+        return gr.Levels.Find(x => exp < x.Experience).Level - 1;
+    }
+
+    /// <summary>
+    /// Gets the GenderRatio of the species with the given national <paramref name="dex"/>.
+    /// </summary>
+    /// <param name="dex">The dex number of the species.</param>
+    /// <returns>The GenderRatio of the species with <paramref name="dex"/>.</returns>
+    public static GenderRatio GetGenderRatio(int dex) => Task.Run(() => getPokemonSpeciesAsync(dex)).Result.GenderRate switch
+    {
+        //pokeapi uses percentage species is female in eighths...
+        0 => GenderRatio.All_Male,
+        8 => GenderRatio.All_Female,
+        4 => GenderRatio.Male_1_Female_1,
+        6 => GenderRatio.Male_1_Female_3,
+        7 => GenderRatio.Male_1_Female_7,
+        2 => GenderRatio.Male_3_Female_1,
+        1 => GenderRatio.Male_7_Female_1,
+        _ => GenderRatio.All_Genderless //if (gr == -1)
+    };
+
+
+    /* ------------------------------------
+     * API Call Methods
+     * ------------------------------------
+    */
+    private static async Task<PokemonSpecies> getPokemonSpeciesAsync(int dex)
+        => await paClient.GetResourceAsync<PokemonSpecies>(dex);
+
+    private static async Task<Move> getMoveIndexAsync(int moveID)
+        => await paClient.GetResourceAsync<Move>(moveID);
+
+    private static async Task<Move> getMoveIndexAsync(string move)
+        => await paClient.GetResourceAsync<Move>(move);
+
+    private static async Task<Ability> getAbilityAsync(string ability)
+        => await paClient.GetResourceAsync<Ability>(ability);
+
+    private static async Task<Ability> getAbilityAsync(int abilityID)
+        => await paClient.GetResourceAsync<Ability>(abilityID);
+
+    private static async Task<PokeApiNet.GrowthRate> getGrowthRateAsync(int dex)
+    {
+        PokemonSpecies species = await paClient.GetResourceAsync<PokemonSpecies>(dex); // assume dex is valid
+        return await paClient.GetResourceAsync(species.GrowthRate);
+    }
+
+    private static async Task<int> getItemIndexAsync(string item, int gen)
+    {
+        string genStr = gen switch
         {
-            string genStr = gen switch
-            {
-                3 => "iii",
-                _ => throw new Exception("Method not implemented for this generation")
-            };
-            Item itemResult = await PokeAPIUtil.paClient.GetResourceAsync<Item>(item);
-            GenerationGameIndex ggi = itemResult.GameIndices.Find(x => x.Generation.Name == $"generation-{genStr}");
-            return ggi.GameIndex;
-        }
+            3 => "iii",
+            _ => throw new Exception("Method not implemented for this generation")
+        };
+        Item itemResult = await paClient.GetResourceAsync<Item>(item);
+        GenerationGameIndex ggi = itemResult.GameIndices.Find(x => x.Generation.Name == $"generation-{genStr}");
+        return ggi.GameIndex;
     }
 }

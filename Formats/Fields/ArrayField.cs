@@ -1,27 +1,25 @@
 ﻿using System;
 
-namespace pkuManager.Formats.Fields
+namespace pkuManager.Formats.Fields;
+
+public abstract class ArrayField<T> : Field<T[]>
 {
-    public abstract class ArrayField<T> : Field<T[]>
+    public abstract int Length { get; }
+
+    protected ArrayField(Func<T[], T[]> getter = null, Func<T[], T[]> setter = null) : base(getter, setter) { }
+
+    public T this[int i]
     {
-        public abstract int Length { get; }
+        get => Get(i);
+        set => Set(value, i);
+    }
 
-        protected ArrayField(Func<T[], T[]> getter = null, Func<T[], T[]> setter = null) : base(getter, setter) { }
+    public T Get(int index) => Get()[index];
 
-        public T this[int i]
-        {
-            get => Get(i);
-            set => Set(value, i);
-        }
-
-        public T Get(int index)
-            => Get()[index];
-
-        public void Set(T val, int index)
-        {
-            T[] vals = Get();
-            vals[index] = val;
-            Set(vals);
-        }
+    public void Set(T val, int index)
+    {
+        T[] vals = Get();
+        vals[index] = val;
+        Set(vals);
     }
 }

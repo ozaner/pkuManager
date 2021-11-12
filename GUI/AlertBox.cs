@@ -3,81 +3,80 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace pkuManager.GUI
+namespace pkuManager.GUI;
+
+/// <summary>
+/// A GUI container for basic Alerts. To be used in conjunction with the warningWindow.
+/// </summary>
+public class AlertBox : Panel
 {
-    /// <summary>
-    /// A GUI container for basic Alerts. To be used in conjunction with the warningWindow.
-    /// </summary>
-    public class AlertBox : Panel
+    protected Label titleLabel;
+    protected RichTextBox messageTextbox;
+
+    // Creates a new AlertBox (which is just a pre-formatted Panel)
+    public AlertBox(Alert alert)
     {
-        protected Label titleLabel;
-        protected RichTextBox messageTextbox;
+        titleLabel = new Label();
+        messageTextbox = newRichTextBox(alert.Message);
 
-        // Creates a new AlertBox (which is just a pre-formatted Panel)
-        public AlertBox(Alert alert)
-        {
-            titleLabel = new Label();
-            messageTextbox = newRichTextBox(alert.Message);
+        Controls.Add(titleLabel);
+        Controls.Add(messageTextbox);
 
-            this.Controls.Add(titleLabel);
-            this.Controls.Add(messageTextbox);
+        MinimumSize = new Size(169, 10); //30 height
+        MaximumSize = new Size(169, 300);
+        BorderStyle = BorderStyle.FixedSingle;
+        AutoSize = true;
 
-            this.MinimumSize = new Size(169, 10); //30 height
-            this.MaximumSize = new Size(169, 300);
-            this.BorderStyle = BorderStyle.FixedSingle;
-            this.AutoSize = true;
+        titleLabel.Location = new Point(4, 4);
+        titleLabel.MaximumSize = new Size(155, 15);
+        titleLabel.MinimumSize = new Size(0, 15);
+        titleLabel.Text = alert.Title;
+        titleLabel.Font = new Font(titleLabel.Font, FontStyle.Bold);
+        titleLabel.Width = titleLabel.PreferredWidth;
 
-            titleLabel.Location = new Point(4, 4);
-            titleLabel.MaximumSize = new Size(155, 15);
-            titleLabel.MinimumSize = new Size(0, 15);
-            titleLabel.Text = alert.Title;
-            titleLabel.Font = new Font(titleLabel.Font, FontStyle.Bold);
-            titleLabel.Width = titleLabel.PreferredWidth;
+        messageTextbox.Location = new Point(7, 20);
+    }
 
-            messageTextbox.Location = new Point(7, 20);
-        }
+    // Creates a textbox formatted to look like a warning/error box
+    protected static TextBox newTextBox(string text, int maxwidth = 155, int maxheight = 200)
+    {
+        TextBox tb = new();
+        tb.TextChanged += new(textBox_TextChanged);
+        tb.MaximumSize = new(maxwidth, maxheight);
+        tb.MinimumSize = new(maxwidth, 10);
+        tb.Text = text;
+        tb.Multiline = true;
+        tb.BorderStyle = BorderStyle.None;
+        //tb.TabStop = false;
+        //tb.ReadOnly = true;
 
-        // Creates a textbox formatted to look like a warning/error box
-        private static TextBox newTextBox(string text, int maxwidth = 155, int maxheight = 200)
-        {
-            TextBox tb = new TextBox();
-            tb.TextChanged += new EventHandler(textBox_TextChanged);
-            tb.MaximumSize = new Size(maxwidth, maxheight);
-            tb.MinimumSize = new Size(maxwidth, 10);
-            tb.Text = text;
-            tb.Multiline = true;
-            tb.BorderStyle = BorderStyle.None;
-            //tb.TabStop = false;
-            //tb.ReadOnly = true;
+        return tb;
+    }
 
-            return tb;
-        }
+    // Creates a richtextbox formatted to look like a warning/error box
+    protected static RichTextBox newRichTextBox(string text, int maxwidth = 155, int maxheight = 200)
+    {
+        TextBox test = newTextBox(text, maxwidth, maxheight);
 
-        // Creates a richtextbox formatted to look like a warning/error box
-        protected static RichTextBox newRichTextBox(string text, int maxwidth = 155, int maxheight = 200)
-        {
-            TextBox test = newTextBox(text, maxwidth, maxheight);
+        RichTextBox tb = new();
+        tb.TextChanged += new(textBox_TextChanged);
+        tb.MaximumSize = new(maxwidth, maxheight);
+        tb.MinimumSize = new(maxwidth, 10);
+        tb.Text = text;
+        tb.BorderStyle = BorderStyle.None;
+        tb.TabStop = false;
+        tb.ReadOnly = true;
+        tb.Multiline = true;
+        tb.Size = test.Size;
 
-            RichTextBox tb = new RichTextBox();
-            tb.TextChanged += new EventHandler(textBox_TextChanged);
-            tb.MaximumSize = new Size(maxwidth, maxheight);
-            tb.MinimumSize = new Size(maxwidth, 10);
-            tb.Text = text;
-            tb.BorderStyle = BorderStyle.None;
-            tb.TabStop = false;
-            tb.ReadOnly = true;
-            tb.Multiline = true;
-            tb.Size = test.Size;
+        return tb;
+    }
 
-            return tb;
-        }
-
-        // Event handler for when a textbox (generated by newTextBox) is updated (i.e. resizes to fit new text).
-        protected static void textBox_TextChanged(object sender, EventArgs e)
-        {
-            TextBox tb = (TextBox)sender;
-            Size size = TextRenderer.MeasureText(tb.Text, tb.Font, tb.MaximumSize, TextFormatFlags.WordBreak);
-            tb.Height = size.Height;
-        }
+    // Event handler for when a textbox (generated by newTextBox) is updated (i.e. resizes to fit new text).
+    protected static void textBox_TextChanged(object sender, EventArgs e)
+    {
+        TextBox tb = sender as TextBox;
+        Size size = TextRenderer.MeasureText(tb.Text, tb.Font, tb.MaximumSize, TextFormatFlags.WordBreak);
+        tb.Height = size.Height;
     }
 }

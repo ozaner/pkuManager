@@ -1,120 +1,95 @@
 ﻿using DiscordRPC;
 using System;
-using System.Collections.Generic;
+using System.Linq;
 
-namespace pkuManager
+namespace pkuManager;
+
+public class DiscordPresence
 {
-    public class DiscordPresence
+    private const string DISCORD_APP_ID = "810636398016069653";
+    private static readonly string[] VALID_BALLS = new[]
     {
-        private static List<string> VALID_BALLS = new List<string>()
-        {
-            "pc", //when no pku is selected
-			"beast",
-            "cherish",
-            "dive",
-            "dream",
-            "dusk",
-            "fast",
-            "friend",
-            "great",
-            "heal",
-            "heavy",
-            "level",
-            "love",
-            "lure",
-            "luxury",
-            "master",
-            "moon",
-            "nest",
-            "net",
-            "park",
-            "poke",
-            "premier",
-            "quick",
-            "repeat",
-            "safari",
-            "sport",
-            "timer",
-            "ultra"
-        };
+        "pc", //when no pku is selected
+		"beast",
+        "cherish",
+        "dive",
+        "dream",
+        "dusk",
+        "fast",
+        "friend",
+        "great",
+        "heal",
+        "heavy",
+        "level",
+        "love",
+        "lure",
+        "luxury",
+        "master",
+        "moon",
+        "nest",
+        "net",
+        "park",
+        "poke",
+        "premier",
+        "quick",
+        "repeat",
+        "safari",
+        "sport",
+        "timer",
+        "ultra"
+    };
 
-        DiscordRpcClient client;
-        public string box, nickname, collection;
-
-        private string _ball;
-        public string ball
+    private readonly DiscordRpcClient client;
+    
+    public string Box, Nickname, Collection;
+    private string _ball;
+    public string Ball
+    {
+        set
         {
-            set
+            if (value is "pc") //pc icon
+                _ball = "pc";
+            else if (value?.ToLowerInvariant().EndsWith(" ball") is true)
             {
-                if (value == "pc")
-                    _ball = "pc";
-                else if (value?.Length > 5)
-                {
-                    string temp = value.Substring(0, value.Length - 5).ToLowerInvariant(); //strip " ball" from value
-                    if (VALID_BALLS.Contains(temp))
-                        _ball = temp;
-                    else
-                        _ball = "poke";
-                }
-                else
-                    _ball = "poke";
+                string temp = value[0..^5].ToLowerInvariant(); //strip " ball" from value
+                _ball = VALID_BALLS.Contains(temp) ? temp : "poke";
             }
-            get
-            {
-                return _ball;
-            }
+            else //all other strings
+                _ball = "poke";
         }
-
-        public DiscordPresence()
-        {
-            ball = "pc";
-            client = new DiscordRpcClient("810636398016069653");
-
-            //Set the logger
-            //client.Logger = new ConsoleLogger() { Level = LogLevel.Warning };
-
-            //Subscribe to events
-            //client.OnReady += (sender, e) =>
-            //{
-            //    Debug.WriteLine("Received Ready from user {0}", e.User.Username);
-            //};
-
-            //client.OnPresenceUpdate += (sender, e) =>
-            //{
-            //	Debug.WriteLine("Received Update! {0}", e.Presence);
-            //};
-
-            //Connect to the RPC
-            client.Initialize();
-
-            setPresence();
-        }
-
-        public void setPresence()
-        {
-            //Set the rich presence
-            if (!Properties.Settings.Default.Hide_Discord_Presence)
-            {
-                client.SetPresence(new RichPresence()
-                {
-                    Details = collection != null ? "Collection: " + collection : null,
-                    State = box != null ? "Box: " + box : null,
-                    Assets = new Assets()
-                    {
-                        LargeImageKey = ball,
-                        LargeImageText = nickname,
-                        //SmallImageKey = "poke"
-                    }
-                });
-            }
-            else
-                client.ClearPresence();
-        }
-
-        // called when onClose event occurs (presumably when the form closes)
-        public void Deinitialize(object sender, EventArgs e)
-        {
-            client.Dispose();
-        }
+        get => _ball;
     }
+
+    public DiscordPresence()
+    {
+        Ball = "pc";
+        client = new DiscordRpcClient(DISCORD_APP_ID);
+        client.Initialize();
+        UpdatePresence();
+    }
+
+    public void UpdatePresence()
+    {
+        //Set the rich presence
+        if (!Properties.Settings.Default.Hide_Discord_Presence)
+        {
+            client.SetPresence(new RichPresence()
+            {
+                Details = Collection is not null ? "Collection: " + Collection : null,
+                State = Box is not null ? "Box: " + Box : null,
+                Assets = new Assets()
+                {
+                    LargeImageKey = Ball,
+                    LargeImageText = Nickname,
+                    //SmallImageKey = "poke"
+                }
+            });
+        }
+        else
+            client.ClearPresence();
+    }
+
+    // called when onClose event occurs (presumably when the form closes)
+    public void Deinitialize(object sender, EventArgs e)
+        => client.Dispose();
 }

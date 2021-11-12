@@ -1,48 +1,47 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
 
-namespace pkuManager.Common
+namespace pkuManager.Common;
+
+public abstract class Collection
 {
-    public abstract class Collection
+    public string CollectionName { get; protected set; }
+
+    /// <summary>
+    /// Returns all the box names in this collection, sorted by their ID number in the collection.
+    /// </summary>
+    /// <returns>An array of all the box names in this collection.</returns>
+    public abstract string[] GetBoxList();
+
+    public abstract BoxInfo GetBoxInfo(int id);
+
+    public abstract byte[] GetPKMN(int boxID, int slot);
+
+    public abstract void SwapSlots(int boxID, int slotA, int slotB);
+
+    public abstract void Delete(int boxID, int slot);
+
+    public abstract bool Add(byte[] file, int boxID, int slot);
+
+    public class BoxInfo
     {
-        public string collectionName { get; protected set; }
+        public int Width, Height;
+        public Image Background;
+        public SortedDictionary<int, SlotInfo> Slots;
+    }
 
-        /// <summary>
-        /// Returns an array of all the box names in this collection, with the index representing their ID number in the collection.
-        /// </summary>
-        /// <returns></returns>
-        public abstract string[] GetBoxList();
-
-        public abstract BoxInfo getBoxInfo(int id);
-
-        public abstract byte[] getPKMN(int boxID, int slot);
-
-        public abstract void SwapSlots(int boxID, int slotA, int slotB);
-
-        public abstract void Delete(int boxID, int slot);
-
-        public abstract bool Add(byte[] file, int boxID, int slot);
-
-        public class BoxInfo
-        {
-            public int width, height;
-            public Image background;
-            public SortedDictionary<int, SlotInfo> slots;
-        }
-
-        public class SlotInfo
-        {
-            public string iconURL;
-            public (string url, string author) frontSprite;
-            public (string url, string author) backSprite;
-            public string nickname, species, game, OT, location;
-            public string[] forms, appearance;
-            public string locationIdentifier; //i.e. filename, box location, slot #
-            public bool trueOT;
-            public string ball;
-            public string format;
-            public bool checkedOut; //always false for non pku collections...
-            public bool hasShadowHaze;
-        }
+    public class SlotInfo
+    {
+        public string IconURL;
+        public (string url, string author) FrontSprite;
+        public (string url, string author) BackSprite;
+        public string Nickname, Species, Game, OT, Location;
+        public string[] Forms, Appearance;
+        public string LocationIdentifier; //i.e. filename, box location, slot #
+        public bool TrueOT;
+        public string Ball;
+        public string Format;
+        public bool CheckedOut; //always false for non pku collections...
+        public bool HasShadowHaze;
     }
 }

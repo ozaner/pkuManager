@@ -8,564 +8,485 @@ using System.Linq;
 using System.Net;
 using System.Text;
 
-namespace pkuManager.Utilities
+namespace pkuManager.Utilities;
+
+public static class DexUtil
 {
-    public static class DexUtil
+    /* ------------------------------------
+     * Generic DataDex Methods
+     * ------------------------------------
+    */
+    //Array merging JsonMergeSettings.
+    private static readonly JsonMergeSettings JMS = new() { MergeArrayHandling = MergeArrayHandling.Union };
+
+    private const string DataDexFailureTitle = "DataDex Read Failure";
+    private const string DataDexFailureMessage = "Failed to read one or more datadexes, terminating pkuManager.\n\n" +
+                                                    "Are you sure you're connected to the internet?\n" +
+                                                    "pkuManager requires an internet connection.";
+
+    /// <summary>
+    /// Compiles a master datadex from the given <paramref name="url"/>.
+    /// </summary>
+    /// <param name="url">A raw url to an uncompiled master datadex file.</param>
+    /// <returns>The compiled datadex from the <paramref name="url"/>.</returns>
+    public static JObject GetMasterDatadex(string url)
     {
-        /* ------------------------------------
-         * Generic DataDex Methods
-         * ------------------------------------
-        */
-        //Array merging JsonMergeSettings.
-        private static readonly JsonMergeSettings JMS = new() { MergeArrayHandling = MergeArrayHandling.Union };
-
-        private const string DataDexFailureTitle = "DataDex Read Failure";
-        private const string DataDexFailureMessage = "Failed to read one or more datadexes, terminating pkuManager.\n\n" +
-                                                     "Are you sure you're connected to the internet?\n" +
-                                                     "pkuManager requires an internet connection.";
-
-        /// <summary>
-        /// Compiles a master datadex from the given <paramref name="url"/>.
-        /// </summary>
-        /// <param name="url">A raw url to an uncompiled master datadex file.</param>
-        /// <returns>The compiled datadex from the <paramref name="url"/>.</returns>
-        public static JObject GetMasterDatadex(string url)
+        JObject masterDatadex = new();
+        WebClient client = new();
+        try
         {
-            JObject masterDatadex = new();
-            WebClient client = new();
-            try
-            {
-                //Download the uncompiled master-datadex.json
-                JObject uncompiledJSON = JObject.Parse(client.DownloadString(url));
+            //Download the uncompiled master-datadex.json
+            JObject uncompiledJSON = JObject.Parse(client.DownloadString(url));
 
-                foreach (var kvp in uncompiledJSON)
+            foreach (var kvp in uncompiledJSON)
+            {
+                try
                 {
-                    try
-                    {
-                        //Download datadex.json
-                        JObject datadexJSON = JObject.Parse(client.DownloadString((string)kvp.Value));
-                        masterDatadex.Merge(datadexJSON, JMS);
-                    }
-                    catch
-                    {
-                        DataUtil.TerminateProgram(DataDexFailureTitle, DataDexFailureMessage);
-                        Debug.WriteLine($"Failed to read {kvp.Key} datadex...");
-                    }
+                    //Download datadex.json
+                    JObject datadexJSON = JObject.Parse(client.DownloadString((string)kvp.Value));
+                    masterDatadex.Merge(datadexJSON, JMS);
+                }
+                catch
+                {
+                    DataUtil.TerminateProgram(DataDexFailureTitle, DataDexFailureMessage);
+                    Debug.WriteLine($"Failed to read {kvp.Key} datadex...");
                 }
             }
-            catch
-            {
-                DataUtil.TerminateProgram(DataDexFailureTitle, DataDexFailureMessage);
-                Debug.WriteLine("Failed to read a master datadex...");
-            }
-            return masterDatadex;
         }
-
-        /// <summary>
-        /// Searches the contents of a <paramref name="datadex"/> with the given <paramref name="keys"/>.<br/>
-        /// If no object exists at the given location, <see langword="null"/> will be returned.<br/>
-        /// Throws an exception if an object does exist but can't be casted to <typeparamref name="T"/>.<br/>
-        /// Note that direct array indexing is not yet implemented.
-        /// </summary>
-        /// <typeparam name="T">The type of the value to be read.</typeparam>
-        /// <param name="datadex">The datadex being read.</param>
-        /// <param name="keys">The location of the desired value in <paramref name="datadex"/>.</param>
-        /// <returns>The value pointed at by <paramref name="keys"/>, or <see langword="null"/> if it doesn't exist.</returns>
-        public static T ReadDataDex<T>(this JObject datadex, params string[] keys)
+        catch
         {
-            JObject temp = datadex;
-            for (int i = 0; i < keys.Length; i++)
-            {
-                //null isn't a valid key
-                if (keys[i] is null || temp is null)
-                    return default;
+            DataUtil.TerminateProgram(DataDexFailureTitle, DataDexFailureMessage);
+            Debug.WriteLine("Failed to read a master datadex...");
+        }
+        return masterDatadex;
+    }
 
-                // try searching local for key
-                if(temp.ContainsKey(keys[i]))
+    /// <summary>
+    /// Searches the contents of a <paramref name="datadex"/> with the given <paramref name="keys"/>.<br/>
+    /// If no object exists at the given location, <see langword="null"/> will be returned.<br/>
+    /// Throws an exception if an object does exist but can't be casted to <typeparamref name="T"/>.<br/>
+    /// Note that direct array indexing is not yet implemented.
+    /// </summary>
+    /// <typeparam name="T">The type of the value to be read.</typeparam>
+    /// <param name="datadex">The datadex being read.</param>
+    /// <param name="keys">The location of the desired value in <paramref name="datadex"/>.</param>
+    /// <returns>The value pointed at by <paramref name="keys"/>, or <see langword="null"/> if it doesn't exist.</returns>
+    public static T ReadDataDex<T>(this JObject datadex, params string[] keys)
+    {
+        JObject temp = datadex;
+        for (int i = 0; i < keys.Length; i++)
+        {
+            //null isn't a valid key
+            if (keys[i] is null || temp is null)
+                return default;
+
+            // try searching local for key
+            if (temp.ContainsKey(keys[i]))
+            {
+                var value = temp[keys[i]];
+                if (i >= keys.Length - 1) //last key
                 {
-                    var value = temp[keys[i]];
-                    if(i >= keys.Length - 1) //last key
-                    {
-                        try { return value.ToObject<T>(); } //return whatever the value is
-                        catch { return default; }//can't return the value, doesn't match the type
-                    }
-                    else //not last key, should be a dict
-                    {
-                        if (value is JObject valueJObj) //is a dict
-                            temp = valueJObj; //continue loop
-                        else //isn't a dict
-                            return default; //failure, return null
-                        
-                        //TODO: add direct array indexing, i.e. else if(value is JArray valueJArr)
-                    }
+                    try { return value.ToObject<T>(); } //return whatever the value is
+                    catch { return default; }//can't return the value, doesn't match the type
                 }
-                // no local key found, look for possible override
-                else if (temp.ContainsKey("$override"))
+                else //not last key, should be a dict
                 {
-                    List<string> remote_keys = new(temp["$override"].ToObject<string[]>());
-                    remote_keys.AddRange(keys.Skip(i));
-                    return datadex.ReadDataDex<T>(remote_keys.ToArray());
-                }             
-                else //key not found, no potential override
-                   return default; //failure, return null
-            }
-            return default; //shouldn't get here
-        }
+                    if (value is JObject valueJObj) //is a dict
+                        temp = valueJObj; //continue loop
+                    else //isn't a dict
+                        return default; //failure, return null
 
-        /// <summary>
-        /// Returns the key that, when substituted in for "$x",
-        /// has <paramref name="value"/> matching the value at <paramref name="keys"/>.
-        /// </summary>
-        /// <typeparam name="T">The type of the value to be read.</typeparam>
-        /// <param name="datadex">The datadex being read.</param>
-        /// <param name="keys">The location of the desired value in <paramref name="datadex"/>.</param>
-        /// <param name="value">The value to search for.</param>
-        /// <returns>The key that when substituted into the "$x" term, results in <paramref name="value"/> matching.</returns>
-        public static string SearchDataDex<T>(this JObject datadex, T value, params string[] keys)
-        {
-            int splitIndex = Array.IndexOf(keys, "$x");
-            if (splitIndex is -1)
-                throw new ArgumentException("keys neeeds at least one \"$x\" key", nameof(keys));
-
-            JObject fh = splitIndex is 0 ? datadex : datadex.ReadDataDex<JObject>(keys.Take(splitIndex).ToArray());
-            foreach(var x in fh ?? new())
-            {
-                if (x.Key is "$override") //search override last
-                    continue;
-                keys[splitIndex]=x.Key;
-                T res = datadex.ReadDataDex<T>(keys);
-                if (value.Equals(res))
-                    return x.Key; //match found
+                    //TODO: add direct array indexing, i.e. else if(value is JArray valueJArr)
+                }
             }
-            keys[splitIndex] = "$x"; //put $x back in split index
-            
             // no local key found, look for possible override
-            if (fh?.ContainsKey("$override") is true) //search override if it exists
+            else if (temp.ContainsKey("$override"))
             {
-                List<string> remote_keys = new(fh["$override"].ToObject<string[]>());
-                remote_keys.AddRange(keys.Skip(splitIndex));
-                return datadex.SearchDataDex(value, remote_keys.ToArray());
+                List<string> remote_keys = new(temp["$override"].ToObject<string[]>());
+                remote_keys.AddRange(keys.Skip(i));
+                return datadex.ReadDataDex<T>(remote_keys.ToArray());
             }
-            return null; //no match
+            else //key not found, no potential override
+                return default; //failure, return null
         }
+        return default; //shouldn't get here
+    }
 
-        /// <summary>
-        /// Checks if <paramref name="format"/> exists  in the "Exists in" array
-        /// at the location given by <paramref name="keys"/> in <paramref name="dex"/>.
-        /// </summary>
-        /// <param name="dex">A datadex.</param>
-        /// <param name="format">A storage format.</param>
-        /// <param name="keys">The path of the object in <paramref name="dex"/>.</param>
-        /// <returns>Whether or not the object at the given location exists in the given format.</returns>
-        public static bool ExistsIn(this JObject dex, string format, params string[] keys)
+    /// <summary>
+    /// Returns the key that, when substituted in for "$x",
+    /// has <paramref name="value"/> matching the value at <paramref name="keys"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the value to be read.</typeparam>
+    /// <param name="datadex">The datadex being read.</param>
+    /// <param name="keys">The location of the desired value in <paramref name="datadex"/>.</param>
+    /// <param name="value">The value to search for.</param>
+    /// <returns>The key that when substituted into the "$x" term, results in <paramref name="value"/> matching.</returns>
+    public static string SearchDataDex<T>(this JObject datadex, T value, params string[] keys)
+    {
+        int splitIndex = Array.IndexOf(keys, "$x");
+        if (splitIndex is -1)
+            throw new ArgumentException("keys neeeds at least one \"$x\" key", nameof(keys));
+
+        JObject fh = splitIndex is 0 ? datadex : datadex.ReadDataDex<JObject>(keys.Take(splitIndex).ToArray());
+        foreach (var x in fh ?? new())
         {
-            string[] arr = dex.ReadDataDex<string[]>(keys.Append("Exists in").ToArray());
-            if (arr is null)
-                return false;
-            return Array.Exists(arr, x => x.EqualsCaseInsensitive(format));
+            if (x.Key is "$override") //search override last
+                continue;
+            keys[splitIndex] = x.Key;
+            T res = datadex.ReadDataDex<T>(keys);
+            if (value.Equals(res))
+                return x.Key; //match found
         }
+        keys[splitIndex] = "$x"; //put $x back in split index
 
-        // Common GetIndex code, that allows inner looping of keys (e.g. species combos) and outer looping of formats (e.g. pk3 -> main-series)
-        private static int? GetIndex(this JObject dex, string format, IEnumerable<List<string>> other_keys)
+        // no local key found, look for possible override
+        if (fh?.ContainsKey("$override") is true) //search override if it exists
         {
-            //get chain of indices to be searched.
-            List<string> indexChain = new() { format };
-            string[] indexParents = Registry.FORMAT_DEX.ReadDataDex<string[]>(format, "Parent Indices");
-            if (indexParents is not null)
-                indexChain.AddRange(indexParents);
-
-            foreach (string link in indexChain)
-            {
-                foreach (var keys in other_keys)
-                {
-                    List<string> temp = new(keys) { "Indices", link };
-                    int? index = dex.ReadDataDex<int?>(temp.ToArray());
-                    if (index is not null)
-                        return index;
-                }
-            }
-            return null;
+            List<string> remote_keys = new(fh["$override"].ToObject<string[]>());
+            remote_keys.AddRange(keys.Skip(splitIndex));
+            return datadex.SearchDataDex(value, remote_keys.ToArray());
         }
+        return null; //no match
+    }
 
-        /// <summary>
-        /// Gets the index number of whatever <paramref name="keys"/> points to for the <paramref name="format"/>.<br/>
-        /// If format fails, tries the format's "Parent Indices".
-        /// </summary>
-        /// <param name="dex">A datadex.</param>
-        /// <param name="format">A storage format.</param>
-        /// <param name="keys">The path of the object in <paramref name="dex"/>.</param>
-        /// <returns>Whether or not the object at the given location exists in the given format.</returns>
-        public static int? GetIndex(this JObject dex, string format, params string[] keys)
-            => dex.GetIndex(format, new List<List<string>>() { keys.ToList() });
-
-
-        /* ------------------------------------
-         * GameDex Methods
-         * ------------------------------------
-        */
-        private static IEnumerable<List<string>> GetAllFormatGames()
-        {
-            foreach (var kvp in Registry.FORMAT_DEX)
-                yield return new() { kvp.Key, "Games" };
-        }
-
-        /// <summary>
-        /// Like <see cref="ReadDataDex{T}(JObject, string[])"/> acting on a virtual GameDex.<br/>
-        /// Searches all "[Format]"/"Games" tags for the given <paramref name="keys"/> (which should start with a game name).
-        /// </summary>
-        /// <inheritdoc cref="ReadDataDex{T}(JObject, string[])"/>
-        public static T ReadGameDex<T>(params string[] keys)
-        {
-            var formats = GetAllFormatGames();
-            foreach (var game_keys in formats)
-            {
-                game_keys.AddRange(keys);
-                T res = Registry.FORMAT_DEX.ReadDataDex<T>(game_keys.ToArray());
-                if (res is not null)
-                    return res;
-            }
-            return default;
-        }
-
-        /// <summary>
-        /// Like <see cref="SearchDataDex{T}(JObject, T, string[])"/> acting on a virtual GameDex.<br/>
-        /// Searches all "[Format]"/"Games" tags for the "$x" in the given <paramref name="keys"/> (which should start with a game name).
-        /// </summary>
-        /// <inheritdoc cref="SearchDataDex{T}(JObject, T, string[])"/>
-        public static string SearchGameDex<T>(T value, params string[] keys)
-        {
-            var formats = GetAllFormatGames();
-            foreach (var game_keys in formats)
-            {
-                game_keys.AddRange(keys);
-                string res = Registry.FORMAT_DEX.SearchDataDex<T>(value, game_keys.ToArray());
-                if (res is not null)
-                    return res;
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Like <see cref="ExistsIn(JObject, string, string[])"/> acting on a virtual GameDex.<br/>
-        /// <param name="game">The game to check for existence in <paramref name="format"/>.</param>
-        /// </summary>
-        /// <inheritdoc cref="ExistsIn(JObject, string, string[])"/>
-        public static bool GameExistsIn(string game, string format)
-        {
-            var formats = GetAllFormatGames();
-            foreach (var game_keys in formats)
-            {
-                game_keys.Add(game);
-                if (Registry.FORMAT_DEX.ExistsIn(format, game_keys.ToArray()))
-                    return true;
-            }
+    /// <summary>
+    /// Checks if <paramref name="format"/> exists  in the "Exists in" array
+    /// at the location given by <paramref name="keys"/> in <paramref name="dex"/>.
+    /// </summary>
+    /// <param name="dex">A datadex.</param>
+    /// <param name="format">A storage format.</param>
+    /// <param name="keys">The path of the object in <paramref name="dex"/>.</param>
+    /// <returns>Whether or not the object at the given location exists in the given format.</returns>
+    public static bool ExistsIn(this JObject dex, string format, params string[] keys)
+    {
+        string[] arr = dex.ReadDataDex<string[]>(keys.Append("Exists in").ToArray());
+        if (arr is null)
             return false;
+        return Array.Exists(arr, x => x.EqualsCaseInsensitive(format));
+    }
+
+    // Common GetIndex code, that allows inner looping of keys (e.g. species combos) and outer looping of formats (e.g. pk3 -> main-series)
+    private static int? GetIndex(this JObject dex, string format, IEnumerable<List<string>> other_keys)
+    {
+        //get chain of indices to be searched.
+        List<string> indexChain = new() { format };
+        string[] indexParents = FORMAT_DEX.ReadDataDex<string[]>(format, "Parent Indices");
+        if (indexParents is not null)
+            indexChain.AddRange(indexParents);
+
+        foreach (string link in indexChain)
+        {
+            foreach (var keys in other_keys)
+            {
+                List<string> temp = new(keys) { "Indices", link };
+                int? index = dex.ReadDataDex<int?>(temp.ToArray());
+                if (index is not null)
+                    return index;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Gets the index number of whatever <paramref name="keys"/> points to for the <paramref name="format"/>.<br/>
+    /// If format fails, tries the format's "Parent Indices".
+    /// </summary>
+    /// <param name="dex">A datadex.</param>
+    /// <param name="format">A storage format.</param>
+    /// <param name="keys">The path of the object in <paramref name="dex"/>.</param>
+    /// <returns>Whether or not the object at the given location exists in the given format.</returns>
+    public static int? GetIndex(this JObject dex, string format, params string[] keys)
+        => dex.GetIndex(format, new List<List<string>>() { keys.ToList() });
+
+
+    /* ------------------------------------
+     * SpeciesDex Methods
+     * ------------------------------------
+    */
+    /// <summary>
+    /// Gets a list of all form names the given <paramref name="pku"/> can be casted to, starting with its current form.<br/>
+    /// Null and empty form arrays are treated as default forms.
+    /// </summary>
+    /// <param name="pku">The pku whose castable forms are to be retrieved.</param>
+    /// <returns>A list of all forms the given <paramref name="pku"/> can be casted to.</returns>
+    public static List<string> GetCastableForms(this pkuObject pku)
+    {
+        string searchableFormName = pku.GetSearchableForm();
+        List<string> castableFormList = new() { searchableFormName };
+        castableFormList.AddRange(SPECIES_DEX.ReadDataDex<List<string>>(
+            pku.Species, "Forms", searchableFormName, "Castable to"
+        ) ?? new List<string>());
+        return castableFormList;
+    }
+
+    /// <summary>
+    /// Enumerates all the different subsets of appearances
+    /// of the given <paramref name="pku"/>'s appearance array.<br/>
+    /// This method enumerates the appearance combos in the canonical order.
+    /// </summary>
+    /// <param name="pku">The pku whose appearances are to be enumerated.</param>
+    /// <returns>An enumerator of <paramref name="pku"/>'s different appearance combinations.</returns>
+    private static IEnumerable<string> GetSearchableAppearances(pkuObject pku)
+    {
+        if (pku.Appearance?.Length is not > 0)
+        {
+            yield return null;
+            yield break;
+        }
+
+        int effectiveSize = pku.Appearance.Length > 63 ? 64 : pku.Appearance.Length;
+        ulong powesize = effectiveSize is 64 ? ulong.MaxValue : ((ulong)1 << effectiveSize) - 1;
+        for (ulong i = 0; i <= powesize; i++)
+        {
+            List<string> apps = new();
+            for (int j = 0; j < effectiveSize; j++)
+            {
+                if ((i & ((ulong)1 << j)) is 0) //reversed 0 and 1 so loop could go form 0 to powsize
+                    apps.Add(pku.Appearance[j]);
+            }
+            yield return DataUtil.JoinLexical(apps.ToArray());
+        }
+        yield return null; //no appearance
+    }
+
+    /// <summary>
+    /// Searches for the the default form of the given species.<br/>
+    /// If the default form is unnamed (e.g. Bulbasaur) then the empty string will be returned.
+    /// </summary>
+    /// <param name="species">The species whose default form is to be retrieved.</param>
+    /// <returns>The default form for this species or, if none found, the empty string.</returns>
+    private static string GetDefaultForm(string species)
+    {
+        JObject forms = SPECIES_DEX.ReadDataDex<JObject>(species, "Forms");
+        if (forms is null) // No listed forms, default is just "" (i.e. base form)
+            return "";
+
+        foreach (var form in forms)
+        {
+            bool? isDefault = SPECIES_DEX.ReadDataDex<bool?>(species, "Forms", form.Key, "Default");
+            if (isDefault is true)
+                return form.Key;
+        }
+        return ""; //No form was listed as default, default is ""
+    }
+
+    /// <summary>
+    /// Returns the searchable form of the <paramref name="pku"/>'s forms array for use in searching through datadexes.
+    /// </summary>
+    /// <param name="pku">The pku whose form is to be formatted.</param>
+    /// <returns>The searchable form name, or the default form if form array is empty or null.</returns>
+    public static string GetSearchableForm(this pkuObject pku)
+        => pku.Forms?.Length is not > 0 ? GetDefaultForm(pku.Species) : DataUtil.JoinLexical(pku.Forms);
+
+    // Iterates through all key prefixes of species/form/appearances. Used to search through the SpeciesDex. 
+    private static IEnumerable<List<string>> GetSearchablePKUCombos(this pkuObject pku, bool ignoreCasting)
+    {
+        List<string> helper(string form, string appearance)
+        {
+            List<string> keys = new() { pku.Species, "Forms", form };
+            if (appearance is not null)
+            {
+                keys.Add("Appearance");
+                keys.Add(appearance);
+            }
+            return keys;
+        }
+
+        List<string> forms = ignoreCasting ? new() { pku.GetSearchableForm() } : pku.GetCastableForms();
+        var apps = GetSearchableAppearances(pku);
+
+        foreach (string form in forms)
+            foreach (string app in apps)
+                yield return helper(form, app);
+
+        yield return new() { pku.Species }; //all forms/appearnces failed, try base species.
+    }
+
+    /// <summary>
+    /// Like <see cref="ReadDataDex{T}(JObject, string[])"/> but searches through the<br/>
+    /// appearances, form(s), then species level of a species entry with the given keys.
+    /// </summary>
+    /// <param name="dex">The species dex to read.</param>
+    /// <param name="pku">The pku whose species/form/appearance is to be used.</param>
+    /// <param name="ignoreCasting">Whether to other castable forms of the <paramref name="pku"/> if its form fails.</param>
+    /// <inheritdoc cref="ReadDataDex{T}(JObject, string[])"/>
+    public static T ReadSpeciesDex<T>(this JObject dex, pkuObject pku, bool ignoreCasting, params string[] keys)
+    {
+        var combos = pku.GetSearchablePKUCombos(ignoreCasting);
+        foreach (var combo in combos)
+        {
+            combo.AddRange(keys);
+            T obj = dex.ReadDataDex<T>(combo.ToArray());
+            if (obj is not null)
+                return obj;
+        }
+        return default;
+    }
+
+    /// <inheritdoc cref="ReadSpeciesDex{T}(JObject, pkuObject, bool, string[])"/>
+    public static T ReadSpeciesDex<T>(pkuObject pku, bool ignoreCasting, params string[] keys)
+        => ReadSpeciesDex<T>(SPECIES_DEX, pku, ignoreCasting, keys);
+
+    /// <summary>
+    /// Searches the <see cref="SPECIES_DEX"/> for whether the given
+    /// pku's species/form/appearance exists in the given format.
+    /// </summary>
+    /// <param name="pku">The pku whose species/form is to be searched.</param>
+    /// <param name="format">The desired format.</param>
+    /// <param name="ignoreCasting">Whether or not to account for form casting.</param>
+    /// <returns>Whether or not the given pku's species/form exists in the given format.</returns>
+    public static bool SpeciesExistsIn(this pkuObject pku, string format, bool ignoreCasting = false)
+    {
+        var combos = pku.GetSearchablePKUCombos(ignoreCasting);
+        foreach (var combo in combos)
+            if (SPECIES_DEX.ExistsIn(format, combo.ToArray()))
+                return true;
+
+        return false;
+    }
+
+    /// <summary>
+    /// Searches <see cref="SPECIES_DEX"/> for the given <paramref name="pku"/>'s index number in the<br/>
+    /// given format, according to it's species as well as form/appearance if applicable.
+    /// </summary>
+    /// <param name="pku">The pku.</param>
+    /// <param name="format">The format the index corresponds to.</param>
+    /// <param name="ignoreCasting">Whether or not to ignore the other forms pku can be casted to.</param>
+    /// <returns>The index number of the <paramref name="pku"/> in <paramref name="format"/>.</returns>
+    public static int? GetSpeciesIndex(pkuObject pku, string format, bool ignoreCasting = false)
+        => SPECIES_DEX.GetIndex(format, pku.GetSearchablePKUCombos(ignoreCasting));
+
+
+    /* ------------------------------------
+     * Character Encoding Methods
+     * ------------------------------------
+    */
+    public static class CharEncoding<T> where T : struct
+    {
+        private static bool IsLangDependent(string format)
+            => FORMAT_DEX.ReadDataDex<bool?>(format, "Character Encoding", "Language Dependent") is true;
+
+        private static T GetTerminator(string format, Language? language = null)
+            => GetCodepoint('\u0000', format, language).Value;
+
+        /// <summary>
+        /// Searches for the codepoint associated with the given char.
+        /// </summary>
+        /// <param name="c">The character to search.</param>
+        /// <param name="format">The format being encoded to.</param>
+        /// <param name="language">The language to search. Assumed to exist in this <paramref name="format"/>.</param>
+        /// <returns>The codepoint that <paramref name="c"/> maps to, or null if none is found.</returns>
+        private static T? GetCodepoint(char c, string format, Language? language = null)
+        {
+            string langStr = IsLangDependent(format) ? language.ToFormattedString() : "All";
+            return FORMAT_DEX.SearchDataDex(c, format, "Character Encoding", langStr, "$x").CastTo<T?>(); //should be byte/ushort
         }
 
         /// <summary>
-        /// Like <see cref="GetIndex(JObject, string, string[])"/> acting on a virtual GameDex.<br/>
-        /// <param name="game">The game to get the index of in <paramref name="format"/>.</param>
+        /// Searches for the <see langword="char"/> associated with the given <paramref name="codepoint"/>.
         /// </summary>
-        /// <inheritdoc cref="GetIndex(JObject, string, string[])"/>
-        public static int? GetGameIndex(string game, string format)
+        /// <param name="codepoint">The codepoint to search.</param>
+        /// <param name="format">The format being encoded to.</param>
+        /// <param name="language">The language to search. Assumed to exist in this <paramref name="format"/>.</param>
+        /// <returns>The <see langword="char"/> that <paramref name="codepoint"/> maps to,
+        ///          or null if none is found.</returns>
+        private static char? GetChar(T codepoint, string format, Language? language = null)
         {
-            IEnumerable<List<string>> helper()
+            string langStr = IsLangDependent(format) ? language.ToFormattedString() : "All";
+            return FORMAT_DEX.ReadDataDex<char?>(format, "Character Encoding", langStr, codepoint.ToString());
+        }
+
+        /// <summary>
+        /// Encodes a given string, ending with the terminator
+        /// if the maximum length is not reached. Padded with 0s.<br/>
+        /// </summary>
+        /// <param name="str">The string to be encoded.</param>
+        /// <param name="maxLength">The desired length of the encoded string.</param>
+        /// <param name="format">The format being encoded to.</param>
+        /// <param name="language">The language to encode <paramref name="str"/>, if <paramref name="format"/>
+        ///                        is language dependent. Null otherwise.</param>
+        /// <returns>The encoded form of <paramref name="str"/>.</returns>
+        public static (T[] encodedStr, bool truncated, bool hasInvalidChars)
+            Encode(string str, int maxLength, string format, Language? language = null)
+        {
+            bool truncated = false, hasInvalidChars = false;
+            T[] encodedStr = new T[maxLength];
+
+            //Encode string
+            int successfulChars = 0;
+            while (str?.Length > 0 && successfulChars < maxLength)
             {
-                foreach (var formats in GetAllFormatGames())
+                T? encodedChar = GetCodepoint(str[0], format, language); //get next character
+                str = str[1..]; //chop off current character
+
+                //if character invalid
+                if (encodedChar is null)
                 {
-                    formats.Add(game);
-                    yield return formats;
-                }
-            }
-            return Registry.FORMAT_DEX.GetIndex(format, helper());
-        }
-
-
-        /* ------------------------------------
-         * SpeciesDex Methods
-         * ------------------------------------
-        */
-        /// <summary>
-        /// Gets a list of all form names the given <paramref name="pku"/> can be casted to, starting with its current form.<br/>
-        /// Null and empty form arrays are treated as default forms.
-        /// </summary>
-        /// <param name="pku">The pku whose castable forms are to be retrieved.</param>
-        /// <returns>A list of all forms the given <paramref name="pku"/> can be casted to.</returns>
-        public static List<string> GetCastableForms(this pkuObject pku)
-        {
-            string searchableFormName = pku.GetSearchableForm();
-            List<string> castableFormList = new() { searchableFormName };
-            castableFormList.AddRange(Registry.SPECIES_DEX.ReadDataDex<List<string>>(
-                pku.Species, "Forms", searchableFormName, "Castable to"
-            ) ?? new List<string>());
-            return castableFormList;
-        }
-
-        /// <summary>
-        /// Enumerates all the different subsets of appearances
-        /// of the given <paramref name="pku"/>'s appearance array.<br/>
-        /// This method enumerates the appearance combos in the canonical order.
-        /// </summary>
-        /// <param name="pku">The pku whose appearances are to be enumerated.</param>
-        /// <returns>An enumerator of <paramref name="pku"/>'s different appearance combinations.</returns>
-        private static IEnumerable<string> GetSearchableAppearances(pkuObject pku)
-        {
-            if (pku.Appearance?.Length is not > 0)
-            {
-                yield return null;
-                yield break;
-            }
-
-            int effectiveSize = pku.Appearance.Length > 63 ? 64 : pku.Appearance.Length;
-            ulong powesize = effectiveSize is 64 ? ulong.MaxValue : ((ulong)1 << effectiveSize) - 1;
-            for (ulong i = 0; i <= powesize; i++)
-            {
-                List<string> apps = new();
-                for (int j = 0; j < effectiveSize; j++)
-                {
-                    if ((i & ((ulong)1 << j)) is 0) //reversed 0 and 1 so loop could go form 0 to powsize
-                        apps.Add(pku.Appearance[j]);
-                }
-                yield return DataUtil.JoinLexical(apps.ToArray());
-            }
-            yield return null; //no appearance
-        }
-
-        /// <summary>
-        /// Searches for the the default form of the given species.<br/>
-        /// If the default form is unnamed (e.g. Bulbasaur) then the empty string will be returned.
-        /// </summary>
-        /// <param name="species">The species whose default form is to be retrieved.</param>
-        /// <returns>The default form for this species or, if none found, the empty string.</returns>
-        private static string GetDefaultForm(string species)
-        {
-            JObject forms = Registry.SPECIES_DEX.ReadDataDex<JObject>(species, "Forms");
-            if (forms is null) // No listed forms, default is just "" (i.e. base form)
-                return "";
-
-            foreach (var form in forms)
-            {
-                bool? isDefault = Registry.SPECIES_DEX.ReadDataDex<bool?>(species, "Forms", form.Key, "Default");
-                if (isDefault is true)
-                    return form.Key;
-            }
-            return ""; //No form was listed as default, default is ""
-        }
-
-        /// <summary>
-        /// Returns the searchable form of the <paramref name="pku"/>'s forms array for use in searching through datadexes.
-        /// </summary>
-        /// <param name="pku">The pku whose form is to be formatted.</param>
-        /// <returns>The searchable form name, or the default form if form array is empty or null.</returns>
-        public static string GetSearchableForm(this pkuObject pku)
-            => pku.Forms?.Length is not > 0 ? GetDefaultForm(pku.Species) : DataUtil.JoinLexical(pku.Forms);
-
-        // Iterates through all key prefixes of species/form/appearances. Used to search through the SpeciesDex. 
-        private static IEnumerable<List<string>> GetSearchablePKUCombos(this JObject dex, pkuObject pku, bool ignoreCasting)
-        {
-            List<string> helper(string form, string appearance)
-            {
-                List<string> keys = new() { pku.Species, "Forms", form };
-                if (appearance is not null)
-                {
-                    keys.Add("Appearance");
-                    keys.Add(appearance);
-                }
-                return keys;
-            }
-
-            List<string> forms = ignoreCasting ? new() { pku.GetSearchableForm() } : pku.GetCastableForms();
-            var apps = GetSearchableAppearances(pku);
-
-            foreach (string form in forms)
-                foreach (string app in apps)
-                    yield return helper(form, app);
-            
-            yield return new() { pku.Species }; //all forms/appearnces failed, try base species.
-        }
-
-        /// <summary>
-        /// Like <see cref="ReadDataDex{T}(JObject, string[])"/> but searches through the<br/>
-        /// appearances, form(s), then species level of a species entry with the given keys.
-        /// </summary>
-        /// <param name="dex">The species dex to read.</param>
-        /// <param name="pku">The pku whose species/form/appearance is to be used.</param>
-        /// <param name="ignoreCasting">Whether to other castable forms of the <paramref name="pku"/> if its form fails.</param>
-        /// <inheritdoc cref="ReadDataDex{T}(JObject, string[])"/>
-        public static T ReadSpeciesDex<T>(this JObject dex, pkuObject pku, bool ignoreCasting, params string[] keys)
-        {
-            var combos = dex.GetSearchablePKUCombos(pku, ignoreCasting);
-            foreach (var combo in combos)
-            {
-                combo.AddRange(keys);
-                T obj = dex.ReadDataDex<T>(combo.ToArray());
-                if (obj is not null)
-                    return obj;
-            }
-            return default;
-        }
-
-        /// <summary>
-        /// Searches the <see cref="Registry.SPECIES_DEX"/> for whether the given
-        /// pku's species/form/appearance exists in the given format.
-        /// </summary>
-        /// <param name="pku">The pku whose species/form is to be searched.</param>
-        /// <param name="format">The desired format.</param>
-        /// <param name="ignoreCasting">Whether or not to account for form casting.</param>
-        /// <returns>Whether or not the given pku's species/form exists in the given format.</returns>
-        public static bool SpeciesExistsIn(this pkuObject pku, string format, bool ignoreCasting = false)
-        {
-            var combos = Registry.SPECIES_DEX.GetSearchablePKUCombos(pku, ignoreCasting);
-            foreach (var combo in combos)
-                if (Registry.SPECIES_DEX.ExistsIn(format, combo.ToArray()))
-                    return true;
-            
-            return false;
-        }
-
-        /// <summary>
-        /// Searches <see cref="Registry.SPECIES_DEX"/> for the given <paramref name="pku"/>'s index number in the<br/>
-        /// given format, according to it's species as well as form/appearance if applicable.
-        /// </summary>
-        /// <param name="pku">The pku.</param>
-        /// <param name="format">The format the index corresponds to.</param>
-        /// <param name="ignoreCasting">Whether or not to ignore the other forms pku can be casted to.</param>
-        /// <returns>The index number of the <paramref name="pku"/> in <paramref name="format"/>.</returns>
-        public static int? GetSpeciesIndex(pkuObject pku, string format, bool ignoreCasting = false)
-            => Registry.SPECIES_DEX.GetIndex(format, Registry.SPECIES_DEX.GetSearchablePKUCombos(pku, ignoreCasting));
-
-
-        /* ------------------------------------
-         * Character Encoding Methods
-         * ------------------------------------
-        */
-        public static class CharEncoding<T> where T: struct
-        {
-            private static bool IsLangDependent(string format)
-                => Registry.FORMAT_DEX.ReadDataDex<bool?>(format, "Character Encoding", "Language Dependent") is true;
-
-            private static T GetTerminator(string format, Language? language = null)
-                => GetCodepoint('\u0000', format, language).Value;
-
-            /// <summary>
-            /// Searches for the codepoint associated with the given char.
-            /// </summary>
-            /// <param name="c">The character to search.</param>
-            /// <param name="format">The format being encoded to.</param>
-            /// <param name="language">The language to search. Assumed to exist in this <paramref name="format"/>.</param>
-            /// <returns>The codepoint that <paramref name="c"/> maps to, or null if none is found.</returns>
-            private static T? GetCodepoint(char c, string format, Language? language = null)
-            {
-                string langStr = IsLangDependent(format) ? language.ToFormattedString() : "All";
-                return Registry.FORMAT_DEX.SearchDataDex(c, format, "Character Encoding", langStr, "$x").CastTo<T?>(); //should be byte/ushort
-            }
-
-            /// <summary>
-            /// Searches for the <see langword="char"/> associated with the given <paramref name="codepoint"/>.
-            /// </summary>
-            /// <param name="codepoint">The codepoint to search.</param>
-            /// <param name="format">The format being encoded to.</param>
-            /// <param name="language">The language to search. Assumed to exist in this <paramref name="format"/>.</param>
-            /// <returns>The <see langword="char"/> that <paramref name="codepoint"/> maps to,
-            ///          or null if none is found.</returns>
-            private static char? GetChar(T codepoint, string format, Language? language = null)
-            {
-                string langStr = IsLangDependent(format) ? language.ToFormattedString() : "All";
-                return Registry.FORMAT_DEX.ReadDataDex<char?>(format, "Character Encoding", langStr, codepoint.ToString());
-            }
-
-            /// <summary>
-            /// Encodes a given string, ending with the terminator
-            /// if the maximum length is not reached. Padded with 0s.<br/>
-            /// </summary>
-            /// <param name="str">The string to be encoded.</param>
-            /// <param name="maxLength">The desired length of the encoded string.</param>
-            /// <param name="format">The format being encoded to.</param>
-            /// <param name="language">The language to encode <paramref name="str"/>, if <paramref name="format"/>
-            ///                        is language dependent. Null otherwise.</param>
-            /// <returns>The encoded form of <paramref name="str"/>.</returns>
-            public static (T[] encodedStr, bool truncated, bool hasInvalidChars)
-                Encode(string str, int maxLength, string format, Language? language = null)
-            {
-                bool truncated = false, hasInvalidChars = false;
-                T[] encodedStr = new T[maxLength];
-
-                //Encode string
-                int successfulChars = 0;
-                while (str?.Length > 0 && successfulChars < maxLength)
-                {
-                    T? encodedChar = GetCodepoint(str[0], format, language); //get next character
-                    str = str[1..]; //chop off current character
-
-                    //if character invalid
-                    if (encodedChar is null)
-                    {
-                        hasInvalidChars = true;
-                        continue;
-                    }
-
-                    //else character not invalid
-                    encodedStr[successfulChars] = encodedChar.Value;
-                    successfulChars++;
-
-                    //stop encoding when limit reached
-                    if (successfulChars >= maxLength)
-                        break;
+                    hasInvalidChars = true;
+                    continue;
                 }
 
-                //Deal with terminator
-                if (successfulChars < maxLength)
-                    encodedStr[successfulChars] = GetTerminator(format, language); //terminator
-                return (encodedStr, truncated, hasInvalidChars);
+                //else character not invalid
+                encodedStr[successfulChars] = encodedChar.Value;
+                successfulChars++;
+
+                //stop encoding when limit reached
+                if (successfulChars >= maxLength)
+                    break;
             }
 
-            /// <summary>
-            /// Decodes a given encoded string, stopping at the first instance of the terminator.<br/>
-            /// If an invalid language is passed, an exception will be thrown.
-            /// </summary>
-            /// <param name="encodedStr">A string encoded with this character encoding.</param>
-            /// <param name="format">The format being decoded from.</param>
-            /// <param name="language">The language <paramref name="encodedStr"/> was encoded with, if <paramref name="format"/>
-            ///                        is language dependent. Null otherwise.</param>
-            /// <returns>The string decoded from <paramref name="encodedStr"/>.</returns>
-            public static string Decode(T[] encodedStr, string format, Language? language = null)
+            //Deal with terminator
+            if (successfulChars < maxLength)
+                encodedStr[successfulChars] = GetTerminator(format, language); //terminator
+            return (encodedStr, truncated, hasInvalidChars);
+        }
+
+        /// <summary>
+        /// Decodes a given encoded string, stopping at the first instance of the terminator.<br/>
+        /// If an invalid language is passed, an exception will be thrown.
+        /// </summary>
+        /// <param name="encodedStr">A string encoded with this character encoding.</param>
+        /// <param name="format">The format being decoded from.</param>
+        /// <param name="language">The language <paramref name="encodedStr"/> was encoded with, if <paramref name="format"/>
+        ///                        is language dependent. Null otherwise.</param>
+        /// <returns>The string decoded from <paramref name="encodedStr"/>.</returns>
+        public static string Decode(T[] encodedStr, string format, Language? language = null)
+        {
+            StringBuilder sb = new();
+            foreach (T e in encodedStr)
             {
-                StringBuilder sb = new();
-                foreach (T e in encodedStr)
-                {
-                    if (e.Equals(GetTerminator(format, language)))
-                        break;
-                    char? c = GetChar(e, format, language);
-                    if (c is not null)
-                        sb.Append(c.Value);
-                }
-                return sb.ToString();
+                if (e.Equals(GetTerminator(format, language)))
+                    break;
+                char? c = GetChar(e, format, language);
+                if (c is not null)
+                    sb.Append(c.Value);
             }
+            return sb.ToString();
+        }
 
-            /// <summary>
-            /// Overlays the given <paramref name="encodedStr"/> over the given <paramref name="trash"/> array.
-            /// </summary>
-            /// <param name="encodedStr">An encoded string.</param>
-            /// <param name="trash">The trash bytes to be applied to <paramref name="encodedStr"/>.</param>
-            /// <param name="format">The format being decoded from.</param>
-            /// <param name="language">The language <paramref name="encodedStr"/> was encoded with, if <paramref name="format"/>
-            ///                        is language dependent. Null otherwise.</param>
-            /// <returns>The encoded string 'trashed' with the given trash bytes.</returns>
-            public static T[] Trash(T[] encodedStr, ushort[] trash, string format, Language? language = null)
+        /// <summary>
+        /// Overlays the given <paramref name="encodedStr"/> over the given <paramref name="trash"/> array.
+        /// </summary>
+        /// <param name="encodedStr">An encoded string.</param>
+        /// <param name="trash">The trash bytes to be applied to <paramref name="encodedStr"/>.</param>
+        /// <param name="format">The format being decoded from.</param>
+        /// <param name="language">The language <paramref name="encodedStr"/> was encoded with, if <paramref name="format"/>
+        ///                        is language dependent. Null otherwise.</param>
+        /// <returns>The encoded string 'trashed' with the given trash bytes.</returns>
+        public static T[] Trash(T[] encodedStr, ushort[] trash, string format, Language? language = null)
+        {
+            //cast ushort trash to generic T
+            T[] trashedStr = Array.ConvertAll(trash.Clone() as ushort[],
+                x => (T)Convert.ChangeType(x, typeof(T)));
+
+            trashedStr = trashedStr[0..encodedStr.Length];
+            for (int i = 0; i < encodedStr.Length; i++)
             {
-                //cast ushort trash to generic T
-                T[] trashedStr = Array.ConvertAll(trash.Clone() as ushort[],
-                    x => (T)Convert.ChangeType(x, typeof(T)));
-
-                trashedStr = trashedStr[0..encodedStr.Length];
-                for (int i = 0; i < encodedStr.Length; i++)
-                {
-                    trashedStr[i] = encodedStr[i];
-                    if (encodedStr[i].Equals(GetTerminator(format, language)))
-                        break;
-                }
-                return trashedStr;
+                trashedStr[i] = encodedStr[i];
+                if (encodedStr[i].Equals(GetTerminator(format, language)))
+                    break;
             }
+            return trashedStr;
         }
     }
 }
