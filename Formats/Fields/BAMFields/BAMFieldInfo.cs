@@ -1,4 +1,5 @@
 ﻿using pkuManager.Utilities;
+using System;
 using System.Numerics;
 
 namespace pkuManager.Formats.Fields.BAMFields;
@@ -13,6 +14,8 @@ public class BAMFieldInfo
     public int StartBit { get; }
     public int BitLength { get; }
 
+    public BigInteger Max => BigInteger.Pow(2, BitType ? BitLength : 8 * ByteLength) - 1;
+    public BigInteger Min => 0;
 
     private BAMFieldInfo(ByteArrayManipulator bam, bool bitType, int startByte)
     {
@@ -30,8 +33,13 @@ public class BAMFieldInfo
         BitLength = bitLength;
     }
 
-
-    public BigInteger Max => BigInteger.Pow(2, BitType ? BitLength : 8 * ByteLength) - 1;
-
-    public BigInteger Min => 0;
+    public BigInteger SetterBound(BigInteger val)
+    {
+        if (val > Max)
+            throw new ArgumentOutOfRangeException(nameof(val), "Passed value is greater than maximum.");
+        else if (val < Min)
+            throw new ArgumentOutOfRangeException(nameof(val), "Passed value is less than minimum.");
+        else
+            return val;
+    }
 }

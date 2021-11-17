@@ -6,7 +6,7 @@ public abstract class ArrayField<T> : Field<T[]>
 {
     public abstract int Length { get; }
 
-    protected ArrayField(Func<T[], T[]> getter = null, Func<T[], T[]> setter = null) : base(getter, setter) { }
+    protected ArrayField(Func<T[], T[]> getter, Func<T[], T[]> setter) : base(getter, setter) { }
 
     public T this[int i]
     {
