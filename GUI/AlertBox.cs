@@ -6,44 +6,52 @@ using System.Windows.Forms;
 namespace pkuManager.GUI;
 
 /// <summary>
-/// A GUI container for basic Alerts. To be used in conjunction with the warningWindow.
+/// A GUI container for basic Alerts. To be used in conjunction with the porter windows.
 /// </summary>
 public class AlertBox : Panel
 {
     protected Label titleLabel;
     protected RichTextBox messageTextbox;
 
+    protected virtual int boxWidth => 169;
+    protected virtual int boxMaxHeight => 300;
+    protected virtual int textBoxMaxWidth => 155;
+    protected virtual int textBoxMaxHeight => 200;
+
     // Creates a new AlertBox (which is just a pre-formatted Panel)
     public AlertBox(Alert alert)
     {
-        titleLabel = new Label();
+        titleLabel = new();
         messageTextbox = newRichTextBox(alert.Message);
 
         Controls.Add(titleLabel);
         Controls.Add(messageTextbox);
 
-        MinimumSize = new Size(169, 10); //30 height
-        MaximumSize = new Size(169, 300);
+        MinimumSize = new(boxWidth, 10); //30 height
+        MaximumSize = new(boxWidth, boxMaxHeight);
         BorderStyle = BorderStyle.FixedSingle;
         AutoSize = true;
 
-        titleLabel.Location = new Point(4, 4);
-        titleLabel.MaximumSize = new Size(155, 15);
-        titleLabel.MinimumSize = new Size(0, 15);
+        titleLabel.Location = new(4, 4);
+        titleLabel.MaximumSize = new(textBoxMaxWidth, 15);
+        titleLabel.MinimumSize = new(0, 15);
         titleLabel.Text = alert.Title;
-        titleLabel.Font = new Font(titleLabel.Font, FontStyle.Bold);
+        titleLabel.Font = new(titleLabel.Font, FontStyle.Bold);
         titleLabel.Width = titleLabel.PreferredWidth;
 
-        messageTextbox.Location = new Point(7, 20);
+        messageTextbox.Location = new(7, 20);
     }
 
     // Creates a textbox formatted to look like a warning/error box
-    protected static TextBox newTextBox(string text, int maxwidth = 155, int maxheight = 200)
+    protected TextBox newTextBox(string text, int? maxwidth = null, int? maxheight = null)
     {
+        if (maxwidth is null) maxwidth = textBoxMaxWidth;
+        if (maxheight is null) maxheight = textBoxMaxHeight;
+
         TextBox tb = new();
         tb.TextChanged += new(textBox_TextChanged);
-        tb.MaximumSize = new(maxwidth, maxheight);
-        tb.MinimumSize = new(maxwidth, 10);
+        tb.MaximumSize = new(maxwidth.Value, maxheight.Value);
+        tb.MinimumSize = new(maxwidth.Value, 10);
         tb.Text = text;
         tb.Multiline = true;
         tb.BorderStyle = BorderStyle.None;
@@ -54,14 +62,17 @@ public class AlertBox : Panel
     }
 
     // Creates a richtextbox formatted to look like a warning/error box
-    protected static RichTextBox newRichTextBox(string text, int maxwidth = 155, int maxheight = 200)
+    protected RichTextBox newRichTextBox(string text, int? maxwidth = null, int? maxheight = null)
     {
+        if (maxwidth is null) maxwidth = textBoxMaxWidth;
+        if (maxheight is null) maxheight = textBoxMaxHeight;
+
         TextBox test = newTextBox(text, maxwidth, maxheight);
 
         RichTextBox tb = new();
         tb.TextChanged += new(textBox_TextChanged);
-        tb.MaximumSize = new(maxwidth, maxheight);
-        tb.MinimumSize = new(maxwidth, 10);
+        tb.MaximumSize = new(maxwidth.Value, maxheight.Value);
+        tb.MinimumSize = new(maxwidth.Value, 10);
         tb.Text = text;
         tb.BorderStyle = BorderStyle.None;
         tb.TabStop = false;
