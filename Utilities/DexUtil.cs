@@ -166,7 +166,7 @@ public static class DexUtil
     }
 
     // Common GetIndex code, that allows inner looping of keys (e.g. species combos) and outer looping of formats (e.g. pk3 -> main-series)
-    private static int? GetIndex(this JObject dex, string format, IEnumerable<List<string>> other_keys)
+    private static T GetIndexedValue<T>(this JObject dex, string format, IEnumerable<List<string>> other_keys)
     {
         //get chain of indices to be searched.
         List<string> indexChain = new() { format };
@@ -178,25 +178,25 @@ public static class DexUtil
         {
             foreach (var keys in other_keys)
             {
-                List<string> temp = new(keys) { "Indices", link };
-                int? index = dex.ReadDataDex<int?>(temp.ToArray());
+                List<string> temp = new(keys) { link };
+                T index = dex.ReadDataDex<T>(temp.ToArray());
                 if (index is not null)
                     return index;
             }
         }
-        return null;
+        return default;
     }
 
     /// <summary>
-    /// Gets the index number of whatever <paramref name="keys"/> points to for the <paramref name="format"/>.<br/>
+    /// Gets an index type value of whatever <paramref name="keys"/> points to for the <paramref name="format"/>.<br/>
     /// If format fails, tries the format's "Parent Indices".
     /// </summary>
     /// <param name="dex">A datadex.</param>
     /// <param name="format">A storage format.</param>
     /// <param name="keys">The path of the object in <paramref name="dex"/>.</param>
-    /// <returns>Whether or not the object at the given location exists in the given format.</returns>
-    public static int? GetIndex(this JObject dex, string format, params string[] keys)
-        => dex.GetIndex(format, new List<List<string>>() { keys.ToList() });
+    /// <returns>The value at the given index name, or one of its fallback indices.</returns>
+    public static T GetIndexedValue<T>(this JObject dex, string format, params string[] keys)
+        => dex.GetIndexedValue<T>(format, new List<List<string>>() { keys.ToList() });
 
 
     /* ------------------------------------
@@ -346,15 +346,25 @@ public static class DexUtil
     }
 
     /// <summary>
-    /// Searches <see cref="SPECIES_DEX"/> for the given <paramref name="pku"/>'s index number in the<br/>
-    /// given format, according to it's species as well as form/appearance if applicable.
+    /// Like <see cref="GetIndexedValue(JObject, string, string[])"/> but searches through the<br/>
+    /// appearances, form(s), then species level of a species entry with the given keys.
     /// </summary>
     /// <param name="pku">The pku.</param>
-    /// <param name="format">The format the index corresponds to.</param>
     /// <param name="ignoreCasting">Whether or not to ignore the other forms pku can be casted to.</param>
-    /// <returns>The index number of the <paramref name="pku"/> in <paramref name="format"/>.</returns>
-    public static int? GetSpeciesIndex(pkuObject pku, string format, bool ignoreCasting = false)
-        => SPECIES_DEX.GetIndex(format, pku.GetSearchablePKUCombos(ignoreCasting));
+    /// <inheritdoc cref="GetIndexedValue(JObject, string, string[])"/>
+    public static T GetSpeciesIndexedValue<T>(pkuObject pku, string format, bool ignoreCasting, params string[] keys)
+    {
+        var combos = pku.GetSearchablePKUCombos(ignoreCasting);
+        IEnumerable<List<string>> temp()
+        {
+            foreach(var combo in combos)
+            {
+                combo.AddRange(keys);
+                yield return combo;
+            }
+        }
+        return SPECIES_DEX.GetIndexedValue<T>(format, temp());
+    }
 
 
     /* ------------------------------------

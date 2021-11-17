@@ -364,22 +364,6 @@ public class pk3Object : FormatObject
     public const byte EGG_NAME_OVERRIDE_CONST = 0x06;
 
     /// <summary>
-    /// Calculates the PP of the given move with the given number of PP Ups.
-    /// </summary>
-    /// <param name="moveID">The ID of the move.</param>
-    /// <param name="ppups">The number of PP Ups the move has.</param>
-    /// <returns>The PP the move with <paramref name="moveID"/> would have with <paramref name="ppups"/> PP Ups.</returns>
-    public static int CalculatePP(ushort moveID, byte ppups)
-    {
-        // empty move check
-        if (moveID is 0)
-            return 0;
-
-        //pp formula
-        return (5 + ppups) * PokeAPIUtil.GetMoveBasePP(moveID).Value / 5;
-    }
-
-    /// <summary>
     /// Returns the rank of the given Gen 3 contest category.
     /// </summary>
     /// <param name="firstRibbon">The first ribbon in the contest category to check.</param>

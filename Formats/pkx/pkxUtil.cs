@@ -172,6 +172,17 @@ public static class pkxUtil
         }
     }
 
+    /// <summary>
+    /// Calculates the PP of the given <paramref name="move"/> with the given number of
+    /// <paramref name="ppups"/>, under the given <paramref name="format"/>.
+    /// </summary>
+    /// <param name="move">The name of move.</param>
+    /// <param name="ppups">The number of PP Ups the move has.</param>
+    /// <param name="format">The format the move is being considered under.</param>
+    /// <returns>The PP <paramref name="move"/> would have with <paramref name="ppups"/> PP Ups.</returns>
+    public static int CalculatePP(string move, int ppups, string format)
+        => (5 + ppups) * MOVE_DEX.GetIndexedValue<int?>(format, move, "Base PP").Value / 5;
+
 
     /* ------------------------------------
      * Alert Generator Methods
@@ -1053,7 +1064,7 @@ public static class pkxUtil
             (int? id, string game) helper(string game)
             {
                 if (GAME_DEX.ExistsIn(format, game))
-                    return (GAME_DEX.GetIndex(format, game), game);
+                    return (GAME_DEX.GetIndexedValue<int?>(format, game, "Indices"), game);
                 return (null, game);
             }
 

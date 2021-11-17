@@ -81,18 +81,6 @@ public static class PokeAPIUtil
         }
     }
 
-    public static int? GetMoveBasePP(int moveID)
-    {
-        try
-        {
-            return Task.Run(() => getMoveIndexAsync(moveID)).Result.Pp;
-        }
-        catch
-        {
-            return null; //move does not exist
-        }
-    }
-
     public static string GetMoveName(int moveID)
     {
         try

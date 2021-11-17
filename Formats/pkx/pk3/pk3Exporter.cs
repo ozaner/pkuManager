@@ -76,7 +76,7 @@ public class pk3Exporter : Exporter
     // Species
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessSpecies()
-        => Data.Species.Set(DexUtil.GetSpeciesIndex(pku, FormatName).Value);
+        => Data.Species.Set(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, false, "Indices").Value);
 
     // Nature [Implicit]
     [PorterDirective(ProcessingPhase.FirstPass)]
@@ -305,13 +305,13 @@ public class pk3Exporter : Exporter
 
     // PP [Requires: Moves, PP-Ups]
     [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessPP() => Data.PP.Set(new[]
+    protected virtual void ProcessPP()
     {
-        pk3Object.CalculatePP(Data.Moves.Get<ushort>(0), Data.PP_Ups.Get<byte>(0)),
-        pk3Object.CalculatePP(Data.Moves.Get<ushort>(1), Data.PP_Ups.Get<byte>(1)),
-        pk3Object.CalculatePP(Data.Moves.Get<ushort>(2), Data.PP_Ups.Get<byte>(2)),
-        pk3Object.CalculatePP(Data.Moves.Get<ushort>(3), Data.PP_Ups.Get<byte>(3)),
-    });
+        int[] pp = new int[4];
+        for (int i = 0; i < moveIndices.Length; i++)
+            pp[i] = pkxUtil.CalculatePP(pku.Moves[moveIndices[i]].Name, Data.PP_Ups.Get<byte>(i), FormatName);
+        Data.PP.Set(pp);
+    }
 
     // Friendship
     [PorterDirective(ProcessingPhase.FirstPass)]
