@@ -353,11 +353,6 @@ public class pk3Object : FormatObject
      * ------------------------------------
     */
     /// <summary>
-    /// The last valid move ID used in Gen 3. Corresponds to Psycho Boost.
-    /// </summary>
-    internal const ushort LAST_MOVE_ID = 354;
-
-    /// <summary>
     /// When <see cref="Egg_Name_Override"/> is set to this value, the pk3 nickname will<br/>
     /// be overriden by the <see cref="pkxUtil.EGG_NICKNAME"/> of the game's language.
     /// </summary>

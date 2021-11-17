@@ -289,7 +289,7 @@ public class pk3Exporter : Exporter
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessMoves()
     {
-        (int[] moves, moveIndices, Alert alert) = pkxUtil.ExportTags.ProcessMoves(pku, pk3Object.LAST_MOVE_ID);
+        (int[] moves, moveIndices, Alert alert) = pkxUtil.ExportTags.ProcessMoves(pku, FormatName);
         Data.Moves.Set(moves);
         Warnings.Add(alert);
     }

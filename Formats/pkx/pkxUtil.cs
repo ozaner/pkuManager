@@ -1247,18 +1247,8 @@ public static class pkxUtil
         public static (int, Alert) ProcessItem(pkuObject pku, int gen)
             => ProcessEnumTag(pku.Item, PokeAPIUtil.GetItemIndex(pku.Item, gen), GetItemAlert, true, 0);
 
-        public static (int[] moveIDs, int[] moveIndicies, Alert) ProcessMoves(pkuObject pku, int lastMoveIndex)
-        {
-            int? GetMoveID(string move)
-            {
-                int? moveID = PokeAPIUtil.GetMoveIndex(move);
-                return moveID > lastMoveIndex ? null : moveID;
-            }
-            return ProcessMoves(pku, GetMoveID);
-        }
-
         //gmax moves use a different index and cannot even be stored out of battle. Thus, they are irrelevant.
-        public static (int[] moveIDs, int[] moveIndicies, Alert) ProcessMoves(pkuObject pku, Func<string, int?> GetMoveID)
+        public static (int[] moveIDs, int[] moveIndicies, Alert) ProcessMoves(pkuObject pku, string format, bool ignoreIDs = false)
         {
             List<int> moveIndices = new(); //indices in pku
             int[] moveIDs = new int[4]; //index numbers for format
@@ -1266,22 +1256,22 @@ public static class pkxUtil
             if (pku.Moves is not null)
             {
                 int confirmedMoves = 0;
-                bool invalid = false;
+                bool invalid = false; //at least one move is invalid
 
                 for (int i = 0; i < pku.Moves.Length; i++)
                 {
-                    if (pku.Moves[i].Name is not null) //move has a name
+                    if(MOVE_DEX.ExistsIn(format, pku.Moves[i].Name)) //move exists in format
                     {
-                        int? moveIDTemp = GetMoveID(pku.Moves[i].Name);
-                        if (moveIDTemp is not null && confirmedMoves < 4)
+                        if (confirmedMoves < 4)
                         {
-                            moveIDs[confirmedMoves] = moveIDTemp.Value;
+                            if (!ignoreIDs) //move ID must exist if not ignoring IDs and move exists in format.
+                                moveIDs[confirmedMoves] = MOVE_DEX.GetIndexedValue<int?>(format, pku.Moves[i].Name, "Indices").Value;
                             moveIndices.Add(i);
                             confirmedMoves++;
                         }
-                        else if(moveIDTemp is null)
-                            invalid = true;
                     }
+                    else //move DNE in format
+                        invalid = true;
                 }
 
                 if (confirmedMoves != pku.Moves.Length) //not a perfect match

@@ -1,7 +1,6 @@
 ﻿using pkuManager.Common;
 using PokeApiNet;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace pkuManager.Utilities;
@@ -61,36 +60,6 @@ public static class PokeAPIUtil
         catch
         {
             return null; //ability DNE
-        }
-    }
-
-    //maybe make an overload of this to accommodate custom valid move lists (only mainline example is gen 8).
-    public static int? GetMoveIndex(string move)
-    {
-        if (move is null)
-            return null;
-
-        string searchMove = move.ToLower().Replace(' ', '-'); // lower case and replace spaces with dashes
-        try
-        {
-            return Task.Run(() => getMoveIndexAsync(searchMove)).Result.Id;
-        }
-        catch
-        {
-            return null; //unofficial move
-        }
-    }
-
-    public static string GetMoveName(int moveID)
-    {
-        try
-        {
-            Move moveObj = Task.Run(() => getMoveIndexAsync(moveID)).Result;
-            return moveObj.Names.FirstOrDefault(x => x.Language.Name is "en").Name;
-        }
-        catch
-        {
-            return null; //move does not exist
         }
     }
 
@@ -175,12 +144,6 @@ public static class PokeAPIUtil
     */
     private static async Task<PokemonSpecies> getPokemonSpeciesAsync(int dex)
         => await paClient.GetResourceAsync<PokemonSpecies>(dex);
-
-    private static async Task<Move> getMoveIndexAsync(int moveID)
-        => await paClient.GetResourceAsync<Move>(moveID);
-
-    private static async Task<Move> getMoveIndexAsync(string move)
-        => await paClient.GetResourceAsync<Move>(move);
 
     private static async Task<Ability> getAbilityAsync(string ability)
         => await paClient.GetResourceAsync<Ability>(ability);

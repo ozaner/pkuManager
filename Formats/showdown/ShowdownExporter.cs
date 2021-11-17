@@ -181,7 +181,7 @@ public class ShowdownExporter : Exporter
     {
         //doesnt get gmax moves, but showdown doesn't allow them either
         List<string> moves = new();
-        (_, int[] moveIndices, Alert alert) = pkxUtil.ExportTags.ProcessMoves(pku, m => MOVE_DEX.ExistsIn(FormatName, m) ? 1 : null);
+        (_, int[] moveIndices, Alert alert) = pkxUtil.ExportTags.ProcessMoves(pku, FormatName, true);
         foreach (int id in moveIndices)
             moves.Add(pku.Moves[id].Name);
         Data.Moves = moves.ToArray();
