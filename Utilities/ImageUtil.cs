@@ -19,7 +19,7 @@ public static class ImageUtil
     /// A JSON index of all Pokemon species sprites used in pkuManager.<br/>
     /// Compiled from the <see cref="SPRITE_INDICES_URL">sprite-indicies.json</see> file on the pkuSprite repo.
     /// </summary>
-    private static readonly JObject MASTER_SPRITE_INDEX = DexUtil.GetMasterDatadex(SPRITE_INDICES_URL);
+    private static readonly JObject MASTER_SPRITE_INDEX = DexUtil.GetMasterDatadex(SPRITE_INDICES_URL, "Sprite");
 
     /// <summary>
     /// The different types of sprites listed in the <see cref="MASTER_SPRITE_INDEX"/>.

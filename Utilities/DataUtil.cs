@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Numerics;
 using System.Windows.Forms;
 
@@ -18,6 +20,38 @@ public static class DataUtil
      * JSON Methods
      * ------------------------------------
     */
+    #pragma warning disable SYSLIB0014 // WebClient is obsolete
+    private static readonly WebClient WEB_CLIENT = new();
+
+    /// <summary>
+    /// Retrives a JSON file from the given <paramref name="url"/> and parses it to a JObject.<br/>
+    /// JObject will be <see langword="null"/> if the url DNE or the JSON is malformed.
+    /// </summary>
+    /// <param name="url">A direct url to a JSON file.</param>
+    /// <param name="name">The name of the JSON file for error reporting.</param>
+    /// <param name="terminateOnFail">Whether or not to end the application if file fails to download/parse.</param>
+    /// <returns>The downloaded JSON file as a JObject, or <see langword="null"/> on failure.</returns>
+    public static JObject DownloadJson(string url, string name = null, bool terminateOnFail = false)
+    {
+        static string JSONDownloadFailureMessage(string name)
+            => $"Failed to download the {name}, terminating pkuManager.\n\n" +
+                "1) Are you sure you're connected to the internet? pkuManager requires an internet connection to start.\n" +
+                "2) Maybe Github is down? pkuManager downloads its data from the pkuData repo on Github.";
+
+        JObject jobj = null;
+        try
+        {
+            jobj = JObject.Parse(WEB_CLIENT.DownloadString(url));
+        }
+        catch
+        {
+            if(terminateOnFail)
+                TerminateProgram("JSON Download Failure", JSONDownloadFailureMessage(name));
+            Debug.WriteLine($"Failed to download the {name}...");
+        }
+        return jobj;
+    }
+
     /// <summary>
     /// Combines a collection of JObjects into a new JObject.
     /// </summary>

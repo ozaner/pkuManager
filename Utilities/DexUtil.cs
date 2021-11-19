@@ -3,9 +3,7 @@ using pkuManager.Common;
 using pkuManager.pku;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using System.Text;
 
 namespace pkuManager.Utilities;
@@ -19,44 +17,21 @@ public static class DexUtil
     //Array merging JsonMergeSettings.
     private static readonly JsonMergeSettings JMS = new() { MergeArrayHandling = MergeArrayHandling.Union };
 
-    private const string DataDexFailureTitle = "DataDex Read Failure";
-    private const string DataDexFailureMessage = "Failed to read one or more datadexes, terminating pkuManager.\n\n" +
-                                                    "Are you sure you're connected to the internet?\n" +
-                                                    "pkuManager requires an internet connection.";
-
     /// <summary>
     /// Compiles a master datadex from the given <paramref name="url"/>.
     /// </summary>
     /// <param name="url">A raw url to an uncompiled master datadex file.</param>
+    /// <param name="type">Which master datadex is being retrieved, used for error reporting.</param>
     /// <returns>The compiled datadex from the <paramref name="url"/>.</returns>
-    public static JObject GetMasterDatadex(string url)
+    public static JObject GetMasterDatadex(string url, string type)
     {
         JObject masterDatadex = new();
-        WebClient client = new();
-        try
-        {
-            //Download the uncompiled master-datadex.json
-            JObject uncompiledJSON = JObject.Parse(client.DownloadString(url));
+        JObject uncompiledJSON = DataUtil.DownloadJson(url, $"Master {type}Dex", true);
 
-            foreach (var kvp in uncompiledJSON)
-            {
-                try
-                {
-                    //Download datadex.json
-                    JObject datadexJSON = JObject.Parse(client.DownloadString((string)kvp.Value));
-                    masterDatadex.Merge(datadexJSON, JMS);
-                }
-                catch
-                {
-                    DataUtil.TerminateProgram(DataDexFailureTitle, DataDexFailureMessage);
-                    Debug.WriteLine($"Failed to read {kvp.Key} datadex...");
-                }
-            }
-        }
-        catch
+        foreach (var kvp in uncompiledJSON)
         {
-            DataUtil.TerminateProgram(DataDexFailureTitle, DataDexFailureMessage);
-            Debug.WriteLine("Failed to read a master datadex...");
+            JObject datadexJSON = DataUtil.DownloadJson((string)kvp.Value, $"{kvp.Key} Dex", true);
+            masterDatadex.Merge(datadexJSON, JMS);
         }
         return masterDatadex;
     }
@@ -134,7 +109,7 @@ public static class DexUtil
                 continue;
             keys[splitIndex] = x.Key;
             T res = datadex.ReadDataDex<T>(keys);
-            if (value.Equals(res))
+            if ((value is null && res is null) || value is not null && value.Equals(res))
                 return x.Key; //match found
         }
         keys[splitIndex] = "$x"; //put $x back in split index

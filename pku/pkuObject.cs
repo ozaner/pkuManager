@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using NJsonSchema;
 using pkuManager.Utilities;
 using System;
 using System.Collections;
@@ -8,7 +9,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 
 namespace pkuManager.pku;
 
@@ -329,6 +329,13 @@ public class pkuObject : pkuDictionaryTag
      * ------------------------------------
     */
     /// <summary>
+    /// The current pkuSchema from the pkuData repo.
+    /// </summary>
+    private static readonly JsonSchema pkuSchema = JsonSchema.FromJsonAsync(DataUtil
+        .DownloadJson("https://raw.githubusercontent.com/project-pku/pkuData/main/pkuSchema.json", "pkuSchema", true)
+        .ToString()).Result;
+
+    /// <summary>
     /// Merges two pkuObjects, overriding the non-null entries
     /// of <paramref name="pkuA"/> with <paramref name="pkuB"/>.<br/>
     /// Note that this does not merge arrays.
@@ -401,24 +408,23 @@ public class pkuObject : pkuDictionaryTag
         pkuObject pku = null;
         string errormsg = null;
 
-        try
+        var errors = pkuSchema.Validate(pkuJson);
+        if (!errors.Any())
         {
-            pku = JsonConvert.DeserializeObject<pkuObject>(pkuJson, jsonSettings);
-            if (pku is null)
-                errormsg = "The pku file is empty.";
-        }
-        catch (Exception ex)
-        {
-            Match match = Regex.Match(ex.Message, "Path '(.*)'");
-            if (match.Groups.Count > 1) // tag mentioned
+            try
             {
-                if (ex.Message.Contains("After parsing a value an unexpected character was encountered")) //type is fine but misformatted afterwards
-                    errormsg = $"File misformatted after tag \"{match.Groups[1]}\". Perhaps you are missing a comma?";
-                else //tag type wrong
-                    errormsg = $"The tag \"{match.Groups[1]}\" does not have the correct type.";
+                pku = JsonConvert.DeserializeObject<pkuObject>(pkuJson, jsonSettings);
             }
-            else //don't know/no type mentioned
-                errormsg = ex.Message;
+            catch
+            {
+                errormsg = "Could not read .pku file...";
+            }
+        }
+        else
+        {
+            var error = errors.FirstOrDefault();
+            errormsg = error is null ? ".pku file is misformatted."
+                                     : $"Something is wrong with '{error.Path}' or one of it's sub-tags.";
         }
 
         return (pku, errormsg);

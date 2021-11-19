@@ -34,13 +34,14 @@ public static class Registry
 
     public static class DataDexes
     {
-        private const string MASTER_DEX_BASE = "https://raw.githubusercontent.com/project-pku/pkuData/main/master-dexes/master";
+        private static string GetMasterDexURL(string type)
+            => $"https://raw.githubusercontent.com/project-pku/pkuData/main/master-dexes/master{type}Dex.json";
 
-        public static readonly JObject SPECIES_DEX = DexUtil.GetMasterDatadex($"{MASTER_DEX_BASE}SpeciesDex.json");
-        public static readonly JObject ABILITY_DEX = DexUtil.GetMasterDatadex($"{MASTER_DEX_BASE}AbilityDex.json");
-        public static readonly JObject MOVE_DEX = DexUtil.GetMasterDatadex($"{MASTER_DEX_BASE}MoveDex.json");
-        public static readonly JObject ITEM_DEX = DexUtil.GetMasterDatadex($"{MASTER_DEX_BASE}ItemDex.json");
-        public static readonly JObject GAME_DEX = DexUtil.GetMasterDatadex($"{MASTER_DEX_BASE}GameDex.json");
-        public static readonly JObject FORMAT_DEX = DexUtil.GetMasterDatadex($"{MASTER_DEX_BASE}FormatDex.json");
+        public static readonly JObject SPECIES_DEX = DexUtil.GetMasterDatadex(GetMasterDexURL("Species"), "Species");
+        public static readonly JObject ABILITY_DEX = DexUtil.GetMasterDatadex(GetMasterDexURL("Ability"), "Ability");
+        public static readonly JObject MOVE_DEX = DexUtil.GetMasterDatadex(GetMasterDexURL("Move"), "Moves");
+        public static readonly JObject ITEM_DEX = DexUtil.GetMasterDatadex(GetMasterDexURL("Item"), "Items");
+        public static readonly JObject GAME_DEX = DexUtil.GetMasterDatadex(GetMasterDexURL("Game"), "Games");
+        public static readonly JObject FORMAT_DEX = DexUtil.GetMasterDatadex(GetMasterDexURL("Format"), "Format");
     }
 }
