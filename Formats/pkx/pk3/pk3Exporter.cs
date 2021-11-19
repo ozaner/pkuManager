@@ -2,7 +2,9 @@
 using pkuManager.Common;
 using pkuManager.pku;
 using pkuManager.Utilities;
+using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text.RegularExpressions;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
@@ -152,7 +154,8 @@ public class pk3Exporter : Exporter
     protected virtual void ProcessPID()
     {
         var (pids, alert) = pkxUtil.ExportTags.ProcessPID(pku, Data.TID.Get<uint>(), false, gender, nature, unownForm);
-        PIDResolver = new(alert, pids, x => Data.PID.Set(x));
+        BigInteger[] castedPids = Array.ConvertAll(pids, x => x.ToBigInteger());
+        PIDResolver = new(alert, Data.PID, castedPids);
         if (alert is RadioButtonAlert)
             Errors.Add(alert);
         else
@@ -278,7 +281,8 @@ public class pk3Exporter : Exporter
     protected virtual void ProcessExperience()
     {
         var (options, alert) = pkxUtil.ExportTags.ProcessEXP(pku);
-        ExperienceResolver = new(alert, options, x => Data.Experience.Set(x));
+        BigInteger[] castedOptions = Array.ConvertAll(options, x => x.ToBigInteger());
+        ExperienceResolver = new(alert, Data.Experience, castedOptions);
         if (alert is RadioButtonAlert)
             Errors.Add(alert);
         else
@@ -474,13 +478,13 @@ public class pk3Exporter : Exporter
         bool[] options;
         if (dex is 151 or 386 && pku.Catch_Info?.Fateful_Encounter is not true) //Mew or Deoxys w/ no fateful encounter
         {
-            options = new[] { false, true };
+            options = new bool[] { false, true };
             alert = GetFatefulEncounterAlert(dex is 151);
         }
         else
-            options = new[] { pku.Catch_Info?.Fateful_Encounter is true };
+            options = new bool[] { pku.Catch_Info?.Fateful_Encounter is true };
 
-        FatefulEncounterResolver = new(alert, options, x => Data.Fateful_Encounter.Set(x));
+        FatefulEncounterResolver = new(alert, Data.Fateful_Encounter, options);
         if (alert is RadioButtonAlert)
             Errors.Add(alert);
         else
@@ -491,7 +495,7 @@ public class pk3Exporter : Exporter
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessByteOverride()
     {
-        (Alert a, ByteOverrideResolver) = pkxUtil.MetaTags.ApplyByteOverride(pku, Data.NonSubData, Data.G, Data.A, Data.E, Data.M);
+        (Alert a, ByteOverrideAction) = pkxUtil.MetaTags.ApplyByteOverride(pku, Data.NonSubData, Data.G, Data.A, Data.E, Data.M);
         Warnings.Add(a);
     }
 
@@ -502,11 +506,11 @@ public class pk3Exporter : Exporter
     */
     // PID ErrorResolver
     [PorterDirective(ProcessingPhase.SecondPass)]
-    protected virtual ErrorResolver<uint> PIDResolver { get; set; }
+    protected virtual ErrorResolver<BigInteger> PIDResolver { get; set; }
 
     // Experience ErrorResolver
     [PorterDirective(ProcessingPhase.SecondPass)]
-    protected virtual ErrorResolver<uint> ExperienceResolver { get; set; }
+    protected virtual ErrorResolver<BigInteger> ExperienceResolver { get; set; }
 
     // Fateful Encounter ErrorResolver
     [PorterDirective(ProcessingPhase.SecondPass)]
@@ -517,9 +521,9 @@ public class pk3Exporter : Exporter
      * Post-Processing Methods
      * ------------------------------------
     */
-    // Byte Override ErrorResolver
+    // Byte Override Action
     [PorterDirective(ProcessingPhase.PostProcessing)]
-    protected virtual ErrorResolver<uint> ByteOverrideResolver { get; set; }
+    protected virtual Action ByteOverrideAction { get; set; }
 
 
     /* ------------------------------------

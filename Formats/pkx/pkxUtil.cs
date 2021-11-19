@@ -729,7 +729,7 @@ public static class pkxUtil
                 return null;
         }
 
-        public static (Alert, ErrorResolver<uint>) ApplyByteOverride(pkuObject pku, params ByteArrayManipulator[] bams)
+        public static (Alert, Action) ApplyByteOverride(pkuObject pku, params ByteArrayManipulator[] bams)
         {
             const string BYTE_OVERRIDE_REGEXP = "^(.*) ([0-9]*)(:[0-9]*)?(:[0-9]*)?$";
             static BigInteger? valueChecker(JToken tok, int startByte, int secondValue, int? bitLength, int bamLength)
@@ -859,12 +859,12 @@ public static class pkxUtil
                 throw new ArgumentException($"At most, 5 different BAMs should have been passed.", nameof(bams));
 
             Alert alert = invalidIndices.Any() ? MetaAlerts.GetByteOverrideAlert(invalidIndices) : null;
-            ErrorResolver<uint> er = new(null, new uint[] { 0 }, _ =>
+            void action()
             {
                 foreach (Action a in validCommands)
                     a.Invoke();
-            });
-            return (alert, er);
+            }
+            return (alert, action);
         }
     }
 

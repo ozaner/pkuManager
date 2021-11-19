@@ -1,5 +1,6 @@
-﻿using System;
-using System.Linq;
+﻿using pkuManager.Formats.Fields;
+using pkuManager.Utilities;
+using System;
 
 namespace pkuManager.Alerts;
 
@@ -18,27 +19,27 @@ public class ErrorResolver<T>
     /// <summary>
     /// Functions that return the values of the different choices the <see cref="rba"/> contains.
     /// </summary>
-    protected readonly Func<T>[] Options;
+    protected readonly Union<T, Func<T>>[] Options;
 
     /// <summary>
-    /// An action that can be used to set the chosen value.
+    /// The Field that will store the chosen value.
     /// </summary>
-    protected Action<T> Setter;
+    protected Field<T> Field;
 
     /// <summary>
     /// Creates an ErrorResolver object.
     /// </summary>
     /// <param name="alert">The relevant alert.</param>
-    /// <param name="options">An array of functions that return values coresponding to the <paramref name="alert"/>.<br/>
-    ///                       Should only have one value if <paramref name="alert"/>
-    ///                       is not a <see cref="RadioButtonAlert"/>.</param>
-    /// <param name="setter">A function that sets a value to the desired property.</param>
-    public ErrorResolver(Alert alert, Func<T>[] options, Action<T> setter)
+    /// <param name="options">An array of values, or functions that return values, coresponding to
+    ///                       the <paramref name="alert"/>.<br/> Should only have one value if
+    ///                       <paramref name="alert"/> is not a <see cref="RadioButtonAlert"/>.</param>
+    /// <param name="field">A function that sets a value to the desired property.</param>
+    public ErrorResolver(Alert alert, Field<T> field, params Union<T, Func<T>>[] options)
     {
         Options = options;
-        Setter = setter;
+        Field = field;
 
-        if (alert is RadioButtonAlert rba) //A RadioButtonAlert, initalize decision variables.
+        if (alert is RadioButtonAlert rba)
         {
             this.rba = rba;
             if (rba.Choices.Length != options.Length)
@@ -51,16 +52,20 @@ public class ErrorResolver<T>
         }
     }
 
-    /// <param name="options">An array of values coresponding to the <paramref name="alert"/>.<br/>
-    ///                       Should only have one value if <paramref name="alert"/>
-    ///                       is not a <see cref="RadioButtonAlert"/>.</param>
-    /// <inheritdoc cref="ErrorResolver(Alert, Func{T}[], Action{T})"/>
-    public ErrorResolver(Alert alert, T[] options, Action<T> setter)
-        : this(alert, options.Select(x => () => x).ToArray(), setter) { }
+    /// <inheritdoc cref="ErrorResolver(Alert, Field{T}, Union{T, Func{T}}[])"/>
+    public ErrorResolver(Alert alert, Field<T> field, params T[] options)
+        : this(alert, field, new Union<T, Func<T>>[options.Length])
+    {
+        for (int i = 0; i < options.Length; i++)
+            Options[i] = options[i];
+    }
+
+    private static T ReadOption(Union<T, Func<T>> val)
+        => val.IsRight ? val.Right.Invoke() : val.Left;
 
     /// <summary>
     /// Finalizes and sets the value corresponding to the chosen option.
     /// </summary>
     public void DecideValue()
-        => Setter(rba is null ? Options[0].Invoke() : Options[rba.SelectedIndex].Invoke());
+        => Field.Set(ReadOption(rba is null ? Options[0] : Options[rba.SelectedIndex]));
 }

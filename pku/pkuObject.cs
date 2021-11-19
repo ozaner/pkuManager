@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using NJsonSchema;
 using pkuManager.Formats.Fields;
+using pkuManager.Formats.Fields.BackedFields;
 using pkuManager.Utilities;
 using System;
 using System.Collections;
@@ -26,7 +27,7 @@ public class pkuObject : pkuDictionaryTag
     public bool? Nickname_Flag { get; set; }
 
     [JsonProperty("True OT")]
-    public string True_OT { get; set; }
+    public BackedField<string> True_OT { get; set; } = new();
 
     [JsonProperty("Forms")]
     public string[] Forms { get; set; }

@@ -65,7 +65,7 @@ public abstract class Importer : Porter
             new("Include True OT:", null, true),
             new("Don't Include", null)
         });
-        TrueOTResolver = new(rba, new Func<string>[] { () => rba.Choices[0].TextEntry, () => null }, s => pku.True_OT = s);
+        TrueOTResolver = new(rba, pku.True_OT, (Func<string>)(() => rba.Choices[0].TextEntry), (string)null);
         Questions.Add(rba);
     }
 

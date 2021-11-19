@@ -69,11 +69,13 @@ public abstract class Porter
     /// </summary>
     /// <returns>An exception for members with invalid <see cref="PorterDirective"/> attributes.</returns>
     private static Exception InvalidAttributeException()
-        => new($"{nameof(PorterDirective)} attributes can only be placed on void methods" +
-            $" with no parameters and properties of type {typeof(ErrorResolver<>).Name}.");
+        => new($"{nameof(PorterDirective)} attributes can only be placed on" +
+            $"a) void methods with no parameters" +
+            $"b) properties of type {typeof(ErrorResolver<>).Name}, and" +
+            $"c) properties of type {nameof(Action)}.");
 
     /// <summary>
-    /// Given a list of <paramref name="members"/>, invokes void methods and
+    /// Given a list of <paramref name="members"/>, invokes void methods, <see cref="Action"/>s, and
     /// decides values for <see cref="ErrorResolver{T}"/>s respectively.
     /// </summary>
     /// <param name="members">A list of MemberInfo objects. Should not include any members but
@@ -86,12 +88,15 @@ public abstract class Porter
                 return;
 
             PorterDirective ed = member.GetCustomAttribute(typeof(PorterDirective), true) as PorterDirective;
-            if (ed.Prerequisites?.Length > 0) //has prereqs
+
+            // run prereqs first
+            if (ed.Prerequisites?.Length > 0)
             {
                 foreach (string prereq in ed.Prerequisites)
                     RunMember(members.FirstOrDefault(x => x.Name == prereq), members);
             }
 
+            // Deal with void methods
             if (member.MemberType is MemberTypes.Method)
             {
                 MethodInfo minfo = member as MethodInfo;
@@ -99,12 +104,19 @@ public abstract class Porter
                     throw InvalidAttributeException();
                 minfo.Invoke(this, null);
             }
+            //Deal with properties
             else if (member.MemberType is MemberTypes.Property)
             {
                 var resolver = (member as PropertyInfo).GetValue(this);
-                if (resolver.GetType().GetGenericTypeDefinition() != typeof(ErrorResolver<>))
+                //Actions
+                if (resolver is Action action)
+                    action.Invoke();
+                // ErrorResolvers
+                else if (resolver.GetType().GetGenericTypeDefinition() == typeof(ErrorResolver<>))
+                    resolver.GetType().GetMethod(nameof(ErrorResolver<object>.DecideValue)).Invoke(resolver, null);
+                //Invalid properties
+                else
                     throw InvalidAttributeException();
-                resolver.GetType().GetMethod(nameof(ErrorResolver<object>.DecideValue)).Invoke(resolver, null);
             }
             members.Remove(member); //consumed
         }
