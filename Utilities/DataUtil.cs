@@ -516,4 +516,22 @@ public static class DataUtil
         foreach ((int x, int y) in perms)
             (list[x], list[y]) = (list[y], list[x]);
     }
+
+    /// <summary>
+    /// Checks if a given <paramref name="type"/> is a decedent of a given <paramref name="generic"/> type.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <param name="generic">The generic type to check against.</param>
+    /// <returns>Whether <paramref name="type"/> is a decedent of <paramref name="generic"/>.</returns>
+    public static bool IsSubclassOfGeneric(this Type type, Type generic)
+    {
+        while (type is not null && type != typeof(object))
+        {
+            var cur = type.IsGenericType ? type.GetGenericTypeDefinition() : type;
+            if (generic == cur)
+                return true;
+            type = type.BaseType;
+        }
+        return false;
+    }
 }

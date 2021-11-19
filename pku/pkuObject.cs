@@ -2,12 +2,14 @@
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using NJsonSchema;
+using pkuManager.Formats.Fields;
 using pkuManager.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 
 namespace pkuManager.pku;
@@ -27,7 +29,6 @@ public class pkuObject : pkuDictionaryTag
     public string True_OT { get; set; }
 
     [JsonProperty("Forms")]
-    [JsonConverter(typeof(OneLineArrayConverter))]
     public string[] Forms { get; set; }
 
     [JsonProperty("Appearance")]
@@ -97,7 +98,6 @@ public class pkuObject : pkuDictionaryTag
     public string[] Ribbons { get; set; }
 
     [JsonProperty("Markings")]
-    [JsonConverter(typeof(OneLineArrayConverter))]
     public string[] Markings { get; set; }
 
     [JsonProperty("Pokérus")]
@@ -107,7 +107,6 @@ public class pkuObject : pkuDictionaryTag
     public Shadow_Info_Class Shadow_Info { get; set; }
 
     [JsonProperty("Shiny Leaf")]
-    [JsonConverter(typeof(OneLineArrayConverter))]
     public string[] Shiny_Leaf { get; set; }
 
     [JsonProperty("Trash Bytes")]
@@ -122,11 +121,9 @@ public class pkuObject : pkuDictionaryTag
     public class Trash_Bytes_Class : pkuDictionaryTag
     {
         [JsonProperty("Nickname")]
-        [JsonConverter(typeof(OneLineArrayConverter))]
         public ushort[] Nickname { get; set; }
 
         [JsonProperty("OT")]
-        [JsonConverter(typeof(OneLineArrayConverter))]
         public ushort[] OT { get; set; }
     }
 
@@ -308,18 +305,23 @@ public class pkuObject : pkuDictionaryTag
     public class Byte_Override_Class : pkuDictionaryTag
     {
         [JsonProperty("Main Data")]
+        [JsonConverter(typeof(ByteOverrideConverter))]
         public Dictionary<string, JToken> Main_Data { get; set; }
 
         [JsonProperty("A")]
+        [JsonConverter(typeof(ByteOverrideConverter))]
         public Dictionary<string, JToken> A { get; set; }
 
         [JsonProperty("B")]
+        [JsonConverter(typeof(ByteOverrideConverter))]
         public Dictionary<string, JToken> B { get; set; }
 
         [JsonProperty("C")]
+        [JsonConverter(typeof(ByteOverrideConverter))]
         public Dictionary<string, JToken> C { get; set; }
 
         [JsonProperty("D")]
+        [JsonConverter(typeof(ByteOverrideConverter))]
         public Dictionary<string, JToken> D { get; set; }
     }
 
@@ -346,8 +348,8 @@ public class pkuObject : pkuDictionaryTag
     ///          <paramref name="pkuA"/> and <paramref name="pkuB"/>.</returns>
     public static pkuObject Merge(pkuObject pkuA, pkuObject pkuB)
     {
-        JObject a = JObject.FromObject(pkuA);
-        JObject b = JObject.FromObject(pkuB);
+        JObject a = JObject.Parse(pkuA.Serialize());
+        JObject b = JObject.Parse(pkuB.Serialize());
         var (p, e) = Deserialize(DataUtil.CombineJson(false, a, b).ToString());
         if (e is not null)
             throw new ArgumentException($"The merged pku isn't valid: {e}");
@@ -434,15 +436,15 @@ public class pkuObject : pkuDictionaryTag
     /// Serializes this pkuObject as a JSON string. Null entries are pruned.
     /// </summary>
     /// <returns>A JSON string of this pkuObject.</returns>
-    public string Serialize()
-        => JsonConvert.SerializeObject(this, Formatting.Indented, jsonSettings);
+    public string Serialize(bool formatted = false)
+        => JsonConvert.SerializeObject(this, formatted ? Formatting.Indented : Formatting.None, jsonSettings);
 
     /// <summary>
     /// Creates a deep copy of this <see cref="pkuObject"/>.
     /// </summary>
     /// <returns>A deep copy of this pkuObject.</returns>
     public pkuObject DeepCopy()
-        => JsonConvert.DeserializeObject<pkuObject>(JsonConvert.SerializeObject(this));
+        => Deserialize(Serialize()).pku;
 
     /// <summary>
     /// Whether this pku has been explictly marked as an egg.
@@ -472,13 +474,14 @@ public class pkuObject : pkuDictionaryTag
     */
     private static readonly JsonSerializerSettings jsonSettings = new()
     {
+        Converters = new List<JsonConverter> { new FieldJsonConverter() },
         NullValueHandling = NullValueHandling.Ignore,
-        ContractResolver = EmptyToNullContractResolver.Instance
+        ContractResolver = ShouldSerializeContractResolver.Instance
     };
 
-    private class EmptyToNullContractResolver : DefaultContractResolver
+    private class ShouldSerializeContractResolver : DefaultContractResolver
     {
-        public static readonly EmptyToNullContractResolver Instance = new();
+        public static readonly ShouldSerializeContractResolver Instance = new();
 
         private static bool IsEmpty(object value)
         {
@@ -488,11 +491,22 @@ public class pkuObject : pkuDictionaryTag
 
             Type valueType = value.GetType();
 
+            // check backing of fields
+            if (valueType.IsSubclassOfGeneric(typeof(Field<>)))
+            {
+                value = valueType.GetMethods()
+                                 .Where(x => x.Name is "Get" && !x.IsGenericMethod && x.GetParameters().Length is 0)
+                                 .First().Invoke(value, Array.Empty<object>());
+
+                if (value is null) //backing value was null
+                    return true;
+            }
+
             //array and dictionary tags won't be serialized if they are null or empty (but if they have null entries they still will...)
             if (typeof(ICollection).IsAssignableFrom(valueType))
                 return (value as ICollection).Count < 1;
 
-            //pkuDictionaryTags tags won't be serialized if they are null or all their entries IsEmpty()
+            //pkuDictionaryTags tags won't be serialized if they are null or all their properties IsEmpty()
             else if (valueType.IsSubclassOf(typeof(pkuDictionaryTag)))
                 return value is null || valueType.GetProperties().All(propertyInfo => IsEmpty(propertyInfo.GetValue(value)));
 
@@ -504,47 +518,39 @@ public class pkuObject : pkuDictionaryTag
         protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
             JsonProperty property = base.CreateProperty(member, memberSerialization);
-            property.ValueProvider = new EmptyToNullValueProvider(member as PropertyInfo);
+            property.ShouldSerialize = x => !IsEmpty((member as PropertyInfo).GetValue(x));
             return property;
-        }
-
-        private class EmptyToNullValueProvider : IValueProvider
-        {
-            private readonly PropertyInfo _targetProperty;
-
-            public EmptyToNullValueProvider(PropertyInfo targetProperty)
-                => _targetProperty = targetProperty;
-
-            // Called during deserialization.
-            // Value parameter is the original value read from the JSON.
-            // Target is the object on which to set the value.
-            public void SetValue(object target, object value)
-                => _targetProperty.SetValue(target, IsEmpty(value) ? null : value);
-
-            // Called during serialization.
-            // Target parameter has the object from which to read the value.
-            // Return value is what gets written to the JSON.
-            public object GetValue(object target)
-            {
-                object value = _targetProperty.GetValue(target);
-                return IsEmpty(value) ? null : value;
-            }
         }
     }
 
-    private class OneLineArrayConverter : JsonConverter
+    private class ByteOverrideConverter : JsonConverter
     {
         public override bool CanWrite => true;
 
         public override bool CanRead => false;
 
-        public override bool CanConvert(Type objectType) => true;
+        public override bool CanConvert(Type objectType) => objectType.IsSubclassOf(typeof(IDictionary<string, JToken>));
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
             => throw new NotImplementedException();
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-            => writer.WriteRawValue(JsonConvert.SerializeObject(value, Formatting.None));
+        {
+            IDictionary<string, JToken> values = value as IDictionary<string, JToken>;
+            writer.WriteStartObject();
+            foreach (var x in values)
+            {
+                writer.WritePropertyName(x.Key);
+                object val = x.Value.Type switch
+                {
+                    JTokenType.Integer => x.Value.ToObject<BigInteger>(),
+                    JTokenType.Array => x.Value.ToObject<BigInteger[]>(),
+                    _ => throw new NotImplementedException()
+                };
+                writer.WriteRawValue(JsonConvert.SerializeObject(val, Formatting.None));
+            }
+            writer.WriteEndObject();
+        }
     }
 }
 
