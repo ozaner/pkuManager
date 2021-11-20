@@ -5,7 +5,7 @@ namespace pkuManager.Formats.pkx.pk3;
 
 public class pk3Importer : Importer
 {
-    protected override string FormatName => "pk3";
+    public override string FormatName => "pk3";
 
     protected override pk3Object Data { get; } = new();
 

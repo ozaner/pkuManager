@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using pkuManager.Alerts;
 using pkuManager.Common;
+using pkuManager.Formats.Fields;
 using pkuManager.Formats.pkx.pk3;
 using pkuManager.pku;
 using pkuManager.Utilities;
@@ -193,39 +194,6 @@ public static class pkxUtil
     /// </summary>
     public static class MetaAlerts
     {
-        public static Alert GetBattleStatAlert(bool hasStatNature, bool hasNature,
-            string statNature, string trueNature, bool[] hyperIVs, int?[] IVs)
-        {
-            string msg = "";
-
-            //Deal with stat nature override
-            if (hasStatNature)
-                msg += $"The pku's Nature " +
-                        (hasNature ? $"{trueNature}, was replaced" : "is unspecified, replacing it") +
-                        $" with it's Stat Nature ({statNature}).";
-
-            //Deal with hypertraining override
-            if (hyperIVs?.Length is not 6 || IVs?.Length is not 6)
-                throw new ArgumentException("hyperIVs & IVs array must be of length 6 (one for each stat).",
-                    $"{nameof(hyperIVs)} & {nameof(IVs)}");
-
-            if (hyperIVs.Contains(true)) //at least one hyper trained IV
-            {
-                if (hasStatNature)
-                    msg += DataUtil.Newline(2);
-                msg += "Replacing the pku's ";
-                string[] stats = { "HP", "Attack", "Defense", "Sp. Attack", "Sp. Defense", "Speed" };
-                for (int i = 0; i < 6; i++)
-                {
-                    if (hyperIVs[i])
-                        msg += IVs[i].HasValue ? $"{IVs[i]} {stats[i]} IV, " : $"unspecified {stats[i]} IV ";
-                }
-                msg += "with 31s as they are Hyper Trained.";
-            }
-
-            return msg is "" ? null : new("Battle Stat Override", msg);
-        }
-
         public static Alert GetByteOverrideAlert(List<string> invalidIndices) =>
             new("Byte Override", $"Byte Override commands {string.Join(", ", invalidIndices)} are invalid. Ignoring them.");
     }
@@ -676,59 +644,6 @@ public static class pkxUtil
     /// </summary>
     public static class MetaTags
     {
-        public static Alert ApplyBattleStatOverride(pkuObject pku, GlobalFlags flags)
-        {
-            //generate alert, BEFORE modifying pku
-            Alert alert = MetaAlerts.GetBattleStatAlert(pku.Stat_Nature is not null, pku.Nature is not null, pku.Stat_Nature, pku.Nature, new bool[]
-            {
-                pku.Hyper_Training?.HP is true,
-                pku.Hyper_Training?.Attack is true,
-                pku.Hyper_Training?.Defense is true,
-                pku.Hyper_Training?.Sp_Attack is true,
-                pku.Hyper_Training?.Sp_Defense is true,
-                pku.Hyper_Training?.Speed is true
-            }, new int?[]
-            {
-                pku.IVs?.HP,
-                pku.IVs?.Attack,
-                pku.IVs?.Defense,
-                pku.IVs?.Sp_Attack,
-                pku.IVs?.Sp_Defense,
-                pku.IVs?.Speed
-            });
-
-            if (flags?.Battle_Stat_Override is true)
-            {
-                //If stat nature is specified, replace nature with it
-                if (pku.Stat_Nature is not null)
-                    pku.Nature = pku.Stat_Nature;
-
-                //If any hyper training is specified, make sure IV object is not null.
-                if (pku.IVs is null && (pku.Hyper_Training?.HP is true || pku.Hyper_Training?.Attack is true ||
-                                        pku.Hyper_Training?.Defense is true || pku.Hyper_Training?.Sp_Attack is true ||
-                                        pku.Hyper_Training?.Sp_Defense is true || pku.Hyper_Training?.Speed is true))
-                    pku.IVs ??= new pkuObject.IVs_Class();
-
-                //If any hyper training is specified, replace corresponding IVs with 31
-                if (pku.Hyper_Training?.HP is true)
-                    pku.IVs.HP = 31;
-                if (pku.Hyper_Training?.Attack is true)
-                    pku.IVs.Attack = 31;
-                if (pku.Hyper_Training?.Defense is true)
-                    pku.IVs.Defense = 31;
-                if (pku.Hyper_Training?.Sp_Attack is true)
-                    pku.IVs.Sp_Attack = 31;
-                if (pku.Hyper_Training?.Sp_Defense is true)
-                    pku.IVs.Sp_Defense = 31;
-                if (pku.Hyper_Training?.Speed is true)
-                    pku.IVs.Speed = 31;
-
-                return alert;
-            }
-            else
-                return null;
-        }
-
         public static (Alert, Action) ApplyByteOverride(pkuObject pku, params ByteArrayManipulator[] bams)
         {
             const string BYTE_OVERRIDE_REGEXP = "^(.*) ([0-9]*)(:[0-9]*)?(:[0-9]*)?$";
@@ -876,31 +791,36 @@ public static class pkxUtil
         // ----------
         // Generalized Processing Methods
         // ----------
-        public static (int[], Alert) ProcessMultiNumericTag(bool specified, int?[] vals,
-            Func<AlertType[], Alert> alertFunc, int max, int min, int defaultVal, bool silentUnspecified)
+        public static Alert ProcessMultiNumericTag(Field<BigInteger?>[] pkuVals, ArrayField<BigInteger> formatVals,
+            Func<AlertType[], Alert> alertFunc, BigInteger max, BigInteger min, BigInteger defaultVal, bool silentUnspecified)
         {
-            int[] checkedVals = new int[vals.Length];
-            Alert alert = null;
-
-            AlertType[] valAlerts = new AlertType[vals.Length];
-            if (specified)
+            if (pkuVals.All(x => x.IsNull) && !silentUnspecified)
+                return alertFunc(new[] { AlertType.UNSPECIFIED });
+            AlertType[] valAlerts = new AlertType[pkuVals.Length];
+            for (int i = 0; i < pkuVals.Length; i++)
             {
-                for (int i = 0; i < vals.Length; i++)
+                if(pkuVals[i].IsNull)
                 {
-                    (checkedVals[i], valAlerts[i]) = vals[i] switch
-                    {
-                        null => (defaultVal, AlertType.UNSPECIFIED),
-                        var x when x > max => (max, AlertType.OVERFLOW),
-                        var x when x < min => (min, AlertType.UNDERFLOW),
-                        _ => (vals[i].Value, AlertType.NONE),
-                    };
+                    formatVals.Set(defaultVal, i);
+                    valAlerts[i] = AlertType.UNSPECIFIED;
                 }
-                alert = alertFunc(valAlerts);
+                else if(pkuVals[i] > max)
+                {
+                    formatVals.Set(max, i);
+                    valAlerts[i] = AlertType.OVERFLOW;
+                }
+                else if (pkuVals[i] < min)
+                {
+                    formatVals.Set(min, i);
+                    valAlerts[i] = AlertType.UNDERFLOW;
+                }
+                else
+                {
+                    formatVals.Set(pkuVals[i].Get().Value, i);
+                    valAlerts[i] = AlertType.NONE;
+                }
             }
-            else if (!silentUnspecified)
-                alert = alertFunc(new[] { AlertType.UNSPECIFIED });
-
-            return (checkedVals, alert);
+            return alertFunc(valAlerts);
         }
 
         private static (long, Alert) ProcessNumericTag(long? tag, Func<AlertType, Alert> getAlertFunc,
@@ -1225,24 +1145,14 @@ public static class pkxUtil
         public static (int, Alert) ProcessFriendship(pkuObject pku)
             => ProcessNumericTag(pku.Friendship, GetFriendshipAlert, false, 255, 0, 0);
 
-        public static (int[], Alert) ProcessEVs(pkuObject pku)
-        {
-            int?[] vals = { pku.EVs?.HP, pku.EVs?.Attack, pku.EVs?.Defense, pku.EVs?.Sp_Attack, pku.EVs?.Sp_Defense, pku.EVs?.Speed };
-            return ProcessMultiNumericTag(pku.EVs is not null, vals, GetEVsAlert, 255, 0, 0, true); // silent on unspecified
-        }
+        public static Alert ProcessEVs(pkuObject pku, ArrayField<BigInteger> vals)
+            => ProcessMultiNumericTag(pku.EVs_Array, vals, GetEVsAlert, 255, 0, 0, true); // silent on unspecified
 
-        public static (int[], Alert) ProcessIVs(pkuObject pku)
-        {
-            int?[] vals = { pku.IVs?.HP, pku.IVs?.Attack, pku.IVs?.Defense, pku.IVs?.Sp_Attack, pku.IVs?.Sp_Defense, pku.IVs?.Speed };
-            return ProcessMultiNumericTag(pku.IVs is not null, vals, GetIVsAlert, 31, 0, 0, false); // not silent on unspecified
-        }
+        public static Alert ProcessIVs(pkuObject pku, ArrayField<BigInteger> vals)
+            => ProcessMultiNumericTag(pku.IVs_Array, vals, GetIVsAlert, 31, 0, 0, false); // not silent on unspecified
 
-        public static (int[], Alert) ProcessContest(pkuObject pku)
-        {
-            int?[] vals = { pku.Contest_Stats?.Cool, pku.Contest_Stats?.Beauty, pku.Contest_Stats?.Cute,
-                pku.Contest_Stats?.Clever, pku.Contest_Stats?.Tough, pku.Contest_Stats?.Sheen };
-            return ProcessMultiNumericTag(pku.Contest_Stats is not null, vals, GetContestAlert, 255, 0, 0, true); // silent on unspecified
-        }
+        public static Alert ProcessContest(pkuObject pku, ArrayField<BigInteger> vals)
+            => ProcessMultiNumericTag(pku.Contest_Stats_Array, vals, GetContestAlert, 255, 0, 0, true); // silent on unspecified
 
         public static (int, Alert) ProcessItem(pkuObject pku, int gen)
             => ProcessEnumTag(pku.Item, PokeAPIUtil.GetItemIndex(pku.Item, gen), GetItemAlert, true, 0);

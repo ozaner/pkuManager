@@ -5,3 +5,6 @@ dotnet_diagnostic.IDE0005.severity = error
 
 # IDE0130: Namespace does not match folder structure
 dotnet_diagnostic.IDE0130.severity = error
+
+# IDE1006: Naming Styles
+dotnet_diagnostic.IDE1006.severity = none

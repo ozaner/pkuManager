@@ -14,17 +14,17 @@ public abstract class Porter
     /// <summary>
     /// The name of the format this porter operates on.
     /// </summary>
-    protected abstract string FormatName { get; }
+    public abstract string FormatName { get; }
 
     /// <summary>
     /// The pku file being ported.
     /// </summary>
-    protected pkuObject pku { get; set; }
+    public pkuObject pku { get; set; }
 
     /// <summary>
     /// The global flags to, optionally, be acted upon by the porter.
     /// </summary>
-    protected GlobalFlags GlobalFlags { get; }
+    public GlobalFlags GlobalFlags { get; }
 
     /// <summary>
     /// A data structure representing the non-pku format.
@@ -36,6 +36,12 @@ public abstract class Porter
     /// A note is an alert that, generally, regards some pre-processing directive.
     /// </summary>
     public List<Alert> Notes { get; } = new();
+
+    /// <summary>
+    /// A dictionary that maps a processing phase to all the members of the porter to be run in that phase.<br/>
+    /// Initialized in the <see cref="FirstHalf"/> method.
+    /// </summary>
+    private Dictionary<ProcessingPhase, List<MemberInfo>> PorterDirectiveMap;
 
     /// <summary>
     /// Base porter constructor.
@@ -56,13 +62,30 @@ public abstract class Porter
     public abstract (bool canPort, string reason) CanPort();
 
     /// <summary>
-    /// Searches for all members in this instance's class with the <see cref="PorterDirective"/> attribute.
+    /// Initializes the <see cref="PorterDirectiveMap"/> with all the members in this<br/>
+    /// instance's class (and base classes/interfaces) with the <see cref="PorterDirective"/> attribute.
     /// </summary>
-    /// <param name="phase">The <see cref="ProcessingPhase"/> of the members to be searched for.</param>
-    /// <returns>A list of MemberInfo objects of members with the <see cref="PorterDirective"/> attribute.</returns>
-    private List<MemberInfo> GetExporterDirectiveMembers(ProcessingPhase phase)
-        => GetType().GetMembers(BindingFlags.Instance | BindingFlags.NonPublic)
-            .Where(m => (m.GetCustomAttribute(typeof(PorterDirective), true) as PorterDirective)?.Phase == phase).ToList();
+    private void InitPorterDirectiveMap()
+    {
+        List<MemberInfo> allMembers = new();
+        void helper(Type type)
+        {
+            allMembers.AddRange(type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic)
+                      .Where(x => !allMembers.Any(y => y.Name == x.Name))); //no duplicate implementations (i.e. same name)
+            foreach (Type baseInterface in type.GetInterfaces())
+                helper(baseInterface);
+        }
+        helper(GetType());
+
+        PorterDirectiveMap = new();
+        foreach (ProcessingPhase p in Enum.GetValues(typeof(ProcessingPhase)) as ProcessingPhase[])
+        {
+            List<MemberInfo> members = new();
+            members.AddRange(allMembers.Where(m =>
+                (m.GetCustomAttribute(typeof(PorterDirective), true) as PorterDirective)?.Phase == p));
+            PorterDirectiveMap[p] = members;
+        }
+    }
 
     /// <summary>
     /// Generates an exception to be thrown when an <see cref="PorterDirective"/> attribute is placed on an invalid member.
@@ -140,12 +163,11 @@ public abstract class Porter
         if (!CanPort().canPort)
             throw new Exception("This .pku can't be exported to this format! This should not have happened...");
 
-        var members = GetExporterDirectiveMembers(ProcessingPhase.FormatOverride);
-        RunMembers(members);
-        members = GetExporterDirectiveMembers(ProcessingPhase.PreProcessing);
-        RunMembers(members);
-        members = GetExporterDirectiveMembers(ProcessingPhase.FirstPass);
-        RunMembers(members);
+        InitPorterDirectiveMap(); //get all PorterDirectives
+
+        RunMembers(PorterDirectiveMap[ProcessingPhase.FormatOverride]);
+        RunMembers(PorterDirectiveMap[ProcessingPhase.PreProcessing]);
+        RunMembers(PorterDirectiveMap[ProcessingPhase.FirstPass]);
 
         firstHalf = true;
     }
@@ -160,10 +182,8 @@ public abstract class Porter
         if (!firstHalf)
             throw new Exception($"{nameof(FirstHalf)} has not been run yet! This should not have happened...");
 
-        var members = GetExporterDirectiveMembers(ProcessingPhase.SecondPass);
-        RunMembers(members);
-        members = GetExporterDirectiveMembers(ProcessingPhase.PostProcessing);
-        RunMembers(members);
+        RunMembers(PorterDirectiveMap[ProcessingPhase.SecondPass]);
+        RunMembers(PorterDirectiveMap[ProcessingPhase.PostProcessing]);
     }
 }
 

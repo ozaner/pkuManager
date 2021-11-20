@@ -1,5 +1,6 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Common;
+using pkuManager.Formats.Modules;
 using pkuManager.pku;
 using pkuManager.Utilities;
 using System;
@@ -14,9 +15,9 @@ namespace pkuManager.Formats.pkx.pk3;
 /// <summary>
 /// Exports a <see cref="pkuObject"/> to a <see cref="pk3Object"/>.
 /// </summary>
-public class pk3Exporter : Exporter
+public class pk3Exporter : Exporter, BattleStatOverride_E
 {
-    protected override string FormatName => "pk3";
+    public override string FormatName => "pk3";
 
     /// <summary>
     /// Creates an exporter that will attempt to export <paramref name="pku"/>
@@ -60,11 +61,6 @@ public class pk3Exporter : Exporter
     protected virtual void ProcessFormatOverride()
         => pku = pkuObject.MergeFormatOverride(pku, FormatName);
 
-    // Battle Stat Override
-    [PorterDirective(ProcessingPhase.PreProcessing)]
-    protected virtual void ProcessBattleStatOverride()
-        => Notes.Add(pkxUtil.MetaTags.ApplyBattleStatOverride(pku, GlobalFlags));
-
     // Dex # [Implicit]
     [PorterDirective(ProcessingPhase.PreProcessing)]
     protected virtual void ProcessDex()
@@ -85,7 +81,7 @@ public class pk3Exporter : Exporter
     protected virtual void ProcessNature()
     {
         Alert alert;
-        if (pku.Nature is null)
+        if (pku.Nature.IsNull)
             alert = GetNatureAlert(AlertType.UNSPECIFIED);
         else if (pku.Nature.ToEnum<Nature>() is null)
             alert = GetNatureAlert(AlertType.INVALID, pku.Nature);
@@ -329,20 +325,12 @@ public class pk3Exporter : Exporter
     // EVs
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessEVs()
-    {
-        var (evs, alert) = pkxUtil.ExportTags.ProcessEVs(pku);
-        Data.EVs.Set(evs);
-        Warnings.Add(alert);
-    }
+        => Warnings.Add(pkxUtil.ExportTags.ProcessEVs(pku, Data.EVs));
 
     // Contest Stats
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessContestStats()
-    {
-        var (contest, alert) = pkxUtil.ExportTags.ProcessContest(pku);
-        Data.Contest_Stats.Set(contest);
-        Warnings.Add(alert);
-    }
+        => Warnings.Add(pkxUtil.ExportTags.ProcessContest(pku, Data.Contest_Stats));
 
     // Pokérus
     [PorterDirective(ProcessingPhase.FirstPass)]
@@ -384,11 +372,7 @@ public class pk3Exporter : Exporter
     // IVs
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessIVs()
-    {
-        var (ivs, alert) = pkxUtil.ExportTags.ProcessIVs(pku);
-        Data.IVs.Set(ivs);
-        Warnings.Add(alert);
-    }
+        => Warnings.Add(pkxUtil.ExportTags.ProcessIVs(pku, Data.IVs));
 
     // Ability Slot
     [PorterDirective(ProcessingPhase.FirstPass)]

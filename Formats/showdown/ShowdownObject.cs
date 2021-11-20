@@ -1,9 +1,11 @@
 ﻿using pkuManager.Common;
+using pkuManager.Formats.Fields.BackedFields;
 using pkuManager.pku;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 
 namespace pkuManager.Formats.showdown;
@@ -24,8 +26,8 @@ public class ShowdownObject : FormatObject
     public string[] Moves { get; set; }
     public byte Level { get; set; }
     public byte Friendship { get; set; }
-    public byte[] IVs { get; set; }
-    public byte[] EVs { get; set; }
+    public BackedArrayField<BigInteger> IVs { get; } = new(6);
+    public BackedArrayField<BigInteger> EVs { get; } = new(6);
     public Gender? Gender { get; set; }
     public Nature? Nature { get; set; }
     public bool Shiny { get; set; }
@@ -83,21 +85,21 @@ public class ShowdownObject : FormatObject
             Lines.Add($"Happiness: {Friendship}");
 
         // IVs
-        if (!IVs.All(x => x is 31))
+        if (!IVs.Get().All(x => x == 31))
         {
-            string ivs = $"IVs: {(IVs[0] is not 31 ? $"{IVs[0]} HP / " : "")}{(IVs[1] is not 31 ? $"{IVs[1]} Atk / " : "")}" +
-                            $"{(IVs[2] is not 31 ? $"{IVs[2]} Def / " : "")}{(IVs[3] is not 31 ? $"{IVs[3]} SpA / " : "")}" +
-                            $"{(IVs[4] is not 31 ? $"{IVs[4]} SpD / " : "")}{(IVs[5] is not 31 ? $"{IVs[5]} Spe / " : "")}";
+            string ivs = $"IVs: {(IVs[0] != 31 ? $"{IVs[0]} HP / " : "")}{(IVs[1] != 31 ? $"{IVs[1]} Atk / " : "")}" +
+                            $"{(IVs[2] != 31 ? $"{IVs[2]} Def / " : "")}{(IVs[3] != 31 ? $"{IVs[3]} SpA / " : "")}" +
+                            $"{(IVs[4] != 31 ? $"{IVs[4]} SpD / " : "")}{(IVs[5] != 31 ? $"{IVs[5]} Spe / " : "")}";
             ivs = ivs[0..^3]; //remove extra " / "
             Lines.Add(ivs);
         }
 
         // EVs
-        if (!EVs.All(x => x is 0))
+        if (!EVs.Get().All(x => x == 0))
         {
-            string evs = $"EVs: {(EVs[0] is not 0 ? $"{EVs[0]} HP / " : "")}{(EVs[1] is not 0 ? $"{EVs[1]} Atk / " : "")}" +
-                            $"{(EVs[2] is not 0 ? $"{EVs[2]} Def / " : "")}{(EVs[3] is not 0 ? $"{EVs[3]} SpA / " : "")}" +
-                            $"{(EVs[4] is not 0 ? $"{EVs[4]} SpD / " : "")}{(EVs[5] is not 0 ? $"{EVs[5]} Spe / " : "")}";
+            string evs = $"EVs: {(EVs[0] != 0 ? $"{EVs[0]} HP / " : "")}{(EVs[1] != 0 ? $"{EVs[1]} Atk / " : "")}" +
+                            $"{(EVs[2] != 0 ? $"{EVs[2]} Def / " : "")}{(EVs[3] != 0 ? $"{EVs[3]} SpA / " : "")}" +
+                            $"{(EVs[4] != 0 ? $"{EVs[4]} SpD / " : "")}{(EVs[5] != 0 ? $"{EVs[5]} Spe / " : "")}";
             evs = evs[0..^3]; //remove extra " / "
             Lines.Add(evs);
         }

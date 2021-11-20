@@ -26,6 +26,12 @@ public abstract class Field<T>
     public T Get() => CustomGetter(Value);
 
     public void Set(T val) => Value = CustomSetter(val);
+
+    public void Set(Field<T> field) => Set(field.Get());
+
+    public bool IsNull => Get() is null;
+
+    public override string ToString() => Get()?.ToString();
 }
 
 public class FieldJsonConverter : JsonConverter

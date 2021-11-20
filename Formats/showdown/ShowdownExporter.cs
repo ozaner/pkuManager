@@ -1,5 +1,6 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Common;
+using pkuManager.Formats.Modules;
 using pkuManager.Formats.pkx;
 using pkuManager.pku;
 using pkuManager.Utilities;
@@ -13,9 +14,9 @@ namespace pkuManager.Formats.showdown;
 /// <summary>
 /// Exports a <see cref="pkuObject"/> to a <see cref="ShowdownObject"/>.
 /// </summary>
-public class ShowdownExporter : Exporter
+public class ShowdownExporter : Exporter, BattleStatOverride_E
 {
-    protected override string FormatName => "Showdown";
+    public override string FormatName => "Showdown";
 
     /// <summary>
     /// Creates an exporter that will attempt to export <paramref name="pku"/>
@@ -45,11 +46,6 @@ public class ShowdownExporter : Exporter
     [PorterDirective(ProcessingPhase.FormatOverride)]
     protected virtual void ProcessFormatOverride()
         => pku = pkuObject.MergeFormatOverride(pku, FormatName);
-
-    // Battle Stat Override
-    [PorterDirective(ProcessingPhase.PreProcessing)]
-    protected virtual void ProcessBattleStatOverride()
-        => Notes.Add(pkxUtil.MetaTags.ApplyBattleStatOverride(pku, GlobalFlags));
 
 
     /* ------------------------------------
@@ -140,21 +136,12 @@ public class ShowdownExporter : Exporter
     // IVs
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessIVs()
-    {
-        int?[] vals = { pku.IVs?.HP, pku.IVs?.Attack, pku.IVs?.Defense, pku.IVs?.Sp_Attack, pku.IVs?.Sp_Defense, pku.IVs?.Speed };
-        var (ivs, alert) = pkxUtil.ExportTags.ProcessMultiNumericTag(pku.IVs is not null, vals, pkxUtil.ExportAlerts.GetIVsAlert, 31, 0, 31, false);
-        Data.IVs = Array.ConvertAll(ivs, x => (byte)x);
-        Warnings.Add(alert);
-    }
+        => Warnings.Add(pkxUtil.ExportTags.ProcessMultiNumericTag(pku.IVs_Array, Data.IVs, pkxUtil.ExportAlerts.GetIVsAlert, 31, 0, 31, false));
 
     // EVs
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessEVs()
-    {
-        var (evs, alert) = pkxUtil.ExportTags.ProcessEVs(pku);
-        Data.EVs = Array.ConvertAll(evs, x => (byte)x);
-        Warnings.Add(alert);
-    }
+        => Warnings.Add(pkxUtil.ExportTags.ProcessEVs(pku, Data.EVs));
 
     // Nature
     [PorterDirective(ProcessingPhase.FirstPass)]
@@ -163,7 +150,7 @@ public class ShowdownExporter : Exporter
         Data.Nature = pku.Nature.ToEnum<Nature>();
         if (Data.Nature is null)
         {
-            if (pku.Nature is null)
+            if (pku.Nature.IsNull)
                 Warnings.Add(GetNatureAlert(AlertType.UNSPECIFIED));
             else
                 Warnings.Add(GetNatureAlert(AlertType.INVALID, pku.Nature));

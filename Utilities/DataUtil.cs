@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using pkuManager.Formats.Fields;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -373,6 +374,10 @@ public static class DataUtil
         //Returns enum, or null if it DNE
         return Enum.TryParse(str, true, out T e) ? e : null;
     }
+
+    /// <inheritdoc cref="ToEnum{T}(string)"/>
+    public static T? ToEnum<T>(this Field<string> str) where T : struct
+        => str.Get().ToEnum<T>();
 
     /// <summary>
     /// Attempts to convert an array of strings to a list of enums of type <typeparamref name="T"/>.<br/>

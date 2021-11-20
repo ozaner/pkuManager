@@ -207,7 +207,7 @@ public class pkuCollection : Collection
                 LocationIdentifier = "Filename",
                 Nickname = pku.Nickname ?? defaultName,
                 OT = pku.True_OT.Get() ?? pku.Game_Info?.OT,
-                TrueOT = pku.True_OT.Get() is not null,
+                TrueOT = !pku.True_OT.IsNull,
                 Species = pku.Species,
                 Forms = pku.Forms,
                 Appearance = pku.Appearance,

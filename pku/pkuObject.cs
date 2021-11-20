@@ -15,6 +15,7 @@ using System.Reflection;
 
 namespace pkuManager.pku;
 
+[JsonObject(MemberSerialization.OptIn)]
 public class pkuObject : pkuDictionaryTag
 {
     [JsonProperty("Species")]
@@ -57,10 +58,10 @@ public class pkuObject : pkuDictionaryTag
     public bool? Shiny { get; set; }
 
     [JsonProperty("Nature")]
-    public string Nature { get; set; }
+    public BackedField<string> Nature { get; set; } = new();
 
     [JsonProperty("Stat Nature")]
-    public string Stat_Nature { get; set; }
+    public BackedField<string> Stat_Nature { get; set; } = new();
 
     [JsonProperty("Ability")]
     public string Ability { get; set; }
@@ -84,16 +85,16 @@ public class pkuObject : pkuDictionaryTag
     public Egg_Info_Class Egg_Info { get; set; }
 
     [JsonProperty("IVs")]
-    public IVs_Class IVs { get; set; }
+    public IVs_Class IVs { get; set; } = new();
 
     [JsonProperty("Hyper Training")]
-    public Hyper_Training_Class Hyper_Training { get; set; }
+    public Hyper_Training_Class Hyper_Training { get; set; } = new();
 
     [JsonProperty("EVs")]
-    public EVs_Class EVs { get; set; }
+    public EVs_Class EVs { get; set; } = new();
 
     [JsonProperty("Contest Stats")]
-    public Contest_Stats_Class Contest_Stats { get; set; }
+    public Contest_Stats_Class Contest_Stats { get; set; } = new();
 
     [JsonProperty("Ribbons")]
     public string[] Ribbons { get; set; }
@@ -201,85 +202,85 @@ public class pkuObject : pkuDictionaryTag
     public class Hyper_Training_Class : pkuDictionaryTag
     {
         [JsonProperty("HP")]
-        public bool? HP { get; set; }
+        public BackedField<bool?> HP { get; set; } = new();
 
         [JsonProperty("Attack")]
-        public bool? Attack { get; set; }
+        public BackedField<bool?> Attack { get; set; } = new();
 
         [JsonProperty("Defense")]
-        public bool? Defense { get; set; }
+        public BackedField<bool?> Defense { get; set; } = new();
 
         [JsonProperty("Sp. Attack")]
-        public bool? Sp_Attack { get; set; }
+        public BackedField<bool?> Sp_Attack { get; set; } = new();
 
         [JsonProperty("Sp. Defense")]
-        public bool? Sp_Defense { get; set; }
+        public BackedField<bool?> Sp_Defense { get; set; } = new();
 
         [JsonProperty("Speed")]
-        public bool? Speed { get; set; }
+        public BackedField<bool?> Speed { get; set; } = new();
     }
 
     public class IVs_Class : pkuDictionaryTag
     {
         [JsonProperty("HP")]
-        public int? HP { get; set; }
+        public BackedField<BigInteger?> HP { get; set; } = new();
 
         [JsonProperty("Attack")]
-        public int? Attack { get; set; }
+        public BackedField<BigInteger?> Attack { get; set; } = new();
 
         [JsonProperty("Defense")]
-        public int? Defense { get; set; }
+        public BackedField<BigInteger?> Defense { get; set; } = new();
 
         [JsonProperty("Sp. Attack")]
-        public int? Sp_Attack { get; set; }
+        public BackedField<BigInteger?> Sp_Attack { get; set; } = new();
 
         [JsonProperty("Sp. Defense")]
-        public int? Sp_Defense { get; set; }
+        public BackedField<BigInteger?> Sp_Defense { get; set; } = new();
 
         [JsonProperty("Speed")]
-        public int? Speed { get; set; }
+        public BackedField<BigInteger?> Speed { get; set; } = new();
     }
 
     public class EVs_Class : pkuDictionaryTag
     {
         [JsonProperty("HP")]
-        public int? HP { get; set; }
+        public BackedField<BigInteger?> HP { get; set; } = new();
 
         [JsonProperty("Attack")]
-        public int? Attack { get; set; }
+        public BackedField<BigInteger?> Attack { get; set; } = new();
 
         [JsonProperty("Defense")]
-        public int? Defense { get; set; }
+        public BackedField<BigInteger?> Defense { get; set; } = new();
 
         [JsonProperty("Sp. Attack")]
-        public int? Sp_Attack { get; set; }
+        public BackedField<BigInteger?> Sp_Attack { get; set; } = new();
 
         [JsonProperty("Sp. Defense")]
-        public int? Sp_Defense { get; set; }
+        public BackedField<BigInteger?> Sp_Defense { get; set; } = new();
 
         [JsonProperty("Speed")]
-        public int? Speed { get; set; }
+        public BackedField<BigInteger?> Speed { get; set; } = new();
     }
 
     public class Contest_Stats_Class : pkuDictionaryTag
     {
         [JsonProperty("Cool")]
-        public int? Cool { get; set; }
+        public BackedField<BigInteger?> Cool { get; set; } = new();
 
         [JsonProperty("Beauty")]
-        public int? Beauty { get; set; }
+        public BackedField<BigInteger?> Beauty { get; set; } = new();
 
         [JsonProperty("Cute")]
-        public int? Cute { get; set; }
+        public BackedField<BigInteger?> Cute { get; set; } = new();
 
         [JsonProperty("Clever")]
-        public int? Clever { get; set; }
+        public BackedField<BigInteger?> Clever { get; set; } = new();
 
         [JsonProperty("Tough")]
-        public int? Tough { get; set; }
+        public BackedField<BigInteger?> Tough { get; set; } = new();
 
         [JsonProperty("Sheen")]
-        public int? Sheen { get; set; }
+        public BackedField<BigInteger?> Sheen { get; set; } = new();
     }
 
     public class Pokerus_Class : pkuDictionaryTag
@@ -467,6 +468,24 @@ public class pkuObject : pkuDictionaryTag
     /// <returns>Whether <see cref="Shiny"/> is true.</returns>
     public bool IsShiny()
         => Shiny is true;
+
+    public BackedField<BigInteger?>[] IVs_Array => new[] {
+        IVs.HP, IVs.Attack, IVs.Defense, IVs.Sp_Attack, IVs.Sp_Defense, IVs.Speed
+    };
+
+    public BackedField<bool?>[] Hyper_Training_Array => new[] {
+        Hyper_Training.HP, Hyper_Training.Attack, Hyper_Training.Defense,
+        Hyper_Training.Sp_Attack, Hyper_Training.Sp_Defense, Hyper_Training.Speed
+    };
+
+    public BackedField<BigInteger?>[] EVs_Array => new[] {
+        EVs.HP, EVs.Attack, EVs.Defense, EVs.Sp_Attack, EVs.Sp_Defense, EVs.Speed
+    };
+
+    public BackedField<BigInteger?>[] Contest_Stats_Array => new[] {
+        Contest_Stats.Cool, Contest_Stats.Beauty, Contest_Stats.Cute,
+        Contest_Stats.Clever, Contest_Stats.Tough, Contest_Stats.Sheen
+    };
 
 
     /* ------------------------------------
