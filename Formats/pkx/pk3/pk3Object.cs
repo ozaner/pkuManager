@@ -241,12 +241,12 @@ public class pk3Object : FormatObject
             for (int i = 0; i < BLOCK_SIZE / 2; i++)
                 checksum += bam.Get<ushort>(i * 2);
         }
-        Checksum.Set(checksum);
+        Checksum.SetAs(checksum);
     }
 
     protected void ApplyXOR(ByteArrayManipulator subData)
     {
-        uint encryptionKey = TID.Get<uint>() ^ PID.Get<uint>();
+        uint encryptionKey = TID.GetAs<uint>() ^ PID.GetAs<uint>();
         for (int i = 0; i < subData.Length / 4; i++) //xor subData with key in 4 byte chunks
         {
             uint chunk = subData.Get<uint>(4 * i);
@@ -263,7 +263,7 @@ public class pk3Object : FormatObject
     protected ByteArrayManipulator GetEncryptedSubData()
     {
         ByteArrayManipulator subData = new(4 * BLOCK_SIZE, BIG_ENDIANESS);
-        string order = SUBSTRUCTURE_ORDER[PID.Get<uint>() % SUBSTRUCTURE_ORDER.Length];
+        string order = SUBSTRUCTURE_ORDER[PID.GetAs<uint>() % SUBSTRUCTURE_ORDER.Length];
         subData.SetArray<byte>(BLOCK_SIZE * order.IndexOf('G'), G);
         subData.SetArray<byte>(BLOCK_SIZE * order.IndexOf('A'), A);
         subData.SetArray<byte>(BLOCK_SIZE * order.IndexOf('E'), E);
@@ -277,7 +277,7 @@ public class pk3Object : FormatObject
     {
         ApplyXOR(subData);
 
-        string order = SUBSTRUCTURE_ORDER[PID.Get<uint>() % SUBSTRUCTURE_ORDER.Length];
+        string order = SUBSTRUCTURE_ORDER[PID.GetAs<uint>() % SUBSTRUCTURE_ORDER.Length];
         G.SetArray(0, subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('G'), BLOCK_SIZE));
         A.SetArray(0, subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('A'), BLOCK_SIZE));
         E.SetArray(0, subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('E'), BLOCK_SIZE));

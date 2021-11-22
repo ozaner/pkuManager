@@ -4,43 +4,54 @@ using System.Numerics;
 
 namespace pkuManager.Formats.Fields.BAMFields;
 
-public class BAMIntegralField : Field<BigInteger>, IByteOverridable
+public class BAMIntegralField : IntegralField, IBAMField, IByteOverridable
 {
-    private readonly BAMFieldInfo bfi;
-
+    // Field
     protected override BigInteger Value
     {
-        get => bfi.BitType ? bfi.BAM.Get(bfi.StartByte, bfi.StartBit, bfi.BitLength)
-                           : bfi.BAM.Get(bfi.StartByte, bfi.ByteLength);
+        get => BitType ? BAM.Get(StartByte, StartBit, BitLength)
+                       : BAM.Get(StartByte, ByteLength);
         set
         {
-            if (bfi.BitType)
-                bfi.BAM.Set(value, bfi.StartByte, bfi.StartBit, bfi.BitLength);
+            if (BitType)
+                BAM.Set(value, StartByte, StartBit, BitLength);
             else
-                bfi.BAM.Set(value, bfi.StartByte, bfi.ByteLength);
+                BAM.Set(value, StartByte, ByteLength);
         }
     }
+
+    // IntegralField
+    public override BigInteger Max => (this as IBAMField).GetMax();
+    public override BigInteger Min => (this as IBAMField).GetMin();
+
+    // IBAMField
+    public ByteArrayManipulator BAM { get; }
+    public bool BitType { get; }
+    public int StartByte { get; }
+    public int ByteLength { get; }
+    public int StartBit { get; }
+    public int BitLength { get; }
+
 
     public BAMIntegralField(ByteArrayManipulator bam, int startByte, int byteLength,
         Func<BigInteger, BigInteger> getter = null, Func<BigInteger, BigInteger> setter = null) : base(getter, setter)
     {
-        bfi = new BAMFieldInfo(bam, startByte, byteLength);
-        CustomSetter = CustomSetter.Compose(bfi.SetterBound);
+        BAM = bam;
+        BitType = false;
+        StartByte = startByte;
+        ByteLength = byteLength;
     }
 
     public BAMIntegralField(ByteArrayManipulator bam, int startByte, int startBit, int bitLength,
         Func<BigInteger, BigInteger> getter = null, Func<BigInteger, BigInteger> setter = null) : base(getter, setter)
     {
-        bfi = new BAMFieldInfo(bam, startByte, startBit, bitLength);
-        CustomSetter = CustomSetter.Compose(bfi.SetterBound);
+        BAM = bam;
+        BitType = true;
+        StartByte = startByte;
+        StartBit = startBit;
+        BitLength = bitLength;
     }
 
-    public string GetOverride() => bfi.BitType ? $"Set {bfi.StartByte}:{bfi.StartBit}:{bfi.BitLength}"
-                                               : $"Set {bfi.StartByte}:{bfi.ByteLength}";
-
-    public T Get<T>() where T : struct
-        => Get().BigIntegerTo<T>();
-
-    public void Set<T>(T val) where T : struct
-        => base.Set(val.ToBigInteger());
+    public string GetOverride() => BitType ? $"Set {StartByte}:{StartBit}:{BitLength}"
+                                           : $"Set {StartByte}:{ByteLength}";
 }

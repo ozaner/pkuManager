@@ -3,19 +3,30 @@ using System;
 
 namespace pkuManager.Formats.Fields.BAMFields;
 
-public class BAMBoolField : Field<bool>, IByteOverridable
+public class BAMBoolField : Field<bool>, IBAMField, IByteOverridable
 {
-    private readonly BAMFieldInfo bfi;
+    // IBAMField
+    public ByteArrayManipulator BAM { get; }
+    public bool BitType => true;
+    public int StartByte { get; }
+    public int StartBit { get; }
+    public int BitLength => 1;
+    public int ByteLength => throw new NotImplementedException();
 
+    // Field
     protected override bool Value
     {
-        get => bfi.BAM.Get<bool>(bfi.StartByte, bfi.StartBit, 1);
-        set => bfi.BAM.Set(value, bfi.StartByte, bfi.StartBit, 1);
+        get => BAM.Get<bool>(StartByte, StartBit, BitLength);
+        set => BAM.Set(value, StartByte, StartBit, BitLength);
     }
 
     public BAMBoolField(ByteArrayManipulator bam, int startByte, int startBit,
         Func<bool, bool> getter = null, Func<bool, bool> setter = null) : base(getter, setter)
-        => bfi = new BAMFieldInfo(bam, startByte, startBit, 1);
+    {
+        BAM = bam;
+        StartByte = startByte;
+        StartBit = startBit;
+    }
 
-    public string GetOverride() => $"Set {bfi.StartByte}:{bfi.StartBit}:1";
+    public string GetOverride() => $"Set {StartByte}:{StartBit}:{BitLength}";
 }

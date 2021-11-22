@@ -13,5 +13,4 @@ public class BackedArrayField<T> : ArrayField<T>
 
     public BackedArrayField(int length, Func<T[], T[]> getter = null, Func<T[], T[]> setter = null)
         : this(getter, setter) => Set(new T[length]);
-
 }

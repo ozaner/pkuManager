@@ -4,62 +4,59 @@ using System.Numerics;
 
 namespace pkuManager.Formats.Fields.BAMFields;
 
-public class BAMArrayField : ArrayField<BigInteger>, IByteOverridable
+public class BAMArrayField : IntegralArrayField, IBAMField, IByteOverridable
 {
-    private readonly BAMFieldInfo bfi;
-
+    // Field
     protected override BigInteger[] Value
     {
-        get => bfi.BitType ? bfi.BAM.GetArray(bfi.StartByte, bfi.StartBit, bfi.BitLength, Length)
-                           : bfi.BAM.GetArray(bfi.StartByte, bfi.ByteLength, Length);
+        get => BitType ? BAM.GetArray(StartByte, StartBit, BitLength, Length)
+                       : BAM.GetArray(StartByte, ByteLength, Length);
         set
         {
-            if (bfi.BitType)
-                bfi.BAM.SetArray(bfi.StartByte, bfi.StartBit, bfi.BitLength, value, Length);
+            if (BitType)
+                BAM.SetArray(StartByte, StartBit, BitLength, value, Length);
             else
-                bfi.BAM.SetArray(bfi.StartByte, bfi.ByteLength, value, Length);
+                BAM.SetArray(StartByte, ByteLength, value, Length);
         }
     }
 
+    // ArrayField
     public override int Length { get; }
 
-    private BigInteger[] arraySetterBound(BigInteger[] vals)
-    {
-        if (vals.Length != Length)
-            throw new ArgumentException("The vals to be set must have the same length as the field.", nameof(vals));
-        foreach (var x in vals)
-            bfi.SetterBound(x);
-        return vals;
-    }
+    // IntegralArrayField
+    public override BigInteger Max => (this as IBAMField).GetMax();
+    public override BigInteger Min => (this as IBAMField).GetMin();
+
+    // IBAMField
+    public ByteArrayManipulator BAM { get; }
+    public bool BitType { get; }
+    public int StartByte { get; }
+    public int ByteLength { get; }
+    public int StartBit { get; }
+    public int BitLength { get; }
+
 
     public BAMArrayField(ByteArrayManipulator bam, int startByte, int byteLength, int length,
         Func<BigInteger[], BigInteger[]> getter = null, Func<BigInteger[], BigInteger[]> setter = null) : base(getter, setter)
     {
+        BAM = bam;
+        BitType = false;
+        StartByte = startByte;
+        ByteLength = byteLength;
         Length = length;
-        bfi = new(bam, startByte, byteLength);
-        CustomSetter = CustomSetter.Compose(arraySetterBound);
     }
 
     public BAMArrayField(ByteArrayManipulator bam, int startByte, int startBit, int bitLength, int length,
         Func<BigInteger[], BigInteger[]> getter = null, Func<BigInteger[], BigInteger[]> setter = null) : base(getter, setter)
     {
+        BAM = bam;
+        BitType = true;
+        StartByte = startByte;
+        StartBit = startBit;
+        BitLength = bitLength;
         Length = length;
-        bfi = new(bam, startByte, startBit, bitLength);
-        CustomSetter = CustomSetter.Compose(arraySetterBound);
     }
 
-    public string GetOverride() => bfi.BitType ? $"Set Array {bfi.StartByte}:{bfi.StartBit}:{bfi.BitLength}"
-                                               : $"Set Array {bfi.StartByte}:{bfi.ByteLength}";
-
-    public T[] Get<T>() where T : struct
-        => Array.ConvertAll(Get(), x => x.BigIntegerTo<T>());
-
-    public T Get<T>(int index) where T : struct
-        => Get(index).BigIntegerTo<T>();
-
-    public void Set<T>(T[] vals) where T : struct
-        => base.Set(Array.ConvertAll(vals, x => x.ToBigInteger()));
-
-    public void Set<T>(T val, int index) where T : struct
-        => base.Set(val.ToBigInteger(), index);
+    public string GetOverride() => BitType ? $"Set Array {StartByte}:{StartBit}:{BitLength}"
+                                           : $"Set Array {StartByte}:{ByteLength}";
 }

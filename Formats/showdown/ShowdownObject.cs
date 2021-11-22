@@ -5,7 +5,6 @@ using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 
 namespace pkuManager.Formats.showdown;
@@ -26,8 +25,8 @@ public class ShowdownObject : FormatObject
     public string[] Moves { get; set; }
     public byte Level { get; set; }
     public byte Friendship { get; set; }
-    public BackedArrayField<BigInteger> IVs { get; } = new(6);
-    public BackedArrayField<BigInteger> EVs { get; } = new(6);
+    public BackedIntegralArrayField IVs { get; } = new(31, 0, 6);
+    public BackedIntegralArrayField EVs { get; } = new(31, 0, 6);
     public Gender? Gender { get; set; }
     public Nature? Nature { get; set; }
     public bool Shiny { get; set; }

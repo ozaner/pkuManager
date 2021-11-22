@@ -74,7 +74,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
     // Species
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessSpecies()
-        => Data.Species.Set(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, false, "Indices").Value);
+        => Data.Species.SetAs(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, false, "Indices").Value);
 
     // Nature [Implicit]
     [PorterDirective(ProcessingPhase.FirstPass)]
@@ -140,7 +140,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
     protected virtual void ProcessTID()
     {
         var (tid, alert) = pkxUtil.ExportTags.ProcessTID(pku);
-        Data.TID.Set(tid);
+        Data.TID.SetAs(tid);
         Warnings.Add(alert);
     }
 
@@ -149,7 +149,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
                                                 nameof(ProcessNature), nameof(ProcessTID))]
     protected virtual void ProcessPID()
     {
-        var (pids, alert) = pkxUtil.ExportTags.ProcessPID(pku, Data.TID.Get<uint>(), false, gender, nature, unownForm);
+        var (pids, alert) = pkxUtil.ExportTags.ProcessPID(pku, Data.TID.GetAs<uint>(), false, gender, nature, unownForm);
         BigInteger[] castedPids = Array.ConvertAll(pids, x => x.ToBigInteger());
         PIDResolver = new(alert, Data.PID, castedPids);
         if (alert is RadioButtonAlert)
@@ -163,7 +163,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
     protected virtual void ProcessOriginGame()
     {
         var (origingame, gamename, alert) = pkxUtil.ExportTags.ProcessOriginGame(pku, FormatName);
-        Data.Origin_Game.Set(origingame);
+        Data.Origin_Game.SetAs(origingame);
         checkedGameName = gamename;
         Warnings.Add(alert);
     }
@@ -173,7 +173,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
     protected virtual void ProcessMetLocation()
     {
         var (location, alert) = pkxUtil.ExportTags.ProcessMetLocation(pku, checkedGameName);
-        Data.Met_Location.Set(location);
+        Data.Met_Location.SetAs(location);
         Warnings.Add(alert);
     }
 
@@ -189,11 +189,11 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
             Language? lang = DataUtil.ToEnum<Language>(pku.Game_Info?.Language);
             if (lang is not null && pkxUtil.EGG_NICKNAME[lang.Value] == pku.Nickname)
             {
-                Data.Egg_Name_Override.Set(pk3Object.EGG_NAME_OVERRIDE_CONST); //override nickname to be 'egg'
+                Data.Egg_Name_Override.SetAs(pk3Object.EGG_NAME_OVERRIDE_CONST); //override nickname to be 'egg'
                 checkedLang = Language.Japanese;
-                Data.Nickname.Set(DexUtil.CharEncoding<byte>.Encode
+                Data.Nickname.SetAs(DexUtil.CharEncoding<byte>.Encode
                     (pkxUtil.EGG_NICKNAME[checkedLang], pk3Object.MAX_NICKNAME_CHARS, FormatName, checkedLang).encodedStr);
-                Data.OT.Set(DexUtil.CharEncoding<byte>.Encode
+                Data.OT.SetAs(DexUtil.CharEncoding<byte>.Encode
                     (pku.Game_Info?.OT, pk3Object.MAX_OT_CHARS, FormatName, lang.Value).encodedStr);
                 legalGen3Egg = true;
             }
@@ -209,7 +209,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
             (checkedLang, Alert alert) = pkxUtil.ExportTags.ProcessLanguage(pku, pk3Object.VALID_LANGUAGES);
             Warnings.Add(alert);
         }
-        Data.Language.Set((int)checkedLang);
+        Data.Language.SetAs((int)checkedLang);
     }
 
     // Nickname [Requires: Language]
@@ -219,7 +219,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
         if (!legalGen3Egg)
         {
             var (nick, alert, _, _) = pkxUtil.ExportTags.ProcessNickname<byte>(pku, 3, pk3Object.MAX_NICKNAME_CHARS, FormatName, checkedLang);
-            Data.Nickname.Set(nick);
+            Data.Nickname.SetAs(nick);
             Warnings.Add(alert);
         }
     }
@@ -231,7 +231,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
         if (!legalGen3Egg)
         {
             var (ot, alert) = pkxUtil.ExportTags.ProcessOT<byte>(pku, pk3Object.MAX_OT_CHARS, FormatName, checkedLang);
-            Data.OT.Set(ot);
+            Data.OT.SetAs(ot);
             Warnings.Add(alert);
         }
     }
@@ -245,9 +245,9 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
         {
             ushort[] nicknameTrash = tb?.Nickname?.Length > 0 ? tb.Nickname : null;
             ushort[] otTrash = tb?.OT?.Length > 0 ? tb.OT : null;
-            var (nick, ot, alert) = pkxUtil.ExportTags.ProcessTrash(Data.Nickname.Get<byte>(), nicknameTrash, Data.OT.Get<byte>(), otTrash, FormatName, checkedLang);
-            Data.Nickname.Set(nick);
-            Data.OT.Set(ot);
+            var (nick, ot, alert) = pkxUtil.ExportTags.ProcessTrash(Data.Nickname.GetAs<byte>(), nicknameTrash, Data.OT.GetAs<byte>(), otTrash, FormatName, checkedLang);
+            Data.Nickname.SetAs(nick);
+            Data.OT.SetAs(ot);
             Warnings.Add(alert);
         }
     }
@@ -268,7 +268,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
     protected virtual void ProcessItem()
     {
         var (item, alert) = pkxUtil.ExportTags.ProcessItem(pku, 3);
-        Data.Item.Set(item);
+        Data.Item.SetAs(item);
         Warnings.Add(alert);
     }
 
@@ -290,7 +290,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
     protected virtual void ProcessMoves()
     {
         (int[] moves, moveIndices, Alert alert) = pkxUtil.ExportTags.ProcessMoves(pku, FormatName);
-        Data.Moves.Set(moves);
+        Data.Moves.SetAs(moves);
         Warnings.Add(alert);
     }
 
@@ -299,7 +299,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
     protected virtual void ProcessPPUps()
     {
         var (ppups, alert) = pkxUtil.ExportTags.ProcessPPUps(pku, moveIndices);
-        Data.PP_Ups.Set(ppups);
+        Data.PP_Ups.SetAs(ppups);
         Warnings.Add(alert);
     }
 
@@ -309,8 +309,8 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
     {
         int[] pp = new int[4];
         for (int i = 0; i < moveIndices.Length; i++)
-            pp[i] = pkxUtil.CalculatePP(pku.Moves[moveIndices[i]].Name, Data.PP_Ups.Get<byte>(i), FormatName);
-        Data.PP.Set(pp);
+            pp[i] = pkxUtil.CalculatePP(pku.Moves[moveIndices[i]].Name, Data.PP_Ups.GetAs<byte>(i), FormatName);
+        Data.PP.SetAs(pp);
     }
 
     // Friendship
@@ -318,7 +318,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
     protected virtual void ProcessFriendship()
     {
         var (friendship, alert) = pkxUtil.ExportTags.ProcessFriendship(pku);
-        Data.Friendship.Set(friendship);
+        Data.Friendship.SetAs(friendship);
         Warnings.Add(alert);
     }
 
@@ -337,8 +337,8 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
     protected virtual void ProcessPokerus()
     {
         var (strain, days, alert) = pkxUtil.ExportTags.ProcessPokerus(pku);
-        Data.PKRS_Strain.Set(strain);
-        Data.PKRS_Days.Set(days);
+        Data.PKRS_Strain.SetAs(strain);
+        Data.PKRS_Days.SetAs(days);
         Warnings.Add(alert);
     }
 
@@ -347,7 +347,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
     protected virtual void ProcessMetLevel()
     {
         var (level, alert) = pkxUtil.ExportTags.ProcessMetLevel(pku);
-        Data.Met_Level.Set(level);
+        Data.Met_Level.SetAs(level);
         Warnings.Add(alert);
     }
 
@@ -356,7 +356,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
     protected virtual void ProcessBall()
     {
         var (ball, alert) = pkxUtil.ExportTags.ProcessBall(pku, Ball.Premier_Ball);
-        Data.Ball.Set((int)ball);
+        Data.Ball.SetAs((int)ball);
         Warnings.Add(alert);
     }
 
@@ -431,11 +431,11 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
             a = AddContestRibbonAlert(a);
 
         //Add contest ribbons
-        Data.Cool_Ribbon_Rank.Set(pk3Object.GetRibbonRank(Ribbon.Cool_G3, ribbons));
-        Data.Beauty_Ribbon_Rank.Set(pk3Object.GetRibbonRank(Ribbon.Beauty_G3, ribbons));
-        Data.Cute_Ribbon_Rank.Set(pk3Object.GetRibbonRank(Ribbon.Cute_G3, ribbons));
-        Data.Smart_Ribbon_Rank.Set(pk3Object.GetRibbonRank(Ribbon.Smart_G3, ribbons));
-        Data.Tough_Ribbon_Rank.Set(pk3Object.GetRibbonRank(Ribbon.Tough_G3, ribbons));
+        Data.Cool_Ribbon_Rank.SetAs(pk3Object.GetRibbonRank(Ribbon.Cool_G3, ribbons));
+        Data.Beauty_Ribbon_Rank.SetAs(pk3Object.GetRibbonRank(Ribbon.Beauty_G3, ribbons));
+        Data.Cute_Ribbon_Rank.SetAs(pk3Object.GetRibbonRank(Ribbon.Cute_G3, ribbons));
+        Data.Smart_Ribbon_Rank.SetAs(pk3Object.GetRibbonRank(Ribbon.Smart_G3, ribbons));
+        Data.Tough_Ribbon_Rank.SetAs(pk3Object.GetRibbonRank(Ribbon.Tough_G3, ribbons));
 
         //Add other ribbons
         Data.Champion_Ribbon.Set(ribbons.Contains(Ribbon.Champion));

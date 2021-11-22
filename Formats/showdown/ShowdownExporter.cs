@@ -136,7 +136,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E
     // IVs
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessIVs()
-        => Warnings.Add(pkxUtil.ExportTags.ProcessMultiNumericTag(pku.IVs_Array, Data.IVs, pkxUtil.ExportAlerts.GetIVsAlert, 31, 0, 31, false));
+        => Warnings.Add(pkxUtil.ExportTags.ProcessMultiNumericTag(pku.IVs_Array, Data.IVs, pkxUtil.ExportAlerts.GetIVsAlert, 31, false));
 
     // EVs
     [PorterDirective(ProcessingPhase.FirstPass)]

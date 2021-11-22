@@ -791,8 +791,8 @@ public static class pkxUtil
         // ----------
         // Generalized Processing Methods
         // ----------
-        public static Alert ProcessMultiNumericTag(Field<BigInteger?>[] pkuVals, ArrayField<BigInteger> formatVals,
-            Func<AlertType[], Alert> alertFunc, BigInteger max, BigInteger min, BigInteger defaultVal, bool silentUnspecified)
+        public static Alert ProcessMultiNumericTag(Field<BigInteger?>[] pkuVals, IntegralArrayField formatVals,
+            Func<AlertType[], Alert> alertFunc, BigInteger defaultVal, bool silentUnspecified)
         {
             if (pkuVals.All(x => x.IsNull) && !silentUnspecified)
                 return alertFunc(new[] { AlertType.UNSPECIFIED });
@@ -804,14 +804,14 @@ public static class pkxUtil
                     formatVals.Set(defaultVal, i);
                     valAlerts[i] = AlertType.UNSPECIFIED;
                 }
-                else if(pkuVals[i] > max)
+                else if(pkuVals[i] > formatVals.Max)
                 {
-                    formatVals.Set(max, i);
+                    formatVals.Set(formatVals.Max, i);
                     valAlerts[i] = AlertType.OVERFLOW;
                 }
-                else if (pkuVals[i] < min)
+                else if (pkuVals[i] < formatVals.Min)
                 {
-                    formatVals.Set(min, i);
+                    formatVals.Set(formatVals.Min, i);
                     valAlerts[i] = AlertType.UNDERFLOW;
                 }
                 else
@@ -1145,14 +1145,14 @@ public static class pkxUtil
         public static (int, Alert) ProcessFriendship(pkuObject pku)
             => ProcessNumericTag(pku.Friendship, GetFriendshipAlert, false, 255, 0, 0);
 
-        public static Alert ProcessEVs(pkuObject pku, ArrayField<BigInteger> vals)
-            => ProcessMultiNumericTag(pku.EVs_Array, vals, GetEVsAlert, 255, 0, 0, true); // silent on unspecified
+        public static Alert ProcessEVs(pkuObject pku, IntegralArrayField vals)
+            => ProcessMultiNumericTag(pku.EVs_Array, vals, GetEVsAlert, 0, true); // silent on unspecified
 
-        public static Alert ProcessIVs(pkuObject pku, ArrayField<BigInteger> vals)
-            => ProcessMultiNumericTag(pku.IVs_Array, vals, GetIVsAlert, 31, 0, 0, false); // not silent on unspecified
+        public static Alert ProcessIVs(pkuObject pku, IntegralArrayField vals)
+            => ProcessMultiNumericTag(pku.IVs_Array, vals, GetIVsAlert, 0, false); // not silent on unspecified
 
-        public static Alert ProcessContest(pkuObject pku, ArrayField<BigInteger> vals)
-            => ProcessMultiNumericTag(pku.Contest_Stats_Array, vals, GetContestAlert, 255, 0, 0, true); // silent on unspecified
+        public static Alert ProcessContest(pkuObject pku, IntegralArrayField vals)
+            => ProcessMultiNumericTag(pku.Contest_Stats_Array, vals, GetContestAlert, 0, true); // silent on unspecified
 
         public static (int, Alert) ProcessItem(pkuObject pku, int gen)
             => ProcessEnumTag(pku.Item, PokeAPIUtil.GetItemIndex(pku.Item, gen), GetItemAlert, true, 0);
