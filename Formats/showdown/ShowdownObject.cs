@@ -1,5 +1,7 @@
 ﻿using pkuManager.Common;
+using pkuManager.Formats.Fields;
 using pkuManager.Formats.Fields.BackedFields;
+using pkuManager.Formats.Modules;
 using pkuManager.pku;
 using pkuManager.Utilities;
 using System;
@@ -12,7 +14,7 @@ namespace pkuManager.Formats.showdown;
 /// <summary>
 /// An implementation of the .txt (Showdown!) format used by Pokémon Showdown!.
 /// </summary>
-public class ShowdownObject : FormatObject
+public class ShowdownObject : FormatObject, IVs_O, EVs_O
 {
     /* ------------------------------------
      * Attributes
@@ -156,4 +158,12 @@ public class ShowdownObject : FormatObject
         }
         return SPECIES_DEX.ReadSpeciesDex<string>(pku, ignoreCasting, searchStr);
     }
+
+
+    /* ------------------------------------
+     * Duct Tape
+     * ------------------------------------
+    */
+    IntegralArrayField IVs_O.IVs => IVs;
+    IntegralArrayField EVs_O.EVs => EVs;
 }

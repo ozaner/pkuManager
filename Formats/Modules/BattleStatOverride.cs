@@ -1,5 +1,6 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Common;
+using pkuManager.Formats.pkx;
 using pkuManager.pku;
 using pkuManager.Utilities;
 using System.Collections.Generic;
@@ -58,11 +59,10 @@ public interface BattleStatOverride_E
             if (!pku.Stat_Nature.IsNull)
                 msg += DataUtil.Newline(2);
             msg += "Replacing the pku's ";
-            string[] stats = { "HP", "Attack", "Defense", "Sp. Attack", "Sp. Defense", "Speed" };
             for (int i = 0; i < 6; i++)
             {
                 if (pku.Hyper_Training_Array[i] == true)
-                    msg += (pku.IVs_Array[i].IsNull ? $"unspecified" : $"{pku.IVs_Array[i]}") + $" {stats[i]} IV, ";
+                    msg += (pku.IVs_Array[i].IsNull ? $"unspecified" : $"{pku.IVs_Array[i]}") + $" {pkxUtil.STAT_NAMES[i]} IV, ";
             }
             msg += "with 31s as they are Hyper Trained.";
         }

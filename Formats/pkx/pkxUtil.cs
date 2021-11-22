@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using pkuManager.Alerts;
 using pkuManager.Common;
-using pkuManager.Formats.Fields;
 using pkuManager.Formats.pkx.pk3;
 using pkuManager.pku;
 using pkuManager.Utilities;
@@ -59,6 +58,18 @@ public static class pkxUtil
         { Language.Chinese_Simplified, "蛋" },
         { Language.Chinese_Traditional, "蛋" },
     };
+
+    /// <summary>
+    /// A list of the 6 official Pokémon stats in canonical order.
+    /// </summary>
+    public static readonly string[] STAT_NAMES = new[] 
+        { "HP", "Attack", "Defense", "Sp. Attack", "Sp. Defense", "Speed" };
+
+    /// <summary>
+    /// A list of the 6 contest stats in canonical order.
+    /// </summary>
+    public static readonly string[] CONTEST_STAT_NAMES = new[]
+        { "Cool", "Beautiful", "Cute", "Clever", "Tough", "Sheen" };
 
 
     /* ------------------------------------
@@ -213,61 +224,6 @@ public static class pkxUtil
             AlertType.UNSPECIFIED => new(name, $"{name} tag not specified, using the default of {defaultVal}."),
             _ => throw InvalidAlertType(at)
         };
-
-        private static Alert GetMultiNumericalAlert(string tag, string[] subtags, AlertType[] ats,
-            int max, int min, int defaultVal, bool allUnspecified)
-        {
-            if (tag is null || ats is null || subtags is null)
-                throw new ArgumentNullException($"{nameof(tag)}, {nameof(ats)}, {nameof(subtags)}", 
-                    $"{nameof(tag)}, {nameof(ats)}, and {nameof(subtags)} cannot be null.");
-            else if (allUnspecified)
-                return new(tag, $"No {tag} were specified, setting them all to {defaultVal}.");
-            else if (subtags.Length != ats.Length)
-                throw new ArgumentException($"{nameof(subtags)} must have the same length as {nameof(ats)}.", nameof(subtags));
-
-            string msgOverflow = "";
-            string msgUnderflow = "";
-            string msgUnspecifed = "";
-
-            for (int i = 0; i < subtags.Length; i++)
-            {
-                switch (ats[i])
-                {
-                    case AlertType.OVERFLOW:
-                        msgOverflow += $"{subtags[i]}, ";
-                        break;
-                    case AlertType.UNDERFLOW:
-                        msgUnderflow += $"{subtags[i]}, ";
-                        break;
-                    case AlertType.UNSPECIFIED:
-                        msgUnspecifed += $"{subtags[i]}, ";
-                        break;
-                    case AlertType.NONE:
-                        break;
-                    default:
-                        throw InvalidAlertType(ats[i]);
-                }
-            }
-
-            string msg = "";
-            if (msgOverflow is not "")
-                msg += $"The {msgOverflow[0..^2]} tag(s) were too high. Rounding them down to {max}.";
-            if (msgUnderflow is not "")
-                msg += (msg is not "" ? DataUtil.Newline(2) : "") + 
-                        $"The {msgUnderflow[0..^2]} tag(s) were too low. Rounding them up to {min}.";
-            if (msgUnspecifed is not "")
-                msg += (msg is not "" ? DataUtil.Newline(2) : "") + 
-                        $"The {msgUnspecifed[0..^2]} tag(s) were unspecified. Setting them to {defaultVal}.";
-
-            return msg is "" ? null : new(tag, msg);
-        }
-
-        private static Alert GetMultiStatAlert(string name, string[] names, int max, params AlertType[] ats)
-        {
-            if (ats?.Length is not (1 or 6))
-                throw new ArgumentException($"{nameof(ats)} must contain a single UNSPECIFIED AlertType, or six OVERFLOW/UNDERFLOW/UNSPECIFIED AlertTypes.", nameof(ats));
-            return GetMultiNumericalAlert(name, names, ats, max, 0, 0, ats.Length is 1 && ats[0] is AlertType.UNSPECIFIED);
-        }
 
         private static Alert GetEnumAlert(string tagName, string defaultVal, AlertType at, string invalidVal = null)
         {
@@ -574,15 +530,6 @@ public static class pkxUtil
         public static Alert GetNatureAlert(AlertType at, string invalidNature = null)
             => GetEnumAlert("Nature", DEFAULT_NATURE.ToFormattedString(), at, invalidNature);
 
-        public static Alert GetEVsAlert(params AlertType[] ats)
-            => GetMultiStatAlert("EVs", new string[] { "HP", "Attack", "Defense", "Sp. Attack", "Sp. Defense", "Speed" }, byte.MaxValue, ats);
-
-        public static Alert GetIVsAlert(params AlertType[] ats)
-            => GetMultiStatAlert("IVs", new string[] { "HP", "Attack", "Defense", "Sp. Attack", "Sp. Defense", "Speed" }, 31, ats);
-
-        public static Alert GetContestAlert(params AlertType[] ats)
-            => GetMultiStatAlert("Contest Stats", new string[] { "Cool", "Beautiful", "Cute", "Clever", "Tough", "Sheen" }, byte.MaxValue, ats);
-
         public static Alert GetPokerusAlert(AlertType atStrain, AlertType atDays)
         {
             if ((atStrain, atDays) is (AlertType.NONE, AlertType.NONE))
@@ -791,38 +738,6 @@ public static class pkxUtil
         // ----------
         // Generalized Processing Methods
         // ----------
-        public static Alert ProcessMultiNumericTag(Field<BigInteger?>[] pkuVals, IntegralArrayField formatVals,
-            Func<AlertType[], Alert> alertFunc, BigInteger defaultVal, bool silentUnspecified)
-        {
-            if (pkuVals.All(x => x.IsNull) && !silentUnspecified)
-                return alertFunc(new[] { AlertType.UNSPECIFIED });
-            AlertType[] valAlerts = new AlertType[pkuVals.Length];
-            for (int i = 0; i < pkuVals.Length; i++)
-            {
-                if(pkuVals[i].IsNull)
-                {
-                    formatVals.Set(defaultVal, i);
-                    valAlerts[i] = AlertType.UNSPECIFIED;
-                }
-                else if(pkuVals[i] > formatVals.Max)
-                {
-                    formatVals.Set(formatVals.Max, i);
-                    valAlerts[i] = AlertType.OVERFLOW;
-                }
-                else if (pkuVals[i] < formatVals.Min)
-                {
-                    formatVals.Set(formatVals.Min, i);
-                    valAlerts[i] = AlertType.UNDERFLOW;
-                }
-                else
-                {
-                    formatVals.Set(pkuVals[i].Get().Value, i);
-                    valAlerts[i] = AlertType.NONE;
-                }
-            }
-            return alertFunc(valAlerts);
-        }
-
         private static (long, Alert) ProcessNumericTag(long? tag, Func<AlertType, Alert> getAlertFunc,
             bool silentUnspecified, long max, long min, long defaultVal) => tag switch
         {
@@ -1144,15 +1059,6 @@ public static class pkxUtil
 
         public static (int, Alert) ProcessFriendship(pkuObject pku)
             => ProcessNumericTag(pku.Friendship, GetFriendshipAlert, false, 255, 0, 0);
-
-        public static Alert ProcessEVs(pkuObject pku, IntegralArrayField vals)
-            => ProcessMultiNumericTag(pku.EVs_Array, vals, GetEVsAlert, 0, true); // silent on unspecified
-
-        public static Alert ProcessIVs(pkuObject pku, IntegralArrayField vals)
-            => ProcessMultiNumericTag(pku.IVs_Array, vals, GetIVsAlert, 0, false); // not silent on unspecified
-
-        public static Alert ProcessContest(pkuObject pku, IntegralArrayField vals)
-            => ProcessMultiNumericTag(pku.Contest_Stats_Array, vals, GetContestAlert, 0, true); // silent on unspecified
 
         public static (int, Alert) ProcessItem(pkuObject pku, int gen)
             => ProcessEnumTag(pku.Item, PokeAPIUtil.GetItemIndex(pku.Item, gen), GetItemAlert, true, 0);

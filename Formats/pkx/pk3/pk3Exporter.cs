@@ -15,7 +15,7 @@ namespace pkuManager.Formats.pkx.pk3;
 /// <summary>
 /// Exports a <see cref="pkuObject"/> to a <see cref="pk3Object"/>.
 /// </summary>
-public class pk3Exporter : Exporter, BattleStatOverride_E
+public class pk3Exporter : Exporter, BattleStatOverride_E, IVs_E, EVs_E, Contest_Stats_E
 {
     public override string FormatName => "pk3";
 
@@ -322,16 +322,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
         Warnings.Add(alert);
     }
 
-    // EVs
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessEVs()
-        => Warnings.Add(pkxUtil.ExportTags.ProcessEVs(pku, Data.EVs));
-
-    // Contest Stats
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessContestStats()
-        => Warnings.Add(pkxUtil.ExportTags.ProcessContest(pku, Data.Contest_Stats));
-
     // Pokérus
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessPokerus()
@@ -368,11 +358,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
         Data.OT_Gender.Set(gender is Gender.Female); //male otherwise
         Warnings.Add(alert);
     }
-
-    // IVs
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessIVs()
-        => Warnings.Add(pkxUtil.ExportTags.ProcessIVs(pku, Data.IVs));
 
     // Ability Slot
     [PorterDirective(ProcessingPhase.FirstPass)]
@@ -559,4 +544,13 @@ public class pk3Exporter : Exporter, BattleStatOverride_E
     public static Alert GetFormAlert(AlertType at, string[] invalidForm = null, bool isDeoxys = false)
         => isDeoxys ? new Alert("Form", "Note that in generation 3, Deoxys' form depends on what game it is currently in.")
                     : pkxUtil.ExportAlerts.GetFormAlert(at, invalidForm);
+
+
+    /* ------------------------------------
+     * Duct Tape
+     * ------------------------------------
+    */
+    IVs_O IVs_E.Data => Data;
+    EVs_O EVs_E.Data => Data;
+    Contest_Stats_O Contest_Stats_E.Data => Data;
 }

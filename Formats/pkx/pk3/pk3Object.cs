@@ -5,6 +5,8 @@ using System.Linq;
 using System;
 using pkuManager.Formats.Fields.BAMFields;
 using System.Numerics;
+using pkuManager.Formats.Modules;
+using pkuManager.Formats.Fields;
 
 namespace pkuManager.Formats.pkx.pk3;
 
@@ -13,7 +15,7 @@ namespace pkuManager.Formats.pkx.pk3;
 /// Implementation details mostly referenced from
 /// <see href="https://bulbapedia.bulbagarden.net/wiki/Pokémon_data_structure_(Generation_III)">Bulbapedia</see>.
 /// </summary>
-public class pk3Object : FormatObject
+public class pk3Object : FormatObject, IVs_O, EVs_O, Contest_Stats_O
 {
     /* ------------------------------------
      * Initialization
@@ -389,4 +391,13 @@ public class pk3Object : FormatObject
         Ribbon.Winning or Ribbon.Victory or Ribbon.Artist or Ribbon.Effort or 
         Ribbon.Battle_Champion or Ribbon.Regional_Champion or Ribbon.National_Champion or 
         Ribbon.Country or Ribbon.National or Ribbon.Earth or Ribbon.World;
+
+
+    /* ------------------------------------
+     * Duct Tape
+     * ------------------------------------
+    */
+    IntegralArrayField IVs_O.IVs => IVs;
+    IntegralArrayField EVs_O.EVs => EVs;
+    IntegralArrayField Contest_Stats_O.Contest_Stats => Contest_Stats;
 }

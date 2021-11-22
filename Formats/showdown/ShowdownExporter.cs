@@ -14,9 +14,14 @@ namespace pkuManager.Formats.showdown;
 /// <summary>
 /// Exports a <see cref="pkuObject"/> to a <see cref="ShowdownObject"/>.
 /// </summary>
-public class ShowdownExporter : Exporter, BattleStatOverride_E
+public class ShowdownExporter : Exporter, BattleStatOverride_E, IVs_E, EVs_E
 {
     public override string FormatName => "Showdown";
+    protected override ShowdownObject Data { get; } = new();
+
+    // Module Parameters
+    public int IVs_Default => 31;
+    public bool IVs_SilentUnspecified => true;
 
     /// <summary>
     /// Creates an exporter that will attempt to export <paramref name="pku"/>
@@ -24,8 +29,6 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E
     /// </summary>
     /// <inheritdoc cref="Exporter(pkuObject, GlobalFlags, FormatObject)"/>
     public ShowdownExporter(pkuObject pku, GlobalFlags globalFlags) : base(pku, globalFlags) { }
-
-    protected override ShowdownObject Data { get; } = new();
 
     public override (bool, string) CanPort()
     {
@@ -133,16 +136,6 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E
         Warnings.Add(alert);
     }
 
-    // IVs
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessIVs()
-        => Warnings.Add(pkxUtil.ExportTags.ProcessMultiNumericTag(pku.IVs_Array, Data.IVs, pkxUtil.ExportAlerts.GetIVsAlert, 31, false));
-
-    // EVs
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessEVs()
-        => Warnings.Add(pkxUtil.ExportTags.ProcessEVs(pku, Data.EVs));
-
     // Nature
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessNature()
@@ -215,4 +208,12 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E
             throw InvalidAlertType(at);
         return a;
     }
+
+
+    /* ------------------------------------
+     * Duct Tape
+     * ------------------------------------
+    */
+    IVs_O IVs_E.Data => Data;
+    EVs_O EVs_E.Data => Data;
 }
