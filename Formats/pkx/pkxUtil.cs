@@ -108,6 +108,14 @@ public static class pkxUtil
         => SPECIES_DEX.SearchDataDex<int?>(dex, "$x", "Indices", "main-series");
 
     /// <summary>
+    /// Gets the gender ratio of the given official <paramref name="species"/>.
+    /// </summary>
+    /// <param name="species">An official species. Will throw an exception otherwise.</param>
+    /// <returns>The gender ratio of <paramref name="species"/>.</returns>
+    public static GenderRatio GetGenderRatio(pkuObject pku)
+        => SPECIES_DEX.ReadSpeciesDex<string>(pku, false, "Gender Ratio").ToEnum<GenderRatio>().Value;
+
+    /// <summary>
     /// Returns the gender of a Pokémon with the given <paramref name="pid"/> as determined by Gens 3-5. 
     /// </summary>
     /// <param name="gr">The gender ratio of the Pokémon.</param>
@@ -971,7 +979,6 @@ public static class pkxUtil
                 (uint.MinValue, false, GetPIDAlert(AlertType.UNSPECIFIED)) : (pku.PID.Value, true, null);
 
             // Check if any value has a pid-mismatch
-            int dex = GetNationalDexChecked(pku.Species);
             bool genderMismatch = false, natureMismatch = false, unownMismatch = false, shinyMismatch;
             int oldunownform = 0;
             Nature oldnature = DEFAULT_NATURE;
@@ -979,7 +986,7 @@ public static class pkxUtil
 
             if (checkedGender is not null) //gender mismatch check
             {
-                oldgender = GetPIDGender(PokeAPIUtil.GetGenderRatio(dex), pid);
+                oldgender = GetPIDGender(GetGenderRatio(pku), pid);
                 genderMismatch = checkedGender != oldgender;
             }
             if (checkedNature is not null) //nature mismatch check
@@ -1000,7 +1007,7 @@ public static class pkxUtil
             if (unownMismatch || genderMismatch || natureMismatch || shinyMismatch)
             {
                 uint newPID = GenerateRandomPID(pku.IsShiny(), checkedTID, checkedGender,
-                    PokeAPIUtil.GetGenderRatio(dex), checkedNature, checkedUnownForm);
+                    GetGenderRatio(pku), checkedNature, checkedUnownForm);
 
                 if (pidInBounds) //two options: old & new, need error
                 {
@@ -1031,8 +1038,7 @@ public static class pkxUtil
         //Gen 6: allow impossible genders in gen 6+ (I think they allow impossible genders...)
         public static (Gender, Alert) ProcessGender(pkuObject pku)
         {
-            int dex = GetNationalDexChecked(pku.Species);
-            GenderRatio genderRatio = PokeAPIUtil.GetGenderRatio(dex);
+            GenderRatio genderRatio = GetGenderRatio(pku);
             Gender? mandatoryGender = genderRatio switch
             {
                 GenderRatio.All_Genderless => Gender.Genderless,

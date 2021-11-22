@@ -1,5 +1,4 @@
-﻿using pkuManager.Common;
-using PokeApiNet;
+﻿using PokeApiNet;
 using System;
 using System.Threading.Tasks;
 
@@ -119,24 +118,6 @@ public static class PokeAPIUtil
         return gr.Levels.Find(x => exp < x.Experience).Level - 1;
     }
 
-    /// <summary>
-    /// Gets the GenderRatio of the species with the given national <paramref name="dex"/>.
-    /// </summary>
-    /// <param name="dex">The dex number of the species.</param>
-    /// <returns>The GenderRatio of the species with <paramref name="dex"/>.</returns>
-    public static GenderRatio GetGenderRatio(int dex) => Task.Run(() => getPokemonSpeciesAsync(dex)).Result.GenderRate switch
-    {
-        //pokeapi uses percentage species is female in eighths...
-        0 => GenderRatio.All_Male,
-        8 => GenderRatio.All_Female,
-        4 => GenderRatio.Male_1_Female_1,
-        6 => GenderRatio.Male_1_Female_3,
-        7 => GenderRatio.Male_1_Female_7,
-        2 => GenderRatio.Male_3_Female_1,
-        1 => GenderRatio.Male_7_Female_1,
-        _ => GenderRatio.All_Genderless //if (gr == -1)
-    };
-
 
     /* ------------------------------------
      * API Call Methods
@@ -151,7 +132,7 @@ public static class PokeAPIUtil
     private static async Task<Ability> getAbilityAsync(int abilityID)
         => await paClient.GetResourceAsync<Ability>(abilityID);
 
-    private static async Task<PokeApiNet.GrowthRate> getGrowthRateAsync(int dex)
+    private static async Task<GrowthRate> getGrowthRateAsync(int dex)
     {
         PokemonSpecies species = await paClient.GetResourceAsync<PokemonSpecies>(dex); // assume dex is valid
         return await paClient.GetResourceAsync(species.GrowthRate);

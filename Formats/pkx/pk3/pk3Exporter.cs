@@ -95,7 +95,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, IVs_E, EVs_E, Contest
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessGender()
     {
-        GenderRatio gr = PokeAPIUtil.GetGenderRatio(dex);
+        GenderRatio gr = pkxUtil.GetGenderRatio(pku);
         bool onlyOneGender = gr is GenderRatio.All_Genderless or GenderRatio.All_Female or GenderRatio.All_Male;
 
         Alert alert;
