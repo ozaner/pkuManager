@@ -249,13 +249,6 @@ public static class pkxUtil
         // ----------
         // Game Info Alert Methods
         // ----------
-        public static Alert GetTIDAlert(AlertType at) => GetNumericalAlert("TID", at, at switch
-        {
-            AlertType.UNSPECIFIED or AlertType.UNDERFLOW => 0,
-            AlertType.OVERFLOW => uint.MaxValue,
-            _ => throw InvalidAlertType(at)
-        });
-
         public static Alert GetOTAlert(int maxChars, params AlertType[] ats)
         {
             string msg = "";
@@ -308,13 +301,6 @@ public static class pkxUtil
             AlertType.UNSPECIFIED => $"The met location was unspecified.",
             _ => throw InvalidAlertType(at)
         } + $" Using the default location: { defaultLoc ?? "None"}.");
-
-        public static Alert GetMetLevelAlert(AlertType at) => GetNumericalAlert("Met Level", at, at switch
-        {
-            AlertType.UNSPECIFIED or AlertType.UNDERFLOW => 0,
-            AlertType.OVERFLOW => sbyte.MaxValue,
-            _ => throw InvalidAlertType(at)
-        });
 
         public static Alert GetBallAlert(AlertType at, string invalidBall = null)
             => GetEnumAlert("Ball", DEFAULT_BALL.ToFormattedString(), at, invalidBall);
@@ -485,13 +471,6 @@ public static class pkxUtil
             }
             return new("PP Ups", msg);
         }
-
-        public static Alert GetFriendshipAlert(AlertType at) => GetNumericalAlert("Friendship", at, at switch
-        {
-            AlertType.UNSPECIFIED or AlertType.UNDERFLOW => 0,
-            AlertType.OVERFLOW => byte.MaxValue,
-            _ => throw InvalidAlertType(at)
-        });
 
         public static Alert GetMoveAlert(AlertType at, int? movesUsed = null)
         {
@@ -746,22 +725,14 @@ public static class pkxUtil
         // ----------
         // Generalized Processing Methods
         // ----------
-        private static (long, Alert) ProcessNumericTag(long? tag, Func<AlertType, Alert> getAlertFunc,
-            bool silentUnspecified, long max, long min, long defaultVal) => tag switch
+        public static (int, Alert) ProcessNumericTag(int? tag, Func<AlertType, Alert> getAlertFunc,
+            bool silentUnspecified, int max, int min, int defaultVal) => tag switch
         {
             null => (defaultVal, silentUnspecified ? null : getAlertFunc(AlertType.UNSPECIFIED)),
             var x when x > max => (max, getAlertFunc(AlertType.OVERFLOW)),
             var x when x < min => (min, getAlertFunc(AlertType.UNDERFLOW)),
             _ => (tag.Value, null)
         };
-
-        public static (int, Alert) ProcessNumericTag(int? tag, Func<AlertType, Alert> getAlertFunc,
-            bool silentUnspecified, int max, int min, int defaultVal)
-            => ((int, Alert))ProcessNumericTag((long?)tag, getAlertFunc, silentUnspecified, max, min, defaultVal);
-
-        public static (uint, Alert) ProcessNumericTag(uint? tag, Func<AlertType, Alert> getAlertFunc,
-            bool silentUnspecified, uint max, uint min, uint defaultVal)
-            => ((uint, Alert))ProcessNumericTag((long?)tag, getAlertFunc, silentUnspecified, max, min, defaultVal);
 
         private static (T, Alert) ProcessEnumTag<T>(string tag, T? tagTest, Func<AlertType, string, Alert> getAlertFunc,
             bool silentUnspecified, T defaultVal, Func<T, bool> isValidFunc = null) where T : struct
@@ -898,9 +869,6 @@ public static class pkxUtil
         // ----------
         // Game Info Processing Methods
         // ----------
-        public static (uint, Alert) ProcessTID(pkuObject pku)
-            => ProcessNumericTag(pku.Game_Info?.TID, GetTIDAlert, false, 4294967295, 0, 0);
-
         //For processing origin games in main series games.
         public static (int gameID, string game, Alert alert) ProcessOriginGame(pkuObject pku, string format)
         {
@@ -942,9 +910,6 @@ public static class pkxUtil
         // ----------
         // Catch Info Processing Methods
         // ----------
-        public static (int, Alert) ProcessMetLevel(pkuObject pku)
-            => ProcessNumericTag(pku.Catch_Info?.Met_Level, GetMetLevelAlert, false, 127, 0, 0);
-
         public static (Ball, Alert) ProcessBall(pkuObject pku, Ball maxBall)
             => ProcessEnumTag(pku.Catch_Info?.Ball, pku.Catch_Info?.Ball.ToEnum<Ball>(),
                 GetBallAlert, false, DEFAULT_BALL, (x) => x <= maxBall);
@@ -1062,9 +1027,6 @@ public static class pkxUtil
                 }
             };
         }
-
-        public static (int, Alert) ProcessFriendship(pkuObject pku)
-            => ProcessNumericTag(pku.Friendship, GetFriendshipAlert, false, 255, 0, 0);
 
         public static (int, Alert) ProcessItem(pkuObject pku, int gen)
             => ProcessEnumTag(pku.Item, PokeAPIUtil.GetItemIndex(pku.Item, gen), GetItemAlert, true, 0);

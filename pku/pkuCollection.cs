@@ -197,16 +197,16 @@ public class pkuCollection : Collection
         {
             pku = pkuObject.Deserialize(kvp.Value).pku;
             int? dex = pkxUtil.GetNationalDex(pku.Species);
-            Language? lang = pku.Game_Info?.Language.ToEnum<Language>();
+            Language? lang = pku.Game_Info.Language.ToEnum<Language>();
             string defaultName = dex.HasValue && lang.HasValue ? PokeAPIUtil.GetSpeciesNameTranslated(dex.Value, lang.Value) : pku.Species;
                 
             slots[kvp.Key] = new SlotInfo
             {
-                Game = pku.Game_Info?.Origin_Game ?? pku.Game_Info?.Official_Origin_Game,
+                Game = pku.Game_Info.Origin_Game ?? pku.Game_Info.Official_Origin_Game,
                 Location = kvp.Value.Name,
                 LocationIdentifier = "Filename",
                 Nickname = pku.Nickname ?? defaultName,
-                OT = pku.True_OT.Get() ?? pku.Game_Info?.OT,
+                OT = pku.True_OT.Get() ?? pku.Game_Info.OT,
                 TrueOT = !pku.True_OT.IsNull,
                 Species = pku.Species,
                 Forms = pku.Forms,
@@ -216,7 +216,7 @@ public class pkuCollection : Collection
                 IconURL = ImageUtil.GetSprite(pku, ImageUtil.Sprite_Type.Box).url,
                 Format = "pku",
                 CheckedOut = CurrentBoxContainsExportedName(kvp.Value.Name),
-                Ball = pku.Catch_Info?.Ball,
+                Ball = pku.Catch_Info.Ball,
                 HasShadowHaze = pku.Shadow_Info?.Shadow is true
             };
         }

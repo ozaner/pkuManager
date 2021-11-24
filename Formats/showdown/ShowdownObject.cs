@@ -14,7 +14,7 @@ namespace pkuManager.Formats.showdown;
 /// <summary>
 /// An implementation of the .txt (Showdown!) format used by Pokémon Showdown!.
 /// </summary>
-public class ShowdownObject : FormatObject, IVs_O, EVs_O
+public class ShowdownObject : FormatObject, Friendship_O, IVs_O, EVs_O
 {
     /* ------------------------------------
      * Attributes
@@ -26,7 +26,7 @@ public class ShowdownObject : FormatObject, IVs_O, EVs_O
     public string Ability { get; set; }
     public string[] Moves { get; set; }
     public byte Level { get; set; }
-    public byte Friendship { get; set; }
+    public BackedIntegralField Friendship { get; } = new(255, 0);
     public BackedIntegralArrayField IVs { get; } = new(31, 0, 6);
     public BackedIntegralArrayField EVs { get; } = new(31, 0, 6);
     public Gender? Gender { get; set; }
@@ -82,7 +82,7 @@ public class ShowdownObject : FormatObject, IVs_O, EVs_O
             Lines.Add("Shiny: true");
 
         // Friendship
-        if (Friendship is not 255)
+        if (Friendship.Get() != 255)
             Lines.Add($"Happiness: {Friendship}");
 
         // IVs
@@ -164,6 +164,7 @@ public class ShowdownObject : FormatObject, IVs_O, EVs_O
      * Duct Tape
      * ------------------------------------
     */
+    IntegralField Friendship_O.Friendship => Friendship;
     IntegralArrayField IVs_O.IVs => IVs;
     IntegralArrayField EVs_O.EVs => EVs;
 }

@@ -14,7 +14,7 @@ namespace pkuManager.Formats.showdown;
 /// <summary>
 /// Exports a <see cref="pkuObject"/> to a <see cref="ShowdownObject"/>.
 /// </summary>
-public class ShowdownExporter : Exporter, BattleStatOverride_E, IVs_E, EVs_E
+public class ShowdownExporter : Exporter, BattleStatOverride_E, Friendship_E, IVs_E, EVs_E
 {
     public override string FormatName => "Showdown";
     protected override ShowdownObject Data { get; } = new();
@@ -22,6 +22,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, IVs_E, EVs_E
     // Module Parameters
     public int IVs_Default => 31;
     public bool IVs_SilentUnspecified => true;
+    public int Friendship_Default => 255;
 
     /// <summary>
     /// Creates an exporter that will attempt to export <paramref name="pku"/>
@@ -127,15 +128,6 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, IVs_E, EVs_E
         Warnings.Add(alert);
     }
 
-    // Friendship
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessFriendship()
-    {
-        var (friendship, alert) = pkxUtil.ExportTags.ProcessNumericTag(pku.Friendship, GetFriendshipAlert, false, 255, 0, 255);
-        Data.Friendship = (byte)friendship;
-        Warnings.Add(alert);
-    }
-
     // Nature
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessNature()
@@ -186,13 +178,6 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, IVs_E, EVs_E
         _ => pkxUtil.ExportAlerts.GetLevelAlert(at)
     };
 
-    public static Alert GetFriendshipAlert(AlertType at) => at switch
-    {
-        //override pkx's unspecified friendship of 0 to 255
-        AlertType.UNSPECIFIED => pkxUtil.ExportAlerts.GetNumericalAlert("Friendship", at, 255),
-        _ => pkxUtil.ExportAlerts.GetFriendshipAlert(at)
-    };
-
     public static Alert GetNatureAlert(AlertType at, string invalidNature = null)
     {
         Alert a = new("Nature", $"Using the default: None (Showdown uses Serious when no nature is specified.)");
@@ -214,6 +199,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, IVs_E, EVs_E
      * Duct Tape
      * ------------------------------------
     */
+    Friendship_O Friendship_E.Data => Data;
     IVs_O IVs_E.Data => Data;
     EVs_O EVs_E.Data => Data;
 }

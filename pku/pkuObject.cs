@@ -70,16 +70,16 @@ public class pkuObject : pkuDictionaryTag
     public bool? Gigantamax_Factor { get; set; }
 
     [JsonProperty("Friendship")]
-    public int? Friendship { get; set; }
+    public BackedField<BigInteger?> Friendship { get; set; } = new();
 
     [JsonProperty("Affection")]
     public int? Affection { get; set; }
 
     [JsonProperty("Game Info")]
-    public Game_Info_Class Game_Info { get; set; }
+    public Game_Info_Class Game_Info { get; set; } = new();
 
     [JsonProperty("Catch Info")]
-    public Catch_Info_Class Catch_Info { get; set; }
+    public Catch_Info_Class Catch_Info { get; set; } = new();
 
     [JsonProperty("Egg Info")]
     public Egg_Info_Class Egg_Info { get; set; }
@@ -154,7 +154,7 @@ public class pkuObject : pkuDictionaryTag
         public string Gender { get; set; }
 
         [JsonProperty("TID")]
-        public uint? TID { get; set; }
+        public BackedField<BigInteger?> TID { get; set; } = new();
 
         [JsonProperty("Language")]
         public string Language { get; set; }
@@ -179,7 +179,7 @@ public class pkuObject : pkuDictionaryTag
         public string Ball { get; set; }
 
         [JsonProperty("Met Level")]
-        public int? Met_Level { get; set; }
+        public BackedField<BigInteger?> Met_Level { get; set; } = new();
 
         [JsonProperty("Fateful Encounter")]
         public bool? Fateful_Encounter { get; set; }

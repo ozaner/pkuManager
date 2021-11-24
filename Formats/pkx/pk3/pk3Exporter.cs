@@ -15,7 +15,7 @@ namespace pkuManager.Formats.pkx.pk3;
 /// <summary>
 /// Exports a <see cref="pkuObject"/> to a <see cref="pk3Object"/>.
 /// </summary>
-public class pk3Exporter : Exporter, BattleStatOverride_E, IVs_E, EVs_E, Contest_Stats_E
+public class pk3Exporter : Exporter, BattleStatOverride_E, Friendship_E, TID_E, IVs_E, EVs_E, Contest_Stats_E, Met_Level_E
 {
     public override string FormatName => "pk3";
 
@@ -135,18 +135,9 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, IVs_E, EVs_E, Contest
         Warnings.Add(alert);
     }
 
-    // ID
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessTID()
-    {
-        var (tid, alert) = pkxUtil.ExportTags.ProcessTID(pku);
-        Data.TID.SetAs(tid);
-        Warnings.Add(alert);
-    }
-
     // PID [Requires: Gender, Form, Nature, TID] [ErrorResolver]
     [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessGender), nameof(ProcessForm),
-                                                nameof(ProcessNature), nameof(ProcessTID))]
+                                                nameof(ProcessNature), "ProcessTID")]
     protected virtual void ProcessPID()
     {
         var (pids, alert) = pkxUtil.ExportTags.ProcessPID(pku, Data.TID.GetAs<uint>(), false, gender, nature, unownForm);
@@ -313,15 +304,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, IVs_E, EVs_E, Contest
         Data.PP.SetAs(pp);
     }
 
-    // Friendship
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessFriendship()
-    {
-        var (friendship, alert) = pkxUtil.ExportTags.ProcessFriendship(pku);
-        Data.Friendship.SetAs(friendship);
-        Warnings.Add(alert);
-    }
-
     // Pokérus
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessPokerus()
@@ -329,15 +311,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, IVs_E, EVs_E, Contest
         var (strain, days, alert) = pkxUtil.ExportTags.ProcessPokerus(pku);
         Data.PKRS_Strain.SetAs(strain);
         Data.PKRS_Days.SetAs(days);
-        Warnings.Add(alert);
-    }
-
-    // Met Level
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessMetLevel()
-    {
-        var (level, alert) = pkxUtil.ExportTags.ProcessMetLevel(pku);
-        Data.Met_Level.SetAs(level);
         Warnings.Add(alert);
     }
 
@@ -550,7 +523,10 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, IVs_E, EVs_E, Contest
      * Duct Tape
      * ------------------------------------
     */
+    Friendship_O Friendship_E.Data => Data;
+    TID_O TID_E.Data => Data;
     IVs_O IVs_E.Data => Data;
     EVs_O EVs_E.Data => Data;
     Contest_Stats_O Contest_Stats_E.Data => Data;
+    Met_Level_O Met_Level_E.Data => Data;
 }
