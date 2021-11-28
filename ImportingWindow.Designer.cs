@@ -95,7 +95,7 @@
             this.groupBox3.Size = new System.Drawing.Size(333, 134);
             this.groupBox3.TabIndex = 7;
             this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Global Flags";
+            this.groupBox3.Text = "Notes";
             // 
             // notesPanel
             // 

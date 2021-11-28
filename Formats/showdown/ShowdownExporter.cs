@@ -14,7 +14,7 @@ namespace pkuManager.Formats.showdown;
 /// <summary>
 /// Exports a <see cref="pkuObject"/> to a <see cref="ShowdownObject"/>.
 /// </summary>
-public class ShowdownExporter : Exporter, BattleStatOverride_E, Friendship_E, IVs_E, EVs_E
+public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, Friendship_E, IVs_E, EVs_E
 {
     public override string FormatName => "Showdown";
     protected override ShowdownObject Data { get; } = new();
@@ -33,12 +33,15 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, Friendship_E, IV
 
     public override (bool, string) CanPort()
     {
+        // Screen Species & Form
+        if (pku.FirstFormInFormat(FormatName, true, GlobalFlags.Default_Form_Override) is null)
+            return (false, "Must be a species & form that exists in Showdown.");
+
         //Showdown doesn't support eggs (they can't exactly battle...).
         if (pku.IsEgg())
             return (false, "Cannot be an Egg.");
 
-        // Only Pokemon with a valid Showdown name are allowed.
-        return (ShowdownObject.GetShowdownName(pku) is not null, "Species/Form/Appearance doesn't exist in Showdown.");
+        return (true, null);
     }
 
 

@@ -113,7 +113,7 @@ public static class pkxUtil
     /// <param name="species">An official species. Will throw an exception otherwise.</param>
     /// <returns>The gender ratio of <paramref name="species"/>.</returns>
     public static GenderRatio GetGenderRatio(pkuObject pku)
-        => SPECIES_DEX.ReadSpeciesDex<string>(pku, false, "Gender Ratio").ToEnum<GenderRatio>().Value;
+        => SPECIES_DEX.ReadSpeciesDex<string>(pku, "Gender Ratio").ToEnum<GenderRatio>().Value;
 
     /// <summary>
     /// Returns the gender of a Pokémon with the given <paramref name="pid"/> as determined by Gens 3-5. 

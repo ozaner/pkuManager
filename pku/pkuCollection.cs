@@ -140,6 +140,12 @@ public class pkuCollection : Collection
         WriteCollectionConfig();
     }
 
+    public void SetDefaultFormOverrideFlag(bool val)
+    {
+        config.GlobalFlags.Default_Form_Override = val;
+        WriteCollectionConfig();
+    }
+
     public void AddNewBox(string boxName)
     {
         //ignore attmepts to create invalid or duplicate boxes

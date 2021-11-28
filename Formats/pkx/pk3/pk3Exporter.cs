@@ -15,7 +15,8 @@ namespace pkuManager.Formats.pkx.pk3;
 /// <summary>
 /// Exports a <see cref="pkuObject"/> to a <see cref="pk3Object"/>.
 /// </summary>
-public class pk3Exporter : Exporter, BattleStatOverride_E, Friendship_E, TID_E, IVs_E, EVs_E, Contest_Stats_E, Met_Level_E
+public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
+                           Friendship_E, TID_E, IVs_E, EVs_E, Contest_Stats_E, Met_Level_E
 {
     public override string FormatName => "pk3";
 
@@ -31,8 +32,8 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, Friendship_E, TID_E, 
     public override (bool canPort, string reason) CanPort()
     {
         // Screen Species & Form
-        if (!pku.SpeciesExistsIn(FormatName))
-            return (false, "Must be a species & form that exists in Gen 3."); // If form isn't default, and uncastable
+        if (pku.FirstFormInFormat(FormatName, true, GlobalFlags.Default_Form_Override) is null)
+            return (false, "Must be a species & form that exists in Gen 3.");
 
         // Screen Shadow Pokemon
         if (pku.IsShadow())
@@ -74,7 +75,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, Friendship_E, TID_E, 
     // Species
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessSpecies()
-        => Data.Species.SetAs(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, false, "Indices").Value);
+        => Data.Species.SetAs(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, "Indices").Value);
 
     // Nature [Implicit]
     [PorterDirective(ProcessingPhase.FirstPass)]
@@ -114,7 +115,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, Friendship_E, TID_E, 
     protected virtual void ProcessForm()
     {
         Alert alert = null; //to return
-        if (pku.Forms is not null)
+        if (!pku.Forms.IsNull)
         {
             string properFormName = pku.GetSearchableForm().ToLowerInvariant();
             if (dex is 201 && pku.Forms.Length is 1 && Regex.IsMatch(properFormName, "[a-z!?]")) //unown

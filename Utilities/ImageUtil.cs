@@ -37,7 +37,7 @@ public static class ImageUtil
     /// <param name="pku">The pku whose sprite is to be returned.</param>
     /// <param name="s_type">The type of sprite being requested (i.e. Front, Back, Box)</param>
     /// <returns>A tuple of the url of the reuested sprite, and its author.</returns>
-    public static (string url, string author) GetSprite(pkuObject pku, Sprite_Type s_type, bool ignoreCasting = false)
+    public static (string url, string author) GetSprite(pkuObject pku, Sprite_Type s_type)
     {
         // --------------
         // Get pku params
@@ -79,11 +79,11 @@ public static class ImageUtil
         (string, string) readURLBlock(List<string> keys)
         {
             keys.Add("URL");
-            string url = MASTER_SPRITE_INDEX.ReadSpeciesDex<string>(pku, ignoreCasting, keys.ToArray());
+            string url = MASTER_SPRITE_INDEX.ReadSpeciesDex<string>(pku, keys.ToArray());
             keys.Remove("URL");
 
             keys.Add("Author");
-            string author = MASTER_SPRITE_INDEX.ReadSpeciesDex<string>(pku, ignoreCasting, keys.ToArray());
+            string author = MASTER_SPRITE_INDEX.ReadSpeciesDex<string>(pku, keys.ToArray());
             keys.Remove("Author");
 
             return (url, author);

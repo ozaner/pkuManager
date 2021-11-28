@@ -141,12 +141,12 @@ public class ShowdownObject : FormatObject, Friendship_O, IVs_O, EVs_O
     /// </summary>
     /// <param name="pku">The pku whose Showdown name is to be determined.</param>
     /// <returns><paramref name="pku"/>'s Showdown name.</returns>
-    public static string GetShowdownName(pkuObject pku, bool ignoreCasting = false)
+    public static string GetShowdownName(pkuObject pku)
     {
         string searchStr = "Showdown Name";
 
         //Check for gender split
-        bool? genderSplit = SPECIES_DEX.ReadSpeciesDex<bool?>(pku, ignoreCasting, "Showdown Gender Split");
+        bool? genderSplit = SPECIES_DEX.ReadSpeciesDex<bool?>(pku, "Showdown Gender Split");
         if(genderSplit is true)
         {
             Gender? gender = pku.Gender.ToEnum<Gender>();
@@ -156,7 +156,7 @@ public class ShowdownObject : FormatObject, Friendship_O, IVs_O, EVs_O
             //that would be a data error though...
             searchStr += $" {genderStr}";
         }
-        return SPECIES_DEX.ReadSpeciesDex<string>(pku, ignoreCasting, searchStr);
+        return SPECIES_DEX.ReadSpeciesDex<string>(pku, searchStr);
     }
 
 

@@ -222,7 +222,7 @@ public static class DataUtil
     /// </summary>
     /// <param name="strs">The strings to be concatenated.</param>
     /// <returns>The values of <paramref name="strs"/> concatenated.</returns>
-    public static string JoinLexical(params string[] strs)
+    public static string JoinLexical(this string[] strs)
     {
         strs = strs?.Where(x => x is not null).ToArray();
         if (strs?.Length is not > 0)
@@ -231,6 +231,13 @@ public static class DataUtil
         Array.Sort(strs, StringComparer.OrdinalIgnoreCase);
         return string.Join('|', strs);
     }
+
+    /// <summary>
+    /// Splits a string into an array string on the '|' character.
+    /// </summary>
+    /// <param name="str">The string to split.</param>
+    /// <returns>The array of strings split from <paramref name="str"/> on '|'.</returns>
+    public static string[] SplitLexical(this string str) => str?.Split('|');
 
 
     /* ------------------------------------

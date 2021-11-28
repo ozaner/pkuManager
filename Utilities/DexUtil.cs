@@ -219,7 +219,7 @@ public static class DexUtil
                 if ((i & ((ulong)1 << j)) is 0) //reversed 0 and 1 so loop could go form 0 to powsize
                     apps.Add(pku.Appearance[j]);
             }
-            yield return DataUtil.JoinLexical(apps.ToArray());
+            yield return apps.ToArray().JoinLexical();
         }
         yield return null; //no appearance
     }
@@ -230,7 +230,7 @@ public static class DexUtil
     /// </summary>
     /// <param name="species">The species whose default form is to be retrieved.</param>
     /// <returns>The default form for this species or, if none found, the empty string.</returns>
-    private static string GetDefaultForm(string species)
+    public static string GetDefaultForm(string species)
     {
         JObject forms = SPECIES_DEX.ReadDataDex<JObject>(species, "Forms");
         if (forms is null) // No listed forms, default is just "" (i.e. base form)
@@ -251,29 +251,24 @@ public static class DexUtil
     /// <param name="pku">The pku whose form is to be formatted.</param>
     /// <returns>The searchable form name, or the default form if form array is empty or null.</returns>
     public static string GetSearchableForm(this pkuObject pku)
-        => pku.Forms?.Length is not > 0 ? GetDefaultForm(pku.Species) : DataUtil.JoinLexical(pku.Forms);
+        => !pku.Forms.IsNull && pku.Forms.Length > 0 ? pku.Forms.Get().JoinLexical() : GetDefaultForm(pku.Species);
 
-    // Iterates through all key prefixes of species/form/appearances. Used to search through the SpeciesDex. 
-    private static IEnumerable<List<string>> GetSearchablePKUCombos(this pkuObject pku, bool ignoreCasting)
+    // Iterates through each possible appearance, returning every combo of key prefixes for species/form/appearances.
+    // Used to search through the SpeciesDex.
+    private static IEnumerable<List<string>> GetSearchablePKUCombos(this pkuObject pku)
     {
-        List<string> helper(string form, string appearance)
-        {
-            List<string> keys = new() { pku.Species, "Forms", form };
-            if (appearance is not null)
-            {
-                keys.Add("Appearance");
-                keys.Add(appearance);
-            }
-            return keys;
-        }
+        string form = pku.GetSearchableForm();
 
-        List<string> forms = ignoreCasting ? new() { pku.GetSearchableForm() } : pku.GetCastableForms();
         var apps = GetSearchableAppearances(pku);
-
-        foreach (string form in forms)
-            foreach (string app in apps)
-                yield return helper(form, app);
-
+        List<string> keys = new() { pku.Species, "Forms", form, "Appearance", null };
+        foreach (string app in apps)
+        {
+            if (app is null)
+                yield return keys.Take(3).ToList();
+            else
+                keys[4] = app;
+            yield return keys;
+        }
         yield return new() { pku.Species }; //all forms/appearnces failed, try base species.
     }
 
@@ -283,11 +278,10 @@ public static class DexUtil
     /// </summary>
     /// <param name="dex">The species dex to read.</param>
     /// <param name="pku">The pku whose species/form/appearance is to be used.</param>
-    /// <param name="ignoreCasting">Whether to other castable forms of the <paramref name="pku"/> if its form fails.</param>
     /// <inheritdoc cref="ReadDataDex{T}(JObject, string[])"/>
-    public static T ReadSpeciesDex<T>(this JObject dex, pkuObject pku, bool ignoreCasting, params string[] keys)
+    public static T ReadSpeciesDex<T>(this JObject dex, pkuObject pku, params string[] keys)
     {
-        var combos = pku.GetSearchablePKUCombos(ignoreCasting);
+        var combos = pku.GetSearchablePKUCombos();
         foreach (var combo in combos)
         {
             combo.AddRange(keys);
@@ -298,26 +292,41 @@ public static class DexUtil
         return default;
     }
 
-    /// <inheritdoc cref="ReadSpeciesDex{T}(JObject, pkuObject, bool, string[])"/>
-    public static T ReadSpeciesDex<T>(pkuObject pku, bool ignoreCasting, params string[] keys)
-        => ReadSpeciesDex<T>(SPECIES_DEX, pku, ignoreCasting, keys);
+    /// <inheritdoc cref="ReadSpeciesDex{T}(JObject, pkuObject, string[])"/>
+    public static T ReadSpeciesDex<T>(pkuObject pku, params string[] keys)
+        => ReadSpeciesDex<T>(SPECIES_DEX, pku, keys);
 
     /// <summary>
-    /// Searches the <see cref="SPECIES_DEX"/> for whether the given
-    /// pku's species/form/appearance exists in the given format.
+    /// Searches the <see cref="SPECIES_DEX"/> for the first castable form of the pku that exists in the given format.<br/>
+    /// The priority order being : original -> casted -> default (if allowed).
     /// </summary>
     /// <param name="pku">The pku whose species/form is to be searched.</param>
     /// <param name="format">The desired format.</param>
-    /// <param name="ignoreCasting">Whether or not to account for form casting.</param>
-    /// <returns>Whether or not the given pku's species/form exists in the given format.</returns>
-    public static bool SpeciesExistsIn(this pkuObject pku, string format, bool ignoreCasting = false)
+    /// <param name="allowCasting">Whether or not to include castable forms.</param>
+    /// <param name="allowDefault">Whether or not to include the default form (essentially casting to it).</param>
+    /// <returns>The first form found to exist in the format, or <see langword="null"/> if no form exists.</returns>
+    public static string FirstFormInFormat(this pkuObject pku, string format, bool allowCasting, bool allowDefault)
     {
-        var combos = pku.GetSearchablePKUCombos(ignoreCasting);
-        foreach (var combo in combos)
-            if (SPECIES_DEX.ExistsIn(format, combo.ToArray()))
-                return true;
+        string defaultForm = GetDefaultForm(pku.Species);
 
-        return false;
+        List<string> forms = new() { GetSearchableForm(pku) };
+        if (allowCasting)
+            forms.AddRange(GetCastableForms(pku));
+        if (allowDefault && !forms.Contains(defaultForm))
+            forms.Add(defaultForm);
+
+        var combos = pku.GetSearchablePKUCombos();
+        foreach(string form in forms)
+        {
+            foreach (var combo in combos)
+            {
+                if(combo.Count > 2)
+                    combo[2] = form; // 0: species, 1: "Form", 2: form
+                if (SPECIES_DEX.ExistsIn(format, combo.ToArray()))
+                    return form;
+            }
+        }
+        return null; //pku combo not found
     }
 
     /// <summary>
@@ -325,11 +334,10 @@ public static class DexUtil
     /// appearances, form(s), then species level of a species entry with the given keys.
     /// </summary>
     /// <param name="pku">The pku.</param>
-    /// <param name="ignoreCasting">Whether or not to ignore the other forms pku can be casted to.</param>
     /// <inheritdoc cref="GetIndexedValue(JObject, string, string[])"/>
-    public static T GetSpeciesIndexedValue<T>(pkuObject pku, string format, bool ignoreCasting, params string[] keys)
+    public static T GetSpeciesIndexedValue<T>(pkuObject pku, string format, params string[] keys)
     {
-        var combos = pku.GetSearchablePKUCombos(ignoreCasting);
+        var combos = pku.GetSearchablePKUCombos();
         IEnumerable<List<string>> temp()
         {
             foreach(var combo in combos)

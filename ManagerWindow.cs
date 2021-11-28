@@ -430,11 +430,18 @@ public partial class ManagerWindow : Form
     // Updates UI elements dependent on the PKUCollection config.
     // Right now it's just the global flag "Stat Nature Override".
     private void UpdateGlobalFlagUI()
-        => enableBattleStatOverrideButton.Checked = pkuCollectionManager.GetGlobalFlags().Battle_Stat_Override;
+    {
+        enableBattleStatOverrideButton.Checked = pkuCollectionManager.GetGlobalFlags().Battle_Stat_Override;
+        enableDefaultFormOverrideButton.Checked = pkuCollectionManager.GetGlobalFlags().Default_Form_Override;
+    }
 
     // Behavior for when the Stat Nature Override button is checked/unchecked
     private void enableBattleStatOverrideButton_CheckedChanged(object sender, EventArgs e)
         => pkuCollectionManager.SetBattleStatOverrideFlag((sender as ToolStripMenuItem).Checked);
+
+    // Behavior for when the Default Form Override button is checked/unchecked
+    private void enableDefaultFormOverrideButton_Click(object sender, EventArgs e)
+        => pkuCollectionManager.SetDefaultFormOverrideFlag((sender as ToolStripMenuItem).Checked);
 
 
     /* ------------------------------------

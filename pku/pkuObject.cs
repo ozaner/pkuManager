@@ -31,7 +31,7 @@ public class pkuObject : pkuDictionaryTag
     public BackedField<string> True_OT { get; set; } = new();
 
     [JsonProperty("Forms")]
-    public string[] Forms { get; set; }
+    public BackedArrayField<string> Forms { get; set; } = new();
 
     [JsonProperty("Appearance")]
     public string[] Appearance { get; set; }

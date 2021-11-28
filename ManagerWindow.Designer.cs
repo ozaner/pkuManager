@@ -71,6 +71,7 @@
             this.createANewCollectionButton = new System.Windows.Forms.ToolStripMenuItem();
             this.collectionOptionsDropDown = new System.Windows.Forms.ToolStripMenuItem();
             this.enableBattleStatOverrideButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.enableDefaultFormOverrideButton = new System.Windows.Forms.ToolStripMenuItem();
             this.toolBar = new System.Windows.Forms.MenuStrip();
             this.boxOptionsDropDown = new System.Windows.Forms.ToolStripMenuItem();
             this.changeBoxTypeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -493,7 +494,8 @@
             // collectionOptionsDropDown
             // 
             this.collectionOptionsDropDown.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.enableBattleStatOverrideButton});
+            this.enableBattleStatOverrideButton,
+            this.enableDefaultFormOverrideButton});
             this.collectionOptionsDropDown.Enabled = false;
             this.collectionOptionsDropDown.Name = "collectionOptionsDropDown";
             this.collectionOptionsDropDown.Size = new System.Drawing.Size(118, 20);
@@ -503,13 +505,22 @@
             // 
             this.enableBattleStatOverrideButton.CheckOnClick = true;
             this.enableBattleStatOverrideButton.Name = "enableBattleStatOverrideButton";
-            this.enableBattleStatOverrideButton.Size = new System.Drawing.Size(213, 22);
+            this.enableBattleStatOverrideButton.Size = new System.Drawing.Size(229, 22);
             this.enableBattleStatOverrideButton.Text = "Enable Battle Stat Override";
             this.enableBattleStatOverrideButton.TextDirection = System.Windows.Forms.ToolStripTextDirection.Horizontal;
             this.enableBattleStatOverrideButton.ToolTipText = "Overrides exported pku\'s nature with its stat nature\r\nand its IVs with its hyper " +
     "training, if specified. Only\r\napplies to formats that don\'t use these battle sta" +
     "ts.";
             this.enableBattleStatOverrideButton.CheckedChanged += new System.EventHandler(this.enableBattleStatOverrideButton_CheckedChanged);
+            // 
+            // enableDefaultFormOverrideButton
+            // 
+            this.enableDefaultFormOverrideButton.CheckOnClick = true;
+            this.enableDefaultFormOverrideButton.Name = "enableDefaultFormOverrideButton";
+            this.enableDefaultFormOverrideButton.Size = new System.Drawing.Size(229, 22);
+            this.enableDefaultFormOverrideButton.Text = "Enable Default Form Override";
+            this.enableDefaultFormOverrideButton.ToolTipText = "Tries casting pku to its default form, if it cannot otherwise be exported.";
+            this.enableDefaultFormOverrideButton.Click += new System.EventHandler(this.enableDefaultFormOverrideButton_Click);
             // 
             // toolBar
             // 
@@ -753,6 +764,7 @@
         private System.Windows.Forms.Button refreshBoxButton;
         private System.Windows.Forms.ToolStripMenuItem openACollectionButton;
         private System.Windows.Forms.ToolStripMenuItem createANewCollectionButton;
+        private System.Windows.Forms.ToolStripMenuItem enableDefaultFormOverrideButton;
     }
 }
 

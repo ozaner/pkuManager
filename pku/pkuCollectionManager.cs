@@ -24,6 +24,9 @@ public class pkuCollectionManager : CollectionManager
     public void SetBattleStatOverrideFlag(bool val)
         => (collection as pkuCollection).SetBattleStatOverrideFlag(val);
 
+    public void SetDefaultFormOverrideFlag(bool val)
+        => (collection as pkuCollection).SetDefaultFormOverrideFlag(val);
+
     public GlobalFlags GetGlobalFlags()
         => (collection as pkuCollection).GetGlobalFlags();
 
