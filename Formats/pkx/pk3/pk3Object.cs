@@ -15,7 +15,7 @@ namespace pkuManager.Formats.pkx.pk3;
 /// Implementation details mostly referenced from
 /// <see href="https://bulbapedia.bulbagarden.net/wiki/Pokémon_data_structure_(Generation_III)">Bulbapedia</see>.
 /// </summary>
-public class pk3Object : FormatObject, TID_O, Friendship_O, IVs_O, EVs_O, Contest_Stats_O, Met_Level_O
+public class pk3Object : FormatObject, Species_O, TID_O, Friendship_O, IVs_O, EVs_O, Contest_Stats_O, Met_Level_O
 {
     /* ------------------------------------
      * Initialization
@@ -397,6 +397,7 @@ public class pk3Object : FormatObject, TID_O, Friendship_O, IVs_O, EVs_O, Contes
      * Duct Tape
      * ------------------------------------
     */
+    IntegralField Species_O.Species => Species;
     IntegralField Friendship_O.Friendship => Friendship;
     IntegralField TID_O.TID => TID;
     IntegralArrayField IVs_O.IVs => IVs;
