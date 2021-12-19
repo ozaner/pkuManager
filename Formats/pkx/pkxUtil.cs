@@ -1028,8 +1028,14 @@ public static class pkxUtil
             };
         }
 
-        public static (int, Alert) ProcessItem(pkuObject pku, int gen)
-            => ProcessEnumTag(pku.Item, PokeAPIUtil.GetItemIndex(pku.Item, gen), GetItemAlert, true, 0);
+        public static (int, Alert) ProcessItem(pkuObject pku, string format)
+        {
+            bool exists = ITEM_DEX.ExistsIn(format, pku.Item);
+            int? id = exists ? ITEM_DEX.GetIndexedValue<int?>(format, pku.Item, "Indices") : null;
+            if (exists && id is null)
+                throw new Exception($"pkuData Error: Item {pku.Item} exists, yet has no ID.");
+            return ProcessEnumTag(pku.Item, id, GetItemAlert, true, 0);
+        }
 
         //gmax moves use a different index and cannot even be stored out of battle. Thus, they are irrelevant.
         public static (int[] moveIDs, int[] moveIndicies, Alert) ProcessMoves(pkuObject pku, string format, bool ignoreIDs = false)

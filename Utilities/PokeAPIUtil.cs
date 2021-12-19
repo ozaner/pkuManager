@@ -12,22 +12,6 @@ public static class PokeAPIUtil
      * Wrapped Info Methods
      * ------------------------------------
     */
-    public static int? GetItemIndex(string item, int gen)
-    {
-        if (item is null)
-            return null;
-
-        string searchItem = item.ToLowerInvariant().Replace(' ', '-'); // lower case and replace spaces with dashes
-        try
-        {
-            return Task.Run(() => getItemIndexAsync(searchItem, gen)).Result;
-        }
-        catch
-        {
-            return null; //item does not exist in gen (or maybe its formatting doesn't match pokeapi)
-        }
-    }
-
     public static int? GetAbilityIndex(string ability)
     {
         if (ability is null)
@@ -136,17 +120,5 @@ public static class PokeAPIUtil
     {
         PokemonSpecies species = await paClient.GetResourceAsync<PokemonSpecies>(dex); // assume dex is valid
         return await paClient.GetResourceAsync(species.GrowthRate);
-    }
-
-    private static async Task<int> getItemIndexAsync(string item, int gen)
-    {
-        string genStr = gen switch
-        {
-            3 => "iii",
-            _ => throw new Exception("Method not implemented for this generation")
-        };
-        Item itemResult = await paClient.GetResourceAsync<Item>(item);
-        GenerationGameIndex ggi = itemResult.GameIndices.Find(x => x.Generation.Name == $"generation-{genStr}");
-        return ggi.GameIndex;
     }
 }

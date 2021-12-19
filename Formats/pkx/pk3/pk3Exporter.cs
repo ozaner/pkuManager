@@ -254,7 +254,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessItem()
     {
-        var (item, alert) = pkxUtil.ExportTags.ProcessItem(pku, 3);
+        var (item, alert) = pkxUtil.ExportTags.ProcessItem(pku, FormatName);
         Data.Item.SetAs(item);
         Warnings.Add(alert);
     }
