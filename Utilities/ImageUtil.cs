@@ -13,16 +13,15 @@ public static class ImageUtil
     /// URL to the <see href="https://github.com/project-pku/pkuSprite">pkuSprite</see> repository on Github.<br/>
     /// This is where all sprites used in pkuManager are sourced from.
     /// </summary>
-    private const string SPRITE_INDICES_URL = "https://raw.githubusercontent.com/project-pku/pkuSprite/main/sprite-indices.json";
+    private const string SPRITE_DEX_URL = "https://raw.githubusercontent.com/project-pku/pkuSprite/main/masterSpriteDex.json";
 
     /// <summary>
-    /// A JSON index of all Pokemon species sprites used in pkuManager.<br/>
-    /// Compiled from the <see cref="SPRITE_INDICES_URL">sprite-indicies.json</see> file on the pkuSprite repo.
+    /// The master SpriteDex containing all Pokemon species sprites used in pkuManager.<br/>
     /// </summary>
-    private static readonly JObject MASTER_SPRITE_INDEX = DexUtil.GetMasterDatadex(SPRITE_INDICES_URL, "Sprite");
+    private static readonly JObject SPRITE_DEX = DataUtil.DownloadJson(SPRITE_DEX_URL, "SpriteDex");
 
     /// <summary>
-    /// The different types of sprites listed in the <see cref="MASTER_SPRITE_INDEX"/>.
+    /// The different types of sprites listed in the <see cref="SPRITE_DEX"/>.
     /// </summary>
     public enum Sprite_Type
     {
@@ -79,11 +78,11 @@ public static class ImageUtil
         (string, string) readURLBlock(List<string> keys)
         {
             keys.Add("URL");
-            string url = MASTER_SPRITE_INDEX.ReadSpeciesDex<string>(pku, keys.ToArray());
+            string url = SPRITE_DEX.ReadSpeciesDex<string>(pku, keys.ToArray());
             keys.Remove("URL");
 
             keys.Add("Author");
-            string author = MASTER_SPRITE_INDEX.ReadSpeciesDex<string>(pku, keys.ToArray());
+            string author = SPRITE_DEX.ReadSpeciesDex<string>(pku, keys.ToArray());
             keys.Remove("Author");
 
             return (url, author);
@@ -137,8 +136,8 @@ public static class ImageUtil
         if (u is null)
         {
             List<string> def_keys = new() { "", "Forms", "", "Sprites", pku.IsEgg() ? "Egg" : "Default", shinyString, typeString };
-            return (MASTER_SPRITE_INDEX.ReadDataDex<string>(def_keys.Append("URL").ToArray()),
-                MASTER_SPRITE_INDEX.ReadDataDex<string>(def_keys.Append("Author").ToArray()));
+            return (SPRITE_DEX.ReadDataDex<string>(def_keys.Append("URL").ToArray()),
+                SPRITE_DEX.ReadDataDex<string>(def_keys.Append("Author").ToArray()));
         }
 
         return (u, a); // sprite found

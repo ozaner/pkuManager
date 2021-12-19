@@ -14,28 +14,6 @@ public static class DexUtil
      * Generic DataDex Methods
      * ------------------------------------
     */
-    //Array merging JsonMergeSettings.
-    private static readonly JsonMergeSettings JMS = new() { MergeArrayHandling = MergeArrayHandling.Union };
-
-    /// <summary>
-    /// Compiles a master datadex from the given <paramref name="url"/>.
-    /// </summary>
-    /// <param name="url">A raw url to an uncompiled master datadex file.</param>
-    /// <param name="type">Which master datadex is being retrieved, used for error reporting.</param>
-    /// <returns>The compiled datadex from the <paramref name="url"/>.</returns>
-    public static JObject GetMasterDatadex(string url, string type)
-    {
-        JObject masterDatadex = new();
-        JObject uncompiledJSON = DataUtil.DownloadJson(url, $"Master {type}Dex", true);
-
-        foreach (var kvp in uncompiledJSON)
-        {
-            JObject datadexJSON = DataUtil.DownloadJson((string)kvp.Value, $"{kvp.Key} Dex", true);
-            masterDatadex.Merge(datadexJSON, JMS);
-        }
-        return masterDatadex;
-    }
-
     /// <summary>
     /// Searches the contents of a <paramref name="datadex"/> with the given <paramref name="keys"/>.<br/>
     /// If no object exists at the given location, <see langword="null"/> will be returned.<br/>
