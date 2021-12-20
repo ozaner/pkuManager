@@ -46,7 +46,7 @@ public class pkuObject : pkuDictionaryTag
     public int? EXP { get; set; }
 
     [JsonProperty("Item")]
-    public string Item { get; set; }
+    public BackedField<string> Item { get; set; } = new();
 
     [JsonProperty("Moves")]
     public Move[] Moves { get; set; }

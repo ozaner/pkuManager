@@ -16,7 +16,8 @@ namespace pkuManager.Formats.pkx.pk3;
 /// Exports a <see cref="pkuObject"/> to a <see cref="pk3Object"/>.
 /// </summary>
 public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
-                           Species_E, Friendship_E, TID_E, IVs_E, EVs_E, Contest_Stats_E, Met_Level_E
+                           Species_E, Item_E, Friendship_E, TID_E,
+                           IVs_E, EVs_E, Contest_Stats_E, Met_Level_E
 {
     public override string FormatName => "pk3";
 
@@ -248,15 +249,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
         Data.MarkingSquare.Set(markings.Contains(Marking.Blue_Square));
         Data.MarkingTriangle.Set(markings.Contains(Marking.Blue_Triangle));
         Data.MarkingHeart.Set(markings.Contains(Marking.Blue_Heart));
-    }
-
-    // Item
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessItem()
-    {
-        var (item, alert) = pkxUtil.ExportTags.ProcessItem(pku, FormatName);
-        Data.Item.SetAs(item);
-        Warnings.Add(alert);
     }
 
     // Experience [ErrorResolver]
@@ -520,6 +512,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
      * ------------------------------------
     */
     Species_O Species_E.Data => Data;
+    Item_O Item_E.Data => Data;
     Friendship_O Friendship_E.Data => Data;
     TID_O TID_E.Data => Data;
     IVs_O IVs_E.Data => Data;

@@ -14,7 +14,7 @@ namespace pkuManager.Formats.showdown;
 /// <summary>
 /// Exports a <see cref="pkuObject"/> to a <see cref="ShowdownObject"/>.
 /// </summary>
-public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, Friendship_E, IVs_E, EVs_E
+public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, Item_E, Friendship_E, IVs_E, EVs_E
 {
     public override string FormatName => "Showdown";
     protected override ShowdownObject Data { get; } = new();
@@ -97,18 +97,6 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, F
         //  - Genderless is denoted by no gender.
 
         Data.Gender = pku.Gender.ToEnum<Gender>();
-    }
-
-    // Item
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessItem()
-    {
-        bool itemValid = ITEM_DEX.ExistsIn(FormatName, pku.Item);
-        if (pku.Item is not null && !itemValid) //check for invalid alert
-            Warnings.Add(pkxUtil.ExportAlerts.GetItemAlert(AlertType.INVALID, pku.Item));
-
-        if (itemValid)
-            Data.Item = pku.Item;
     }
 
     // Ability
@@ -202,6 +190,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, F
      * Duct Tape
      * ------------------------------------
     */
+    Item_O Item_E.Data => Data;
     Friendship_O Friendship_E.Data => Data;
     IVs_O IVs_E.Data => Data;
     EVs_O EVs_E.Data => Data;

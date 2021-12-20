@@ -371,12 +371,6 @@ public static class pkxUtil
                 "This pku's Nickname Flag is false, yet it has a nickname.");
         }
 
-        public static Alert GetItemAlert(AlertType at, string invalidItem) => at switch
-        {
-            AlertType.INVALID => new("Item", $"The held item {invalidItem} is not valid in this format. Setting the held item to none."),
-            _ => throw InvalidAlertType(at)
-        };
-
         public static Alert GetLevelAlert(AlertType at) => GetNumericalAlert("Level", at, at switch
         {
             AlertType.UNSPECIFIED or AlertType.UNDERFLOW => 1,
@@ -1026,15 +1020,6 @@ public static class pkxUtil
                     }
                 }
             };
-        }
-
-        public static (int, Alert) ProcessItem(pkuObject pku, string format)
-        {
-            bool exists = ITEM_DEX.ExistsIn(format, pku.Item);
-            int? id = exists ? ITEM_DEX.GetIndexedValue<int?>(format, pku.Item, "Indices") : null;
-            if (exists && id is null)
-                throw new Exception($"pkuData Error: Item {pku.Item} exists, yet has no ID.");
-            return ProcessEnumTag(pku.Item, id, GetItemAlert, true, 0);
         }
 
         //gmax moves use a different index and cannot even be stored out of battle. Thus, they are irrelevant.
