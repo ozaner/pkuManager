@@ -43,6 +43,7 @@ public static class Registry
         public static readonly JObject ABILITY_DEX = GetMasterDex("Ability");
         public static readonly JObject MOVE_DEX = GetMasterDex("Move");
         public static readonly JObject ITEM_DEX = GetMasterDex("Item");
+        public static readonly JObject BALL_DEX = GetMasterDex("Ball");
         public static readonly JObject GAME_DEX = GetMasterDex("Game");
         public static readonly JObject FORMAT_DEX = GetMasterDex("Format");
     }

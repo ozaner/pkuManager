@@ -64,7 +64,7 @@ public class ShowdownObject : FormatObject, Item_O, Friendship_O, IVs_O, EVs_O
         };
 
         // Item
-        if (Item.Get()?.Length > 0)
+        if (Item != "None")
             introLine += $" @ {Item}";
 
         Lines.Add(introLine);

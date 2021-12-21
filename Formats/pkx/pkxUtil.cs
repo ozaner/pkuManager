@@ -34,11 +34,6 @@ public static class pkxUtil
     public const Nature DEFAULT_NATURE = Nature.Hardy;
 
     /// <summary>
-    /// The default ball used in pkx formats.
-    /// </summary>
-    public const Ball DEFAULT_BALL = Ball.Poké_Ball;
-
-    /// <summary>
     /// The default gender for Pokémon and trainers used in pkx formats.
     /// </summary>
     public const Gender DEFAULT_GENDER = Gender.Male;
@@ -301,9 +296,6 @@ public static class pkxUtil
             AlertType.UNSPECIFIED => $"The met location was unspecified.",
             _ => throw InvalidAlertType(at)
         } + $" Using the default location: { defaultLoc ?? "None"}.");
-
-        public static Alert GetBallAlert(AlertType at, string invalidBall = null)
-            => GetEnumAlert("Ball", DEFAULT_BALL.ToFormattedString(), at, invalidBall);
 
 
         // ----------
@@ -904,10 +896,6 @@ public static class pkxUtil
         // ----------
         // Catch Info Processing Methods
         // ----------
-        public static (Ball, Alert) ProcessBall(pkuObject pku, Ball maxBall)
-            => ProcessEnumTag(pku.Catch_Info?.Ball, pku.Catch_Info?.Ball.ToEnum<Ball>(),
-                GetBallAlert, false, DEFAULT_BALL, (x) => x <= maxBall);
-
         public static (int, Alert) ProcessMetLocation(pkuObject pku, string checkedGameName)
         {
             checkedGameName = pku.Catch_Info?.Met_Game_Override ?? checkedGameName; //override game for met location

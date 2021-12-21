@@ -176,7 +176,7 @@ public class pkuObject : pkuDictionaryTag
     public class Catch_Info_Class : Met_Info_Base
     {
         [JsonProperty("Ball")]
-        public string Ball { get; set; }
+        public BackedField<string> Ball { get; set; } = new();
 
         [JsonProperty("Met Level")]
         public BackedField<BigInteger?> Met_Level { get; set; } = new();

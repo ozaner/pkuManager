@@ -17,7 +17,7 @@ namespace pkuManager.Formats.pkx.pk3;
 /// </summary>
 public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
                            Species_E, Item_E, Friendship_E, TID_E,
-                           IVs_E, EVs_E, Contest_Stats_E, Met_Level_E
+                           IVs_E, EVs_E, Contest_Stats_E, Ball_E, Met_Level_E
 {
     public override string FormatName => "pk3";
 
@@ -302,15 +302,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
         Warnings.Add(alert);
     }
 
-    // Ball
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessBall()
-    {
-        var (ball, alert) = pkxUtil.ExportTags.ProcessBall(pku, Ball.Premier_Ball);
-        Data.Ball.SetAs((int)ball);
-        Warnings.Add(alert);
-    }
-
     // OT Gender
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessOTGender()
@@ -518,5 +509,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
     IVs_O IVs_E.Data => Data;
     EVs_O EVs_E.Data => Data;
     Contest_Stats_O Contest_Stats_E.Data => Data;
+    Ball_O Ball_E.Data => Data;
     Met_Level_O Met_Level_E.Data => Data;
 }
