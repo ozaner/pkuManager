@@ -16,10 +16,11 @@ public interface Item_E : IndexTag_E
     public pkuObject pku { get; }
     public string FormatName { get; }
 
+    public string Item_Default => null;
     public Item_O Data { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected void ProcessItem()
-        => ProcessIndexTag("Item", pku.Item, "None", Data.Item, false,
-            x => ITEM_DEX.ExistsIn(FormatName, x), x => ITEM_DEX.GetIndexedValue<int?>(FormatName, x, "Indices"));
+        => ProcessIndexTag("Item", pku.Item, Item_Default, Data.Item, false,
+            x => ITEM_DEX.ExistsIn(FormatName, x), x => ITEM_DEX.GetIndexedValue<int?>(FormatName, x, "Indices") ?? 0);
 }

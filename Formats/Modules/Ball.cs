@@ -24,5 +24,5 @@ public interface Ball_E : IndexTag_E
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected void ProcessBall()
         => ProcessIndexTag("Ball", pku.Catch_Info.Ball, Ball_Default, Data.Ball, Ball_AlertIfUnspecified,
-            x => BALL_DEX.ExistsIn(FormatName, x), x => BALL_DEX.GetIndexedValue<int?>(FormatName, x, "Indices"));
+            x => BALL_DEX.ExistsIn(FormatName, x), x => BALL_DEX.GetIndexedValue<int?>(FormatName, x, "Indices") ?? 0);
 }
