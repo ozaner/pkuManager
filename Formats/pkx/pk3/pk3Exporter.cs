@@ -1,5 +1,8 @@
-﻿using pkuManager.Alerts;
+﻿using OneOf;
+using pkuManager.Alerts;
 using pkuManager.Common;
+using pkuManager.Formats.Fields;
+using pkuManager.Formats.Fields.BackedFields;
 using pkuManager.Formats.Modules;
 using pkuManager.pku;
 using pkuManager.Utilities;
@@ -16,7 +19,7 @@ namespace pkuManager.Formats.pkx.pk3;
 /// Exports a <see cref="pkuObject"/> to a <see cref="pk3Object"/>.
 /// </summary>
 public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
-                           Species_E, Item_E, Friendship_E, TID_E,
+                           Species_E, Item_E, Nature_E, Friendship_E, TID_E,
                            IVs_E, EVs_E, Contest_Stats_E, Ball_E, Met_Level_E
 {
     public override string FormatName => "pk3";
@@ -43,11 +46,19 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
         return (true, null); //compatible with .pk3
     }
 
+    // Module Parameters
+    public Nature? Nature_Default => null;
+    public Func<AlertType, string, string, Alert> Nature_Alert_Func => GetNatureAlert;
+
     // Working variables
+    protected WorkingVariables workingVars = new();
+    protected partial class WorkingVariables
+    {
+        public BackedField<Nature?> Nature { get; } = new(); // Nature [Implicit]
+    }
     protected int dex; //official national dex #
     protected int[] moveIndices; //indices of the chosen moves in the pku
     protected Gender? gender;
-    protected Nature? nature;
     protected int? unownForm;
     protected string checkedGameName;
     protected Language checkedLang;
@@ -73,21 +84,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
      * Tag Processing Methods
      * ------------------------------------
     */
-    // Nature [Implicit]
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessNature()
-    {
-        Alert alert;
-        if (pku.Nature.IsNull)
-            alert = GetNatureAlert(AlertType.UNSPECIFIED);
-        else if (pku.Nature.ToEnum<Nature>() is null)
-            alert = GetNatureAlert(AlertType.INVALID, pku.Nature);
-        else
-            (nature, alert) = pkxUtil.ExportTags.ProcessNature(pku);
-
-        Warnings.Add(alert);
-    }
-
     // Gender [Implicit]
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessGender()
@@ -134,10 +130,10 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
 
     // PID [Requires: Gender, Form, Nature, TID] [ErrorResolver]
     [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessGender), nameof(ProcessForm),
-                                                nameof(ProcessNature), "ProcessTID")]
+                                                "ProcessNature", "ProcessTID")]
     protected virtual void ProcessPID()
     {
-        var (pids, alert) = pkxUtil.ExportTags.ProcessPID(pku, Data.TID.GetAs<uint>(), false, gender, nature, unownForm);
+        var (pids, alert) = pkxUtil.ExportTags.ProcessPID(pku, Data.TID.GetAs<uint>(), false, gender, workingVars.Nature, unownForm);
         BigInteger[] castedPids = Array.ConvertAll(pids, x => x.ToBigInteger());
         PIDResolver = new(alert, Data.PID, castedPids);
         if (alert is RadioButtonAlert)
@@ -463,11 +459,11 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
         return ribbonAlert;
     }
 
-    public static Alert GetNatureAlert(AlertType at, string invalidNature = null) => at switch
+    public static Alert GetNatureAlert(AlertType at, string val, string defaultVal) => at switch
     {
         AlertType.UNSPECIFIED => new Alert("Nature", "No nature specified, using the nature decided by the PID."),
-        AlertType.INVALID => new Alert("Nature", $"The nature \"{invalidNature}\" is not valid in this format. Using the nature decided by the PID."),
-        _ => pkxUtil.ExportAlerts.GetNatureAlert(at, invalidNature)
+        AlertType.INVALID => new Alert("Nature", $"The nature \"{val}\" is not valid in this format. Using the nature decided by the PID."),
+        _ => EnumTag_E.GetEnumAlert("Nature", at, val, defaultVal)
     };
 
     // Changes the UNSPECIFIED & INVALID AlertTypes from the pkxUtil method to account for PID-Nature dependence.
@@ -504,6 +500,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
     */
     Species_O Species_E.Data => Data;
     Item_O Item_E.Data => Data;
+    Nature_O Nature_E.Data => workingVars;
     Friendship_O Friendship_E.Data => Data;
     TID_O TID_E.Data => Data;
     IVs_O IVs_E.Data => Data;
@@ -511,4 +508,8 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
     Contest_Stats_O Contest_Stats_E.Data => Data;
     Ball_O Ball_E.Data => Data;
     Met_Level_O Met_Level_E.Data => Data;
+    protected partial class WorkingVariables : Nature_O
+    {
+        OneOf<IntegralField, Field<Nature>, Field<Nature?>> Nature_O.Nature => Nature;
+    }
 }

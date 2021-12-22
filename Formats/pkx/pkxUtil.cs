@@ -29,11 +29,6 @@ public static class pkxUtil
     public const Language DEFAULT_LANGUAGE = Language.English;
 
     /// <summary>
-    /// The default nature used in pkx formats.
-    /// </summary>
-    public const Nature DEFAULT_NATURE = Nature.Hardy;
-
-    /// <summary>
     /// The default gender for Pokémon and trainers used in pkx formats.
     /// </summary>
     public const Gender DEFAULT_GENDER = Gender.Male;
@@ -500,9 +495,6 @@ public static class pkxUtil
             });
         }
 
-        public static Alert GetNatureAlert(AlertType at, string invalidNature = null)
-            => GetEnumAlert("Nature", DEFAULT_NATURE.ToFormattedString(), at, invalidNature);
-
         public static Alert GetPokerusAlert(AlertType atStrain, AlertType atDays)
         {
             if ((atStrain, atDays) is (AlertType.NONE, AlertType.NONE))
@@ -928,7 +920,7 @@ public static class pkxUtil
             // Check if any value has a pid-mismatch
             bool genderMismatch = false, natureMismatch = false, unownMismatch = false, shinyMismatch;
             int oldunownform = 0;
-            Nature oldnature = DEFAULT_NATURE;
+            Nature oldnature = Nature.Hardy;
             Gender oldgender = DEFAULT_GENDER;
 
             if (checkedGender is not null) //gender mismatch check
@@ -978,9 +970,6 @@ public static class pkxUtil
                                             //   warning: pid unspecified or out of bounds, rounding it.
                                             //no warning: pid is in bounds w/ no mismatches.
         }
-
-        public static (Nature, Alert) ProcessNature(pkuObject pku)
-            => ProcessEnumTag(pku.Nature, pku.Nature.ToEnum<Nature>(), GetNatureAlert, false, DEFAULT_NATURE);
 
         //Gen 6: allow impossible genders in gen 6+ (I think they allow impossible genders...)
         public static (Gender, Alert) ProcessGender(pkuObject pku)

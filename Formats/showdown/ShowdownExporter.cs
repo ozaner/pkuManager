@@ -14,7 +14,8 @@ namespace pkuManager.Formats.showdown;
 /// <summary>
 /// Exports a <see cref="pkuObject"/> to a <see cref="ShowdownObject"/>.
 /// </summary>
-public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, Item_E, Friendship_E, IVs_E, EVs_E
+public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, Item_E,
+                                Nature_E, Friendship_E, IVs_E, EVs_E
 {
     public override string FormatName => "Showdown";
     protected override ShowdownObject Data { get; } = new();
@@ -22,6 +23,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, I
     // Module Parameters
     public int IVs_Default => 31;
     public bool IVs_SilentUnspecified => true;
+    public Nature? Nature_Default => null;
     public int Friendship_Default => 255;
 
     /// <summary>
@@ -119,20 +121,6 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, I
         Warnings.Add(alert);
     }
 
-    // Nature
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessNature()
-    {
-        Data.Nature = pku.Nature.ToEnum<Nature>();
-        if (Data.Nature is null)
-        {
-            if (pku.Nature.IsNull)
-                Warnings.Add(GetNatureAlert(AlertType.UNSPECIFIED));
-            else
-                Warnings.Add(GetNatureAlert(AlertType.INVALID, pku.Nature));
-        }
-    }
-
     // Gigantamax Factor
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessGigantamaxFactor()
@@ -191,6 +179,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, I
      * ------------------------------------
     */
     Item_O Item_E.Data => Data;
+    Nature_O Nature_E.Data => Data;
     Friendship_O Friendship_E.Data => Data;
     IVs_O IVs_E.Data => Data;
     EVs_O EVs_E.Data => Data;

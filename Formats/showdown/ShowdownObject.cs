@@ -15,7 +15,7 @@ namespace pkuManager.Formats.showdown;
 /// <summary>
 /// An implementation of the .txt (Showdown!) format used by Pokémon Showdown!.
 /// </summary>
-public class ShowdownObject : FormatObject, Item_O, Friendship_O, IVs_O, EVs_O
+public class ShowdownObject : FormatObject, Item_O, Nature_O, Friendship_O, IVs_O, EVs_O
 {
     /* ------------------------------------
      * Attributes
@@ -31,7 +31,7 @@ public class ShowdownObject : FormatObject, Item_O, Friendship_O, IVs_O, EVs_O
     public BackedIntegralArrayField IVs { get; } = new(31, 0, 6);
     public BackedIntegralArrayField EVs { get; } = new(31, 0, 6);
     public Gender? Gender { get; set; }
-    public Nature? Nature { get; set; }
+    public BackedField<Nature?> Nature { get; } = new();
     public bool Shiny { get; set; }
     public bool Gigantamax_Factor { get; set; }
     // PP Ups not used in Showdown, by default always max PP
@@ -65,7 +65,7 @@ public class ShowdownObject : FormatObject, Item_O, Friendship_O, IVs_O, EVs_O
         };
 
         // Item
-        if (Item != "None")
+        if (!Item.IsNull)
             introLine += $" @ {Item}";
 
         Lines.Add(introLine);
@@ -107,7 +107,7 @@ public class ShowdownObject : FormatObject, Item_O, Friendship_O, IVs_O, EVs_O
         }
 
         // Nature
-        if (Nature.HasValue)
+        if (!Nature.IsNull)
             Lines.Add($"{Nature} Nature");
 
         // Gigantamax
@@ -166,6 +166,7 @@ public class ShowdownObject : FormatObject, Item_O, Friendship_O, IVs_O, EVs_O
      * ------------------------------------
     */
     OneOf<IntegralField, Field<string>> Item_O.Item => Item;
+    OneOf<IntegralField, Field<Nature>, Field<Nature?>> Nature_O.Nature => Nature;
     IntegralField Friendship_O.Friendship => Friendship;
     IntegralArrayField IVs_O.IVs => IVs;
     IntegralArrayField EVs_O.EVs => EVs;
