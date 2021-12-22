@@ -1,4 +1,5 @@
-﻿using pkuManager.Common;
+﻿using OneOf;
+using pkuManager.Common;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Fields.BackedFields;
 using pkuManager.Formats.Modules;
@@ -164,7 +165,7 @@ public class ShowdownObject : FormatObject, Item_O, Friendship_O, IVs_O, EVs_O
      * Duct Tape
      * ------------------------------------
     */
-    Union<IntegralField, Field<string>> Item_O.Item => Item;
+    OneOf<IntegralField, Field<string>> Item_O.Item => Item;
     IntegralField Friendship_O.Friendship => Friendship;
     IntegralArrayField IVs_O.IVs => IVs;
     IntegralArrayField EVs_O.EVs => EVs;

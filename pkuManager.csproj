@@ -95,6 +95,7 @@
   <ItemGroup>
     <PackageReference Include="DiscordRichPresence" Version="1.0.175" />
     <PackageReference Include="NJsonSchema" Version="10.5.2" />
+    <PackageReference Include="OneOf" Version="3.0.205" />
     <PackageReference Include="PokeApiNet" Version="3.0.3" />
   </ItemGroup>
   <ItemGroup>

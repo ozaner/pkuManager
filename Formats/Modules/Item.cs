@@ -1,4 +1,5 @@
-﻿using pkuManager.Formats.Fields;
+﻿using OneOf;
+using pkuManager.Formats.Fields;
 using pkuManager.pku;
 using pkuManager.Utilities;
 using static pkuManager.Formats.PorterDirective;
@@ -7,7 +8,7 @@ namespace pkuManager.Formats.Modules;
 
 public interface Item_O
 {
-    public Union<IntegralField, Field<string>> Item { get; }
+    public OneOf<IntegralField, Field<string>> Item { get; }
 }
 
 public interface Item_E : IndexTag_E

@@ -1,6 +1,6 @@
-﻿using pkuManager.Alerts;
+﻿using OneOf;
+using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
-using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using static pkuManager.Alerts.Alert;
@@ -11,7 +11,7 @@ public interface IndexTag_E
 {
     public List<Alert> Warnings { get; }
 
-    protected void ProcessIndexTag(string tagName, Field<string> tag, string defaultVal, Union<IntegralField, Field<string>> formatVal,
+    protected void ProcessIndexTag(string tagName, Field<string> tag, string defaultVal, OneOf<IntegralField, Field<string>> formatVal,
         bool alertIfUnspecified, Predicate<string> isValid, Func<string, int?> getIndex)
     {
         AlertType at = AlertType.NONE;
@@ -23,10 +23,8 @@ public interface IndexTag_E
         else //tag unspecified
             at = alertIfUnspecified ? AlertType.UNSPECIFIED : AlertType.NONE;
 
-        if (formatVal.IsLeft)
-            formatVal.Left.Set(getIndex(useDefault ? defaultVal : tag).Value);
-        else
-            formatVal.Right.Set(useDefault ? defaultVal : tag);
+        formatVal.Switch(x => x.Set(getIndex(useDefault ? defaultVal : tag).Value),
+                         x => x.Set(useDefault ? defaultVal : tag));
         Warnings.Add(GetIndexAlert(tagName, at, tag, defaultVal));
     }
 

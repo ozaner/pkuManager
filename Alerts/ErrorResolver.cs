@@ -1,5 +1,5 @@
-﻿using pkuManager.Formats.Fields;
-using pkuManager.Utilities;
+﻿using OneOf;
+using pkuManager.Formats.Fields;
 using System;
 
 namespace pkuManager.Alerts;
@@ -19,7 +19,7 @@ public class ErrorResolver<T>
     /// <summary>
     /// Functions that return the values of the different choices the <see cref="rba"/> contains.
     /// </summary>
-    protected readonly Union<T, Func<T>>[] Options;
+    protected readonly OneOf<T, Func<T>>[] Options;
 
     /// <summary>
     /// The Field that will store the chosen value.
@@ -34,7 +34,7 @@ public class ErrorResolver<T>
     ///                       the <paramref name="alert"/>.<br/> Should only have one value if
     ///                       <paramref name="alert"/> is not a <see cref="RadioButtonAlert"/>.</param>
     /// <param name="field">A function that sets a value to the desired property.</param>
-    public ErrorResolver(Alert alert, Field<T> field, params Union<T, Func<T>>[] options)
+    public ErrorResolver(Alert alert, Field<T> field, params OneOf<T, Func<T>>[] options)
     {
         Options = options;
         Field = field;
@@ -52,16 +52,16 @@ public class ErrorResolver<T>
         }
     }
 
-    /// <inheritdoc cref="ErrorResolver(Alert, Field{T}, Union{T, Func{T}}[])"/>
+    /// <inheritdoc cref="ErrorResolver(Alert, Field{T}, NewUnion{T, Func{T}}[])"/>
     public ErrorResolver(Alert alert, Field<T> field, params T[] options)
-        : this(alert, field, new Union<T, Func<T>>[options.Length])
+        : this(alert, field, new OneOf<T, Func<T>>[options.Length])
     {
         for (int i = 0; i < options.Length; i++)
             Options[i] = options[i];
     }
 
-    private static T ReadOption(Union<T, Func<T>> val)
-        => val.IsRight ? val.Right.Invoke() : val.Left;
+    private static T ReadOption(OneOf<T, Func<T>> val)
+        => val.Match(x => x, x => x.Invoke());
 
     /// <summary>
     /// Finalizes and sets the value corresponding to the chosen option.

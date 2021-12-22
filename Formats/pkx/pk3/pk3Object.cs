@@ -7,6 +7,7 @@ using pkuManager.Formats.Fields.BAMFields;
 using System.Numerics;
 using pkuManager.Formats.Modules;
 using pkuManager.Formats.Fields;
+using OneOf;
 
 namespace pkuManager.Formats.pkx.pk3;
 
@@ -399,12 +400,12 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
      * ------------------------------------
     */
     IntegralField Species_O.Species => Species;
-    Union<IntegralField, Field<string>> Item_O.Item => Item;
+    OneOf<IntegralField, Field<string>> Item_O.Item => Item;
     IntegralField Friendship_O.Friendship => Friendship;
     IntegralField TID_O.TID => TID;
     IntegralArrayField IVs_O.IVs => IVs;
     IntegralArrayField EVs_O.EVs => EVs;
     IntegralArrayField Contest_Stats_O.Contest_Stats => Contest_Stats;
-    Union<IntegralField, Field<string>> Ball_O.Ball => Ball;
+    OneOf<IntegralField, Field<string>> Ball_O.Ball => Ball;
     IntegralField Met_Level_O.Met_Level => Met_Level;
 }
