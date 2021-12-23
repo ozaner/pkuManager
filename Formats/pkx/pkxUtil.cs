@@ -278,9 +278,6 @@ public static class pkxUtil
             _ => throw InvalidAlertType(at)
         });
 
-        public static Alert GetOTGenderAlert(AlertType at, string invalidGender = null)
-            => GetEnumAlert("OT Gender", DEFAULT_GENDER.ToFormattedString(), at, invalidGender);
-
 
         // ----------
         // Catch Info Alert Methods
@@ -876,13 +873,6 @@ public static class pkxUtil
         public static (Language, Alert) ProcessLanguage(pkuObject pku, List<Language> validLanguages)
             => ProcessEnumTag(pku.Game_Info?.Language, pku.Game_Info?.Language.ToEnum<Language>(),
                 GetLanguageAlert, false, DEFAULT_LANGUAGE, (x) => validLanguages.Contains(x));
-
-        public static (Gender, Alert) ProcessOTGender(pkuObject pku)
-        {
-            Gender? checkedGender = pku.Game_Info?.Gender.ToEnum<Gender>();
-            checkedGender = checkedGender is Gender.Genderless ? null : checkedGender;
-            return ProcessEnumTag(pku.Game_Info?.Gender, checkedGender, GetOTGenderAlert, false, DEFAULT_GENDER, (x) => x != Gender.Genderless);
-        }
 
 
         // ----------

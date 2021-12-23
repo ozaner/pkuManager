@@ -151,7 +151,7 @@ public class pkuObject : pkuDictionaryTag
         public string OT { get; set; }
 
         [JsonProperty("Gender")]
-        public string Gender { get; set; }
+        public BackedField<string> Gender { get; set; } = new();
 
         [JsonProperty("TID")]
         public BackedField<BigInteger?> TID { get; set; } = new();

@@ -20,7 +20,7 @@ namespace pkuManager.Formats.pkx.pk3;
 /// </summary>
 public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
                            Species_E, Item_E, Nature_E, Friendship_E, TID_E,
-                           IVs_E, EVs_E, Contest_Stats_E, Ball_E, Met_Level_E
+                           IVs_E, EVs_E, Contest_Stats_E, Ball_E, Met_Level_E, OT_Gender_E
 {
     public override string FormatName => "pk3";
 
@@ -298,15 +298,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
         Warnings.Add(alert);
     }
 
-    // OT Gender
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessOTGender()
-    {
-        var (gender, alert) = pkxUtil.ExportTags.ProcessOTGender(pku);
-        Data.OT_Gender.Set(gender is Gender.Female); //male otherwise
-        Warnings.Add(alert);
-    }
-
     // Ability Slot
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessAbilitySlot()
@@ -508,6 +499,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
     Contest_Stats_O Contest_Stats_E.Data => Data;
     Ball_O Ball_E.Data => Data;
     Met_Level_O Met_Level_E.Data => Data;
+    OT_Gender_O OT_Gender_E.Data => Data;
     protected partial class WorkingVariables : Nature_O
     {
         OneOf<IntegralField, Field<Nature>, Field<Nature?>> Nature_O.Nature => Nature;
