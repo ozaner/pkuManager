@@ -18,9 +18,9 @@ namespace pkuManager.Formats.pkx.pk3;
 /// <summary>
 /// Exports a <see cref="pkuObject"/> to a <see cref="pk3Object"/>.
 /// </summary>
-public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
-                           Species_E, Item_E, Nature_E, Friendship_E, TID_E,
-                           IVs_E, EVs_E, Contest_Stats_E, Ball_E, Met_Level_E, OT_Gender_E
+public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E,
+                           Item_E, Nature_E, Friendship_E, TID_E, IVs_E, EVs_E,
+                           Contest_Stats_E, Ball_E, Met_Level_E, OT_Gender_E, Language_E
 {
     public override string FormatName => "pk3";
 
@@ -49,6 +49,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
     // Module Parameters
     public Nature? Nature_Default => null;
     public Func<AlertType, string, string, Alert> Nature_Alert_Func => GetNatureAlert;
+    public Predicate<Language> Language_IsValid => pk3Object.IsValidLang;
 
     // Working variables
     protected WorkingVariables workingVars = new();
@@ -56,12 +57,10 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
     {
         public BackedField<Nature?> Nature { get; } = new(); // Nature [Implicit]
     }
-    protected int dex; //official national dex #
     protected int[] moveIndices; //indices of the chosen moves in the pku
     protected Gender? gender;
     protected int? unownForm;
     protected string checkedGameName;
-    protected Language checkedLang;
     protected bool legalGen3Egg;
 
 
@@ -73,11 +72,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
     [PorterDirective(ProcessingPhase.FormatOverride)]
     protected virtual void ProcessFormatOverride()
         => pku = pkuObject.MergeFormatOverride(pku, FormatName);
-
-    // Dex # [Implicit]
-    [PorterDirective(ProcessingPhase.PreProcessing)]
-    protected virtual void ProcessDex()
-        => dex = pkxUtil.GetNationalDexChecked(pku.Species);
 
 
     /* ------------------------------------
@@ -103,14 +97,15 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
     }
 
     // Form [Implicit]
-    [PorterDirective(ProcessingPhase.FirstPass)]
+    [PorterDirective(ProcessingPhase.FirstPass, "ProcessSpecies")]
     protected virtual void ProcessForm()
     {
         Alert alert = null; //to return
         if (!pku.Forms.IsNull)
         {
+            int speciesIndex = Data.Species.GetAs<int>();
             string properFormName = pku.GetSearchableForm().ToLowerInvariant();
-            if (dex is 201 && pku.Forms.Length is 1 && Regex.IsMatch(properFormName, "[a-z!?]")) //unown
+            if (speciesIndex is 201 && pku.Forms.Length is 1 && Regex.IsMatch(properFormName, "[a-z!?]")) //unown
             {
                 if (properFormName[0] is '?')
                     unownForm = 26;
@@ -119,9 +114,9 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
                 else //all other letters
                     unownForm = properFormName[0] - 97;
             }
-            else if (dex is 386 && properFormName is "normal" or "attack" or "defense" or "speed") //deoxys
+            else if (speciesIndex is 410 && properFormName is "normal" or "attack" or "defense" or "speed") //deoxys
                 alert = GetFormAlert(AlertType.NONE, null, true);
-            else if (dex is 351 && properFormName is "sunny" or "rainy" or "snowy") //castform
+            else if (speciesIndex is 385 && properFormName is "sunny" or "rainy" or "snowy") //castform
                 alert = GetFormAlert(AlertType.IN_BATTLE, pku.Forms);
         }
 
@@ -174,35 +169,31 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
             if (lang is not null && pkxUtil.EGG_NICKNAME[lang.Value] == pku.Nickname)
             {
                 Data.Egg_Name_Override.SetAs(pk3Object.EGG_NAME_OVERRIDE_CONST); //override nickname to be 'egg'
-                checkedLang = Language.Japanese;
-                Data.Nickname.SetAs(DexUtil.CharEncoding<byte>.Encode
-                    (pkxUtil.EGG_NICKNAME[checkedLang], pk3Object.MAX_NICKNAME_CHARS, FormatName, checkedLang).encodedStr);
-                Data.OT.SetAs(DexUtil.CharEncoding<byte>.Encode
-                    (pku.Game_Info?.OT, pk3Object.MAX_OT_CHARS, FormatName, lang.Value).encodedStr);
                 legalGen3Egg = true;
             }
         }
     }
 
-    // Language
+    // Language [Requires: Egg]
     [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessEgg))]
     protected virtual void ProcessLanguage()
     {
-        if (!legalGen3Egg)
-        {
-            (checkedLang, Alert alert) = pkxUtil.ExportTags.ProcessLanguage(pku, pk3Object.VALID_LANGUAGES);
-            Warnings.Add(alert);
-        }
-        Data.Language.SetAs((int)checkedLang);
+        if (legalGen3Egg)
+            Data.Language.SetAs(Language.Japanese);
+        else
+            (this as Language_E).ProcessLanguageBase();
     }
 
     // Nickname [Requires: Language]
     [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessLanguage))]
     protected virtual void ProcessNickname()
     {
-        if (!legalGen3Egg)
+        if (legalGen3Egg)
+            Data.Nickname.SetAs(DexUtil.CharEncoding<byte>.Encode
+                (pkxUtil.EGG_NICKNAME[Data.Language.GetAs<Language>()], pk3Object.MAX_NICKNAME_CHARS, FormatName, Data.Language.GetAs<Language>()).encodedStr);
+        else
         {
-            var (nick, alert, _, _) = pkxUtil.ExportTags.ProcessNickname<byte>(pku, 3, pk3Object.MAX_NICKNAME_CHARS, FormatName, checkedLang);
+            var (nick, alert, _, _) = pkxUtil.ExportTags.ProcessNickname<byte>(pku, 3, pk3Object.MAX_NICKNAME_CHARS, FormatName, Data.Language.GetAs<Language>());
             Data.Nickname.SetAs(nick);
             Warnings.Add(alert);
         }
@@ -212,9 +203,12 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
     [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessLanguage))]
     protected virtual void ProcessOT()
     {
-        if (!legalGen3Egg)
+        if (legalGen3Egg)
+            Data.OT.SetAs(DexUtil.CharEncoding<byte>.Encode
+                (pku.Game_Info?.OT, pk3Object.MAX_OT_CHARS, FormatName, Data.Language.GetAs<Language>()).encodedStr);
+        else
         {
-            var (ot, alert) = pkxUtil.ExportTags.ProcessOT<byte>(pku, pk3Object.MAX_OT_CHARS, FormatName, checkedLang);
+            var (ot, alert) = pkxUtil.ExportTags.ProcessOT<byte>(pku, pk3Object.MAX_OT_CHARS, FormatName, Data.Language.GetAs<Language>());
             Data.OT.SetAs(ot);
             Warnings.Add(alert);
         }
@@ -229,7 +223,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
         {
             ushort[] nicknameTrash = tb?.Nickname?.Length > 0 ? tb.Nickname : null;
             ushort[] otTrash = tb?.OT?.Length > 0 ? tb.OT : null;
-            var (nick, ot, alert) = pkxUtil.ExportTags.ProcessTrash(Data.Nickname.GetAs<byte>(), nicknameTrash, Data.OT.GetAs<byte>(), otTrash, FormatName, checkedLang);
+            var (nick, ot, alert) = pkxUtil.ExportTags.ProcessTrash(Data.Nickname.GetAs<byte>(), nicknameTrash, Data.OT.GetAs<byte>(), otTrash, FormatName, Data.Language.GetAs<Language>());
             Data.Nickname.SetAs(nick);
             Data.OT.SetAs(ot);
             Warnings.Add(alert);
@@ -379,15 +373,16 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
     }
 
     // Fateful Encounter [ErrorResolver]
-    [PorterDirective(ProcessingPhase.FirstPass)]
+    [PorterDirective(ProcessingPhase.FirstPass, "ProcessSpecies")]
     protected virtual void ProcessFatefulEncounter()
     {
         Alert alert = null;
         bool[] options;
-        if (dex is 151 or 386 && pku.Catch_Info?.Fateful_Encounter is not true) //Mew or Deoxys w/ no fateful encounter
+        int speciesIndex = Data.Species.GetAs<int>();
+        if (speciesIndex is 151 or 410 && pku.Catch_Info?.Fateful_Encounter is not true) //Mew or Deoxys w/ no fateful encounter
         {
             options = new bool[] { false, true };
-            alert = GetFatefulEncounterAlert(dex is 151);
+            alert = GetFatefulEncounterAlert(speciesIndex is 151);
         }
         else
             options = new bool[] { pku.Catch_Info?.Fateful_Encounter is true };
@@ -500,6 +495,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E,
     Ball_O Ball_E.Data => Data;
     Met_Level_O Met_Level_E.Data => Data;
     OT_Gender_O OT_Gender_E.Data => Data;
+    Language_O Language_E.Data => Data;
     protected partial class WorkingVariables : Nature_O
     {
         OneOf<IntegralField, Field<Nature>, Field<Nature?>> Nature_O.Nature => Nature;

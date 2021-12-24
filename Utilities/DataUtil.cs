@@ -302,7 +302,7 @@ public static class DataUtil
     /// <param name="val">The value to cast.</param>
     /// <returns><paramref name="val"/> as a BigInteger.</returns>
     /// <exception cref="ArgumentException"><paramref name="val"/> is not a supported integral type.</exception>
-    public static BigInteger ToBigInteger(this ValueType val) => val switch
+    public static BigInteger ToBigInteger(this object val) => val switch
     {
         bool x => x ? BigInteger.One : BigInteger.Zero,
         char x => x,
@@ -314,15 +314,14 @@ public static class DataUtil
         int x => x,
         ulong x => x,
         long x => x,
+        Enum => (int)val,
+        JValue jval => Type.GetTypeCode(jval.Value.GetType()) switch
+        {
+            TypeCode.UInt64 => (ulong)jval.Value,
+            TypeCode.Int64 => (long)jval.Value,
+            _ => throw new ArgumentException("obj must be an integral valuetype, or JValue.", nameof(val))
+        },
         _ => throw new ArgumentException("obj must be an integral valuetype, or JValue.", nameof(val)),
-    };
-
-    /// <inheritdoc cref="ToBigInteger(ValueType)"/>
-    public static BigInteger ToBigInteger(this JValue val) => Type.GetTypeCode(val.Value.GetType()) switch
-    {
-        TypeCode.UInt64 => (ulong)val.Value,
-        TypeCode.Int64 => (long)val.Value,
-        _ => throw new ArgumentException("obj must be an integral valuetype, or JValue.", nameof(val))
     };
 
     /// <summary>

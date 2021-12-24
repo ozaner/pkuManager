@@ -24,11 +24,6 @@ public static class pkxUtil
      * ------------------------------------
     */
     /// <summary>
-    /// The default language used in pkx formats.
-    /// </summary>
-    public const Language DEFAULT_LANGUAGE = Language.English;
-
-    /// <summary>
     /// The default gender for Pokémon and trainers used in pkx formats.
     /// </summary>
     public const Gender DEFAULT_GENDER = Gender.Male;
@@ -223,18 +218,6 @@ public static class pkxUtil
             _ => throw InvalidAlertType(at)
         };
 
-        private static Alert GetEnumAlert(string tagName, string defaultVal, AlertType at, string invalidVal = null)
-        {
-            if (at is AlertType.INVALID && invalidVal is null)
-                throw new ArgumentNullException(nameof(invalidVal), $"Must give the invalid value if there is an INVALID enum Alert.");
-            return new(tagName, at switch
-            {
-                AlertType.UNSPECIFIED => $"No {tagName.ToLowerInvariant()} was specified, using the default: {defaultVal}.",
-                AlertType.INVALID => $"The {tagName.ToLowerInvariant()} \"{invalidVal}\" is not supported by this format, using the default: {defaultVal}.",
-                _ => throw InvalidAlertType(at)
-            });
-        }
-
 
         // ----------
         // Game Info Alert Methods
@@ -261,9 +244,6 @@ public static class pkxUtil
         public static Alert GetOTAlert(params AlertType[] ats)
             => ats.Contains(AlertType.OVERFLOW) ?
                throw new ArgumentNullException("maxChars", "Overflow OT Alerts must include the character limit.") : GetOTAlert(-1, ats);
-
-        public static Alert GetLanguageAlert(AlertType at, string invalidLang = null)
-            => GetEnumAlert("Language", DEFAULT_LANGUAGE.ToFormattedString(), at, invalidLang);
 
         public static Alert GetOriginGameAlert(AlertType at, string originGame = null, string officialOriginGame = null) => new("Origin Game", at switch
         {
@@ -709,22 +689,6 @@ public static class pkxUtil
             _ => (tag.Value, null)
         };
 
-        private static (T, Alert) ProcessEnumTag<T>(string tag, T? tagTest, Func<AlertType, string, Alert> getAlertFunc,
-            bool silentUnspecified, T defaultVal, Func<T, bool> isValidFunc = null) where T : struct
-        {
-            if (tag is not null) //tag specified
-            {
-                if (tagTest is not null && (isValidFunc is null || isValidFunc(tagTest.Value)))
-                    return (tagTest.Value, null); //valid enum, no alerts
-                else //tag invalid, use default
-                    return (defaultVal, getAlertFunc(AlertType.INVALID, tag));
-            }
-            else if (silentUnspecified) //tag unspecified (don't alert), use default
-                return (defaultVal, null);
-            else //tag unspecified (do alert), use default
-                return (defaultVal, getAlertFunc(AlertType.UNSPECIFIED, tag));
-        }
-
 
         // ----------
         // String Processing Methods
@@ -869,10 +833,6 @@ public static class pkxUtil
 
             return (id.Value, game, null); //no alert
         }
-
-        public static (Language, Alert) ProcessLanguage(pkuObject pku, List<Language> validLanguages)
-            => ProcessEnumTag(pku.Game_Info?.Language, pku.Game_Info?.Language.ToEnum<Language>(),
-                GetLanguageAlert, false, DEFAULT_LANGUAGE, (x) => validLanguages.Contains(x));
 
 
         // ----------

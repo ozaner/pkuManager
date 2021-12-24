@@ -157,7 +157,7 @@ public class pkuObject : pkuDictionaryTag
         public BackedField<BigInteger?> TID { get; set; } = new();
 
         [JsonProperty("Language")]
-        public string Language { get; set; }
+        public BackedField<string> Language { get; set; } = new();
     }
 
     //parent of Catch_Info and Egg_Info

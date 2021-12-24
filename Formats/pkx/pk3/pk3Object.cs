@@ -17,7 +17,8 @@ namespace pkuManager.Formats.pkx.pk3;
 /// <see href="https://bulbapedia.bulbagarden.net/wiki/Pokémon_data_structure_(Generation_III)">Bulbapedia</see>.
 /// </summary>
 public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
-                         IVs_O, EVs_O, Contest_Stats_O, Ball_O, Met_Level_O, OT_Gender_O
+                         IVs_O, EVs_O, Contest_Stats_O, Ball_O, Met_Level_O,
+                         OT_Gender_O, Language_O
 {
     /* ------------------------------------
      * Initialization
@@ -294,17 +295,15 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
      * ------------------------------------
     */
     /// <summary>
-    /// A list of all languages supported in Gen 3.
+    /// Determines whether the given langauge exists in pk3.
     /// </summary>
-    public static readonly List<Language> VALID_LANGUAGES = new()
-    {
-        Common.Language.Japanese,
-        Common.Language.English,
-        Common.Language.French,
-        Common.Language.Italian,
-        Common.Language.German,
-        Common.Language.Spanish
-    };
+    public static bool IsValidLang(Language lang) => lang is
+        Common.Language.Japanese or
+        Common.Language.English or
+        Common.Language.French or
+        Common.Language.Italian or
+        Common.Language.German or
+        Common.Language.Spanish;
 
     /// <summary>
     /// The maximum number of characters in a .pk3 nickname.<br/>
@@ -409,4 +408,5 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
     OneOf<IntegralField, Field<string>> Ball_O.Ball => Ball;
     IntegralField Met_Level_O.Met_Level => Met_Level;
     OneOf<IntegralField, Field<Gender>, Field<Gender?>, Field<bool>> OT_Gender_O.OT_Gender => OT_Gender;
+    IntegralField Language_O.Language => Language;
 }
