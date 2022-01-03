@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
-using pkuManager.Common;
-using pkuManager.pku;
+using pkuManager.Formats.Modules;
+using pkuManager.Formats.pku;
 using System;
 using System.Collections.Generic;
 using System.Linq;

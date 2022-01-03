@@ -1,6 +1,6 @@
 ﻿using OneOf;
 using pkuManager.Formats.Fields;
-using pkuManager.pku;
+using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using static pkuManager.Formats.PorterDirective;
 

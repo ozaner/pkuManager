@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json.Linq;
-using pkuManager.Common;
-using pkuManager.pku;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using pkuManager.Formats.pku;
+using pkuManager.Formats.Modules;
 
 namespace pkuManager.Utilities;
 

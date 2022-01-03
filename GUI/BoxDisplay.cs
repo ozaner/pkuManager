@@ -1,9 +1,9 @@
-﻿using System;
-using System.Diagnostics;
+﻿using pkuManager.Formats;
+using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
-using static pkuManager.Common.Collection;
 
 namespace pkuManager.GUI;
 
@@ -11,44 +11,36 @@ public class BoxDisplay : FlowLayoutPanel
 {
     private const int SCROLLBAR_SIZE = 17;
 
-    public event EventHandler NotifyColectionManager;
+    private readonly bool isList;
+    private SlotDisplay CurrentSlot;
 
-    public class NotifyCollectionEventArgs : EventArgs
-    {
-        public string Command;
-        public int IntA, IntB;
-        public NotifyCollectionEventArgs(string command, int intA = -1, int intB = -1)
-        {
-            Command = command;
-            IntA = intA;
-            IntB = intB;
-        }
-    }
+    public event EventHandler SlotSelected;
+    public event EventHandler ReleaseRequest;
 
-    public SlotDisplay currentlySelectedSlotDisplay;
 
-    public BoxDisplay(BoxInfo boxInfo)
+    public BoxDisplay(Box box)
     {
         // initial settings
         DoubleBuffered = true;
         BackgroundImageLayout = ImageLayout.Stretch;
         BackColor = Color.Transparent;
-        BackgroundImage = boxInfo.Background ?? Properties.Resources.grassbox;
+        BackgroundImage = box.Background ?? Properties.Resources.grassbox;
+        isList = box.Width is 0 || box.Height is 0;
 
         // box layout setup
-        if (boxInfo.Width is 0 || boxInfo.Height is 0)
-            ListSetup(boxInfo);
+        if (isList)
+            ListSetup(box.Data);
         else
-            MatrixSetup(boxInfo);
+            MatrixSetup(box.Data, box.Width, box.Height);
     }
 
-    private void ListSetup(BoxInfo boxInfo)
+    private void ListSetup(SortedDictionary<int, Slot> slots)
     {
         Width = SlotDisplay.SLOT_SIZE.Width * 6;
         Height = SlotDisplay.SLOT_SIZE.Height * 5;
 
-        foreach (int slotID in boxInfo.Slots.Keys)
-            Controls.Add(new SlotDisplay(boxInfo.Slots[slotID], slotID, OnClick, this));
+        foreach (int slotID in slots.Keys)
+            Controls.Add(new SlotDisplay(slots[slotID], slotID));
 
         if (Controls.Count > 30)
             Width += SCROLLBAR_SIZE;
@@ -56,135 +48,108 @@ public class BoxDisplay : FlowLayoutPanel
         AutoScroll = true;
     }
 
-    private void MatrixSetup(BoxInfo boxInfo)
+    private void MatrixSetup(SortedDictionary<int, Slot> slots, int width, int height)
     {
-        Width = SlotDisplay.SLOT_SIZE.Width * boxInfo.Width;
-        Height = SlotDisplay.SLOT_SIZE.Height * boxInfo.Height;
-        int max = boxInfo.Width * boxInfo.Height;
+        Width = SlotDisplay.SLOT_SIZE.Width * width;
+        Height = SlotDisplay.SLOT_SIZE.Height * height;
+        int max = width * height;
         for (int i = 1; i <= max; i++)
         {
-            if (boxInfo.Slots.ContainsKey(i))
-                Controls.Add(new SlotDisplay(boxInfo.Slots[i], i, OnClick, this));
+            if (slots.ContainsKey(i))
+                Controls.Add(new SlotDisplay(slots[i], i));
             else
-                Controls.Add(new SlotDisplay(i, OnClick));
+                Controls.Add(new SlotDisplay(i));
         }
         if (Controls.Count > max)
             Width += SCROLLBAR_SIZE;
     }
 
-    private void OnClick(object s, EventArgs e)
-    {
-        // left clicking a slot selects it
-        if ((e as MouseEventArgs).Button is MouseButtons.Left)
-        {
-            currentlySelectedSlotDisplay?.Deselect();
-            currentlySelectedSlotDisplay = (SlotDisplay)s;
-            currentlySelectedSlotDisplay.Select();
-            OnNotifyCollection(currentlySelectedSlotDisplay, new NotifyCollectionEventArgs("select"));
-        }
 
-        //middle clicking swaps slots
-        if ((e as MouseEventArgs).Button is MouseButtons.Middle)
-        {
-            if (currentlySelectedSlotDisplay is not null)
-            {
-                SlotDisplay sd = (SlotDisplay)s;
-                var alphaIndex = Controls.IndexOf(currentlySelectedSlotDisplay);
-                var betaIndex = Controls.IndexOf(sd);
-                Controls.SetChildIndex(currentlySelectedSlotDisplay, betaIndex);
-                Controls.SetChildIndex(sd, alphaIndex);
-                OnNotifyCollection(null, new NotifyCollectionEventArgs("swap", alphaIndex + 1, betaIndex + 1)); //slot numbers index at 1
-            }
-        }
+    public void SelectSlot(SlotDisplay slotDisplay)
+    {
+        CurrentSlot?.Deselect();
+        CurrentSlot = slotDisplay;
+        CurrentSlot?.Select();
+        SlotSelected.Invoke(CurrentSlot, null);
     }
 
-    private void OnDragDrop(object s, EventArgs e)
+    public void DeselectCurrentSlot()
+        => SelectSlot(null);
+
+    public void SendReleaseRequest(SlotDisplay slotDisplay)
+        => ReleaseRequest?.Invoke(slotDisplay, null);
+
+    public void CompleteReleaseRequest(SlotDisplay slotDisplay)
     {
-        DragEventArgs dea = (DragEventArgs)e;
-        Debug.WriteLine(((SlotDisplay)dea.Data.GetData(typeof(SlotDisplay))).slotID);
+        SlotDisplay empty = new(slotDisplay.SlotID);
+        SelectSlot(empty);
+        int index = Controls.GetChildIndex(slotDisplay);
+        Controls.Remove(slotDisplay);
+        if (!isList)
+        {
+            Controls.Add(empty);
+            Controls.SetChildIndex(empty, index);
+        }
+    }
+}
+
+public class SlotDisplay : PictureBox
+{
+    /// <summary>
+    /// Size of all box slots. Dimensions of the Gen 8+ box sprites, used by pkuSprite.
+    /// </summary>
+    public static readonly Size SLOT_SIZE = new(68, 56);
+
+    public BoxDisplay BoxDisplay => Parent as BoxDisplay;
+    public Slot Slot { get; }
+    public int SlotID { get; set; }
+
+    //all/empty slot displays
+    public SlotDisplay(int slotID)
+    {
+        SlotID = slotID;
+        Click += (s, e) =>
+        {
+            // left clicking a slot selects it
+            if ((e as MouseEventArgs).Button is MouseButtons.Left)
+                BoxDisplay.SelectSlot(this);
+        };
+
+        Size = SLOT_SIZE;
+        Margin = new(0);
+        DoubleBuffered = true;
+        BorderStyle = BorderStyle.FixedSingle;
     }
 
-    protected virtual void OnNotifyCollection(object s, EventArgs e)
+    //filled slot displays
+    public SlotDisplay(Slot slot, int slotID) : this(slotID)
     {
-        EventHandler handler = NotifyColectionManager;
-        handler?.Invoke(s, e);
+        Slot = slot;
+        if (slot.CheckedOut)
+            BackgroundImage = Properties.Resources.checkedOut;
+
+        ImageLocation = slot.BoxSprite.url;
+        if (ImageLocation is null)
+            Image = Properties.Resources.unknown_box;
+
+        ContextMenuStrip = new();
+        ContextMenuStrip.Opening += (s, e) => BoxDisplay.SelectSlot(this);
+        ContextMenuStrip.Items.Add("Release", null, (s, e)
+            => BoxDisplay.SendReleaseRequest(this));
     }
 
-    public class SlotDisplay : Panel
+    public new void Select()
+        => BackgroundImage = Properties.Resources.selection;
+
+    public void Deselect()
     {
-        /// <summary>
-        /// Size of all box slots. Dimensions of the Gen 8+ box sprites, used by PokeSprite.
-        /// </summary>
-        public static readonly Size SLOT_SIZE = new(68, 56);
+        BackgroundImage = Slot?.CheckedOut is true ? Properties.Resources.checkedOut : null;
 
-        public bool isEmpty;
-        public bool isSelected;
-
-        public BoxDisplay bd;
-
-        public SlotInfo slotInfo;
-
-        public PictureBox picBox;
-
-        public int slotID;
-
-        public SlotDisplay(int slotID, EventHandler onClick)
+        //reset frame of box gif
+        if (Image is not null)
         {
-            DoubleBuffered = true;
-            picBox = new PictureBox
-            {
-                Size = SLOT_SIZE,
-                Margin = new(0),
-                BorderStyle = BorderStyle.FixedSingle
-            };
-            Controls.Add(picBox);
-
-            Margin = new(0);
-            isEmpty = true;
-            this.slotID = slotID;
-
-            AutoSize = true;
-
-            picBox.Click += (_, e) => InvokeOnClick(this, e);
-            Click += onClick;
-        }
-
-        public SlotDisplay(SlotInfo slotInfo, int slotID, EventHandler onClick, BoxDisplay bd) : this(slotID, onClick)
-        {
-            this.bd = bd;
-            this.slotInfo = slotInfo;
-            if (slotInfo.CheckedOut)
-                picBox.BackgroundImage = Properties.Resources.checkedOut;
-            picBox.ImageLocation = slotInfo.IconURL;
-            if (picBox.ImageLocation is null)
-                picBox.Image = Properties.Resources.unknown_box;
-            isEmpty = false;
-
-            //Add context menu to non empty slots
-            ContextMenuStrip = new ContextMenuStrip();
-            ContextMenuStrip.Items.Add("Release", null, (s, e) => {
-                bd.OnNotifyCollection(this, new NotifyCollectionEventArgs("delete"));
-                bd.OnNotifyCollection(null, new NotifyCollectionEventArgs("select"));
-            });
-        }
-
-        public new void Select()
-        {
-            picBox.BackgroundImage = Properties.Resources.selection;
-            picBox.Enabled = true;
-        }
-
-        public void Deselect()
-        {
-            picBox.BackgroundImage = slotInfo?.CheckedOut is true ? Properties.Resources.checkedOut : null;
-            picBox.Enabled = false;
-
-            //reset frame of box gif
-            if (picBox.Image is not null)
-            {
-                picBox.Image.SelectActiveFrame(new FrameDimension(picBox.Image.FrameDimensionsList[0]), 0);
-                picBox.ImageLocation = picBox.ImageLocation;
-            }
+            Image.SelectActiveFrame(new FrameDimension(Image.FrameDimensionsList[0]), 0);
+            ImageLocation = ImageLocation; //this has a purpose... I think
         }
     }
 }

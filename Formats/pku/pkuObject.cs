@@ -8,15 +8,15 @@ using pkuManager.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using System.Text;
 
-namespace pkuManager.pku;
+namespace pkuManager.Formats.pku;
 
 [JsonObject(MemberSerialization.OptIn)]
-public class pkuObject : pkuDictionaryTag
+public class pkuObject : FormatObject
 {
     [JsonProperty("Species")]
     public string Species { get; set; }
@@ -327,6 +327,18 @@ public class pkuObject : pkuDictionaryTag
         public Dictionary<string, JToken> D { get; set; }
     }
 
+    /* ------------------------------------
+     * FormatObject Methods
+     * ------------------------------------
+    */
+    public override byte[] ToFile()
+        => Encoding.UTF8.GetBytes(Serialize(true));
+
+    public override void FromFile(byte[] file)
+    {
+        throw new NotImplementedException();
+    }
+
 
     /* ------------------------------------
      * Utility Methods
@@ -370,36 +382,6 @@ public class pkuObject : pkuDictionaryTag
     ///          <paramref name="pku"/> if that doesn't exist.</returns>
     public static pkuObject MergeFormatOverride(pkuObject pku, string format)
         => pku.Format_Overrides?.TryGetValue(format, out pkuObject pkuOverride) is true ? Merge(pku, pkuOverride) : pku;
-
-    /// <inheritdoc cref="Deserialize(string)"/>
-    /// <param name="pkuFileInfo">A reference to the pku file.</param>
-    public static (pkuObject pku, string error) Deserialize(FileInfo pkuFileInfo)
-    {
-        try
-        {
-            string filetext = File.ReadAllText(pkuFileInfo.FullName);
-            return Deserialize(filetext);
-        }
-        catch
-        {
-            return (null, "Not a valid text file.");
-        }
-    }
-
-    /// <inheritdoc cref="Deserialize(string)"/>
-    /// <param name="pkuFile">An array of bytes representing the pku file in UTF-8.</param>
-    public static (pkuObject pku, string error) Deserialize(byte[] pkuFile)
-    {
-        try
-        {
-            string filetext = System.Text.Encoding.UTF8.GetString(pkuFile, 0, pkuFile.Length);
-            return Deserialize(filetext);
-        }
-        catch
-        {
-            return (null, "Not a valid text file.");
-        }
-    }
 
     /// <summary>
     /// Attempts to deserialize a .pku file. If this fails, an error string is returned.

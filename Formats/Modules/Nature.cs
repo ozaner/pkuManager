@@ -1,8 +1,7 @@
 ﻿using OneOf;
 using pkuManager.Alerts;
-using pkuManager.Common;
 using pkuManager.Formats.Fields;
-using pkuManager.pku;
+using pkuManager.Formats.pku;
 using System;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;

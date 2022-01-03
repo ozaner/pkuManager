@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
 using pkuManager.Alerts;
-using pkuManager.Common;
+using pkuManager.Formats.Modules;
+using pkuManager.Formats.pku;
 using pkuManager.Formats.pkx.pk3;
-using pkuManager.pku;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;

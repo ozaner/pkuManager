@@ -1,4 +1,4 @@
-﻿using pkuManager.Common;
+﻿using pkuManager.Formats.pku;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.pkx.pk3;

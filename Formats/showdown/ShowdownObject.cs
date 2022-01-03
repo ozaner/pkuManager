@@ -1,9 +1,8 @@
 ﻿using OneOf;
-using pkuManager.Common;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Fields.BackedFields;
 using pkuManager.Formats.Modules;
-using pkuManager.pku;
+using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
@@ -59,8 +58,8 @@ public class ShowdownObject : FormatObject, Item_O, Nature_O, Friendship_O, IVs_
         // Gender
         introLine += Gender switch
         {
-            Common.Gender.Male => " (M)",
-            Common.Gender.Female => " (F)",
+            Modules.Gender.Male => " (M)",
+            Modules.Gender.Female => " (F)",
             _ => ""
         };
 
@@ -151,7 +150,7 @@ public class ShowdownObject : FormatObject, Item_O, Nature_O, Friendship_O, IVs_
         if(genderSplit is true)
         {
             Gender? gender = pku.Gender.ToEnum<Gender>();
-            string genderStr = gender is Common.Gender.Female ? "Female" : "Male"; //Default is male
+            string genderStr = gender is Modules.Gender.Female ? "Female" : "Male"; //Default is male
 
             //this could be bad iff a "Showdown Name {genderStr}" appears in a earlier apperance w/o Showdown Gender Split
             //that would be a data error though...

@@ -1,17 +1,17 @@
-﻿using pkuManager.Utilities;
+﻿using pkuManager.Formats;
+using pkuManager.Utilities;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
-using static pkuManager.Common.Collection;
 
 namespace pkuManager.GUI;
 
 public class SpriteBox : PictureBox
 {
     private bool isBack;
-    private SlotInfo currentSlotInfo;
+    private Slot currentSlot;
     private int spriteBoxYOffset;
     private int containerWidth;
 
@@ -35,17 +35,17 @@ public class SpriteBox : PictureBox
         MouseHover += OnSpriteboxHover;
     }
 
-    public void UpdateSpriteBox(SlotInfo slotInfo)
+    public void UpdateSpriteBox(Slot slot)
     {
-        currentSlotInfo = slotInfo;
+        currentSlot = slot;
 
         Image = null; //reset to prevent ghost images
         BackgroundImage = null;
         isBack = false; //reset back to front
         tooltip.RemoveAll(); //reset tooltip
 
-        if(slotInfo is not null)
-            ImageLocation = slotInfo.FrontSprite.url;
+        if(slot is not null)
+            ImageLocation = slot.FrontSprite.url;
     }
 
     private void OnSpriteboxLoaded(object s, AsyncCompletedEventArgs e)
@@ -54,7 +54,7 @@ public class SpriteBox : PictureBox
         int yOffset = spriteBoxYOffset;
         Location = new Point(xOffset - Size.Width / 2, yOffset - Size.Height / 2);
 
-        if (currentSlotInfo?.HasShadowHaze is true)
+        if (currentSlot?.IsShadow is true)
             BackgroundImage = UseLargeShadowBG(Image.Size) ? Properties.Resources.shadowbgx2 : Properties.Resources.shadowbg;
     }
 
@@ -63,7 +63,7 @@ public class SpriteBox : PictureBox
         // shift click opens author link if possible
         if (ModifierKeys.HasFlag(Keys.Shift))
         {
-            string url = isBack ? currentSlotInfo.BackSprite.author : currentSlotInfo.FrontSprite.author;
+            string url = isBack ? currentSlot.BackSprite.author : currentSlot.FrontSprite.author;
             if (url.IsValidURL())
             {
                 try
@@ -85,7 +85,7 @@ public class SpriteBox : PictureBox
         else // normal left click switches front & back
         {
             isBack = !isBack; //switch back and front
-            string url = isBack ? currentSlotInfo?.BackSprite.url : currentSlotInfo?.FrontSprite.url;
+            string url = isBack ? currentSlot?.BackSprite.url : currentSlot?.FrontSprite.url;
             ImageLocation = url;
         }
     }
@@ -94,7 +94,7 @@ public class SpriteBox : PictureBox
     {
         if (ModifierKeys.HasFlag(Keys.Shift))
         {
-            string author = isBack ? currentSlotInfo.BackSprite.author : currentSlotInfo.FrontSprite.author;
+            string author = isBack ? currentSlot.BackSprite.author : currentSlot.FrontSprite.author;
             tooltip.SetToolTip(this, author);
         }
         else

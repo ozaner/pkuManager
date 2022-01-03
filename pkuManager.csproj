@@ -100,7 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Class1.cs" />
-    <Compile Remove="pku\Global Flags.cs" />
+    <Compile Remove="Formats\pku\Global Flags.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Properties\Settings.settings">

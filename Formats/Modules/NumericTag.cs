@@ -1,6 +1,6 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
-using pkuManager.pku;
+using pkuManager.Formats.pku;
 using System.Collections.Generic;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;

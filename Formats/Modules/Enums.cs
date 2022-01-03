@@ -1,4 +1,4 @@
-﻿namespace pkuManager.Common;
+﻿namespace pkuManager.Formats.Modules;
 
 /// <summary>
 /// A Ribbon or Mark a Pokémon can have.<br/>

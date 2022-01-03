@@ -1,6 +1,5 @@
 ﻿using pkuManager.Alerts;
-using pkuManager.Common;
-using pkuManager.pku;
+using pkuManager.Formats.pku;
 using System.Collections.Generic;
 
 namespace pkuManager.Formats;

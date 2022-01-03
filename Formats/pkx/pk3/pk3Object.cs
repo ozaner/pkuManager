@@ -1,5 +1,4 @@
-﻿using pkuManager.Common;
-using pkuManager.Utilities;
+﻿using pkuManager.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 using System;
@@ -298,12 +297,12 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
     /// Determines whether the given langauge exists in pk3.
     /// </summary>
     public static bool IsValidLang(Language lang) => lang is
-        Common.Language.Japanese or
-        Common.Language.English or
-        Common.Language.French or
-        Common.Language.Italian or
-        Common.Language.German or
-        Common.Language.Spanish;
+        Modules.Language.Japanese or
+        Modules.Language.English or
+        Modules.Language.French or
+        Modules.Language.Italian or
+        Modules.Language.German or
+        Modules.Language.Spanish;
 
     /// <summary>
     /// The maximum number of characters in a .pk3 nickname.<br/>

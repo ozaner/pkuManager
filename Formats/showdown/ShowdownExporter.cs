@@ -1,8 +1,7 @@
 ﻿using pkuManager.Alerts;
-using pkuManager.Common;
 using pkuManager.Formats.Modules;
+using pkuManager.Formats.pku;
 using pkuManager.Formats.pkx;
-using pkuManager.pku;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
