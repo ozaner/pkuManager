@@ -1,8 +1,10 @@
-﻿using pkuManager.Formats;
+﻿using FluentDragDrop;
+using pkuManager.Formats;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace pkuManager.GUI;
@@ -16,6 +18,7 @@ public class BoxDisplay : FlowLayoutPanel
 
     public event EventHandler SlotSelected;
     public event EventHandler ReleaseRequest;
+    public event EventHandler SwapRequest;
 
 
     public BoxDisplay(Box box)
@@ -76,6 +79,7 @@ public class BoxDisplay : FlowLayoutPanel
     public void DeselectCurrentSlot()
         => SelectSlot(null);
 
+
     public void SendReleaseRequest(SlotDisplay slotDisplay)
         => ReleaseRequest?.Invoke(slotDisplay, null);
 
@@ -90,6 +94,21 @@ public class BoxDisplay : FlowLayoutPanel
             Controls.Add(empty);
             Controls.SetChildIndex(empty, index);
         }
+    }
+
+
+    public void SendSwapRequest(SlotDisplay slotDisplayA, SlotDisplay slotDisplayB)
+        => SwapRequest?.Invoke((slotDisplayA, slotDisplayB), null);
+
+    public void CompleteSwapRequest(SlotDisplay slotDisplayA, SlotDisplay slotDisplayB)
+    {
+        (slotDisplayA.SlotID, slotDisplayB.SlotID) = (slotDisplayB.SlotID, slotDisplayA.SlotID);
+        int indexA = Controls.GetChildIndex(slotDisplayA);
+        int indexB = Controls.GetChildIndex(slotDisplayB);
+        Controls.SetChildIndex(slotDisplayA, indexB);
+        Controls.SetChildIndex(slotDisplayB, indexA);
+
+        SelectSlot(slotDisplayB); //select newly swapped box
     }
 }
 
@@ -113,6 +132,24 @@ public class SlotDisplay : PictureBox
             // left clicking a slot selects it
             if ((e as MouseEventArgs).Button is MouseButtons.Left)
                 BoxDisplay.SelectSlot(this);
+        };
+
+        MouseDown += (s, e) =>
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                SlotDisplay sd = s as SlotDisplay;
+                if (sd?.Slot is null)
+                    return;
+                sd.InitializeDragAndDrop()
+                  .Move()
+                  .OnMouseMove()
+                  .WithData(() => sd)
+                  .WithPreview()
+                  .LikeWindowsExplorer()
+                  .To(BoxDisplay.Controls.OfType<SlotDisplay>(),
+                  (t, d) => BoxDisplay.SendSwapRequest(t, d));
+            }
         };
 
         Size = SLOT_SIZE;

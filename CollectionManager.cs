@@ -27,6 +27,7 @@ public class CollectionManager
     {
         CurrentBoxDisplay = new(Collection.CurrentBox);
         CurrentBoxDisplay.ReleaseRequest += CompleteReleaseRequest;
+        CurrentBoxDisplay.SwapRequest += CompleteSwapRequest;
         CurrentBoxDisplay.SlotSelected += (s, _) =>
         {
             CurrentlySelectedSlot = (s as SlotDisplay)?.Slot;
@@ -55,6 +56,13 @@ public class CollectionManager
         }
         else
             MessageBox.Show($"Failed to release {slotDisplay.Slot.Nickname}...", "Error");
+    }
+
+    protected void CompleteSwapRequest(object s, EventArgs e)
+    {
+        (SlotDisplay a, SlotDisplay b) = ((SlotDisplay, SlotDisplay))s;
+        if (Collection.CurrentBox.SwapSlots(a.SlotID, b.SlotID))
+            CurrentBoxDisplay.CompleteSwapRequest(a, b);
     }
 
     public void SwitchBox(int boxID)
