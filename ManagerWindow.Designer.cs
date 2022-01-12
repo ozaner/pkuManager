@@ -38,28 +38,6 @@
             this.customToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.changeBoxImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openBoxInExplorerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.LHSTabs = new System.Windows.Forms.TabControl();
-            this.summaryTab = new System.Windows.Forms.TabPage();
-            this.appearanceTextBox = new System.Windows.Forms.TextBox();
-            this.formsTextBox = new System.Windows.Forms.TextBox();
-            this.speciesTextBox = new System.Windows.Forms.TextBox();
-            this.gameTextBox = new System.Windows.Forms.TextBox();
-            this.otTextBox = new System.Windows.Forms.TextBox();
-            this.nicknameTextBox = new System.Windows.Forms.TextBox();
-            this.appearanceLabel = new System.Windows.Forms.Label();
-            this.formsLabel = new System.Windows.Forms.Label();
-            this.locationLabel = new System.Windows.Forms.Label();
-            this.gameLabel = new System.Windows.Forms.Label();
-            this.locationTextBox = new System.Windows.Forms.TextBox();
-            this.otLabel = new System.Windows.Forms.Label();
-            this.speciesLabel = new System.Windows.Forms.Label();
-            this.nicknameLabel = new System.Windows.Forms.Label();
-            this.exportTab = new System.Windows.Forms.TabPage();
-            this.exportToggleButton = new System.Windows.Forms.Button();
-            this.exportButtons = new System.Windows.Forms.FlowLayoutPanel();
-            this.importTab = new System.Windows.Forms.TabPage();
-            this.importToggleButton = new System.Windows.Forms.Button();
-            this.importButtons = new System.Windows.Forms.FlowLayoutPanel();
             this.checkedOutLabel = new System.Windows.Forms.Label();
             this.viewCheckedoutButton = new System.Windows.Forms.Button();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -88,12 +66,26 @@
             this.hideDiscordPresenceButton = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutButton = new System.Windows.Forms.ToolStripMenuItem();
             this.refreshBoxButton = new System.Windows.Forms.Button();
-            this.LHSTabs.SuspendLayout();
-            this.summaryTab.SuspendLayout();
-            this.exportTab.SuspendLayout();
-            this.importTab.SuspendLayout();
+            this.summaryTab = new System.Windows.Forms.TabPage();
+            this.nicknameLabel = new System.Windows.Forms.Label();
+            this.speciesLabel = new System.Windows.Forms.Label();
+            this.otLabel = new System.Windows.Forms.Label();
+            this.locationTextBox = new System.Windows.Forms.TextBox();
+            this.gameLabel = new System.Windows.Forms.Label();
+            this.locationLabel = new System.Windows.Forms.Label();
+            this.formsLabel = new System.Windows.Forms.Label();
+            this.appearanceLabel = new System.Windows.Forms.Label();
+            this.nicknameTextBox = new System.Windows.Forms.TextBox();
+            this.otTextBox = new System.Windows.Forms.TextBox();
+            this.gameTextBox = new System.Windows.Forms.TextBox();
+            this.speciesTextBox = new System.Windows.Forms.TextBox();
+            this.formsTextBox = new System.Windows.Forms.TextBox();
+            this.appearanceTextBox = new System.Windows.Forms.TextBox();
+            this.LHSTabs = new System.Windows.Forms.TabControl();
             this.flowLayoutPanel1.SuspendLayout();
             this.toolBar.SuspendLayout();
+            this.summaryTab.SuspendLayout();
+            this.LHSTabs.SuspendLayout();
             this.SuspendLayout();
             // 
             // boxSelector
@@ -155,252 +147,6 @@
             // 
             this.openBoxInExplorerToolStripMenuItem.Name = "openBoxInExplorerToolStripMenuItem";
             this.openBoxInExplorerToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
-            // 
-            // LHSTabs
-            // 
-            this.LHSTabs.Controls.Add(this.summaryTab);
-            this.LHSTabs.Controls.Add(this.exportTab);
-            this.LHSTabs.Controls.Add(this.importTab);
-            this.LHSTabs.Location = new System.Drawing.Point(0, 31);
-            this.LHSTabs.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.LHSTabs.Name = "LHSTabs";
-            this.LHSTabs.SelectedIndex = 0;
-            this.LHSTabs.Size = new System.Drawing.Size(328, 324);
-            this.LHSTabs.TabIndex = 7;
-            // 
-            // summaryTab
-            // 
-            this.summaryTab.Controls.Add(this.appearanceTextBox);
-            this.summaryTab.Controls.Add(this.formsTextBox);
-            this.summaryTab.Controls.Add(this.speciesTextBox);
-            this.summaryTab.Controls.Add(this.gameTextBox);
-            this.summaryTab.Controls.Add(this.otTextBox);
-            this.summaryTab.Controls.Add(this.nicknameTextBox);
-            this.summaryTab.Controls.Add(this.appearanceLabel);
-            this.summaryTab.Controls.Add(this.formsLabel);
-            this.summaryTab.Controls.Add(this.locationLabel);
-            this.summaryTab.Controls.Add(this.gameLabel);
-            this.summaryTab.Controls.Add(this.locationTextBox);
-            this.summaryTab.Controls.Add(this.otLabel);
-            this.summaryTab.Controls.Add(this.speciesLabel);
-            this.summaryTab.Controls.Add(this.nicknameLabel);
-            this.summaryTab.Location = new System.Drawing.Point(4, 24);
-            this.summaryTab.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.summaryTab.Name = "summaryTab";
-            this.summaryTab.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.summaryTab.Size = new System.Drawing.Size(320, 296);
-            this.summaryTab.TabIndex = 0;
-            this.summaryTab.Text = "Summary";
-            this.summaryTab.UseVisualStyleBackColor = true;
-            // 
-            // appearanceTextBox
-            // 
-            this.appearanceTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.appearanceTextBox.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.appearanceTextBox.Location = new System.Drawing.Point(98, 122);
-            this.appearanceTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.appearanceTextBox.Name = "appearanceTextBox";
-            this.appearanceTextBox.ReadOnly = true;
-            this.appearanceTextBox.Size = new System.Drawing.Size(116, 22);
-            this.appearanceTextBox.TabIndex = 13;
-            // 
-            // formsTextBox
-            // 
-            this.formsTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.formsTextBox.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.formsTextBox.Location = new System.Drawing.Point(98, 100);
-            this.formsTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.formsTextBox.Name = "formsTextBox";
-            this.formsTextBox.ReadOnly = true;
-            this.formsTextBox.Size = new System.Drawing.Size(116, 22);
-            this.formsTextBox.TabIndex = 10;
-            // 
-            // speciesTextBox
-            // 
-            this.speciesTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.speciesTextBox.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.speciesTextBox.Location = new System.Drawing.Point(98, 78);
-            this.speciesTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.speciesTextBox.Name = "speciesTextBox";
-            this.speciesTextBox.ReadOnly = true;
-            this.speciesTextBox.Size = new System.Drawing.Size(116, 22);
-            this.speciesTextBox.TabIndex = 5;
-            // 
-            // gameTextBox
-            // 
-            this.gameTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.gameTextBox.Location = new System.Drawing.Point(98, 55);
-            this.gameTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.gameTextBox.Name = "gameTextBox";
-            this.gameTextBox.ReadOnly = true;
-            this.gameTextBox.Size = new System.Drawing.Size(116, 23);
-            this.gameTextBox.TabIndex = 6;
-            // 
-            // otTextBox
-            // 
-            this.otTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.otTextBox.Location = new System.Drawing.Point(98, 32);
-            this.otTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.otTextBox.Name = "otTextBox";
-            this.otTextBox.ReadOnly = true;
-            this.otTextBox.Size = new System.Drawing.Size(116, 23);
-            this.otTextBox.TabIndex = 4;
-            // 
-            // nicknameTextBox
-            // 
-            this.nicknameTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.nicknameTextBox.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.nicknameTextBox.Location = new System.Drawing.Point(98, 10);
-            this.nicknameTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.nicknameTextBox.Name = "nicknameTextBox";
-            this.nicknameTextBox.ReadOnly = true;
-            this.nicknameTextBox.Size = new System.Drawing.Size(116, 22);
-            this.nicknameTextBox.TabIndex = 3;
-            // 
-            // appearanceLabel
-            // 
-            this.appearanceLabel.AutoSize = true;
-            this.appearanceLabel.Location = new System.Drawing.Point(12, 124);
-            this.appearanceLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.appearanceLabel.Name = "appearanceLabel";
-            this.appearanceLabel.Size = new System.Drawing.Size(73, 15);
-            this.appearanceLabel.TabIndex = 12;
-            this.appearanceLabel.Text = "Appearance:";
-            // 
-            // formsLabel
-            // 
-            this.formsLabel.AutoSize = true;
-            this.formsLabel.Location = new System.Drawing.Point(12, 102);
-            this.formsLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.formsLabel.Name = "formsLabel";
-            this.formsLabel.Size = new System.Drawing.Size(43, 15);
-            this.formsLabel.TabIndex = 11;
-            this.formsLabel.Text = "Forms:";
-            // 
-            // locationLabel
-            // 
-            this.locationLabel.AutoSize = true;
-            this.locationLabel.Location = new System.Drawing.Point(15, 264);
-            this.locationLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.locationLabel.Name = "locationLabel";
-            this.locationLabel.Size = new System.Drawing.Size(61, 15);
-            this.locationLabel.TabIndex = 9;
-            this.locationLabel.Text = "Filename: ";
-            // 
-            // gameLabel
-            // 
-            this.gameLabel.AutoSize = true;
-            this.gameLabel.Location = new System.Drawing.Point(12, 58);
-            this.gameLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.gameLabel.Name = "gameLabel";
-            this.gameLabel.Size = new System.Drawing.Size(77, 15);
-            this.gameLabel.TabIndex = 7;
-            this.gameLabel.Text = "Origin Game:";
-            // 
-            // locationTextBox
-            // 
-            this.locationTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.locationTextBox.Location = new System.Drawing.Point(98, 261);
-            this.locationTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.locationTextBox.Name = "locationTextBox";
-            this.locationTextBox.ReadOnly = true;
-            this.locationTextBox.Size = new System.Drawing.Size(116, 23);
-            this.locationTextBox.TabIndex = 8;
-            // 
-            // otLabel
-            // 
-            this.otLabel.AutoSize = true;
-            this.otLabel.Location = new System.Drawing.Point(12, 35);
-            this.otLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.otLabel.Name = "otLabel";
-            this.otLabel.Size = new System.Drawing.Size(49, 15);
-            this.otLabel.TabIndex = 1;
-            this.otLabel.Text = "True OT:";
-            // 
-            // speciesLabel
-            // 
-            this.speciesLabel.AutoSize = true;
-            this.speciesLabel.Location = new System.Drawing.Point(12, 80);
-            this.speciesLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.speciesLabel.Name = "speciesLabel";
-            this.speciesLabel.Size = new System.Drawing.Size(49, 15);
-            this.speciesLabel.TabIndex = 2;
-            this.speciesLabel.Text = "Species:";
-            // 
-            // nicknameLabel
-            // 
-            this.nicknameLabel.AutoSize = true;
-            this.nicknameLabel.Location = new System.Drawing.Point(12, 12);
-            this.nicknameLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.nicknameLabel.Name = "nicknameLabel";
-            this.nicknameLabel.Size = new System.Drawing.Size(64, 15);
-            this.nicknameLabel.TabIndex = 0;
-            this.nicknameLabel.Text = "Nickname:";
-            // 
-            // exportTab
-            // 
-            this.exportTab.Controls.Add(this.exportToggleButton);
-            this.exportTab.Controls.Add(this.exportButtons);
-            this.exportTab.Location = new System.Drawing.Point(4, 24);
-            this.exportTab.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.exportTab.Name = "exportTab";
-            this.exportTab.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.exportTab.Size = new System.Drawing.Size(320, 296);
-            this.exportTab.TabIndex = 1;
-            this.exportTab.Text = "Export";
-            this.exportTab.UseVisualStyleBackColor = true;
-            // 
-            // exportToggleButton
-            // 
-            this.exportToggleButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.exportToggleButton.Location = new System.Drawing.Point(18, 12);
-            this.exportToggleButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.exportToggleButton.Name = "exportToggleButton";
-            this.exportToggleButton.Size = new System.Drawing.Size(127, 27);
-            this.exportToggleButton.TabIndex = 0;
-            this.exportToggleButton.Text = "Toggle Export";
-            this.exportToggleButton.UseVisualStyleBackColor = true;
-            this.exportToggleButton.Click += new System.EventHandler(this.ImportExportToggleButton_Click);
-            // 
-            // exportButtons
-            // 
-            this.exportButtons.Location = new System.Drawing.Point(2, 50);
-            this.exportButtons.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.exportButtons.Name = "exportButtons";
-            this.exportButtons.Size = new System.Drawing.Size(313, 243);
-            this.exportButtons.TabIndex = 4;
-            // 
-            // importTab
-            // 
-            this.importTab.Controls.Add(this.importToggleButton);
-            this.importTab.Controls.Add(this.importButtons);
-            this.importTab.Location = new System.Drawing.Point(4, 24);
-            this.importTab.Name = "importTab";
-            this.importTab.Padding = new System.Windows.Forms.Padding(3);
-            this.importTab.Size = new System.Drawing.Size(320, 296);
-            this.importTab.TabIndex = 2;
-            this.importTab.Text = "Import";
-            this.importTab.UseVisualStyleBackColor = true;
-            // 
-            // importToggleButton
-            // 
-            this.importToggleButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.importToggleButton.Location = new System.Drawing.Point(18, 12);
-            this.importToggleButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.importToggleButton.Name = "importToggleButton";
-            this.importToggleButton.Size = new System.Drawing.Size(127, 27);
-            this.importToggleButton.TabIndex = 6;
-            this.importToggleButton.Text = "Toggle Import";
-            this.importToggleButton.UseVisualStyleBackColor = true;
-            this.importToggleButton.Click += new System.EventHandler(this.ImportExportToggleButton_Click);
-            // 
-            // importButtons
-            // 
-            this.importButtons.Location = new System.Drawing.Point(3, 50);
-            this.importButtons.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.importButtons.Name = "importButtons";
-            this.importButtons.Size = new System.Drawing.Size(313, 243);
-            this.importButtons.TabIndex = 5;
             // 
             // checkedOutLabel
             // 
@@ -670,6 +416,185 @@
             this.refreshBoxButton.UseVisualStyleBackColor = true;
             this.refreshBoxButton.Click += new System.EventHandler(this.refreshBox_Click);
             // 
+            // summaryTab
+            // 
+            this.summaryTab.Controls.Add(this.appearanceTextBox);
+            this.summaryTab.Controls.Add(this.formsTextBox);
+            this.summaryTab.Controls.Add(this.speciesTextBox);
+            this.summaryTab.Controls.Add(this.gameTextBox);
+            this.summaryTab.Controls.Add(this.otTextBox);
+            this.summaryTab.Controls.Add(this.nicknameTextBox);
+            this.summaryTab.Controls.Add(this.locationTextBox);
+            this.summaryTab.Controls.Add(this.appearanceLabel);
+            this.summaryTab.Controls.Add(this.formsLabel);
+            this.summaryTab.Controls.Add(this.locationLabel);
+            this.summaryTab.Controls.Add(this.gameLabel);
+            this.summaryTab.Controls.Add(this.otLabel);
+            this.summaryTab.Controls.Add(this.speciesLabel);
+            this.summaryTab.Controls.Add(this.nicknameLabel);
+            this.summaryTab.Location = new System.Drawing.Point(4, 24);
+            this.summaryTab.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.summaryTab.Name = "summaryTab";
+            this.summaryTab.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.summaryTab.Size = new System.Drawing.Size(320, 296);
+            this.summaryTab.TabIndex = 0;
+            this.summaryTab.Text = "Summary";
+            this.summaryTab.UseVisualStyleBackColor = true;
+            // 
+            // nicknameLabel
+            // 
+            this.nicknameLabel.AutoSize = true;
+            this.nicknameLabel.Location = new System.Drawing.Point(12, 12);
+            this.nicknameLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.nicknameLabel.Name = "nicknameLabel";
+            this.nicknameLabel.Size = new System.Drawing.Size(64, 15);
+            this.nicknameLabel.TabIndex = 0;
+            this.nicknameLabel.Text = "Nickname:";
+            // 
+            // speciesLabel
+            // 
+            this.speciesLabel.AutoSize = true;
+            this.speciesLabel.Location = new System.Drawing.Point(12, 80);
+            this.speciesLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.speciesLabel.Name = "speciesLabel";
+            this.speciesLabel.Size = new System.Drawing.Size(49, 15);
+            this.speciesLabel.TabIndex = 2;
+            this.speciesLabel.Text = "Species:";
+            // 
+            // otLabel
+            // 
+            this.otLabel.AutoSize = true;
+            this.otLabel.Location = new System.Drawing.Point(12, 35);
+            this.otLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.otLabel.Name = "otLabel";
+            this.otLabel.Size = new System.Drawing.Size(49, 15);
+            this.otLabel.TabIndex = 1;
+            this.otLabel.Text = "True OT:";
+            // 
+            // locationTextBox
+            // 
+            this.locationTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.locationTextBox.Location = new System.Drawing.Point(98, 261);
+            this.locationTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.locationTextBox.Name = "locationTextBox";
+            this.locationTextBox.ReadOnly = true;
+            this.locationTextBox.Size = new System.Drawing.Size(116, 23);
+            this.locationTextBox.TabIndex = 8;
+            // 
+            // gameLabel
+            // 
+            this.gameLabel.AutoSize = true;
+            this.gameLabel.Location = new System.Drawing.Point(12, 58);
+            this.gameLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.gameLabel.Name = "gameLabel";
+            this.gameLabel.Size = new System.Drawing.Size(77, 15);
+            this.gameLabel.TabIndex = 7;
+            this.gameLabel.Text = "Origin Game:";
+            // 
+            // locationLabel
+            // 
+            this.locationLabel.AutoSize = true;
+            this.locationLabel.Location = new System.Drawing.Point(15, 264);
+            this.locationLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.locationLabel.Name = "locationLabel";
+            this.locationLabel.Size = new System.Drawing.Size(61, 15);
+            this.locationLabel.TabIndex = 9;
+            this.locationLabel.Text = "Filename: ";
+            // 
+            // formsLabel
+            // 
+            this.formsLabel.AutoSize = true;
+            this.formsLabel.Location = new System.Drawing.Point(12, 102);
+            this.formsLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.formsLabel.Name = "formsLabel";
+            this.formsLabel.Size = new System.Drawing.Size(43, 15);
+            this.formsLabel.TabIndex = 11;
+            this.formsLabel.Text = "Forms:";
+            // 
+            // appearanceLabel
+            // 
+            this.appearanceLabel.AutoSize = true;
+            this.appearanceLabel.Location = new System.Drawing.Point(12, 124);
+            this.appearanceLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.appearanceLabel.Name = "appearanceLabel";
+            this.appearanceLabel.Size = new System.Drawing.Size(73, 15);
+            this.appearanceLabel.TabIndex = 12;
+            this.appearanceLabel.Text = "Appearance:";
+            // 
+            // nicknameTextBox
+            // 
+            this.nicknameTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.nicknameTextBox.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.nicknameTextBox.Location = new System.Drawing.Point(98, 10);
+            this.nicknameTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.nicknameTextBox.Name = "nicknameTextBox";
+            this.nicknameTextBox.ReadOnly = true;
+            this.nicknameTextBox.Size = new System.Drawing.Size(116, 22);
+            this.nicknameTextBox.TabIndex = 3;
+            // 
+            // otTextBox
+            // 
+            this.otTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.otTextBox.Location = new System.Drawing.Point(98, 32);
+            this.otTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.otTextBox.Name = "otTextBox";
+            this.otTextBox.ReadOnly = true;
+            this.otTextBox.Size = new System.Drawing.Size(116, 23);
+            this.otTextBox.TabIndex = 4;
+            // 
+            // gameTextBox
+            // 
+            this.gameTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.gameTextBox.Location = new System.Drawing.Point(98, 55);
+            this.gameTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.gameTextBox.Name = "gameTextBox";
+            this.gameTextBox.ReadOnly = true;
+            this.gameTextBox.Size = new System.Drawing.Size(116, 23);
+            this.gameTextBox.TabIndex = 6;
+            // 
+            // speciesTextBox
+            // 
+            this.speciesTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.speciesTextBox.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.speciesTextBox.Location = new System.Drawing.Point(98, 78);
+            this.speciesTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.speciesTextBox.Name = "speciesTextBox";
+            this.speciesTextBox.ReadOnly = true;
+            this.speciesTextBox.Size = new System.Drawing.Size(116, 22);
+            this.speciesTextBox.TabIndex = 5;
+            // 
+            // formsTextBox
+            // 
+            this.formsTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.formsTextBox.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.formsTextBox.Location = new System.Drawing.Point(98, 100);
+            this.formsTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.formsTextBox.Name = "formsTextBox";
+            this.formsTextBox.ReadOnly = true;
+            this.formsTextBox.Size = new System.Drawing.Size(116, 22);
+            this.formsTextBox.TabIndex = 10;
+            // 
+            // appearanceTextBox
+            // 
+            this.appearanceTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.appearanceTextBox.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.appearanceTextBox.Location = new System.Drawing.Point(98, 122);
+            this.appearanceTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.appearanceTextBox.Name = "appearanceTextBox";
+            this.appearanceTextBox.ReadOnly = true;
+            this.appearanceTextBox.Size = new System.Drawing.Size(116, 22);
+            this.appearanceTextBox.TabIndex = 13;
+            // 
+            // LHSTabs
+            // 
+            this.LHSTabs.Controls.Add(this.summaryTab);
+            this.LHSTabs.Location = new System.Drawing.Point(0, 31);
+            this.LHSTabs.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.LHSTabs.Name = "LHSTabs";
+            this.LHSTabs.SelectedIndex = 0;
+            this.LHSTabs.Size = new System.Drawing.Size(328, 324);
+            this.LHSTabs.TabIndex = 7;
+            // 
             // ManagerWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -692,15 +617,13 @@
             this.MinimumSize = new System.Drawing.Size(615, 395);
             this.Name = "ManagerWindow";
             this.Text = "pkuManager";
-            this.LHSTabs.ResumeLayout(false);
-            this.summaryTab.ResumeLayout(false);
-            this.summaryTab.PerformLayout();
-            this.exportTab.ResumeLayout(false);
-            this.importTab.ResumeLayout(false);
             this.flowLayoutPanel1.ResumeLayout(false);
             this.flowLayoutPanel1.PerformLayout();
             this.toolBar.ResumeLayout(false);
             this.toolBar.PerformLayout();
+            this.summaryTab.ResumeLayout(false);
+            this.summaryTab.PerformLayout();
+            this.LHSTabs.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -716,25 +639,10 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem4;
         private System.Windows.Forms.ToolStripMenuItem customToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem changeBoxImageToolStripMenuItem;
-        private System.Windows.Forms.TabControl LHSTabs;
-        private System.Windows.Forms.TabPage summaryTab;
-        private System.Windows.Forms.TabPage exportTab;
-        private System.Windows.Forms.TextBox speciesTextBox;
-        private System.Windows.Forms.TextBox otTextBox;
-        private System.Windows.Forms.TextBox nicknameTextBox;
-        private System.Windows.Forms.Label speciesLabel;
-        private System.Windows.Forms.Label otLabel;
-        private System.Windows.Forms.Label nicknameLabel;
-        private System.Windows.Forms.Label gameLabel;
-        private System.Windows.Forms.TextBox gameTextBox;
-        private System.Windows.Forms.Label locationLabel;
-        private System.Windows.Forms.TextBox locationTextBox;
-        private System.Windows.Forms.FlowLayoutPanel exportButtons;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
         private System.Windows.Forms.Panel checkoutDock;
         private System.Windows.Forms.Button viewCheckedoutButton;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
-        private System.Windows.Forms.Button exportToggleButton;
         private System.Windows.Forms.Label checkedOutLabel;
         private System.Windows.Forms.Panel boxDisplayDock;
         private System.Windows.Forms.ToolStripMenuItem openDropDown;
@@ -750,13 +658,6 @@
         private System.Windows.Forms.ToolStripMenuItem addNewBoxButton;
         private System.Windows.Forms.ToolStripMenuItem removeCurrentBoxButton;
         private System.Windows.Forms.ToolStripMenuItem openBoxInFileExplorerButton;
-        private System.Windows.Forms.Label formsLabel;
-        private System.Windows.Forms.TextBox formsTextBox;
-        private System.Windows.Forms.TextBox appearanceTextBox;
-        private System.Windows.Forms.Label appearanceLabel;
-        private System.Windows.Forms.TabPage importTab;
-        private System.Windows.Forms.Button importToggleButton;
-        private System.Windows.Forms.FlowLayoutPanel importButtons;
         private System.Windows.Forms.ToolStripMenuItem settingsDropDown;
         private System.Windows.Forms.ToolStripMenuItem sendToRecycleButton;
         private System.Windows.Forms.ToolStripMenuItem askBeforeAutoAddButton;
@@ -766,6 +667,22 @@
         private System.Windows.Forms.ToolStripMenuItem openACollectionButton;
         private System.Windows.Forms.ToolStripMenuItem createANewCollectionButton;
         private System.Windows.Forms.ToolStripMenuItem enableDefaultFormOverrideButton;
+        private System.Windows.Forms.TabPage summaryTab;
+        private System.Windows.Forms.TextBox appearanceTextBox;
+        private System.Windows.Forms.TextBox formsTextBox;
+        private System.Windows.Forms.TextBox speciesTextBox;
+        private System.Windows.Forms.TextBox gameTextBox;
+        private System.Windows.Forms.TextBox otTextBox;
+        private System.Windows.Forms.TextBox nicknameTextBox;
+        private System.Windows.Forms.TextBox locationTextBox;
+        private System.Windows.Forms.Label appearanceLabel;
+        private System.Windows.Forms.Label formsLabel;
+        private System.Windows.Forms.Label locationLabel;
+        private System.Windows.Forms.Label gameLabel;
+        private System.Windows.Forms.Label otLabel;
+        private System.Windows.Forms.Label speciesLabel;
+        private System.Windows.Forms.Label nicknameLabel;
+        private System.Windows.Forms.TabControl LHSTabs;
     }
 }
 

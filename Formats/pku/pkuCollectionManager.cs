@@ -1,4 +1,6 @@
-﻿using pkuManager.Utilities;
+﻿using pkuManager.GUI;
+using pkuManager.Utilities;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
@@ -40,6 +42,12 @@ public class pkuCollectionManager : CollectionManager
     public static bool IsValidPKUCollection(string path)
         => File.Exists(@$"{path}\collectionConfig.json");
 
+    protected override void RefreshBoxDisplay()
+    {
+        base.RefreshBoxDisplay();
+        CurrentBoxDisplay.CheckOutRequest += CompleteCheckOutRequest;
+    }
+
 
     /* ------------------------------------
      * Global Flag Methods
@@ -59,12 +67,6 @@ public class pkuCollectionManager : CollectionManager
      * Box Methods
      * ------------------------------------
     */
-    public void CheckOut(Slot slot)
-        => CurrentBox.CheckOut(slot);
-
-    public void CheckIn(Slot slot)
-        => CurrentBox.CheckIn(slot);
-
     public void AddBox(string boxName)
     {
         if (pkuCollection.AddBox(boxName))
@@ -88,6 +90,33 @@ public class pkuCollectionManager : CollectionManager
             }
         }
         return false;
+    }
+
+    protected override void CompleteExportRequest(object s, EventArgs e)
+    {
+        pkuObject pku = (s as SlotDisplay).Slot.pkmnObj as pkuObject;
+        string format = FormatChooser.ChooseExportFormat(pku, GetGlobalFlags());
+        if (format is null)
+            return;
+        Registry.FormatInfo fi = Registry.FORMATS[format];
+        ExportingWindow.RunWarningWindow(format, fi, pku, GetGlobalFlags());
+    }
+
+    protected void CompleteCheckOutRequest(object s, EventArgs e)
+    {
+        SlotDisplay sd = s as SlotDisplay;
+        pkuObject pku = sd.Slot.pkmnObj as pkuObject;
+        string format = FormatChooser.ChooseExportFormat(pku, GetGlobalFlags());
+        if (format is null)
+            return;
+        Registry.FormatInfo fi = Registry.FORMATS[format];
+        ExportingWindow.ExportStatus status = ExportingWindow.RunWarningWindow(format, fi, pku, GetGlobalFlags());
+        if (status is ExportingWindow.ExportStatus.Success)
+        {
+            pkuCollection.CurrentPKUBox.CheckOut(sd.Slot); //Data side
+            CurrentBoxDisplay.CompleteCheckOutRequest(sd); //GUI side
+            DeselectCurrentSlot(); //reset ManagerWindow GUI
+        }
     }
 
 

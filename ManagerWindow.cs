@@ -22,17 +22,11 @@ public partial class ManagerWindow : Form
     private pkuCollectionManager pkuCollectionManager;
 
     // UI Constants
-    private const string EXPORT_BUTTON_INTRO = "Export to \n";
-    private const string CHECKOUT_BUTTON_INTRO = "Check-out to \n";
-    private const string IMPORT_BUTTON_INTRO = "Import a \n";
-    private const string CHECKIN_BUTTON_INTRO = "Check-in via \n";
     private const int SPRITE_BOX_Y_OFFSET = 200;
 
     // Export Variables
-    private bool checkMode = true; //false = check-out mode, true = export mode
     private Slot selectedSlot; //ref to most recently selected pkuslot for exporter logic
-    private pkuObject selectedPKU => selectedSlot?.pkmnObj as pkuObject;
-        
+    
     // Constructor initializes UI elements
     public ManagerWindow()
     {
@@ -43,7 +37,6 @@ public partial class ManagerWindow : Form
         //Initialize GUI Components
         InitializeComponent();
         InitializeSettingsUI();
-        InitializePorterButtons();
         InitializeSpriteBox();
         collectionSelectorDialog = new();
 
@@ -54,7 +47,6 @@ public partial class ManagerWindow : Form
         // Reset UI
         LHSTabs.SelectedIndex = 0; //Select Summary Tab
         UpdateSummaryTab(selectedSlot); //Reset Summary Tab
-        UpdatePorterButtonVisibility(); //Reset Import/Export Button Visibility
         ResetFocus(); //Reset Focus
     }
 
@@ -77,7 +69,6 @@ public partial class ManagerWindow : Form
             {
                 selectedSlot = pkuCollectionManager.CurrentlySelectedSlot;
                 UpdateSummaryTab(selectedSlot);
-                UpdatePorterButtonVisibility();
             }
         };
 
@@ -194,166 +185,6 @@ public partial class ManagerWindow : Form
 
     private void ResetFocus()
         => nicknameLabel.Focus(); //removes focus from any textbox
-
-
-    /* ------------------------------------
-     * Import/Export button Logic
-     * ------------------------------------
-    */
-    // Creates a button for each import/export format registered in the Registry class.
-    private void InitializePorterButtons()
-    {
-        foreach (var kvp in Registry.FORMATS)
-        {
-            // Importer button
-            if (kvp.Value.Importer is not null)
-            {
-                Button ib = new()
-                {
-                    Text = $"{CHECKIN_BUTTON_INTRO}.{(kvp.Value.Ext is "txt" ? $"txt ({kvp.Key})" : kvp.Value.Ext)}",
-                    AutoSize = true,
-                    Enabled = false,
-                    FlatStyle = FlatStyle.Flat,
-                    Tag = kvp.Value
-                };
-                importButtons.Controls.Add(ib);
-
-                ib.Click += (object sender, EventArgs e) =>
-                {
-                    if(!pkuCollectionManager.RoomForOneMore())
-                    {
-                        MessageBox.Show("There no room in this box to import a Pokemon. Either change the box type to be bigger, or pick a different box.");
-                        return;
-                    }
-
-                    (pkuObject importedpku, ImportingWindow.ImportStatus status, string reason) 
-                        = ImportingWindow.RunImportWindow(kvp.Key, kvp.Value, pkuCollectionManager.GetGlobalFlags(), checkMode);
-
-                    if(status is ImportingWindow.ImportStatus.Success) //sucessfull import
-                    {
-                        if (checkMode) //this was a check-in
-                        {
-                            //TODO merging pkus
-                            pkuCollectionManager.CheckIn(selectedSlot); //adds to check-in list, and updates boxDisplay
-                            UpdateSummaryTab(selectedSlot);
-                            UpdatePorterButtonVisibility();
-                        }
-                        else //just a normal import
-                            pkuCollectionManager.InjectPokemon(importedpku);
-                    }
-                    else if (status is ImportingWindow.ImportStatus.Invalid_File)
-                        MessageBox.Show($"{(checkMode ? "Check-in" : "Import")} from {kvp.Key} Failed! The selected file is not a valid {kvp.Key} file. Reason: {reason}");
-                    //else if (status is ImportingWindow.ImportStatus.Canceled)
-                    //    MessageBox.Show($"{(checkMode ? "Check-in" : "Import")} from {GetUIFormatName(fi)} Canceled.");
-                };
-            }
-
-            // Exporter button
-            if(kvp.Value.Exporter is not null)
-            {
-                Button eb = new()
-                {
-                    Text = CHECKOUT_BUTTON_INTRO + kvp.Key,
-                    AutoSize = true,
-                    Enabled = false,
-                    FlatStyle = FlatStyle.Flat,
-                    Tag = kvp.Value
-                };
-                exportButtons.Controls.Add(eb);
-
-                eb.Click += (object sender, EventArgs e) =>
-                {
-                    ExportingWindow.ExportStatus status = ExportingWindow.RunWarningWindow(kvp.Key, kvp.Value, selectedPKU, pkuCollectionManager.GetGlobalFlags());
-
-                    if (checkMode && status is ExportingWindow.ExportStatus.Success) //if the pokemon was just checked-out
-                    {
-                        pkuCollectionManager.CheckOut(selectedSlot); //adds to check-out list, and updates boxDisplay
-                        UpdateSummaryTab(selectedSlot);
-                        UpdatePorterButtonVisibility();
-                    }
-                    //else if (status != ExportingWindow.ExportStatus.Success)
-                    //    MessageBox.Show($"{(checkMode ? "Check-out" : "Export")} to {GetUIFormatName(fi)} Failed!");
-                };
-            }
-        }
-    }
-
-    // Updates which export buttons are visible given a PKUObject.
-    private void UpdatePorterButtonVisibility()
-    {
-        /* ------------------------------------
-         * Update export button enabledness
-         * ------------------------------------
-        */
-        if (selectedPKU is null || (checkMode && selectedSlot?.CheckedOut is true)) //if pku is empty, or checking-out an already checked out pokemon
-        {
-            foreach (Control c in exportButtons.Controls)
-                c.Enabled = false;
-        }
-        else //2 exporter instances created, one for canexport, one for process+tofile...
-        {
-            foreach (Control button in exportButtons.Controls)
-            {
-                Registry.FormatInfo fi = (Registry.FormatInfo)button.Tag;
-                if (ExportingWindow.CanExport(fi, selectedPKU, pkuCollectionManager.GetGlobalFlags())) //exportable in this format
-                {
-                    if (!checkMode) //Export mode
-                        button.Enabled = true;
-                    else if (selectedSlot?.CheckedOut is false)//Check-out mode, not checked out
-                        button.Enabled  = !fi.ExcludeCheckOut;
-                    else //Check-out mode, checked out
-                        button.Enabled = false;
-                }
-                else //can't export to this format
-                    button.Enabled = false;
-            }
-        }
-
-        // Remove buttons that can't be checked out ever (i.e. Showdown)
-        foreach (Control c in exportButtons.Controls)
-        {
-            Registry.FormatInfo fi = (Registry.FormatInfo)c.Tag;
-            c.Visible = !checkMode || !fi.ExcludeCheckOut;
-        }
-
-
-        /* ------------------------------------
-         * Update import button enabledness
-         * ------------------------------------
-        */
-        foreach (Control c in importButtons.Controls)
-            c.Enabled = !checkMode || selectedSlot?.CheckedOut is true;
-    }
-
-    // Switches the (im/ex)port/check-(in/out) toggle variable, and text of the import/export buttons
-    private void ImportExportToggleButton_Click(object sender, EventArgs e)
-    {
-        checkMode = !checkMode;
-        foreach (Control button in importButtons.Controls)
-        {
-            Registry.FormatInfo fi = (Registry.FormatInfo)button.Tag;
-            button.Text = (checkMode ? CHECKIN_BUTTON_INTRO : IMPORT_BUTTON_INTRO) + fi.Ext;
-        }
-
-        foreach (Control button in exportButtons.Controls)
-        {
-            Registry.FormatInfo fi = (Registry.FormatInfo)button.Tag;
-            button.Text = (checkMode ? CHECKOUT_BUTTON_INTRO : EXPORT_BUTTON_INTRO) + fi.Ext;
-        }
-
-        if (checkMode)
-        {
-            exportToggleButton.Text = "Toggle Export";
-            importToggleButton.Text = "Toggle Import";
-        }
-        else
-        {
-            exportToggleButton.Text = "Toggle Check-out";
-            importToggleButton.Text = "Toggle Check-in";
-        }
-
-        UpdatePorterButtonVisibility();
-    }
 
 
     /* ------------------------------------
@@ -501,7 +332,6 @@ public partial class ManagerWindow : Form
         pkuCollectionManager.SwitchBox(boxSelector.SelectedIndex);
         ClearSummaryTab();
         selectedSlot = null;
-        UpdatePorterButtonVisibility();
         discord.Box = (string)boxSelector.SelectedItem;
         discord.UpdatePresence();
     }

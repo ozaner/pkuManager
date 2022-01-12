@@ -2,12 +2,15 @@
 using pkuManager.Formats.pku;
 using pkuManager.GUI;
 using System;
+using System.IO;
 using System.Windows.Forms;
 
 namespace pkuManager;
 
 public class CollectionManager
 {
+    protected static readonly SaveFileDialog SAVE_FILE_DIALOG = new();
+    
     protected Collection Collection { get; }
     public BoxDisplay CurrentBoxDisplay { get; protected set; }
     public Slot CurrentlySelectedSlot { get; protected set; }
@@ -23,9 +26,10 @@ public class CollectionManager
     public string[] GetBoxNames() => Collection.GetBoxNames();
     public int BoxCount => Collection.BoxCount;
 
-    protected void RefreshBoxDisplay()
+    protected virtual void RefreshBoxDisplay()
     {
         CurrentBoxDisplay = new(Collection.CurrentBox);
+        CurrentBoxDisplay.ExportRequest += CompleteExportRequest;
         CurrentBoxDisplay.ReleaseRequest += CompleteReleaseRequest;
         CurrentBoxDisplay.SwapRequest += CompleteSwapRequest;
         CurrentBoxDisplay.SlotSelected += (s, _) =>
@@ -35,6 +39,18 @@ public class CollectionManager
         };
         
         BoxDisplayRefreshed?.Invoke(null, null);
+    }
+
+    protected virtual void CompleteExportRequest(object s, EventArgs e)
+    {
+        FormatObject fo = (s as SlotDisplay).Slot.pkmnObj;
+        string ext = Registry.FORMATS[fo.FormatName].Ext;
+        SAVE_FILE_DIALOG.DefaultExt = ext;
+        SAVE_FILE_DIALOG.Filter = $"{ext} files (*.{ext})|*.{ext}|All files (*.*)|*.*";
+        DialogResult result = SAVE_FILE_DIALOG.ShowDialog(); // Show the dialog box.
+
+        if (result is DialogResult.OK) //Successful choice of file name + location
+            File.WriteAllBytes(Path.Combine(Path.GetDirectoryName(SAVE_FILE_DIALOG.FileName), SAVE_FILE_DIALOG.FileName), fo.ToFile());
     }
 
     protected void CompleteReleaseRequest(object s, EventArgs e)

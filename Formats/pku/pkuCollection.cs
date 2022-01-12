@@ -23,6 +23,7 @@ public class pkuCollection : Collection
     public string path { get; }
     private PKUCollectionConfig config;
     public override int BoxCount => config.Boxes.Count;
+    public pkuBox CurrentPKUBox => CurrentBox as pkuBox;
 
     public pkuCollection(string path) : base()
     {

@@ -1,5 +1,6 @@
 ﻿using FluentDragDrop;
 using pkuManager.Formats;
+using pkuManager.Formats.pku;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -17,6 +18,8 @@ public class BoxDisplay : FlowLayoutPanel
     private SlotDisplay CurrentSlot;
 
     public event EventHandler SlotSelected;
+    public event EventHandler ExportRequest;
+    public event EventHandler CheckOutRequest; //only used by pkuCollectionManager
     public event EventHandler ReleaseRequest;
     public event EventHandler SwapRequest;
 
@@ -80,6 +83,16 @@ public class BoxDisplay : FlowLayoutPanel
         => SelectSlot(null);
 
 
+    public void SendExportRequest(SlotDisplay slotDisplay)
+        => ExportRequest?.Invoke(slotDisplay, null);
+
+    public void SendCheckOutRequest(SlotDisplay slotDisplay)
+        => CheckOutRequest?.Invoke(slotDisplay, null);
+
+    public void CompleteCheckOutRequest(SlotDisplay slotDisplay)
+        => slotDisplay.RemoveCheckOutButton();
+
+
     public void SendReleaseRequest(SlotDisplay slotDisplay)
         => ReleaseRequest?.Invoke(slotDisplay, null);
 
@@ -123,6 +136,9 @@ public class SlotDisplay : PictureBox
     public Slot Slot { get; }
     public int SlotID { get; set; }
 
+    private bool isPKUSlot;
+    private ToolStripMenuItem checkOutButton;
+
     //all/empty slot displays
     public SlotDisplay(int slotID)
     {
@@ -162,18 +178,32 @@ public class SlotDisplay : PictureBox
     public SlotDisplay(Slot slot, int slotID) : this(slotID)
     {
         Slot = slot;
-        if (slot.CheckedOut)
-            BackgroundImage = Properties.Resources.checkedOut;
+        isPKUSlot = slot.pkmnObj is pkuObject;
 
+        //init box sprite
         ImageLocation = slot.BoxSprite.url;
         if (ImageLocation is null)
             Image = Properties.Resources.unknown_box;
 
+        //Create context menu
         ContextMenuStrip = new();
         ContextMenuStrip.Opening += (s, e) => BoxDisplay.SelectSlot(this);
-        ContextMenuStrip.Items.Add("Release", null, (s, e)
-            => BoxDisplay.SendReleaseRequest(this));
+        ContextMenuStrip.Items.Add("Export", null, (_, _) => BoxDisplay.SendExportRequest(this));
+        ContextMenuStrip.Items.Add("Release", null, (_, _) => BoxDisplay.SendReleaseRequest(this));
+        checkOutButton = new("Check-out", null, (_, _) => BoxDisplay.SendCheckOutRequest(this));
+
+        //deal with checked out slots
+        if (slot.CheckedOut)
+            BackgroundImage = Properties.Resources.checkedOut;
+        else if (isPKUSlot) //checked-in pkuSlot has button
+            AddCheckOutButton();
     }
+
+    public void AddCheckOutButton()
+        => ContextMenuStrip.Items.Insert(0, checkOutButton);
+
+    public void RemoveCheckOutButton()
+        => ContextMenuStrip.Items.Remove(checkOutButton);
 
     public new void Select()
         => BackgroundImage = Properties.Resources.selection;
