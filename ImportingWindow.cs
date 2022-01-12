@@ -90,9 +90,8 @@ public partial class ImportingWindow : Form
     }
 
     // Sets up and opens a importer window, or just auto imports if there are no questions or notes
-    public static (pkuObject, ImportStatus, string) RunImportWindow(Registry.FormatInfo fi, GlobalFlags flags, bool checkInMode)
+    public static (pkuObject, ImportStatus, string) RunImportWindow(string format, Registry.FormatInfo fi, GlobalFlags flags, bool checkInMode)
     {
-        string format = fi.Name;
         string ext = fi.Ext;
 
         Debug.WriteLine($"Attempting to import {format} (.{ext}) to .pku");

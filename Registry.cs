@@ -1,6 +1,7 @@
 ﻿global using static pkuManager.Registry.DataDexes; //DataDexes are global constants
 
 using Newtonsoft.Json.Linq;
+using pkuManager.Formats.pku;
 using pkuManager.Formats.pkx.pk3;
 using pkuManager.Formats.showdown;
 using pkuManager.Utilities;
@@ -13,23 +14,25 @@ public static class Registry
 {
     public readonly struct FormatInfo
     {
-        public readonly Type Importer, Exporter;
-        public readonly string Name, Ext;
+        public readonly Type Importer, Exporter, Collection;
+        public readonly string Ext, SaveExt;
         public readonly bool ExcludeCheckOut;
-        public FormatInfo(string name, string ext, Type importer, Type exporter, bool excludeCheckOut = false)
+        public FormatInfo(string ext, string saveExt, Type importer, Type exporter, Type collection, bool excludeCheckOut = false)
         {
-            Name = name;
             Ext = ext;
+            SaveExt = saveExt;
             Importer = importer;
             Exporter = exporter;
+            Collection = collection;
             ExcludeCheckOut = excludeCheckOut;
         }
     }
 
-    public static readonly List<FormatInfo> FORMAT_LIST = new()
+    public static readonly Dictionary<string, FormatInfo> FORMATS = new()
     {
-        new FormatInfo("Gen 3", "pk3", null, typeof(pk3Exporter)), //typeof(pk3Importer) not ready yet
-        new FormatInfo("Showdown!", "txt", null, typeof(ShowdownExporter), true)
+        { "pku", new FormatInfo("pku", null, null, null, typeof(pkuCollection)) },
+        { "pk3", new FormatInfo("pk3", "sav", null, typeof(pk3Exporter), null) }, //typeof(pk3Importer) not ready yet
+        { "Showdown", new FormatInfo("txt", null, null, typeof(ShowdownExporter), null, true) }
     };
 
     public static class DataDexes

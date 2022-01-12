@@ -18,6 +18,8 @@ namespace pkuManager.Formats.pku;
 // the use of message boxes here is not really following the model.
 public class pkuCollection : Collection
 {
+    public override string FormatName => "pku";
+
     public string path { get; }
     private PKUCollectionConfig config;
     public override int BoxCount => config.Boxes.Count;

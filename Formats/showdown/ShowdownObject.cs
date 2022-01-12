@@ -16,6 +16,8 @@ namespace pkuManager.Formats.showdown;
 /// </summary>
 public class ShowdownObject : FormatObject, Item_O, Nature_O, Friendship_O, IVs_O, EVs_O
 {
+    public override string FormatName => "Showdown";
+
     /* ------------------------------------
      * Attributes
      * ------------------------------------

@@ -18,6 +18,8 @@ namespace pkuManager.Formats.pku;
 [JsonObject(MemberSerialization.OptIn)]
 public class pkuObject : FormatObject
 {
+    public override string FormatName => "pku";
+
     [JsonProperty("Species")]
     public string Species { get; set; }
 

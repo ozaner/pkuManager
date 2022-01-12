@@ -82,7 +82,7 @@ public partial class ExportingWindow : Form
     // Generic behavior for the accept button in the Warning Window
     private static ExportStatus ExportFormat(Exporter exporter, Registry.FormatInfo fi)
     {
-        string pkuToFormat = ".pku to " + fi.Name + " (." + fi.Ext + ")"; //For console logging
+        string pkuToFormat = ".pku to (." + fi.Ext + ")"; //For console logging
 
         Debug.WriteLine("Exporting " + pkuToFormat + "...");
 
@@ -112,9 +112,8 @@ public partial class ExportingWindow : Form
     }
 
     // Sets up and opens the warning window, or just auto accepts if there are no warnings, errors, or notes
-    public static ExportStatus RunWarningWindow(Registry.FormatInfo fi, pkuObject pku, GlobalFlags flags)
+    public static ExportStatus RunWarningWindow(string format, Registry.FormatInfo fi, pkuObject pku, GlobalFlags flags)
     {
-        string format = fi.Name;
         string ext = fi.Ext;
 
         Debug.WriteLine($"Attempting to export .pku to  {format} (.{ext})");

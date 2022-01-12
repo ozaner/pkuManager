@@ -5,6 +5,8 @@ namespace pkuManager.Formats;
 
 public abstract class Collection
 {
+    public abstract string FormatName { get; }
+
     public virtual string Name { get; protected set; }
     public abstract int BoxCount { get; }
     

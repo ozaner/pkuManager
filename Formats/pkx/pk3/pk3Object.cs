@@ -19,6 +19,8 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
                          IVs_O, EVs_O, Contest_Stats_O, Ball_O, Met_Level_O,
                          OT_Gender_O, Language_O
 {
+    public override string FormatName => "pk3";
+
     /* ------------------------------------
      * Initialization
      * ------------------------------------

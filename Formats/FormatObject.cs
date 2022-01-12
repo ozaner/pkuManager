@@ -6,6 +6,11 @@
 public abstract class FormatObject
 {
     /// <summary>
+    /// The name of the format this object represents.
+    /// </summary>
+    public abstract string FormatName { get; }
+
+    /// <summary>
     /// Exports this object as a file in the implemented format.
     /// </summary>
     /// <returns>A <see cref="byte"/> array representation of the

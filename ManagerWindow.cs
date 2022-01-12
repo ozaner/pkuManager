@@ -200,24 +200,21 @@ public partial class ManagerWindow : Form
      * Import/Export button Logic
      * ------------------------------------
     */
-    private static string GetUIFormatName(Registry.FormatInfo fi)
-        => $".{ (fi.Ext == "txt" ? $"txt ({fi.Name})" : fi.Ext)}";
-
     // Creates a button for each import/export format registered in the Registry class.
     private void InitializePorterButtons()
     {
-        foreach (Registry.FormatInfo fi in Registry.FORMAT_LIST)
+        foreach (var kvp in Registry.FORMATS)
         {
             // Importer button
-            if (fi.Importer is not null)
+            if (kvp.Value.Importer is not null)
             {
                 Button ib = new()
                 {
-                    Text = $"{CHECKIN_BUTTON_INTRO}.{(fi.Ext is "txt" ? $"txt ({fi.Name})" : fi.Ext)}",
+                    Text = $"{CHECKIN_BUTTON_INTRO}.{(kvp.Value.Ext is "txt" ? $"txt ({kvp.Key})" : kvp.Value.Ext)}",
                     AutoSize = true,
                     Enabled = false,
                     FlatStyle = FlatStyle.Flat,
-                    Tag = fi
+                    Tag = kvp.Value
                 };
                 importButtons.Controls.Add(ib);
 
@@ -230,7 +227,7 @@ public partial class ManagerWindow : Form
                     }
 
                     (pkuObject importedpku, ImportingWindow.ImportStatus status, string reason) 
-                        = ImportingWindow.RunImportWindow(fi, pkuCollectionManager.GetGlobalFlags(), checkMode);
+                        = ImportingWindow.RunImportWindow(kvp.Key, kvp.Value, pkuCollectionManager.GetGlobalFlags(), checkMode);
 
                     if(status is ImportingWindow.ImportStatus.Success) //sucessfull import
                     {
@@ -245,28 +242,28 @@ public partial class ManagerWindow : Form
                             pkuCollectionManager.InjectPokemon(importedpku);
                     }
                     else if (status is ImportingWindow.ImportStatus.Invalid_File)
-                        MessageBox.Show($"{(checkMode ? "Check-in" : "Import")} from {GetUIFormatName(fi)} Failed! The selected file is not a valid {fi.Name} file. Reason: {reason}");
+                        MessageBox.Show($"{(checkMode ? "Check-in" : "Import")} from {kvp.Key} Failed! The selected file is not a valid {kvp.Key} file. Reason: {reason}");
                     //else if (status is ImportingWindow.ImportStatus.Canceled)
                     //    MessageBox.Show($"{(checkMode ? "Check-in" : "Import")} from {GetUIFormatName(fi)} Canceled.");
                 };
             }
 
             // Exporter button
-            if(fi.Exporter is not null)
+            if(kvp.Value.Exporter is not null)
             {
                 Button eb = new()
                 {
-                    Text = CHECKOUT_BUTTON_INTRO + GetUIFormatName(fi),
+                    Text = CHECKOUT_BUTTON_INTRO + kvp.Key,
                     AutoSize = true,
                     Enabled = false,
                     FlatStyle = FlatStyle.Flat,
-                    Tag = fi
+                    Tag = kvp.Value
                 };
                 exportButtons.Controls.Add(eb);
 
                 eb.Click += (object sender, EventArgs e) =>
                 {
-                    ExportingWindow.ExportStatus status = ExportingWindow.RunWarningWindow(fi, selectedPKU, pkuCollectionManager.GetGlobalFlags());
+                    ExportingWindow.ExportStatus status = ExportingWindow.RunWarningWindow(kvp.Key, kvp.Value, selectedPKU, pkuCollectionManager.GetGlobalFlags());
 
                     if (checkMode && status is ExportingWindow.ExportStatus.Success) //if the pokemon was just checked-out
                     {
@@ -335,13 +332,13 @@ public partial class ManagerWindow : Form
         foreach (Control button in importButtons.Controls)
         {
             Registry.FormatInfo fi = (Registry.FormatInfo)button.Tag;
-            button.Text = (checkMode ? CHECKIN_BUTTON_INTRO : IMPORT_BUTTON_INTRO) + GetUIFormatName(fi);
+            button.Text = (checkMode ? CHECKIN_BUTTON_INTRO : IMPORT_BUTTON_INTRO) + fi.Ext;
         }
 
         foreach (Control button in exportButtons.Controls)
         {
             Registry.FormatInfo fi = (Registry.FormatInfo)button.Tag;
-            button.Text = (checkMode ? CHECKOUT_BUTTON_INTRO : EXPORT_BUTTON_INTRO) + GetUIFormatName(fi);
+            button.Text = (checkMode ? CHECKOUT_BUTTON_INTRO : EXPORT_BUTTON_INTRO) + fi.Ext;
         }
 
         if (checkMode)
