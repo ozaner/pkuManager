@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace pkuManager.Utilities;
@@ -25,6 +26,12 @@ public class ByteArrayManipulator
     public int Length => ByteArray.Length;
 
     /// <summary>
+    /// An array of indices (offset, size) that, when stiched together form a virtual byte array from <see cref="ByteArray"/>.<br/>
+    /// All get and set methods will use this virtual array. Reads from the whole byte array by default.
+    /// </summary>
+    public (int offset, int size)[] VirtualIndices { get; }
+
+    /// <summary>
     /// Constructs a new BAM with an empty underlying byte array.
     /// </summary>
     /// <param name="size">The size of the empty underlying array.</param>
@@ -36,10 +43,13 @@ public class ByteArrayManipulator
     /// </summary>
     /// <param name="byteArray">The byte array to underlie the BAM.</param>
     /// <param name="bigEndian">The endianess of the new BAM.</param>
-    public ByteArrayManipulator(byte[] byteArray, bool bigEndian)
+    /// <param name="virutalIndices">An array of indices to form a virtual byte array to read from.<br/>
+    ///                              Reads from the whole byte array by default.</param>
+    public ByteArrayManipulator(byte[] byteArray, bool bigEndian, (int, int)[] virutalIndices = null)
     {
         BigEndian = bigEndian;
         ByteArray = byteArray;
+        VirtualIndices = virutalIndices ?? new (int, int)[] { (0, ByteArray.Length) };
     }
 
     /// <summary>
@@ -64,6 +74,65 @@ public class ByteArrayManipulator
         _ => throw new ArgumentException("Invalid BAM data type.", nameof(T))
     };
 
+    /// <summary>
+    /// Returns the address of a value in the virtual byte array, one byte at a time.
+    /// </summary>
+    /// <param name="byteIndex">The index of the value.</param>
+    /// <param name="byteLength">The length of the value.</param>
+    /// <returns>An enumerable of the physical byte offsets of the given value.</returns>
+    public IEnumerable<int> GetVirtualByteIndices(int byteIndex, int byteLength)
+    {
+        int bufferLength = 0;
+        int currentByte = 0;
+        foreach ((int s, int l) in VirtualIndices) //loop through each range
+        {
+            int currentByteInRange = 0;
+            while (currentByteInRange < l) //loop through each byte in the range
+            {
+                if (bufferLength == byteLength) //found enough bytes, done
+                    break;
+
+                if (currentByte >= byteIndex) //within desired address
+                {
+                    yield return s + currentByteInRange;
+                    bufferLength++;
+                }
+
+                currentByte++;
+                currentByteInRange++;
+                if (currentByteInRange >= l)
+                    break; //move to next range
+            }
+        }
+    }
+
+    /// <summary>
+    /// Returns the address of a bit-level value in the virtual byte array, one bit at a time.
+    /// </summary>
+    /// <param name="byteIndex">The index of the first byte the value is stored in.</param>
+    /// <param name="bitIndex">The index of the value's first bit relative
+    ///                        to <paramref name="byteIndex"/>.</param>
+    /// <param name="bitLength">The length of the value in bits.</param>
+    /// <returns>An enumerable of the physical (byte, bit) offsets of the given value.</returns>
+    public IEnumerable<(int by, int bi)> GetVirtualBitIndices(int byteIndex, int bitIndex, int bitLength)
+    {
+        byteIndex += bitIndex / 8;
+        bitIndex %= 8;
+        var byteIndices = GetVirtualByteIndices(byteIndex, bitLength / 8 + 1).GetEnumerator();
+        for (int i = 0; i < bitLength; i++)
+        {
+            yield return (byteIndices.Current, bitIndex);
+            bitIndex++;
+            if (bitIndex > 7)
+            {
+                bitIndex = 0;
+                byteIndex++;
+                if (!byteIndices.MoveNext())
+                    throw new ArgumentException("not enough bytes...");
+            }
+        }
+    }
+
 
     /* ------------------------------------
      * Reading Methods - Single Value
@@ -72,36 +141,33 @@ public class ByteArrayManipulator
     /// <summary>
     /// Reads an unsigned value from the byte array.
     /// </summary>
-    /// <param name="byteIndex">The index of the value.</param>
-    /// <param name="byteLength">The length of the value in bytes.</param>
     /// <returns>The <paramref name="byteLength"/> unsigned value at <paramref name="byteIndex"/>.</returns>
+    /// <inheritdoc cref="GetVirtualByteIndices(int, int)"/>
     public BigInteger Get(int byteIndex, int byteLength)
     {
-        BigInteger sum = 0;
-        for (int i = 0; i < byteLength; i++)
-            sum += ByteArray[byteIndex + i] * BigInteger.Pow(2, 8 * (BigEndian ? (byteLength - 1 - i) : i));
+        byte[] buffer = new byte[byteLength];
+        int i = 0;
+        foreach(int index in GetVirtualByteIndices(byteIndex, byteLength))
+            buffer[i++] = ByteArray[index];
 
+        BigInteger sum = 0;
+        for (int j = 0; j < byteLength; j++)
+            sum += buffer[j] * BigInteger.Pow(2, 8 * (BigEndian ? (byteLength - 1 - j) : j));
         return sum;
     }
 
     /// <summary>
     /// Reads a bit level-value stored from the byte array.
     /// </summary>
-    /// <param name="byteIndex">The index of the first byte the value is stored in.</param>
-    /// <param name="bitIndex">The index of the value's first bit relative
-    ///                        to <paramref name="byteIndex"/>.</param>
-    /// <param name="bitLength">The length of the value in bits.</param>
     /// <returns>A <paramref name="bitLength"/> unsigned value starting
     ///          <paramref name="bitIndex"/> bits after <paramref name="byteIndex"/>.</returns>
+    /// <inheritdoc cref="GetVirtualBitIndices(int, int, int)"/>
     public BigInteger Get(int byteIndex, int bitIndex, int bitLength)
     {
         BigInteger sum = 0;
-        for (int i = 0; i < bitLength; i++)
-        {
-            int by = byteIndex + (bitIndex + i) / 8;
-            int bi = (bitIndex + i) % 8;
-            sum += (BigInteger)((ByteArray[by] >> bi) & 1) << i;
-        }
+        int i = 0;
+        foreach ((int by, int bi) in GetVirtualBitIndices(byteIndex, bitIndex, bitLength))
+            sum += (BigInteger)((ByteArray[by] >> bi) & 1) << i++;
         return sum;
     }
 
@@ -124,7 +190,7 @@ public class ByteArrayManipulator
     /// Reads an array of unsigned values from the byte array.
     /// </summary>
     /// <param name="byteIndex">The index of the first value.</param>
-    /// <param name="byteLength">The length of each value in bytes.</param>
+    /// <param name="byteLength">The length of a single value in bytes.</param>
     /// <param name="length">The number of elements in the array.</param>
     /// <returns>An array of values read from the byte array, specified by the parameters.</returns>
     public BigInteger[] GetArray(int byteIndex, int byteLength, int length)
@@ -141,8 +207,8 @@ public class ByteArrayManipulator
     /// <param name="byteIndex">The index of the first byte the first value is stored in.</param>
     /// <param name="bitIndex">The index of the first value's first bit relative
     ///                        to <paramref name="byteIndex"/>.</param>
-    /// <param name="bitLength">The length of each value in bits.</param>
-    /// <inheritdoc cref="GetArray(int, int, int)"/>
+    /// <param name="bitLength">The length of a single value in bits.</param>
+    /// <param name="length">The number of elements in the array.</param>
     public BigInteger[] GetArray(int byteIndex, int bitIndex, int bitLength, int length)
     {
         BigInteger[] arr = new BigInteger[length];
@@ -171,12 +237,12 @@ public class ByteArrayManipulator
     /// Note that overflow will be truncated.
     /// </summary>
     /// <param name="value">The value to be set, must be positive.</param>
-    /// <param name="byteIndex">The index of the value.</param>
-    /// <param name="byteLength">The length of the value in bytes.</param>
+    /// <inheritdoc cref="Get(int, int)"/>
     public void Set(BigInteger value, int byteIndex, int byteLength)
     {
-        for (int i = 0; i < byteLength; i++)
-            ByteArray[byteIndex + i] = (byte)((value >> (8 * (BigEndian ? (byteLength - 1 - i) : i))) & 0xFF);
+        int i = 0;
+        foreach (int index in GetVirtualByteIndices(byteIndex, byteLength))
+            ByteArray[index] = (byte)((value >> (8 * (BigEndian ? (byteLength - 1 - i++) : i++))) & 0xFF);
     }
 
     /// <summary>
@@ -184,18 +250,14 @@ public class ByteArrayManipulator
     /// Note that overflow will be truncated.
     /// </summary>
     /// <param name="value">The value to be set, must be positive.</param>
-    /// <param name="byteIndex">The index of the first byte the value is stored in.</param>
-    /// <param name="bitIndex">The index of the first value's first bit relative
-    ///                        to <paramref name="byteIndex"/>.</param>
-    /// <param name="bitLength">The length of each value in bits.</param>
+    /// <inheritdoc cref="Get(int, int, int)"/>
     public void Set(BigInteger value, int byteIndex, int bitIndex, int bitLength)
     {
-        for (int i = 0; i < bitLength; i++)
+        int i = 0;
+        foreach ((int by, int bi) in GetVirtualBitIndices(byteIndex, bitIndex, bitLength))
         {
-            int by = byteIndex + (bitIndex + i) / 8;
-            int bi = (bitIndex + i) % 8;
             BigInteger temp = ByteArray[by];
-            temp.SetBits(value.GetBits(i, 1), bi, 1);
+            temp.SetBits(value.GetBits(i++, 1), bi, 1);
             ByteArray[by] = (byte)temp;
         }
     }
@@ -220,14 +282,10 @@ public class ByteArrayManipulator
     /// Note that overflow will be truncated.
     /// </summary>
     /// <param name="values">The array of values to be set, must all be positive.</param>
-    /// <param name="byteIndex">The index of the value.</param>
-    /// <param name="byteLength">The length of the value in bytes.</param>
-    /// <param name="length">The number of elements in the array.
-    ///                      Uses the length of <paramref name="values"/> by default.</param>
+    /// <inheritdoc cref="GetArray(int, int, int)"/>
     public void SetArray(int byteIndex, int byteLength, BigInteger[] values, int? length = null)
     {
-        if (length is null)
-            length = values.Length;
+        length ??= values.Length;
         for (int i = 0; i < length; i++)
             Set(values[i], byteIndex + i * byteLength, byteLength);
     }
@@ -236,15 +294,11 @@ public class ByteArrayManipulator
     /// Writes an array of bit level-values to the byte array.<br/>
     /// Note that overflow will be truncated.
     /// </summary>
-    /// <param name="byteIndex">The index of the first byte the first value is stored in.</param>
-    /// <param name="bitIndex">The index of the first value's first bit relative
-    ///                        to <paramref name="byteIndex"/>.</param>
-    /// <param name="bitLength">The length of each value in bits.</param>
-    /// <inheritdoc cref="SetArray(int, int, BigInteger[], int?)"/>
+    /// <param name="values">The array of values to be set, must all be positive.</param>
+    /// <inheritdoc cref="GetArray(int, int, int, int)"/>
     public void SetArray(int byteIndex, int bitIndex, int bitLength, BigInteger[] values, int? length = null)
     {
-        if (length is null)
-            length = values.Length;
+        length ??= values.Length;
         for (int i = 0; i < length; i++)
             Set(values[i], byteIndex, bitIndex + i * bitLength, bitLength);
     }
