@@ -21,8 +21,8 @@ public class BAMIntegralField : IntegralField, IBAMField, IByteOverridable
     }
 
     // IntegralField
-    public override BigInteger Max => (this as IBAMField).GetMax();
-    public override BigInteger Min => (this as IBAMField).GetMin();
+    public override BigInteger? Max => (this as IBAMField).GetMax();
+    public override BigInteger? Min => (this as IBAMField).GetMin();
 
     // IBAMField
     public ByteArrayManipulator BAM { get; }

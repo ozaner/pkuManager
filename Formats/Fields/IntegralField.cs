@@ -6,8 +6,8 @@ namespace pkuManager.Formats.Fields;
 
 public abstract class IntegralField : Field<BigInteger>
 {
-    public abstract BigInteger Max { get; }
-    public abstract BigInteger Min { get; }
+    public abstract BigInteger? Max { get; }
+    public abstract BigInteger? Min { get; }
 
     protected IntegralField(Func<BigInteger, BigInteger> getter, Func<BigInteger, BigInteger> setter)
         : base(getter, setter) => CustomSetter = CustomSetter.Compose(SetterBound);

@@ -17,15 +17,15 @@ public interface NumericTag_E
     {
         (BigInteger checkedVal, AlertType at) = pkuVal.Get() switch {
             null => (defaultVal, AlertType.UNSPECIFIED),
-            var x when x > formatVal.Max => (formatVal.Max, AlertType.OVERFLOW),
-            var x when x < formatVal.Min => (formatVal.Min, AlertType.UNDERFLOW),
+            var x when x > formatVal.Max => (formatVal.Max.Value, AlertType.OVERFLOW),
+            var x when x < formatVal.Min => (formatVal.Min.Value, AlertType.UNDERFLOW),
             _ => (pkuVal.Get().Value, AlertType.NONE)
         };
         formatVal.Set(checkedVal);
         Warnings.Add(GetNumericalAlert(tagName, at, formatVal.Max, formatVal.Min, defaultVal, silentUnspecified));
     }
 
-    protected Alert GetNumericalAlert(string name, AlertType at, BigInteger max, BigInteger min, BigInteger defaultVal, bool silentUnspecified) => at switch
+    protected Alert GetNumericalAlert(string name, AlertType at, BigInteger? max, BigInteger? min, BigInteger defaultVal, bool silentUnspecified) => at switch
     {
         AlertType.OVERFLOW => new(name, $"This pku's {name} is higher than the maximum. Rounding down to {max}."),
         AlertType.UNDERFLOW => new(name, $"This pku's {name} is lower than the minimum. Rounding up to {min}."),
