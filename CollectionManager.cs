@@ -1,6 +1,7 @@
 ﻿using pkuManager.Formats;
 using pkuManager.Formats.pku;
 using pkuManager.GUI;
+using pkuManager.Utilities;
 using System;
 using System.IO;
 using System.Windows.Forms;
@@ -44,9 +45,7 @@ public class CollectionManager
     protected virtual void CompleteExportRequest(object s, EventArgs e)
     {
         FormatObject fo = (s as SlotDisplay).Slot.pkmnObj;
-        string ext = Registry.FORMATS[fo.FormatName].Ext;
-        SAVE_FILE_DIALOG.DefaultExt = ext;
-        SAVE_FILE_DIALOG.Filter = $"{ext} files (*.{ext})|*.{ext}|All files (*.*)|*.*";
+        SAVE_FILE_DIALOG.SetExtension(Registry.FORMATS[fo.FormatName].Ext);
         DialogResult result = SAVE_FILE_DIALOG.ShowDialog(); // Show the dialog box.
 
         if (result is DialogResult.OK) //Successful choice of file name + location

@@ -1,4 +1,5 @@
 ﻿using pkuManager.Formats.pku;
+using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
@@ -9,20 +10,45 @@ public partial class FormatChooser : Form
     private FormatChooser()
         => InitializeComponent();
 
-    private static string GetSelectPrompt(bool isImport)
-        => $"Select a format to {(isImport ? "im" : "ex")}port to:";
+    private static string GetSelectPrompt(FormatComponent comp, bool check) => comp switch
+    {
+        FormatComponent.Exporter => $"Select a format to {(check ? "check-out" : "export")} to:",
+        FormatComponent.Importer => $"Select a format to {(check ? "check-in" : "import")} from:",
+        FormatComponent.Collection => "Select the type of save file you wish to open:",
+        _ => throw new NotImplementedException()
+    };
 
-    private static string GetNotice(bool isImport)
-        => $"If a format does not appear, then the pku cannot be {(isImport ? "im" : "ex")}ported to it.";
+    private static string GetNotice(FormatComponent comp) => "If a format does not appear, then " + comp switch
+    {
+        FormatComponent.Exporter => "the pku cannot be exported to it, or it is currently unsupported.",
+        FormatComponent.Importer => "the pku cannot be imported to it, or it is currently unsupported.",
+        FormatComponent.Collection => "it does not have save support.",
+        _ => throw new NotImplementedException()
+    };
 
-    private static string ChoosePortFormat(List<string> formats, bool isImport)
+    private static string GetEmptyNotice(FormatComponent comp) => comp switch
+    {
+        FormatComponent.Exporter => "This pku cannot be exported to any currently supported format.",
+        FormatComponent.Importer => "There are currently no formats that support importing...",
+        FormatComponent.Collection => "There are currently no supported save file types...",
+        _ => throw new NotImplementedException()
+    };
+
+    private enum FormatComponent
+    {
+        Exporter,
+        Importer,
+        Collection
+    }
+
+    private static string ChoosePortFormat(List<string> formats, FormatComponent comp, bool check = false)
     {
         FormatChooser fc = new();
-        fc.selectionPromptLabel.Text = GetSelectPrompt(isImport);
-        fc.invalidFormatNoticeLabel.Text = GetNotice(isImport);
+        fc.selectionPromptLabel.Text = GetSelectPrompt(comp, check);
+        fc.invalidFormatNoticeLabel.Text = GetNotice(comp);
         if (formats.Count is 0)
         {
-            MessageBox.Show("This pku cannot be exported to any currently supported format.", "No valid formats");
+            MessageBox.Show(GetEmptyNotice(comp), "No valid formats");
             return null;
         }
         fc.formatComboBox.Items.AddRange(formats.ToArray());
@@ -35,7 +61,7 @@ public partial class FormatChooser : Form
             return null;
     }
 
-    public static string ChooseImportFormat()
+    public static string ChooseImportFormat(bool check)
     {
         List<string> formats = new();
         foreach (var kvp in Registry.FORMATS)
@@ -48,10 +74,10 @@ public partial class FormatChooser : Form
             if (kvp.Value.Importer is not null)
                 formats.Add(kvp.Key);
         }
-        return ChoosePortFormat(formats, true);
+        return ChoosePortFormat(formats, FormatComponent.Importer, check);
     }
 
-    public static string ChooseExportFormat(pkuObject pku, GlobalFlags flags)
+    public static string ChooseExportFormat(pkuObject pku, GlobalFlags flags, bool check)
     {
         List<string> formats = new();
         foreach (var kvp in Registry.FORMATS)
@@ -64,6 +90,22 @@ public partial class FormatChooser : Form
             if (kvp.Value.Exporter is not null && ExportingWindow.CanExport(kvp.Value, pku, flags))
                 formats.Add(kvp.Key);
         }
-        return ChoosePortFormat(formats, false);
+        return ChoosePortFormat(formats, FormatComponent.Exporter, check);
+    }
+
+    public static string ChooseCollectionFormat()
+    {
+        List<string> formats = new();
+        foreach (var kvp in Registry.FORMATS)
+        {
+            //pkuCollections must be opened another way
+            if (kvp.Key is "pku")
+                continue;
+
+            //can import any format w/ a collection
+            if (kvp.Value.Collection is not null)
+                formats.Add(kvp.Key);
+        }
+        return ChoosePortFormat(formats, FormatComponent.Collection);
     }
 }

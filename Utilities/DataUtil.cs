@@ -164,6 +164,30 @@ public static class DataUtil
         return filepath;
     }
 
+    /// <summary>
+    /// Checks whether an absolute path is a subpath of another.
+    /// </summary>
+    /// <param name="subPath">The path to be checked for subness.</param>
+    /// <param name="basePath">The base path.</param>
+    /// <returns>Whether or not <paramref name="subPath"/> is a subpath of <paramref name="basePath"/>.</returns>
+    public static bool IsSubPathOf(this string subPath, string basePath)
+    {
+        string rel = Path.GetRelativePath(basePath, subPath);
+        return !rel.StartsWith('.') && !Path.IsPathRooted(rel);
+    }
+
+    /// <summary>
+    /// Sets the filter of the given <paramref name="fileDialog"/> to files of the given <paramref name="ext"/>.
+    /// Also sets the default extension to <paramref name="ext"/>.
+    /// </summary>
+    /// <param name="fileDialog">A FileDialog.</param>
+    /// <param name="ext">A file extension.</param>
+    public static void SetExtension(this FileDialog fileDialog, string ext)
+    {
+        fileDialog.DefaultExt = ext;
+        fileDialog.Filter = $"{ext} files (*.{ext})|*.{ext}|All files (*.*)|*.*";
+    }
+
 
     /* ------------------------------------
      * String Methods

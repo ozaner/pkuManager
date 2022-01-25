@@ -75,8 +75,11 @@ public class BoxDisplay : FlowLayoutPanel
     {
         CurrentSlot?.Deselect();
         CurrentSlot = slotDisplay;
-        CurrentSlot?.Select();
-        SlotSelected.Invoke(CurrentSlot, null);
+        if(CurrentSlot is not null)
+        {
+            CurrentSlot.Select();
+            SlotSelected.Invoke(CurrentSlot, null);
+        }
     }
 
     public void DeselectCurrentSlot()

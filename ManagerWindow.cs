@@ -15,11 +15,13 @@ public partial class ManagerWindow : Form
     private readonly DiscordPresence discord;
 
     // References to certain UI Elements
-    private readonly FolderBrowserDialog collectionSelectorDialog;
+    private readonly FolderBrowserDialog folderSelectorDialog;
+    private readonly OpenFileDialog fileSelectorDialog;
     private SpriteBox SpriteBox;
 
-    // Manager for the currently open PKUCollection
+    // Managers for the currently open collections
     private pkuCollectionManager pkuCollectionManager;
+    private CollectionManager collectionManager;
 
     // UI Constants
     private const int SPRITE_BOX_Y_OFFSET = 200;
@@ -38,7 +40,8 @@ public partial class ManagerWindow : Form
         InitializeComponent();
         InitializeSettingsUI();
         InitializeSpriteBox();
-        collectionSelectorDialog = new();
+        folderSelectorDialog = new();
+        fileSelectorDialog = new();
 
         // Open last collection (if it still exists)
         if (pkuCollection.CollectionConfigExistsIn(Properties.Settings.Default.Last_Path))
@@ -52,19 +55,20 @@ public partial class ManagerWindow : Form
 
 
     /* ------------------------------------
-     * Switch PKUCollections Stuff
+     * pkuCollection Stuff
      * ------------------------------------
     */
     private void OpenPKUCollection(string path)
     {
         // Initialize collectionManager and related GUI components.
         pkuCollectionManager = new pkuCollectionManager(new pkuCollection(path));
-        pkuCollectionManager.BoxDisplayRefreshed += OnBoxDisplayRefreshed;
+        pkuCollectionManager.BoxDisplayRefreshed += OnPKUBoxDisplayRefreshed;
         UpdateGlobalFlagUI();
 
         // Code for updating SummaryTab and ExporterButtonVisibility when a slotDisplay is selected.
         pkuCollectionManager.SlotSelected += (s, e) =>
         {
+            collectionManager?.DeselectCurrentSlot();
             if (pkuCollectionManager.CurrentlySelectedSlot != selectedSlot) //if a different slot was just clicked
             {
                 selectedSlot = pkuCollectionManager.CurrentlySelectedSlot;
@@ -85,27 +89,151 @@ public partial class ManagerWindow : Form
         boxOptionsDropDown.Enabled = true;
         refreshBoxButton.Enabled = true;
 
-        ResetBoxSelector();
+        ResetPKUBoxSelector();
     }
 
-    // Unlocks the current PKUCollection and opens a dialog to choose a new PKUCollection to open.
-    private void openACollectionButton_Click(object sender, EventArgs e)
+    // Opens a dialog to choose a new PKUCollection to open.
+    private void openCollectionButton_Click(object sender, EventArgs e)
     {
-        DialogResult result = collectionSelectorDialog.ShowDialog(); // Show the dialog.
+        DialogResult result = folderSelectorDialog.ShowDialog(); // Show the dialog.
         if (result is DialogResult.OK) // Test result.
         {
-            if (pkuCollection.CollectionConfigExistsIn(collectionSelectorDialog.SelectedPath))
-                OpenPKUCollection(collectionSelectorDialog.SelectedPath);
+            if(pkuCollection.CollectionConfigExistsIn(folderSelectorDialog.SelectedPath))
+                OpenPKUCollection(folderSelectorDialog.SelectedPath);
             else
                 MessageBox.Show("The selected folder does not have a collectionconfig.json file, and so is not a valid Collection.", "Invalid Collection");
         }
     }
 
-    private void createANewCollectionToolStripMenuItem_Click(object sender, EventArgs e)
+    private void createNewCollectionButton_Click(object sender, EventArgs e)
     {
         string path = pkuCollectionManager.CreateACollection();
         if(path is not null)
             OpenPKUCollection(path);
+    }
+
+    private void OnPKUBoxDisplayRefreshed(object sender, EventArgs e)
+    {
+        pkuBoxDisplayDock.Controls.Clear(); //clear old displaybox
+        pkuBoxDisplayDock.Controls.Add(pkuCollectionManager.CurrentBoxDisplay); //add new displaybox
+
+        //box options check
+        boxOptionsList.Enabled = pkuCollectionManager.CanChangeBoxType(BoxConfigType.LIST);
+        boxOptions30.Enabled = pkuCollectionManager.CanChangeBoxType(BoxConfigType.THIRTY);
+        boxOptions60.Enabled = pkuCollectionManager.CanChangeBoxType(BoxConfigType.SIXTY);
+        boxOptions96.Enabled = pkuCollectionManager.CanChangeBoxType(BoxConfigType.NINTYSIX);
+
+        BoxConfigType bcft = pkuCollectionManager.GetBoxType();
+        boxOptionsList.Checked = bcft is BoxConfigType.LIST;
+        boxOptions30.Checked = bcft is BoxConfigType.THIRTY;
+        boxOptions60.Checked = bcft is BoxConfigType.SIXTY;
+        boxOptions96.Checked = bcft is BoxConfigType.NINTYSIX;
+
+        //discord RPC
+        discord.Box = (string)pkuBoxSelector.SelectedItem;
+        discord.UpdatePresence();
+    }
+
+    private void ResetPKUBoxSelector(int currentBox = 0)
+    {
+        pkuBoxSelector.Items.Clear();
+        pkuBoxSelector.Items.AddRange(pkuCollectionManager.GetBoxNames());
+        pkuBoxSelector.SelectedIndex = currentBox;
+    }
+
+    // Behavior when a different pkubox is selected.
+    // Also updates the discord presence
+    private void pkuBoxSelector_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        pkuCollectionManager.SwitchBox(pkuBoxSelector.SelectedIndex);
+        DeselectSlot();
+        discord.Box = (string)pkuBoxSelector.SelectedItem;
+        discord.UpdatePresence();
+    }
+
+    private void refreshBox_Click(object sender, EventArgs e)
+        => pkuBoxSelector_SelectedIndexChanged(null, null);
+
+
+    /* ------------------------------------
+     * Save File Stuff
+     * ------------------------------------
+    */
+    private void openSaveFileButton_Click(object sender, EventArgs e)
+    {
+        //close previous save if its still open
+        if (collectionManager is not null)
+        {
+            DialogResult resultA = MessageBox.Show("A save file is already open, would you like to close it without saving?",
+                "Save file already open", MessageBoxButtons.YesNo);
+            if (resultA == DialogResult.Yes)
+                closeCollectionButton_Click(null, null);
+            else
+                return;
+        }
+
+        string format = FormatChooser.ChooseCollectionFormat();
+        if (format is null) return;
+        Registry.FormatInfo fi = Registry.FORMATS[format];
+        if (!fi.Collection.IsSubclassOf(typeof(FileCollection)))
+        {
+            MessageBox.Show("Only FileCollections are currently supported. If you are reading this, this is an error.");
+            return;
+        }
+
+        FileCollection fileColl;
+        fileSelectorDialog.SetExtension(fi.SaveExt);
+        DialogResult result = fileSelectorDialog.ShowDialog(); // Show the dialog.
+        if (result is DialogResult.OK) // Test result.
+        {
+            fileColl = (FileCollection)Activator.CreateInstance(fi.Collection, fileSelectorDialog.FileName);
+            if (fileColl.IsCollectionValid)
+                OpenCollection(fileColl);
+            else
+                MessageBox.Show($"The selected file is not a valid {format} save file.", "Invalid Save File");
+        }
+    }
+
+    private void OpenCollection(Collection collection)
+    {
+        collectionControlPanel.Visible = true;
+        collectionManager = new(collection);
+        collectionManager.BoxDisplayRefreshed += (s, e) =>
+        {
+            boxDisplayDock.Controls.Clear();
+            boxDisplayDock.Controls.Add(collectionManager.CurrentBoxDisplay);
+        };
+        collectionManager.SwitchBox(0);
+        collectionManager.SlotSelected += (s, e) =>
+        {
+            pkuCollectionManager?.DeselectCurrentSlot();
+            if (collectionManager.CurrentlySelectedSlot != selectedSlot) //if a different slot was just clicked
+            {
+                selectedSlot = collectionManager.CurrentlySelectedSlot;
+                UpdateSummaryTab(selectedSlot);
+            }
+        };
+
+        boxSelector.Items.Clear();
+        boxSelector.Items.AddRange(collectionManager.GetBoxNames());
+        boxSelector.SelectedIndex = 0;
+    }
+
+    private void saveCollectionButton_Click(object sender, EventArgs e)
+        => collectionManager.Save();
+
+    private void closeCollectionButton_Click(object sender, EventArgs e)
+    {
+        DeselectSlot();
+        collectionControlPanel.Visible = false;
+        collectionManager = null;
+        boxDisplayDock.Controls.Clear();
+    }
+
+    private void boxSelector_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        DeselectSlot();
+        collectionManager.SwitchBox(boxSelector.SelectedIndex);
     }
 
 
@@ -201,6 +329,15 @@ public partial class ManagerWindow : Form
     private void ResetFocus()
         => nicknameLabel.Focus(); //removes focus from any textbox
 
+    public void DeselectSlot()
+    {
+        ResetFocus();
+        collectionManager?.DeselectCurrentSlot();
+        pkuCollectionManager?.DeselectCurrentSlot();
+        selectedSlot = null;
+        ClearSummaryTab();
+    }
+
 
     /* ------------------------------------
      * Box Options Stuff
@@ -235,24 +372,17 @@ public partial class ManagerWindow : Form
         if (dr is not DialogResult.Cancel)
             pkuCollectionManager.AddBox(boxname);
 
-        ResetBoxSelector(pkuCollectionManager.BoxCount-1);
+        ResetPKUBoxSelector(pkuCollectionManager.BoxCount-1);
     }
 
     private void removeCurrentBoxButton_Click(object sender, EventArgs e)
     {
         if (pkuCollectionManager.RemoveCurrentBox())
-            ResetBoxSelector();
+            ResetPKUBoxSelector();
     }
 
     private void openBoxInFileExplorerToolStripMenuItem_Click(object sender, EventArgs e)
         => pkuCollectionManager.OpenBoxInFileExplorer();
-
-    private void ResetBoxSelector(int currentBox = 0)
-    {
-        boxSelector.Items.Clear();
-        boxSelector.Items.AddRange(pkuCollectionManager.GetBoxNames());
-        boxSelector.SelectedIndex = currentBox;
-    }
 
 
     /* ------------------------------------
@@ -311,54 +441,4 @@ public partial class ManagerWindow : Form
 
     private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         => new AboutBox().Show();
-
-
-    /* ------------------------------------
-     * Box Display UI Stuff
-     * ------------------------------------
-    */
-    private void OnBoxDisplayRefreshed(object sender, EventArgs e)
-    {
-        boxDisplayDock.Controls.Clear(); //clear old displaybox
-        boxDisplayDock.Controls.Add(pkuCollectionManager.CurrentBoxDisplay); //add new displaybox
-
-        //box options check
-        boxOptionsList.Enabled = pkuCollectionManager.CanChangeBoxType(BoxConfigType.LIST);
-        boxOptions30.Enabled = pkuCollectionManager.CanChangeBoxType(BoxConfigType.THIRTY);
-        boxOptions60.Enabled = pkuCollectionManager.CanChangeBoxType(BoxConfigType.SIXTY);
-        boxOptions96.Enabled = pkuCollectionManager.CanChangeBoxType(BoxConfigType.NINTYSIX);
-
-        BoxConfigType bcft = pkuCollectionManager.GetBoxType();
-        boxOptionsList.Checked = bcft is BoxConfigType.LIST;
-        boxOptions30.Checked = bcft is BoxConfigType.THIRTY;
-        boxOptions60.Checked = bcft is BoxConfigType.SIXTY;
-        boxOptions96.Checked = bcft is BoxConfigType.NINTYSIX;
-
-        //discord RPC
-        discord.Box = (string)boxSelector.SelectedItem;
-        discord.UpdatePresence();
-    }
-
-    // Behavior when a different box is selected.
-    // Also updates the discord presence
-    private void boxSelector_SelectedIndexChanged(object sender, EventArgs e)
-    {
-        ResetFocus();
-        pkuCollectionManager.SwitchBox(boxSelector.SelectedIndex);
-        ClearSummaryTab();
-        selectedSlot = null;
-        discord.Box = (string)boxSelector.SelectedItem;
-        discord.UpdatePresence();
-    }
-
-    // Behavior for the toggle checkout viewer button
-    //doesn't do anything anymore, need to redo this feature
-    private void viewCheckedoutButton_Click(object sender, EventArgs e)
-    {
-        checkoutDock.Visible = !checkoutDock.Visible;
-        viewCheckedoutButton.Text = checkoutDock.Visible ? "Hide Check-Out" : "View Check-Out";
-    }
-
-    private void refreshBox_Click(object sender, EventArgs e)
-        => boxSelector_SelectedIndexChanged(null, null);
 }

@@ -87,7 +87,7 @@ public class pkuCollectionManager : CollectionManager
     protected override void CompleteExportRequest(object s, EventArgs e)
     {
         pkuObject pku = (s as SlotDisplay).Slot.pkmnObj as pkuObject;
-        string format = FormatChooser.ChooseExportFormat(pku, GetGlobalFlags());
+        string format = FormatChooser.ChooseExportFormat(pku, GetGlobalFlags(), false);
         if (format is null)
             return;
         Registry.FormatInfo fi = Registry.FORMATS[format];
@@ -98,7 +98,7 @@ public class pkuCollectionManager : CollectionManager
     {
         SlotDisplay sd = s as SlotDisplay;
         pkuObject pku = sd.Slot.pkmnObj as pkuObject;
-        string format = FormatChooser.ChooseExportFormat(pku, GetGlobalFlags());
+        string format = FormatChooser.ChooseExportFormat(pku, GetGlobalFlags(), true);
         if (format is null)
             return;
         Registry.FormatInfo fi = Registry.FORMATS[format];

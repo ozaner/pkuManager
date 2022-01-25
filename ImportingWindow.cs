@@ -2,6 +2,7 @@
 using pkuManager.Formats;
 using pkuManager.Formats.pku;
 using pkuManager.GUI;
+using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -64,8 +65,7 @@ public partial class ImportingWindow : Form
     // gets a byte array to be imported
     private static byte[] GetFile(OpenFileDialog ofd, string ext)
     {
-        ofd.DefaultExt = ext;
-        ofd.Filter = ext + " files (*." + ext + ")|*." + ext + "|All files (*.*)|*.*";
+        ofd.SetExtension(ext);
         ofd.Title = $"Import a .{ext}";
         //ofd.FilterIndex = 1; //redundant
         DialogResult result = ofd.ShowDialog(); // Show the dialog box.

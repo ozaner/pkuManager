@@ -36,27 +36,27 @@
             // 
             // selectionPromptLabel
             // 
-            this.selectionPromptLabel.AutoSize = true;
-            this.selectionPromptLabel.Location = new System.Drawing.Point(83, 26);
+            this.selectionPromptLabel.Location = new System.Drawing.Point(35, 14);
             this.selectionPromptLabel.Name = "selectionPromptLabel";
-            this.selectionPromptLabel.Size = new System.Drawing.Size(142, 15);
+            this.selectionPromptLabel.Size = new System.Drawing.Size(240, 24);
             this.selectionPromptLabel.TabIndex = 0;
             this.selectionPromptLabel.Text = "Select a format to port to:";
+            this.selectionPromptLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // invalidFormatNoticeLabel
             // 
-            this.invalidFormatNoticeLabel.AutoSize = true;
             this.invalidFormatNoticeLabel.Font = new System.Drawing.Font("Segoe UI", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.invalidFormatNoticeLabel.Location = new System.Drawing.Point(8, 110);
+            this.invalidFormatNoticeLabel.Location = new System.Drawing.Point(23, 89);
             this.invalidFormatNoticeLabel.Name = "invalidFormatNoticeLabel";
-            this.invalidFormatNoticeLabel.Size = new System.Drawing.Size(290, 12);
+            this.invalidFormatNoticeLabel.Size = new System.Drawing.Size(270, 34);
             this.invalidFormatNoticeLabel.TabIndex = 1;
             this.invalidFormatNoticeLabel.Text = "If a format does not appear, then the pku cannot be ported to it.";
+            this.invalidFormatNoticeLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // formatComboBox
             // 
             this.formatComboBox.FormattingEnabled = true;
-            this.formatComboBox.Location = new System.Drawing.Point(60, 53);
+            this.formatComboBox.Location = new System.Drawing.Point(60, 44);
             this.formatComboBox.Name = "formatComboBox";
             this.formatComboBox.Size = new System.Drawing.Size(105, 23);
             this.formatComboBox.TabIndex = 2;
@@ -64,7 +64,7 @@
             // confirmButton
             // 
             this.confirmButton.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.confirmButton.Location = new System.Drawing.Point(171, 53);
+            this.confirmButton.Location = new System.Drawing.Point(171, 44);
             this.confirmButton.Name = "confirmButton";
             this.confirmButton.Size = new System.Drawing.Size(75, 23);
             this.confirmButton.TabIndex = 3;
@@ -75,7 +75,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(314, 141);
+            this.ClientSize = new System.Drawing.Size(314, 137);
             this.Controls.Add(this.confirmButton);
             this.Controls.Add(this.formatComboBox);
             this.Controls.Add(this.invalidFormatNoticeLabel);
@@ -86,7 +86,6 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Choose Format";
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 

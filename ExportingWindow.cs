@@ -2,6 +2,7 @@
 using pkuManager.Formats;
 using pkuManager.Formats.pku;
 using pkuManager.GUI;
+using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -86,8 +87,7 @@ public partial class ExportingWindow : Form
 
         Debug.WriteLine("Exporting " + pkuToFormat + "...");
 
-        sfd.DefaultExt = fi.Ext;
-        sfd.Filter = fi.Ext + " files (*." + fi.Ext + ")|*." + fi.Ext + "|All files (*.*)|*.*";
+        sfd.SetExtension(fi.Ext);
         //saveFileDialog.FilterIndex = 1; //redundant
         DialogResult result = sfd.ShowDialog(); // Show the dialog box.
 

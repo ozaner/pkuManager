@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ManagerWindow));
-            this.boxSelector = new System.Windows.Forms.ComboBox();
+            this.pkuBoxSelector = new System.Windows.Forms.ComboBox();
             this.changeBoxNameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.changeBoxSizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
@@ -41,12 +41,12 @@
             this.checkedOutLabel = new System.Windows.Forms.Label();
             this.viewCheckedoutButton = new System.Windows.Forms.Button();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.checkoutDock = new System.Windows.Forms.Panel();
-            this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.boxDisplayDock = new System.Windows.Forms.Panel();
+            this.pkuBoxDisplayDock = new System.Windows.Forms.Panel();
             this.openDropDown = new System.Windows.Forms.ToolStripMenuItem();
-            this.openACollectionButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.createANewCollectionButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.openCollectionButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.createNewCollectionButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.openSaveFileButton = new System.Windows.Forms.ToolStripMenuItem();
             this.collectionOptionsDropDown = new System.Windows.Forms.ToolStripMenuItem();
             this.enableBattleStatOverrideButton = new System.Windows.Forms.ToolStripMenuItem();
             this.enableDefaultFormOverrideButton = new System.Windows.Forms.ToolStripMenuItem();
@@ -67,39 +67,47 @@
             this.aboutButton = new System.Windows.Forms.ToolStripMenuItem();
             this.refreshBoxButton = new System.Windows.Forms.Button();
             this.summaryTab = new System.Windows.Forms.TabPage();
-            this.nicknameLabel = new System.Windows.Forms.Label();
-            this.speciesLabel = new System.Windows.Forms.Label();
-            this.otLabel = new System.Windows.Forms.Label();
-            this.locationTextBox = new System.Windows.Forms.TextBox();
-            this.gameLabel = new System.Windows.Forms.Label();
-            this.locationLabel = new System.Windows.Forms.Label();
-            this.formsLabel = new System.Windows.Forms.Label();
-            this.appearanceLabel = new System.Windows.Forms.Label();
-            this.nicknameTextBox = new System.Windows.Forms.TextBox();
-            this.otTextBox = new System.Windows.Forms.TextBox();
-            this.gameTextBox = new System.Windows.Forms.TextBox();
-            this.speciesTextBox = new System.Windows.Forms.TextBox();
-            this.formsTextBox = new System.Windows.Forms.TextBox();
             this.appearanceTextBox = new System.Windows.Forms.TextBox();
+            this.formsTextBox = new System.Windows.Forms.TextBox();
+            this.speciesTextBox = new System.Windows.Forms.TextBox();
+            this.gameTextBox = new System.Windows.Forms.TextBox();
+            this.otTextBox = new System.Windows.Forms.TextBox();
+            this.nicknameTextBox = new System.Windows.Forms.TextBox();
+            this.locationTextBox = new System.Windows.Forms.TextBox();
+            this.appearanceLabel = new System.Windows.Forms.Label();
+            this.formsLabel = new System.Windows.Forms.Label();
+            this.locationLabel = new System.Windows.Forms.Label();
+            this.gameLabel = new System.Windows.Forms.Label();
+            this.otLabel = new System.Windows.Forms.Label();
+            this.speciesLabel = new System.Windows.Forms.Label();
+            this.nicknameLabel = new System.Windows.Forms.Label();
             this.LHSTabs = new System.Windows.Forms.TabControl();
-            this.flowLayoutPanel1.SuspendLayout();
+            this.pkuCollectionControlPanel = new System.Windows.Forms.Panel();
+            this.collectionControlPanel = new System.Windows.Forms.Panel();
+            this.closeCollectionButton = new System.Windows.Forms.Button();
+            this.saveCollectionButton = new System.Windows.Forms.Button();
+            this.boxSelector = new System.Windows.Forms.ComboBox();
+            this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.toolBar.SuspendLayout();
             this.summaryTab.SuspendLayout();
             this.LHSTabs.SuspendLayout();
+            this.pkuCollectionControlPanel.SuspendLayout();
+            this.collectionControlPanel.SuspendLayout();
+            this.flowLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // boxSelector
+            // pkuBoxSelector
             // 
-            this.boxSelector.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
-            this.boxSelector.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.boxSelector.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.boxSelector.FormattingEnabled = true;
-            this.boxSelector.Location = new System.Drawing.Point(332, 31);
-            this.boxSelector.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.boxSelector.Name = "boxSelector";
-            this.boxSelector.Size = new System.Drawing.Size(140, 23);
-            this.boxSelector.TabIndex = 4;
-            this.boxSelector.SelectedIndexChanged += new System.EventHandler(this.boxSelector_SelectedIndexChanged);
+            this.pkuBoxSelector.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.pkuBoxSelector.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.pkuBoxSelector.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.pkuBoxSelector.FormattingEnabled = true;
+            this.pkuBoxSelector.Location = new System.Drawing.Point(4, 5);
+            this.pkuBoxSelector.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.pkuBoxSelector.Name = "pkuBoxSelector";
+            this.pkuBoxSelector.Size = new System.Drawing.Size(140, 23);
+            this.pkuBoxSelector.TabIndex = 4;
+            this.pkuBoxSelector.SelectedIndexChanged += new System.EventHandler(this.pkuBoxSelector_SelectedIndexChanged);
             // 
             // changeBoxNameToolStripMenuItem
             // 
@@ -152,7 +160,7 @@
             // 
             this.checkedOutLabel.AutoSize = true;
             this.checkedOutLabel.BackColor = System.Drawing.Color.White;
-            this.checkedOutLabel.Location = new System.Drawing.Point(233, 64);
+            this.checkedOutLabel.Location = new System.Drawing.Point(222, 12);
             this.checkedOutLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.checkedOutLabel.Name = "checkedOutLabel";
             this.checkedOutLabel.Size = new System.Drawing.Size(78, 30);
@@ -164,7 +172,7 @@
             // viewCheckedoutButton
             // 
             this.viewCheckedoutButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.viewCheckedoutButton.Location = new System.Drawing.Point(572, 30);
+            this.viewCheckedoutButton.Location = new System.Drawing.Point(244, 5);
             this.viewCheckedoutButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.viewCheckedoutButton.Name = "viewCheckedoutButton";
             this.viewCheckedoutButton.Size = new System.Drawing.Size(107, 24);
@@ -172,70 +180,64 @@
             this.viewCheckedoutButton.Text = "View Check-Out";
             this.viewCheckedoutButton.UseVisualStyleBackColor = true;
             this.viewCheckedoutButton.Visible = false;
-            this.viewCheckedoutButton.Click += new System.EventHandler(this.viewCheckedoutButton_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
             this.toolStripMenuItem1.Size = new System.Drawing.Size(12, 20);
             // 
-            // checkoutDock
-            // 
-            this.checkoutDock.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.checkoutDock.AutoSize = true;
-            this.checkoutDock.Location = new System.Drawing.Point(24, 3);
-            this.checkoutDock.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.checkoutDock.MinimumSize = new System.Drawing.Size(12, 12);
-            this.checkoutDock.Name = "checkoutDock";
-            this.checkoutDock.Size = new System.Drawing.Size(12, 12);
-            this.checkoutDock.TabIndex = 11;
-            this.checkoutDock.Visible = false;
-            // 
-            // flowLayoutPanel1
-            // 
-            this.flowLayoutPanel1.AutoSize = true;
-            this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.flowLayoutPanel1.Controls.Add(this.boxDisplayDock);
-            this.flowLayoutPanel1.Controls.Add(this.checkoutDock);
-            this.flowLayoutPanel1.Location = new System.Drawing.Point(329, 60);
-            this.flowLayoutPanel1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(40, 18);
-            this.flowLayoutPanel1.TabIndex = 14;
-            // 
             // boxDisplayDock
             // 
             this.boxDisplayDock.AutoSize = true;
             this.boxDisplayDock.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.boxDisplayDock.Location = new System.Drawing.Point(4, 3);
+            this.boxDisplayDock.Location = new System.Drawing.Point(4, 34);
             this.boxDisplayDock.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.boxDisplayDock.MinimumSize = new System.Drawing.Size(12, 12);
             this.boxDisplayDock.Name = "boxDisplayDock";
             this.boxDisplayDock.Size = new System.Drawing.Size(12, 12);
-            this.boxDisplayDock.TabIndex = 15;
+            this.boxDisplayDock.TabIndex = 11;
+            // 
+            // pkuBoxDisplayDock
+            // 
+            this.pkuBoxDisplayDock.AutoSize = true;
+            this.pkuBoxDisplayDock.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.pkuBoxDisplayDock.Location = new System.Drawing.Point(4, 34);
+            this.pkuBoxDisplayDock.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.pkuBoxDisplayDock.MinimumSize = new System.Drawing.Size(12, 12);
+            this.pkuBoxDisplayDock.Name = "pkuBoxDisplayDock";
+            this.pkuBoxDisplayDock.Size = new System.Drawing.Size(12, 12);
+            this.pkuBoxDisplayDock.TabIndex = 15;
             // 
             // openDropDown
             // 
             this.openDropDown.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.openACollectionButton,
-            this.createANewCollectionButton});
+            this.openCollectionButton,
+            this.createNewCollectionButton,
+            this.openSaveFileButton});
             this.openDropDown.Name = "openDropDown";
             this.openDropDown.Size = new System.Drawing.Size(48, 20);
             this.openDropDown.Text = "Open";
             // 
-            // openACollectionButton
+            // openCollectionButton
             // 
-            this.openACollectionButton.Name = "openACollectionButton";
-            this.openACollectionButton.Size = new System.Drawing.Size(199, 22);
-            this.openACollectionButton.Text = "Open a Collection";
-            this.openACollectionButton.Click += new System.EventHandler(this.openACollectionButton_Click);
+            this.openCollectionButton.Name = "openCollectionButton";
+            this.openCollectionButton.Size = new System.Drawing.Size(199, 22);
+            this.openCollectionButton.Text = "Open a Collection";
+            this.openCollectionButton.Click += new System.EventHandler(this.openCollectionButton_Click);
             // 
-            // createANewCollectionButton
+            // createNewCollectionButton
             // 
-            this.createANewCollectionButton.Name = "createANewCollectionButton";
-            this.createANewCollectionButton.Size = new System.Drawing.Size(199, 22);
-            this.createANewCollectionButton.Text = "Create a new Collection";
-            this.createANewCollectionButton.Click += new System.EventHandler(this.createANewCollectionToolStripMenuItem_Click);
+            this.createNewCollectionButton.Name = "createNewCollectionButton";
+            this.createNewCollectionButton.Size = new System.Drawing.Size(199, 22);
+            this.createNewCollectionButton.Text = "Create a new Collection";
+            this.createNewCollectionButton.Click += new System.EventHandler(this.createNewCollectionButton_Click);
+            // 
+            // openSaveFileButton
+            // 
+            this.openSaveFileButton.Name = "openSaveFileButton";
+            this.openSaveFileButton.Size = new System.Drawing.Size(199, 22);
+            this.openSaveFileButton.Text = "Open a Save File";
+            this.openSaveFileButton.Click += new System.EventHandler(this.openSaveFileButton_Click);
             // 
             // collectionOptionsDropDown
             // 
@@ -278,7 +280,7 @@
             this.toolBar.Location = new System.Drawing.Point(0, 0);
             this.toolBar.Name = "toolBar";
             this.toolBar.Padding = new System.Windows.Forms.Padding(7, 2, 0, 2);
-            this.toolBar.Size = new System.Drawing.Size(692, 24);
+            this.toolBar.Size = new System.Drawing.Size(967, 24);
             this.toolBar.TabIndex = 13;
             this.toolBar.Text = "toolBar";
             // 
@@ -408,7 +410,7 @@
             // 
             this.refreshBoxButton.Enabled = false;
             this.refreshBoxButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.refreshBoxButton.Location = new System.Drawing.Point(480, 30);
+            this.refreshBoxButton.Location = new System.Drawing.Point(152, 5);
             this.refreshBoxButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.refreshBoxButton.Name = "refreshBoxButton";
             this.refreshBoxButton.Size = new System.Drawing.Size(84, 24);
@@ -420,6 +422,7 @@
             // summaryTab
             // 
             this.summaryTab.Controls.Add(this.appearanceTextBox);
+            this.summaryTab.Controls.Add(this.checkedOutLabel);
             this.summaryTab.Controls.Add(this.formsTextBox);
             this.summaryTab.Controls.Add(this.speciesTextBox);
             this.summaryTab.Controls.Add(this.gameTextBox);
@@ -437,143 +440,10 @@
             this.summaryTab.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.summaryTab.Name = "summaryTab";
             this.summaryTab.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.summaryTab.Size = new System.Drawing.Size(320, 296);
+            this.summaryTab.Size = new System.Drawing.Size(316, 296);
             this.summaryTab.TabIndex = 0;
             this.summaryTab.Text = "Summary";
             this.summaryTab.UseVisualStyleBackColor = true;
-            // 
-            // nicknameLabel
-            // 
-            this.nicknameLabel.AutoSize = true;
-            this.nicknameLabel.Location = new System.Drawing.Point(12, 12);
-            this.nicknameLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.nicknameLabel.Name = "nicknameLabel";
-            this.nicknameLabel.Size = new System.Drawing.Size(64, 15);
-            this.nicknameLabel.TabIndex = 0;
-            this.nicknameLabel.Text = "Nickname:";
-            // 
-            // speciesLabel
-            // 
-            this.speciesLabel.AutoSize = true;
-            this.speciesLabel.Location = new System.Drawing.Point(12, 80);
-            this.speciesLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.speciesLabel.Name = "speciesLabel";
-            this.speciesLabel.Size = new System.Drawing.Size(49, 15);
-            this.speciesLabel.TabIndex = 2;
-            this.speciesLabel.Text = "Species:";
-            // 
-            // otLabel
-            // 
-            this.otLabel.AutoSize = true;
-            this.otLabel.Location = new System.Drawing.Point(12, 35);
-            this.otLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.otLabel.Name = "otLabel";
-            this.otLabel.Size = new System.Drawing.Size(49, 15);
-            this.otLabel.TabIndex = 1;
-            this.otLabel.Text = "True OT:";
-            // 
-            // locationTextBox
-            // 
-            this.locationTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.locationTextBox.Location = new System.Drawing.Point(98, 261);
-            this.locationTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.locationTextBox.Name = "locationTextBox";
-            this.locationTextBox.ReadOnly = true;
-            this.locationTextBox.Size = new System.Drawing.Size(116, 23);
-            this.locationTextBox.TabIndex = 8;
-            // 
-            // gameLabel
-            // 
-            this.gameLabel.AutoSize = true;
-            this.gameLabel.Location = new System.Drawing.Point(12, 58);
-            this.gameLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.gameLabel.Name = "gameLabel";
-            this.gameLabel.Size = new System.Drawing.Size(77, 15);
-            this.gameLabel.TabIndex = 7;
-            this.gameLabel.Text = "Origin Game:";
-            // 
-            // locationLabel
-            // 
-            this.locationLabel.AutoSize = true;
-            this.locationLabel.Location = new System.Drawing.Point(15, 264);
-            this.locationLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.locationLabel.Name = "locationLabel";
-            this.locationLabel.Size = new System.Drawing.Size(61, 15);
-            this.locationLabel.TabIndex = 9;
-            this.locationLabel.Text = "Filename: ";
-            // 
-            // formsLabel
-            // 
-            this.formsLabel.AutoSize = true;
-            this.formsLabel.Location = new System.Drawing.Point(12, 102);
-            this.formsLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.formsLabel.Name = "formsLabel";
-            this.formsLabel.Size = new System.Drawing.Size(43, 15);
-            this.formsLabel.TabIndex = 11;
-            this.formsLabel.Text = "Forms:";
-            // 
-            // appearanceLabel
-            // 
-            this.appearanceLabel.AutoSize = true;
-            this.appearanceLabel.Location = new System.Drawing.Point(12, 124);
-            this.appearanceLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.appearanceLabel.Name = "appearanceLabel";
-            this.appearanceLabel.Size = new System.Drawing.Size(73, 15);
-            this.appearanceLabel.TabIndex = 12;
-            this.appearanceLabel.Text = "Appearance:";
-            // 
-            // nicknameTextBox
-            // 
-            this.nicknameTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.nicknameTextBox.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.nicknameTextBox.Location = new System.Drawing.Point(98, 10);
-            this.nicknameTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.nicknameTextBox.Name = "nicknameTextBox";
-            this.nicknameTextBox.ReadOnly = true;
-            this.nicknameTextBox.Size = new System.Drawing.Size(116, 22);
-            this.nicknameTextBox.TabIndex = 3;
-            // 
-            // otTextBox
-            // 
-            this.otTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.otTextBox.Location = new System.Drawing.Point(98, 32);
-            this.otTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.otTextBox.Name = "otTextBox";
-            this.otTextBox.ReadOnly = true;
-            this.otTextBox.Size = new System.Drawing.Size(116, 23);
-            this.otTextBox.TabIndex = 4;
-            // 
-            // gameTextBox
-            // 
-            this.gameTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.gameTextBox.Location = new System.Drawing.Point(98, 55);
-            this.gameTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.gameTextBox.Name = "gameTextBox";
-            this.gameTextBox.ReadOnly = true;
-            this.gameTextBox.Size = new System.Drawing.Size(116, 23);
-            this.gameTextBox.TabIndex = 6;
-            // 
-            // speciesTextBox
-            // 
-            this.speciesTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.speciesTextBox.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.speciesTextBox.Location = new System.Drawing.Point(98, 78);
-            this.speciesTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.speciesTextBox.Name = "speciesTextBox";
-            this.speciesTextBox.ReadOnly = true;
-            this.speciesTextBox.Size = new System.Drawing.Size(116, 22);
-            this.speciesTextBox.TabIndex = 5;
-            // 
-            // formsTextBox
-            // 
-            this.formsTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.formsTextBox.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.formsTextBox.Location = new System.Drawing.Point(98, 100);
-            this.formsTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.formsTextBox.Name = "formsTextBox";
-            this.formsTextBox.ReadOnly = true;
-            this.formsTextBox.Size = new System.Drawing.Size(116, 22);
-            this.formsTextBox.TabIndex = 10;
             // 
             // appearanceTextBox
             // 
@@ -586,6 +456,140 @@
             this.appearanceTextBox.Size = new System.Drawing.Size(116, 22);
             this.appearanceTextBox.TabIndex = 13;
             // 
+            // formsTextBox
+            // 
+            this.formsTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.formsTextBox.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.formsTextBox.Location = new System.Drawing.Point(98, 100);
+            this.formsTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.formsTextBox.Name = "formsTextBox";
+            this.formsTextBox.ReadOnly = true;
+            this.formsTextBox.Size = new System.Drawing.Size(116, 22);
+            this.formsTextBox.TabIndex = 10;
+            // 
+            // speciesTextBox
+            // 
+            this.speciesTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.speciesTextBox.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.speciesTextBox.Location = new System.Drawing.Point(98, 78);
+            this.speciesTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.speciesTextBox.Name = "speciesTextBox";
+            this.speciesTextBox.ReadOnly = true;
+            this.speciesTextBox.Size = new System.Drawing.Size(116, 22);
+            this.speciesTextBox.TabIndex = 5;
+            // 
+            // gameTextBox
+            // 
+            this.gameTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.gameTextBox.Location = new System.Drawing.Point(98, 55);
+            this.gameTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.gameTextBox.Name = "gameTextBox";
+            this.gameTextBox.ReadOnly = true;
+            this.gameTextBox.Size = new System.Drawing.Size(116, 23);
+            this.gameTextBox.TabIndex = 6;
+            // 
+            // otTextBox
+            // 
+            this.otTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.otTextBox.Location = new System.Drawing.Point(98, 32);
+            this.otTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.otTextBox.Name = "otTextBox";
+            this.otTextBox.ReadOnly = true;
+            this.otTextBox.Size = new System.Drawing.Size(116, 23);
+            this.otTextBox.TabIndex = 4;
+            // 
+            // nicknameTextBox
+            // 
+            this.nicknameTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.nicknameTextBox.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.nicknameTextBox.Location = new System.Drawing.Point(98, 10);
+            this.nicknameTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.nicknameTextBox.Name = "nicknameTextBox";
+            this.nicknameTextBox.ReadOnly = true;
+            this.nicknameTextBox.Size = new System.Drawing.Size(116, 22);
+            this.nicknameTextBox.TabIndex = 3;
+            // 
+            // locationTextBox
+            // 
+            this.locationTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.locationTextBox.Location = new System.Drawing.Point(98, 261);
+            this.locationTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.locationTextBox.Name = "locationTextBox";
+            this.locationTextBox.ReadOnly = true;
+            this.locationTextBox.Size = new System.Drawing.Size(116, 23);
+            this.locationTextBox.TabIndex = 8;
+            // 
+            // appearanceLabel
+            // 
+            this.appearanceLabel.AutoSize = true;
+            this.appearanceLabel.Location = new System.Drawing.Point(12, 124);
+            this.appearanceLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.appearanceLabel.Name = "appearanceLabel";
+            this.appearanceLabel.Size = new System.Drawing.Size(73, 15);
+            this.appearanceLabel.TabIndex = 12;
+            this.appearanceLabel.Text = "Appearance:";
+            // 
+            // formsLabel
+            // 
+            this.formsLabel.AutoSize = true;
+            this.formsLabel.Location = new System.Drawing.Point(12, 102);
+            this.formsLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.formsLabel.Name = "formsLabel";
+            this.formsLabel.Size = new System.Drawing.Size(43, 15);
+            this.formsLabel.TabIndex = 11;
+            this.formsLabel.Text = "Forms:";
+            // 
+            // locationLabel
+            // 
+            this.locationLabel.AutoSize = true;
+            this.locationLabel.Location = new System.Drawing.Point(12, 263);
+            this.locationLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.locationLabel.Name = "locationLabel";
+            this.locationLabel.Size = new System.Drawing.Size(61, 15);
+            this.locationLabel.TabIndex = 9;
+            this.locationLabel.Text = "Filename: ";
+            this.locationLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // gameLabel
+            // 
+            this.gameLabel.AutoSize = true;
+            this.gameLabel.Location = new System.Drawing.Point(12, 58);
+            this.gameLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.gameLabel.Name = "gameLabel";
+            this.gameLabel.Size = new System.Drawing.Size(77, 15);
+            this.gameLabel.TabIndex = 7;
+            this.gameLabel.Text = "Origin Game:";
+            // 
+            // otLabel
+            // 
+            this.otLabel.AutoSize = true;
+            this.otLabel.Location = new System.Drawing.Point(12, 35);
+            this.otLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.otLabel.Name = "otLabel";
+            this.otLabel.Size = new System.Drawing.Size(49, 15);
+            this.otLabel.TabIndex = 1;
+            this.otLabel.Text = "True OT:";
+            // 
+            // speciesLabel
+            // 
+            this.speciesLabel.AutoSize = true;
+            this.speciesLabel.Location = new System.Drawing.Point(12, 80);
+            this.speciesLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.speciesLabel.Name = "speciesLabel";
+            this.speciesLabel.Size = new System.Drawing.Size(49, 15);
+            this.speciesLabel.TabIndex = 2;
+            this.speciesLabel.Text = "Species:";
+            // 
+            // nicknameLabel
+            // 
+            this.nicknameLabel.AutoSize = true;
+            this.nicknameLabel.Location = new System.Drawing.Point(12, 12);
+            this.nicknameLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.nicknameLabel.Name = "nicknameLabel";
+            this.nicknameLabel.Size = new System.Drawing.Size(64, 15);
+            this.nicknameLabel.TabIndex = 0;
+            this.nicknameLabel.Text = "Nickname:";
+            // 
             // LHSTabs
             // 
             this.LHSTabs.Controls.Add(this.summaryTab);
@@ -593,8 +597,83 @@
             this.LHSTabs.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.LHSTabs.Name = "LHSTabs";
             this.LHSTabs.SelectedIndex = 0;
-            this.LHSTabs.Size = new System.Drawing.Size(328, 324);
+            this.LHSTabs.Size = new System.Drawing.Size(324, 324);
             this.LHSTabs.TabIndex = 7;
+            // 
+            // pkuCollectionControlPanel
+            // 
+            this.pkuCollectionControlPanel.AutoSize = true;
+            this.pkuCollectionControlPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.pkuCollectionControlPanel.Controls.Add(this.refreshBoxButton);
+            this.pkuCollectionControlPanel.Controls.Add(this.pkuBoxDisplayDock);
+            this.pkuCollectionControlPanel.Controls.Add(this.viewCheckedoutButton);
+            this.pkuCollectionControlPanel.Controls.Add(this.pkuBoxSelector);
+            this.pkuCollectionControlPanel.Location = new System.Drawing.Point(3, 3);
+            this.pkuCollectionControlPanel.Name = "pkuCollectionControlPanel";
+            this.pkuCollectionControlPanel.Size = new System.Drawing.Size(355, 49);
+            this.pkuCollectionControlPanel.TabIndex = 15;
+            // 
+            // collectionControlPanel
+            // 
+            this.collectionControlPanel.AutoSize = true;
+            this.collectionControlPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.collectionControlPanel.Controls.Add(this.closeCollectionButton);
+            this.collectionControlPanel.Controls.Add(this.saveCollectionButton);
+            this.collectionControlPanel.Controls.Add(this.boxDisplayDock);
+            this.collectionControlPanel.Controls.Add(this.boxSelector);
+            this.collectionControlPanel.Location = new System.Drawing.Point(364, 3);
+            this.collectionControlPanel.Name = "collectionControlPanel";
+            this.collectionControlPanel.Size = new System.Drawing.Size(262, 49);
+            this.collectionControlPanel.TabIndex = 16;
+            this.collectionControlPanel.Visible = false;
+            // 
+            // closeCollectionButton
+            // 
+            this.closeCollectionButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.closeCollectionButton.Location = new System.Drawing.Point(209, 5);
+            this.closeCollectionButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.closeCollectionButton.Name = "closeCollectionButton";
+            this.closeCollectionButton.Size = new System.Drawing.Size(49, 24);
+            this.closeCollectionButton.TabIndex = 16;
+            this.closeCollectionButton.Text = "Close";
+            this.closeCollectionButton.UseVisualStyleBackColor = true;
+            this.closeCollectionButton.Click += new System.EventHandler(this.closeCollectionButton_Click);
+            // 
+            // saveCollectionButton
+            // 
+            this.saveCollectionButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.saveCollectionButton.Location = new System.Drawing.Point(152, 5);
+            this.saveCollectionButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.saveCollectionButton.Name = "saveCollectionButton";
+            this.saveCollectionButton.Size = new System.Drawing.Size(49, 24);
+            this.saveCollectionButton.TabIndex = 15;
+            this.saveCollectionButton.Text = "Save";
+            this.saveCollectionButton.UseVisualStyleBackColor = true;
+            this.saveCollectionButton.Click += new System.EventHandler(this.saveCollectionButton_Click);
+            // 
+            // boxSelector
+            // 
+            this.boxSelector.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.boxSelector.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.boxSelector.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.boxSelector.FormattingEnabled = true;
+            this.boxSelector.Location = new System.Drawing.Point(4, 5);
+            this.boxSelector.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.boxSelector.Name = "boxSelector";
+            this.boxSelector.Size = new System.Drawing.Size(140, 23);
+            this.boxSelector.TabIndex = 4;
+            this.boxSelector.SelectedIndexChanged += new System.EventHandler(this.boxSelector_SelectedIndexChanged);
+            // 
+            // flowLayoutPanel1
+            // 
+            this.flowLayoutPanel1.AutoSize = true;
+            this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.flowLayoutPanel1.Controls.Add(this.pkuCollectionControlPanel);
+            this.flowLayoutPanel1.Controls.Add(this.collectionControlPanel);
+            this.flowLayoutPanel1.Location = new System.Drawing.Point(331, 28);
+            this.flowLayoutPanel1.Name = "flowLayoutPanel1";
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(629, 55);
+            this.flowLayoutPanel1.TabIndex = 17;
             // 
             // ManagerWindow
             // 
@@ -602,36 +681,36 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(692, 356);
-            this.Controls.Add(this.refreshBoxButton);
-            this.Controls.Add(this.checkedOutLabel);
+            this.ClientSize = new System.Drawing.Size(967, 358);
             this.Controls.Add(this.flowLayoutPanel1);
-            this.Controls.Add(this.viewCheckedoutButton);
             this.Controls.Add(this.LHSTabs);
-            this.Controls.Add(this.boxSelector);
             this.Controls.Add(this.toolBar);
             this.DoubleBuffered = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.toolBar;
             this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.MaximizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(615, 395);
+            this.MinimumSize = new System.Drawing.Size(615, 397);
             this.Name = "ManagerWindow";
             this.Text = "pkuManager";
-            this.flowLayoutPanel1.ResumeLayout(false);
-            this.flowLayoutPanel1.PerformLayout();
             this.toolBar.ResumeLayout(false);
             this.toolBar.PerformLayout();
             this.summaryTab.ResumeLayout(false);
             this.summaryTab.PerformLayout();
             this.LHSTabs.ResumeLayout(false);
+            this.pkuCollectionControlPanel.ResumeLayout(false);
+            this.pkuCollectionControlPanel.PerformLayout();
+            this.collectionControlPanel.ResumeLayout(false);
+            this.collectionControlPanel.PerformLayout();
+            this.flowLayoutPanel1.ResumeLayout(false);
+            this.flowLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-        private System.Windows.Forms.ComboBox boxSelector;
+        private System.Windows.Forms.ComboBox pkuBoxSelector;
         private System.Windows.Forms.ToolStripMenuItem openBoxInExplorerToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem changeBoxNameToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem changeBoxSizeToolStripMenuItem;
@@ -641,11 +720,10 @@
         private System.Windows.Forms.ToolStripMenuItem customToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem changeBoxImageToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
-        private System.Windows.Forms.Panel checkoutDock;
-        private System.Windows.Forms.Button viewCheckedoutButton;
-        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
-        private System.Windows.Forms.Label checkedOutLabel;
         private System.Windows.Forms.Panel boxDisplayDock;
+        private System.Windows.Forms.Button viewCheckedoutButton;
+        private System.Windows.Forms.Label checkedOutLabel;
+        private System.Windows.Forms.Panel pkuBoxDisplayDock;
         private System.Windows.Forms.ToolStripMenuItem openDropDown;
         private System.Windows.Forms.ToolStripMenuItem collectionOptionsDropDown;
         private System.Windows.Forms.MenuStrip toolBar;
@@ -665,8 +743,8 @@
         private System.Windows.Forms.ToolStripMenuItem hideDiscordPresenceButton;
         private System.Windows.Forms.ToolStripMenuItem aboutButton;
         private System.Windows.Forms.Button refreshBoxButton;
-        private System.Windows.Forms.ToolStripMenuItem openACollectionButton;
-        private System.Windows.Forms.ToolStripMenuItem createANewCollectionButton;
+        private System.Windows.Forms.ToolStripMenuItem openCollectionButton;
+        private System.Windows.Forms.ToolStripMenuItem createNewCollectionButton;
         private System.Windows.Forms.ToolStripMenuItem enableDefaultFormOverrideButton;
         private System.Windows.Forms.TabPage summaryTab;
         private System.Windows.Forms.TextBox appearanceTextBox;
@@ -684,6 +762,13 @@
         private System.Windows.Forms.Label speciesLabel;
         private System.Windows.Forms.Label nicknameLabel;
         private System.Windows.Forms.TabControl LHSTabs;
+        private System.Windows.Forms.Panel pkuCollectionControlPanel;
+        private System.Windows.Forms.Panel collectionControlPanel;
+        private System.Windows.Forms.Button saveCollectionButton;
+        private System.Windows.Forms.ComboBox boxSelector;
+        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
+        private System.Windows.Forms.Button closeCollectionButton;
+        private System.Windows.Forms.ToolStripMenuItem openSaveFileButton;
     }
 }
 
