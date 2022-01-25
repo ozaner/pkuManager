@@ -207,6 +207,7 @@ public class pkuCollection : Collection
 public class pkuBox : Box
 {
     private readonly string Path;
+    public string Name { get; }
     private pkuBoxConfig BoxConfig;
     public BoxConfigType BoxType => BoxConfig.BoxType;
 
@@ -516,29 +517,6 @@ public class pkuBox : Box
         // will only run if deletion is successful
         Data.Remove(slotID); //remove pku from boxConfig
         WriteBoxConfig();  // write out new boxConfig
-        return true;
-    }
-
-    public override bool InjectPokemon(FormatObject fo)
-    {
-        int firstAvailableSlot = Enumerable.Range(1, (int)BoxConfig.BoxType).Except(Data.Keys).First();
-        if (firstAvailableSlot > (int)BoxConfig.BoxType)
-            return false; //not enough space
-
-        pkuObject pku = fo as pkuObject;
-        string filename = DataUtil.GetNextFilePath(@$"{Path}\{Name}\{pku.Nickname ?? pku.Species ?? "PKMN"}.pku");
-        try {
-            File.WriteAllBytes(filename, pku.ToFile());
-        }
-        catch {
-            return false; //couldn't write file
-        }
-
-        FileInfo nf = new(filename);
-        Debug.WriteLine($"Adding \"{nf.Name}\" to box.");
-        Data.Add(firstAvailableSlot, CreateSlot(pku, filename));
-        WriteBoxConfig(); // write out new boxConfig
-
         return true;
     }
 

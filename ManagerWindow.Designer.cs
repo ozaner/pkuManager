@@ -382,7 +382,8 @@
             this.askBeforeAutoAddButton.Name = "askBeforeAutoAddButton";
             this.askBeforeAutoAddButton.Size = new System.Drawing.Size(192, 22);
             this.askBeforeAutoAddButton.Text = "Ask Before Auto-Add";
-            this.askBeforeAutoAddButton.ToolTipText = "pkuManager will ask before adding new .pku files to a box.";
+            this.askBeforeAutoAddButton.ToolTipText = "pkuManager will ask before adding new .pku files to a box, or a new box to the co" +
+    "llection.";
             this.askBeforeAutoAddButton.CheckedChanged += new System.EventHandler(this.askBeforeAutoAddToolStripMenuItem_CheckedChanged);
             this.askBeforeAutoAddButton.Click += new System.EventHandler(this.askBeforeAutoAddToolStripMenuItem_CheckedChanged);
             // 

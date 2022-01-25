@@ -90,9 +90,17 @@ public class CollectionManager
     public bool RoomForOneMore()
         => Collection.CurrentBox.RoomForOneMore();
 
-    public bool InjectPokemon(FormatObject fo)
-        => Collection.CurrentBox.InjectPokemon(fo);
-
     public void DeselectCurrentSlot()
         => CurrentBoxDisplay.DeselectCurrentSlot();
+
+    public void Save()
+    {
+        if (Collection is FileCollection fc)
+        {
+            fc.Save();
+            MessageBox.Show($"Succesfully saved to {Collection.Location}.", "Save Complete");
+        }
+        else
+            MessageBox.Show("This collection doesn't support saving...");
+    }
 }

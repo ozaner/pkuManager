@@ -117,7 +117,7 @@ public class pkuCollectionManager : CollectionManager
      * ------------------------------------
     */
     public void OpenBoxInFileExplorer()
-        => Process.Start("explorer.exe", @$"{pkuCollection.Location}\{pkuCollection.CurrentBox.Name}");
+        => Process.Start("explorer.exe", @$"{pkuCollection.Location}\{CurrentBox.Name}");
 
     public BoxConfigType GetBoxType()
         => CurrentBox.BoxType;

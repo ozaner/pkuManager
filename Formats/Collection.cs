@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using pkuManager.Utilities;
+using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 
 namespace pkuManager.Formats;
 
@@ -36,9 +38,35 @@ public abstract class Collection
     }
 }
 
+public abstract class FileCollection : Collection
+{
+    public ByteArrayManipulator BAM { get; private set; }
+    public abstract bool BigEndian { get; }
+
+    public FileCollection(string filename) : base(filename) { }
+
+    protected override void PreInit()
+        => BAM = new(File.ReadAllBytes(Location), BigEndian);
+
+    protected virtual void PreSave() { }
+
+    public bool Save()
+    {
+        PreSave();
+        try
+        {
+            File.WriteAllBytes(Location, BAM);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+}
+
 public abstract class Box
 {
-    public string Name { get; protected set; }
     public Image Background { get; protected set; }
     public int Width { get; protected set; }
     public int Height { get; protected set; }
@@ -47,7 +75,6 @@ public abstract class Box
 
     public abstract bool SwapSlots(int slotIDA, int slotIDB);
     public abstract bool ReleaseSlot(int slotID);
-    public abstract bool InjectPokemon(FormatObject pkmn);
 
     public bool RoomForOneMore() => Data.Count < Capacity;
 }
