@@ -1,4 +1,5 @@
-﻿using pkuManager.Utilities;
+using pkuManager.Formats.pku;
+using pkuManager.Utilities;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -88,20 +89,21 @@ public class Slot
     public string Species { get; }
     public string Game { get; }
     public string OT { get; }
-    public string[] Forms { get; }
-    public string[] Appearance { get; }
-    public string Location { get; } // i.e. filename, slot
-    public string LocationType { get; } // i.e. "filename", "slot j"
+    public string Forms { get; }
+    public string Appearance { get; }
     public string Ball { get; }
     public bool IsShadow { get; }
+
+    //pku stuff
     public bool IsTrueOT { get; } // most-likely only used for formats supporting pku
     public bool CheckedOut { get; set; } // always false for non pku collections...
+    public string Filename { get; }
 
-    public FormatObject pkmnObj { get; protected set; }
+    public FormatObject pkmnObj { get; }
 
-    public Slot(FormatObject pkmnObj, (string, string) boxSprite, (string, string) frontSprite, (string, string) backSprite,
-        string nickname, string species, string game, string ot, string[] forms, string[] appearance,
-        string ball, bool isShadow, bool isTrueOT, string location, string locationType, bool checkedOut)
+    public Slot(FormatObject pkmnObj, (string, string) boxSprite, (string, string) frontSprite,
+        (string, string) backSprite, string nickname, string species, string game, string ot,
+        string forms, string appearance, string ball, bool isShadow)
     {
         this.pkmnObj = pkmnObj;
         BoxSprite = boxSprite;
@@ -115,9 +117,17 @@ public class Slot
         Appearance = appearance;
         Ball = ball;
         IsShadow = isShadow;
-        IsTrueOT = isTrueOT;
-        Location = location;
-        LocationType = locationType;
+    }
+
+    //pku specfic slot
+    public Slot(pkuObject pku, (string, string) boxSprite, (string, string) frontSprite, (string, string) backSprite,
+        string nickname, string species, string game, string ot, string forms, string appearance,
+        string ball, bool isShadow, bool checkedOut, bool isTrueOT, string filename)
+        : this(pku, boxSprite, frontSprite, backSprite, nickname, species, game, ot, forms, appearance, ball, isShadow)
+    {
+        //pku specific
         CheckedOut = checkedOut;
+        IsTrueOT = isTrueOT;
+        Filename = filename;
     }
 }

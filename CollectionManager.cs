@@ -58,8 +58,8 @@ public class CollectionManager
         // Ask if they're sure
         SlotDisplay slotDisplay = s as SlotDisplay;
         string msg = $"Are you sure you want to " + (this is pkuCollectionManager && Properties.Settings.Default.Send_to_Recycle ?
-            $"send {slotDisplay.Slot.Location} to the recycle bin?" :
-            $"permanently delete {slotDisplay.Slot.Location}?");
+            $"send {slotDisplay.Slot.Filename} to the recycle bin?" :
+            $"permanently delete {slotDisplay.Slot.Filename}?");
         if (MessageBox.Show(msg, "Release Pokémon?", MessageBoxButtons.YesNo) is not DialogResult.Yes)
             return;
 

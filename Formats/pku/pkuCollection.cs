@@ -299,7 +299,7 @@ public class pkuBox : Box
         // Update pkuFiles
         SortedDictionary<int, string> pkfn = new();
         foreach (var kp in Data)
-            pkfn.Add(kp.Key, kp.Value.Location);
+            pkfn.Add(kp.Key, kp.Value.Filename);
         BoxConfig.pkuFileNames = pkfn;
 
         string configPath = $"{Path}/{Name}/boxConfig.json";
@@ -328,14 +328,13 @@ public class pkuBox : Box
             pku.Species,
             pku.Game_Info.Origin_Game ?? pku.Game_Info.Official_Origin_Game,
             pku.True_OT.Get() ?? pku.Game_Info.OT,
-            pku.Forms,
-            pku.Appearance,
+            pku.Forms.Get().JoinLexical() ?? DexUtil.GetDefaultForm(pku.Species),
+            pku.Appearance.JoinLexical(),
             pku.Catch_Info.Ball,
             pku.IsShadow(),
+            ContainsExportedName(filename),
             !pku.True_OT.IsNull,
-            filename,
-            "Filename",
-            ContainsExportedName(filename)
+            filename
         );
     }
 
@@ -503,13 +502,13 @@ public class pkuBox : Box
             try
             {
                 if (Properties.Settings.Default.Send_to_Recycle)
-                    FileSystem.DeleteFile($"{Path}/{Name}/{Data[slotID].Location}", UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin); //send pku file to recycle bin
+                    FileSystem.DeleteFile($"{Path}/{Name}/{Data[slotID].Filename}", UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin); //send pku file to recycle bin
                 else
-                    File.Delete($"{Path}/{Name}/{Data[slotID].Location}"); //delete pku file from box folder
+                    File.Delete($"{Path}/{Name}/{Data[slotID].Filename}"); //delete pku file from box folder
             }
             catch
             {
-                Debug.WriteLine($"Failed to delete/recycle {Path}/{Name}/{Data[slotID].Location}");
+                Debug.WriteLine($"Failed to delete/recycle {Path}/{Name}/{Data[slotID].Filename}");
                 return false; //failed to delete file... already in use? no permission?
             }
         }
@@ -530,8 +529,8 @@ public class pkuBox : Box
 
     public void CheckOut(Slot slot)
     {
-        if (!ContainsExportedName(slot.Location))
-            BoxConfig.ExportedPku.Add(slot.Location);
+        if (!ContainsExportedName(slot.Filename))
+            BoxConfig.ExportedPku.Add(slot.Filename);
 
         //Mark SlotInfo2 as checked out, so UI can be updated.
         slot.CheckedOut = true;
@@ -541,8 +540,8 @@ public class pkuBox : Box
 
     public void CheckIn(Slot slot)
     {
-        if (ContainsExportedName(slot.Location))
-            BoxConfig.ExportedPku.Remove(slot.Location);
+        if (ContainsExportedName(slot.Filename))
+            BoxConfig.ExportedPku.Remove(slot.Filename);
 
         //TODO: the pku isn't actualy modified, which it should be
 

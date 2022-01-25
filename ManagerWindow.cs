@@ -130,18 +130,31 @@ public partial class ManagerWindow : Form
         if (slot is not null)
         {
             nicknameTextBox.Text = slot.Nickname;
-            otLabel.Text = slot.IsTrueOT ? "True OT:" : "OT:";
             otTextBox.Text = slot.OT;
             speciesTextBox.Text = slot.Species;
-            formsTextBox.Text = string.Join(", ", slot.Forms ?? Array.Empty<string>());
+            formsTextBox.Text = slot.Forms.SplitLexical().ToFormattedString();
             formsTextBox.Visible = formsLabel.Visible = formsTextBox.Text?.Length > 0;
-            appearanceTextBox.Text = string.Join(", ", slot.Appearance ?? Array.Empty<string>());
+            appearanceTextBox.Text = slot.Appearance.SplitLexical().ToFormattedString();
             appearanceTextBox.Visible = appearanceLabel.Visible = appearanceTextBox.Text?.Length > 0;
             gameTextBox.Text = slot.Game;
-            locationLabel.Text = slot.LocationType;
-            locationTextBox.Text = slot.Location;
-            checkedOutLabel.Visible = slot.CheckedOut;
             SpriteBox.UpdateSpriteBox(slot);
+
+            //pku specific slot
+            if (slot?.pkmnObj is pkuObject)
+            {
+                otLabel.Text = slot.IsTrueOT ? "True OT:" : "OT:";
+                locationLabel.Visible = true;
+                locationTextBox.Visible = true;
+                locationTextBox.Text = slot.Filename;
+                checkedOutLabel.Visible = slot.CheckedOut;
+            }
+            else
+            {
+                locationLabel.Visible = false;
+                locationTextBox.Visible = false;
+                checkedOutLabel.Visible = false;
+                otLabel.Text = "OT";
+            }
 
             //windows legacy design makes this unfeasible
             //Icon = Icon.FromHandle(((Bitmap)pkuSlot.BackgroundImage).GetHicon());
@@ -171,6 +184,8 @@ public partial class ManagerWindow : Form
         appearanceTextBox.Visible = appearanceLabel.Visible = false;
         gameTextBox.Text = "";
         locationTextBox.Text = "";
+        locationTextBox.Visible = false;
+        locationLabel.Visible = false;
         checkedOutLabel.Visible = false;
         SpriteBox.UpdateSpriteBox(null);
 
