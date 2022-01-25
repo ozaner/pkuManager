@@ -20,17 +20,20 @@ public class pkuCollection : Collection
 {
     public override string FormatName => "pku";
 
-    public string path { get; }
-    private PKUCollectionConfig config;
+    public override string Name => Path.GetFileName(Location);
     public override int BoxCount => config.Boxes.Count;
+    public override int CurrentBoxID { get; protected set; }
     public pkuBox CurrentPKUBox => CurrentBox as pkuBox;
 
-    public pkuCollection(string path) : base()
-    {
-        this.path = path;
-        Name = Path.GetFileName(path); //set collection name to folder name
-        ReadCollectionConfig(); // Load collection config (collectionConfig.json)
-    }
+    private PKUCollectionConfig config;
+
+    public pkuCollection(string path) : base(path) { }
+
+    protected override bool DetermineValidity()
+        => CollectionConfigExistsIn(Location);
+
+    protected override void Init()
+        => ReadCollectionConfig(); // Load collection config (collectionConfig.json)
 
 
     /* ------------------------------------
@@ -52,7 +55,7 @@ public class pkuCollection : Collection
     {
         try
         {
-            string collectionConfigString = File.ReadAllText($"{path}/collectionConfig.json");
+            string collectionConfigString = File.ReadAllText($"{Location}/collectionConfig.json");
             config = JsonConvert.DeserializeObject<PKUCollectionConfig>(collectionConfigString);
             if (config is null)
                 throw new Exception();
@@ -69,12 +72,12 @@ public class pkuCollection : Collection
         // remove deleted boxes
         foreach (string box in config.Boxes)
         {
-            if (Directory.Exists($@"{path}\{box}"))
+            if (Directory.Exists($@"{Location}\{box}"))
                 newBoxList.Add(box);
         }
 
         // add new boxes (i.e. folders with pkus)
-        string[] folders = Directory.GetDirectories(path);
+        string[] folders = Directory.GetDirectories(Location);
         List<string> newContainsPKU = new();
         foreach (string folderPath in folders)
         {
@@ -115,7 +118,7 @@ public class pkuCollection : Collection
 
     private void WriteCollectionConfig()
     {
-        string configPath = $"{path}/collectionConfig.json";
+        string configPath = $"{Location}/collectionConfig.json";
         string newConfigText = JsonConvert.SerializeObject(config, Formatting.Indented);
         try
         {
@@ -127,6 +130,25 @@ public class pkuCollection : Collection
         }
     }
 
+    public static bool CollectionConfigExistsIn(string path)
+        => File.Exists(@$"{path}\collectionConfig.json");
+
+    public static bool CreateCollectionConfig(string path)
+    {
+        if (CollectionConfigExistsIn(path))
+            return false; //config already exists
+
+        try
+        {
+            new PKUCollectionConfig().ToString().WriteToFile(@$"{path}\collectionConfig.json");
+        }
+        catch
+        {
+            return false; // failed to write config
+        }
+        return true;
+    }
+
 
     /* ------------------------------------
      * Override Collection Methods
@@ -134,11 +156,7 @@ public class pkuCollection : Collection
     */
     public override string[] GetBoxNames() => config.Boxes.ToArray();
 
-    public override void SwitchBox(int boxID)
-    {
-        CurrentBox = new pkuBox(path, config.Boxes[boxID]);
-        CurrentBoxID = boxID;
-    }
+    protected override pkuBox CreateBox(int boxID) => new(Location, config.Boxes[boxID]);
 
 
     /* ------------------------------------
@@ -387,8 +405,6 @@ public class pkuBox : Box
          * Create final pkuFiles dictionary
          * ------------------------------------
         */
-        SortedDictionary<int, Slot> pkuFiles = new();
-
         //read all .pku files in listed in the (new) config first
         //only reads until box is full, then ignores the rest
         int numInConfig = 0;
@@ -399,7 +415,7 @@ public class pkuBox : Box
 
             if(validPKUs.TryGetValue(kvp.Value, out pkuObject pku))
             {
-                pkuFiles.Add(kvp.Key, CreateSlot(pku, kvp.Value));
+                Data.Add(kvp.Key, CreateSlot(pku, kvp.Value));
                 numInConfig++;
             }
         }
@@ -415,11 +431,10 @@ public class pkuBox : Box
                     break;
                 }
 
-                int nextAvailableIndex = Enumerable.Range(1, int.MaxValue).Except(pkuFiles.Keys).FirstOrDefault(); // gets first available slot
-                pkuFiles.Add(nextAvailableIndex, CreateSlot(validPKUs[filename], filename)); // Adds it
+                int nextAvailableIndex = Enumerable.Range(1, int.MaxValue).Except(Data.Keys).FirstOrDefault(); // gets first available slot
+                Data.Add(nextAvailableIndex, CreateSlot(validPKUs[filename], filename)); // Adds it
             }
         }
-        Data = pkuFiles;
         WriteBoxConfig(); //Data is updated upon loading
     }
 

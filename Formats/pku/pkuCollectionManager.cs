@@ -1,8 +1,6 @@
 ﻿using pkuManager.GUI;
-using pkuManager.Utilities;
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Windows.Forms;
 using static pkuManager.Formats.pku.pkuBox.pkuBoxConfig;
 
@@ -12,7 +10,6 @@ public class pkuCollectionManager : CollectionManager
 {
     protected pkuCollection pkuCollection => Collection as pkuCollection;
     protected pkuBox CurrentBox => pkuCollection.CurrentBox as pkuBox;
-
 
     public pkuCollectionManager(pkuCollection collection) : base(collection) { }
 
@@ -30,17 +27,12 @@ public class pkuCollectionManager : CollectionManager
 
         if (fd.ShowDialog() is DialogResult.OK)
         {
-            if (IsValidPKUCollection(fd.SelectedPath))
-                MessageBox.Show("This folder is already has a collectionConfig.json and thus is a valid collection.");
-            else
-                new pkuCollection.PKUCollectionConfig().ToString().WriteToFile(@$"{fd.SelectedPath}\collectionConfig.json");
+            if (pkuCollection.CreateCollectionConfig(fd.SelectedPath))
+                MessageBox.Show("Couldn't create a new collection, perhaps this folder is already has a collectionConfig.json?");
             return fd.SelectedPath; //success
         }
         return null; //failure
     }
-
-    public static bool IsValidPKUCollection(string path)
-        => File.Exists(@$"{path}\collectionConfig.json");
 
     protected override void RefreshBoxDisplay()
     {
@@ -125,7 +117,7 @@ public class pkuCollectionManager : CollectionManager
      * ------------------------------------
     */
     public void OpenBoxInFileExplorer()
-        => Process.Start("explorer.exe", @$"{pkuCollection.path}\{pkuCollection.CurrentBox.Name}");
+        => Process.Start("explorer.exe", @$"{pkuCollection.Location}\{pkuCollection.CurrentBox.Name}");
 
     public BoxConfigType GetBoxType()
         => CurrentBox.BoxType;

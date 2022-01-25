@@ -41,7 +41,7 @@ public partial class ManagerWindow : Form
         collectionSelectorDialog = new();
 
         // Open last collection (if it still exists)
-        if (pkuCollectionManager.IsValidPKUCollection(Properties.Settings.Default.Last_Path))
+        if (pkuCollection.CollectionConfigExistsIn(Properties.Settings.Default.Last_Path))
             OpenPKUCollection(Properties.Settings.Default.Last_Path);
 
         // Reset UI
@@ -94,7 +94,7 @@ public partial class ManagerWindow : Form
         DialogResult result = collectionSelectorDialog.ShowDialog(); // Show the dialog.
         if (result is DialogResult.OK) // Test result.
         {
-            if(pkuCollectionManager.IsValidPKUCollection(collectionSelectorDialog.SelectedPath))
+            if (pkuCollection.CollectionConfigExistsIn(collectionSelectorDialog.SelectedPath))
                 OpenPKUCollection(collectionSelectorDialog.SelectedPath);
             else
                 MessageBox.Show("The selected folder does not have a collectionconfig.json file, and so is not a valid Collection.", "Invalid Collection");

@@ -7,14 +7,33 @@ public abstract class Collection
 {
     public abstract string FormatName { get; }
 
-    public virtual string Name { get; protected set; }
+    public string Location { get; }
+    public bool IsCollectionValid { get; }
+    public abstract string Name { get; }
     public abstract int BoxCount { get; }
-    
+    public abstract int CurrentBoxID { get; protected set; }
     public Box CurrentBox { get; protected set; }
-    public int CurrentBoxID { get; protected set; }
+
+    protected virtual void PreInit() { }
+    protected abstract bool DetermineValidity();
+    protected abstract void Init();
+
+    public Collection(string location)
+    {
+        Location = location;
+        PreInit();
+        IsCollectionValid = DetermineValidity();
+        if (IsCollectionValid)
+            Init();
+    }
 
     public abstract string[] GetBoxNames();
-    public abstract void SwitchBox(int boxID);
+    protected abstract Box CreateBox(int boxID);
+    public void SwitchBox(int boxID)
+    {
+        CurrentBoxID = boxID;
+        CurrentBox = CreateBox(boxID);
+    }
 }
 
 public abstract class Box
@@ -24,8 +43,8 @@ public abstract class Box
     public int Width { get; protected set; }
     public int Height { get; protected set; }
     public int Capacity => Width is 0 && Height is 0 ? int.MaxValue : Width * Height;
-    public SortedDictionary<int, Slot> Data { get; protected set; }
-    
+    public SortedDictionary<int, Slot> Data { get; protected set; } = new();
+
     public abstract bool SwapSlots(int slotIDA, int slotIDB);
     public abstract bool ReleaseSlot(int slotID);
     public abstract bool InjectPokemon(FormatObject pkmn);
