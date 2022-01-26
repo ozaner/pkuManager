@@ -8,7 +8,6 @@ using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using System.Text.RegularExpressions;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
@@ -17,7 +16,7 @@ namespace pkuManager.Formats.pkx.pk3;
 /// <summary>
 /// Exports a <see cref="pkuObject"/> to a <see cref="pk3Object"/>.
 /// </summary>
-public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E,
+public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E,
                            Item_E, Nature_E, Friendship_E, TID_E, IVs_E, EVs_E,
                            Contest_Stats_E, Ball_E, Met_Level_E, OT_Gender_E, Language_E
 {
@@ -54,11 +53,11 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     protected WorkingVariables workingVars = new();
     protected partial class WorkingVariables
     {
+        public BackedIntegralField Form { get; } = new(); // Form [Implicit]
         public BackedField<Nature?> Nature { get; } = new(); // Nature [Implicit]
     }
     protected int[] moveIndices; //indices of the chosen moves in the pku
     protected Gender? gender;
-    protected int? unownForm;
     protected string checkedGameName;
     protected bool legalGen3Egg;
 
@@ -99,26 +98,15 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     [PorterDirective(ProcessingPhase.FirstPass, "ProcessSpecies")]
     protected virtual void ProcessForm()
     {
-        Alert alert = null; //to return
-        if (!pku.Forms.IsNull)
-        {
-            int speciesIndex = Data.Species.GetAs<int>();
-            string properFormName = pku.GetSearchableForm().ToLowerInvariant();
-            if (speciesIndex is 201 && pku.Forms.Length is 1 && Regex.IsMatch(properFormName, "[a-z!?]")) //unown
-            {
-                if (properFormName[0] is '?')
-                    unownForm = 26;
-                else if (properFormName[0] is '!')
-                    unownForm = 27;
-                else //all other letters
-                    unownForm = properFormName[0] - 97;
-            }
-            else if (speciesIndex is 410 && properFormName is "normal" or "attack" or "defense" or "speed") //deoxys
-                alert = GetFormAlert(AlertType.NONE, null, true);
-            else if (speciesIndex is 385 && properFormName is "sunny" or "rainy" or "snowy") //castform
-                alert = GetFormAlert(AlertType.IN_BATTLE, pku.Forms);
-        }
+        (this as Form_E).ProcessFormBase();
 
+        Alert alert = null; //to return
+        BigInteger speciesIndex = Data.Species.Get();
+        BigInteger formIndex = workingVars.Form.Get();
+        if (speciesIndex == 410) //deoxys
+            alert = GetFormAlert(AlertType.NONE, null, true);
+        else if (speciesIndex == 385 && formIndex != 0) //castform
+            alert = GetFormAlert(AlertType.IN_BATTLE, pku.Forms);
         Warnings.Add(alert);
     }
 
@@ -127,7 +115,9 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
                                                 "ProcessNature", "ProcessTID")]
     protected virtual void ProcessPID()
     {
-        var (pids, alert) = pkxUtil.ExportTags.ProcessPID(pku, Data.TID.GetAs<uint>(), false, gender, workingVars.Nature, unownForm);
+        int? unownForm = Data.Species.Get() == 201 ? workingVars.Form.GetAs<int>() : null;
+        var (pids, alert) = pkxUtil.ExportTags.ProcessPID(pku, Data.TID.GetAs<uint>(), false,
+            gender, workingVars.Nature, unownForm);
         BigInteger[] castedPids = Array.ConvertAll(pids, x => x.ToBigInteger());
         PIDResolver = new(alert, Data.PID, castedPids);
         if (alert is RadioButtonAlert)
@@ -484,6 +474,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
      * ------------------------------------
     */
     Species_O Species_E.Data => Data;
+    Form_O Form_E.Data => workingVars;
     Item_O Item_E.Data => Data;
     Nature_O Nature_E.Data => workingVars;
     Friendship_O Friendship_E.Data => Data;
@@ -495,8 +486,9 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     Met_Level_O Met_Level_E.Data => Data;
     OT_Gender_O OT_Gender_E.Data => Data;
     Language_O Language_E.Data => Data;
-    protected partial class WorkingVariables : Nature_O
+    protected partial class WorkingVariables : Nature_O, Form_O
     {
+        IntegralField Form_O.Form => Form;
         OneOf<IntegralField, Field<Nature>, Field<Nature?>> Nature_O.Nature => Nature;
     }
 }
