@@ -24,17 +24,17 @@ public interface FormCasting_E
     [PorterDirective(ProcessingPhase.PreProcessing)]
     public void ProcessFormCasting()
     {
-        string form = pku.FirstFormInFormat(FormatName, true, GlobalFlags.Default_Form_Override);
+        string form = DexUtil.FirstFormInFormat(pku, FormatName, true, GlobalFlags.Default_Form_Override);
         if (form is null)
             throw new("FormCasting module should not have been run if this pku has no existant forms in this format.");
 
-        string originalForm = pku.GetSearchableForm();
+        string originalForm = ((DexUtil.SFA)pku).Form;
         if (form.EqualsCaseInsensitive(originalForm)) //no need to cast
             return;
 
         //using a casted/default form
         Alert a;
-        var castableForms = pku.GetCastableForms();
+        var castableForms = DexUtil.GetCastableForms(pku);
         string defaultForm = DexUtil.GetDefaultForm(pku.Species);
         if (castableForms.Any(x => x.EqualsCaseInsensitive(form)))
             a = new(AlertTitle, CastingMsg(originalForm.SplitLexical().ToFormattedString(),

@@ -319,11 +319,12 @@ public class pkuBox : Box
         int? dex = pkxUtil.GetNationalDex(pku.Species);
         Language? lang = pku.Game_Info.Language.ToEnum<Language>();
         string defaultName = dex.HasValue && lang.HasValue ? PokeAPIUtil.GetSpeciesNameTranslated(dex.Value, lang.Value) : pku.Species;
+        var sprites = ImageUtil.GetSprites(pku);
         return new(
             pku,
-            ImageUtil.GetSprite(pku, ImageUtil.Sprite_Type.Box),
-            ImageUtil.GetSprite(pku, ImageUtil.Sprite_Type.Front),
-            ImageUtil.GetSprite(pku, ImageUtil.Sprite_Type.Back),
+            sprites[0],
+            sprites[1],
+            sprites[2],
             pku.Nickname ?? defaultName,
             pku.Species,
             pku.Game_Info.Origin_Game ?? pku.Game_Info.Official_Origin_Game,

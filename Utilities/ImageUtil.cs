@@ -31,12 +31,19 @@ public static class ImageUtil
     }
 
     /// <summary>
-    /// Gets the url and author of the requested sprite type of the given pku, according to <see href="https://github.com/project-pku/pkuSprite">pkuSprite</see>.
+    /// Gets the url and author of the requested sprite type with the given parameters,
+    /// from the <see href="https://github.com/project-pku/pkuSprite">pkuSprite</see> repo.
     /// </summary>
-    /// <param name="pku">The pku whose sprite is to be returned.</param>
     /// <param name="s_type">The type of sprite being requested (i.e. Front, Back, Box)</param>
+    /// <param name="sfa">The SFA corresponding to the desired sprite.</param>
+    /// <param name="isShiny">Whether the shiny sprite should be returned.</param>
+    /// <param name="isFemale">Whether the female sprite should be returned (if available).</param>
+    /// <param name="isEgg">Whether the egg sprite should be returned.</param>
+    /// <param name="isShadow">Whether the shadow sprite should be returned (if available).</param>
     /// <returns>A tuple of the url of the reuested sprite, and its author.</returns>
-    public static (string url, string author) GetSprite(pkuObject pku, Sprite_Type s_type)
+    /// <exception cref="NotImplementedException"></exception>
+    public static (string url, string author) GetSprite(Sprite_Type s_type, DexUtil.SFA sfa,
+        bool isShiny, bool isFemale, bool isEgg = false, bool isShadow = false)
     {
         // --------------
         // Get pku params
@@ -44,19 +51,19 @@ public static class ImageUtil
         List<string> base_keys = new() { "Sprites" }; //Sprites
 
         // Block type
-        if (pku.IsEgg())
+        if (isEgg)
             base_keys.Add("Egg");
-        else if (pku.IsShadow()) //egg takes priority over shadow
+        else if (isShadow) //egg takes priority over shadow
             base_keys.Add("Shadow");
         else
             base_keys.Add("Default");
 
         // Shiny
-        string shinyString = pku.IsShiny() ? "Shiny" : "Regular";
+        string shinyString = isShiny ? "Shiny" : "Regular";
         base_keys.Add(shinyString);
 
         // Female
-        if (pku.Gender.ToEnum<Gender>() is Gender.Female)
+        if (isFemale)
             base_keys.Add("Female");
 
         // Sprite type
@@ -78,11 +85,11 @@ public static class ImageUtil
         (string, string) readURLBlock(List<string> keys)
         {
             keys.Add("URL");
-            string url = SPRITE_DEX.ReadSpeciesDex<string>(pku, keys.ToArray());
+            string url = SPRITE_DEX.ReadSpeciesDex<string>(sfa, keys.ToArray());
             keys.Remove("URL");
 
             keys.Add("Author");
-            string author = SPRITE_DEX.ReadSpeciesDex<string>(pku, keys.ToArray());
+            string author = SPRITE_DEX.ReadSpeciesDex<string>(sfa, keys.ToArray());
             keys.Remove("Author");
 
             return (url, author);
@@ -135,11 +142,39 @@ public static class ImageUtil
         //no sprite found, use default sprites
         if (u is null)
         {
-            List<string> def_keys = new() { "", "Forms", "", "Sprites", pku.IsEgg() ? "Egg" : "Default", shinyString, typeString };
+            List<string> def_keys = new() { "", "Forms", "", "Sprites", isEgg ? "Egg" : "Default", shinyString, typeString };
             return (SPRITE_DEX.ReadDataDex<string>(def_keys.Append("URL").ToArray()),
                 SPRITE_DEX.ReadDataDex<string>(def_keys.Append("Author").ToArray()));
         }
 
         return (u, a); // sprite found
     }
+
+    /// <param name="pku">The pku whose sprite is to be returned.</param>
+    /// <inheritdoc cref="GetSprite(Sprite_Type, DexUtil.SFA, bool, bool, bool, bool)"/>
+    public static (string url, string author) GetSprite(Sprite_Type s_type, pkuObject pku)
+        => GetSprite(s_type, pku, pku.IsShiny(),
+            pku.Gender.ToEnum<Gender>() is Gender.Female, pku.IsEgg(), pku.IsShadow());
+
+    /// <summary>
+    /// Gets the url and author of the box, front, and back sprites with the given parameters,
+    /// from the <see href="https://github.com/project-pku/pkuSprite">pkuSprite</see> repo.
+    /// </summary>
+    /// <inheritdoc cref="GetSprite(Sprite_Type, DexUtil.SFA, bool, bool, bool, bool)"/>
+    public static (string url, string author)[] GetSprites(DexUtil.SFA sfa,
+        bool isShiny, bool isFemale, bool isEgg = false, bool isShadow = false) => new[]
+    {
+        GetSprite(Sprite_Type.Box, sfa, isShiny, isFemale, isEgg, isShadow),
+        GetSprite(Sprite_Type.Front, sfa, isShiny, isFemale, isEgg, isShadow),
+        GetSprite(Sprite_Type.Back, sfa, isShiny, isFemale, isEgg, isShadow)
+    };
+
+    /// <param name="pku">The pku whose sprites are to be returned.</param>
+    /// <inheritdoc cref="GetSprites(DexUtil.SFA, bool, bool, bool, bool)"/>
+    public static (string url, string author)[] GetSprites(pkuObject pku) => new[]
+    {
+        GetSprite(Sprite_Type.Box, pku),
+        GetSprite(Sprite_Type.Front, pku),
+        GetSprite(Sprite_Type.Back, pku)
+    };
 }

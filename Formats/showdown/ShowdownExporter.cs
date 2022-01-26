@@ -35,7 +35,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, I
     public override (bool, string) CanPort()
     {
         // Screen Species & Form
-        if (pku.FirstFormInFormat(FormatName, true, GlobalFlags.Default_Form_Override) is null)
+        if (DexUtil.FirstFormInFormat(pku, FormatName, true, GlobalFlags.Default_Form_Override) is null)
             return (false, "Must be a species & form that exists in Showdown.");
 
         //Showdown doesn't support eggs (they can't exactly battle...).
