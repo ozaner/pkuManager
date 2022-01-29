@@ -242,19 +242,7 @@ public static class DexUtil
     /// <param name="species">The species whose default form is to be retrieved.</param>
     /// <returns>The default form for this species or, if none found, the empty string.</returns>
     public static string GetDefaultForm(string species)
-    {
-        JObject forms = SPECIES_DEX.ReadDataDex<JObject>(species, "Forms");
-        if (forms is null) // No listed forms, default is just "" (i.e. base form)
-            return "";
-
-        foreach (var form in forms)
-        {
-            bool? isDefault = SPECIES_DEX.ReadDataDex<bool?>(species, "Forms", form.Key, "Default");
-            if (isDefault is true)
-                return form.Key;
-        }
-        return ""; //No form was listed as default, default is ""
-    }
+        => SPECIES_DEX.ReadDataDex<string>(species, "Default Form") ?? "";
 
     // Iterates through each possible appearance, returning every combo of key prefixes for species/form/appearances.
     // Used to search through the SpeciesDex.
