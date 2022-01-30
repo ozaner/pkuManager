@@ -144,22 +144,7 @@ public class ShowdownObject : FormatObject, Item_O, Nature_O, Friendship_O, IVs_
     /// <param name="pku">The pku whose Showdown name is to be determined.</param>
     /// <returns><paramref name="pku"/>'s Showdown name.</returns>
     public static string GetShowdownName(pkuObject pku)
-    {
-        string searchStr = "Showdown Name";
-
-        //Check for gender split
-        bool? genderSplit = SPECIES_DEX.ReadSpeciesDex<bool?>(pku, "Showdown Gender Split");
-        if(genderSplit is true)
-        {
-            Gender? gender = pku.Gender.ToEnum<Gender>();
-            string genderStr = gender is Modules.Gender.Female ? "Female" : "Male"; //Default is male
-
-            //this could be bad iff a "Showdown Name {genderStr}" appears in a earlier apperance w/o Showdown Gender Split
-            //that would be a data error though...
-            searchStr += $" {genderStr}";
-        }
-        return SPECIES_DEX.ReadSpeciesDex<string>(pku, searchStr);
-    }
+        => SPECIES_DEX.ReadSpeciesDex<string>(pku, "Showdown Name");
 
 
     /* ------------------------------------

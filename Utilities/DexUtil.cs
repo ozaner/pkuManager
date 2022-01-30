@@ -174,22 +174,29 @@ public static class DexUtil
         /// </summary>
         public readonly string Appearance;
 
-        public SFA(string species, string form, string appearance)
+        /// <summary>
+        /// Whether or not to use the male or female value in the case of a gender-split.
+        /// </summary>
+        public readonly bool IsFemale;
+
+        public SFA(string species, string form, string appearance, bool isFemale)
         {
             Species = species;
             Form = form ?? GetDefaultForm(species); //null form is default form
             Appearance = appearance;
+            IsFemale = isFemale;
         }
 
-        public SFA(string species, string[] forms, string[] appearances)
+        public SFA(string species, string[] forms, string[] appearances, bool isFemale)
         {
             Species = species;
             Form = forms.JoinLexical() ?? GetDefaultForm(species); //null form is default form
             Appearance = appearances.JoinLexical();
+            IsFemale = isFemale;
         }
 
         public static implicit operator SFA(pkuObject pku)
-            => new(pku.Species, pku.Forms, pku.Appearance);
+            => new(pku.Species, pku.Forms, pku.Appearance, pku.Gender.ToEnum<Gender>() is Gender.Female);
     }
 
     /// <summary>
@@ -276,6 +283,12 @@ public static class DexUtil
             T obj = dex.ReadDataDex<T>(combo.ToArray());
             if (obj is not null)
                 return obj;
+            else //try gender split
+            {
+                T[] objArr = dex.ReadDataDex<T[]>(combo.ToArray());
+                if (objArr?.Length == 2) //two values, one for each gender
+                    return objArr[Convert.ToInt32(sfa.IsFemale)];
+            }
         }
         return default;
     }
@@ -334,7 +347,17 @@ public static class DexUtil
                 yield return combo;
             }
         }
-        return SPECIES_DEX.GetIndexedValue<T>(format, temp());
+        
+        T val = SPECIES_DEX.GetIndexedValue<T>(format, temp());
+        if (val is not null)
+            return val;
+        else //try gender split
+        {
+            T[] valArr = SPECIES_DEX.GetIndexedValue<T[]>(format, temp());
+            if (valArr?.Length == 2) //two values, one for each gender
+                return valArr[Convert.ToInt32(sfa.IsFemale)];
+        }
+        return default;
     }
 
     /// <summary>
@@ -346,9 +369,10 @@ public static class DexUtil
     /// <param name="format">The format to map the indices from.</param>
     /// <param name="speciesID">The index of the species.</param>
     /// <param name="formID">The index of the form.</param>
+    /// <param name="isFemale">Whether to use the male or female value in the case of a gender-split.</param>
     /// <param name="appearanceID">The index of the appearance.</param>
     /// <returns>The SFA corresponding to the given indices. The SFA will have all null entries if no match is found.</returns>
-    public static SFA GetSFAFromIndices<T>(string format, T speciesID, T formID, T appearanceID = default)
+    public static SFA GetSFAFromIndices<T>(string format, T speciesID, T formID, bool isFemale, T appearanceID = default)
     {
         if (speciesID is null)
             return new();
@@ -379,12 +403,12 @@ public static class DexUtil
                         JObject appsObj = form.Value["Appearances"] as JObject;
                         foreach (var app in appsObj)
                         {
-                            SFA sfa1 = new(species.Key, form.Key, app.Key);
+                            SFA sfa1 = new(species.Key, form.Key, app.Key, isFemale);
                             if (matchFound(sfa1))
                                 return sfa1;
                         }
                     }
-                    SFA sfa2 = new(species.Key, form.Key, null);
+                    SFA sfa2 = new(species.Key, form.Key, null, isFemale);
                     if (matchFound(sfa2))
                         return sfa2;
                 }
