@@ -399,7 +399,7 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
      * Duct Tape
      * ------------------------------------
     */
-    IntegralField Species_O.Species => Species;
+    OneOf<IntegralField, Field<string>> Species_O.Species => Species;
     OneOf<IntegralField, Field<string>> Item_O.Item => Item;
     IntegralField Friendship_O.Friendship => Friendship;
     IntegralField TID_O.TID => TID;

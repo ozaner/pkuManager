@@ -1,4 +1,5 @@
-﻿using pkuManager.Alerts;
+﻿using OneOf;
+using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.pku;
 using pkuManager.Utilities;
@@ -9,7 +10,7 @@ namespace pkuManager.Formats.Modules;
 
 public interface Form_O
 {
-    public IntegralField Form { get; }
+    public OneOf<IntegralField, Field<string>> Form { get; }
 }
 
 public interface Form_E
@@ -20,8 +21,10 @@ public interface Form_E
 
     public Form_O Data { get; }
 
-    public void ProcessFormBase()
-        => Data.Form.SetAs(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, "Form Indices").Value);
+    public void ProcessFormBase() => Data.Form.Switch(
+        x => x.SetAs(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, "Form Indices").Value), //int index
+        x => x.Set(DexUtil.GetSpeciesIndexedValue<string>(pku, FormatName, "Form Indices")) //string index
+    );
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected void ProcessForm() => ProcessFormBase();

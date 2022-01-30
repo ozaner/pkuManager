@@ -1,4 +1,5 @@
-﻿using pkuManager.Alerts;
+﻿using OneOf;
+using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.pku;
 using pkuManager.Utilities;
@@ -9,7 +10,7 @@ namespace pkuManager.Formats.Modules;
 
 public interface Species_O
 {
-    public IntegralField Species { get; }
+    public OneOf<IntegralField, Field<string>> Species { get; }
 }
 
 public interface Species_E
@@ -21,6 +22,8 @@ public interface Species_E
     public Species_O Data { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    protected void ProcessSpecies()
-        => Data.Species.SetAs(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, "Indices").Value);
+    protected void ProcessSpecies() => Data.Species.Switch(
+        x => x.SetAs(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, "Indices").Value), //int index
+        x => x.Set(DexUtil.GetSpeciesIndexedValue<string>(pku, FormatName, "Indices")) //string index
+    );
 }

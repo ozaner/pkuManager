@@ -2,8 +2,6 @@
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Fields.BackedFields;
 using pkuManager.Formats.Modules;
-using pkuManager.Formats.pku;
-using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +12,8 @@ namespace pkuManager.Formats.showdown;
 /// <summary>
 /// An implementation of the .txt (Showdown!) format used by Pokémon Showdown!.
 /// </summary>
-public class ShowdownObject : FormatObject, Item_O, Nature_O, Friendship_O, IVs_O, EVs_O
+public class ShowdownObject : FormatObject, Species_O, Form_O, Item_O, Nature_O,
+                              Friendship_O, IVs_O, EVs_O
 {
     public override string FormatName => "Showdown";
 
@@ -22,7 +21,8 @@ public class ShowdownObject : FormatObject, Item_O, Nature_O, Friendship_O, IVs_
      * Attributes
      * ------------------------------------
     */
-    public string ShowdownName { get; set; }
+    public BackedField<string> Species { get; } = new();
+    public BackedField<string> Form { get; } = new();
     public string Nickname { get; set; }
     public BackedField<string> Item { get; } = new();
     public string Ability { get; set; }
@@ -49,13 +49,17 @@ public class ShowdownObject : FormatObject, Item_O, Nature_O, Friendship_O, IVs_
     /// </summary>
     protected virtual void CompileLines()
     {
-        string introLine = "";
+        //Full Showdown Name
+        string showdownName = Species;
+        if (!Form.IsNull)
+            showdownName += $"-{Form}";
 
-        // Species/Nickname
-        if (Nickname is null || Nickname == ShowdownName)
-            introLine += ShowdownName;
+        // Nickname
+        string introLine = "";
+        if (Nickname is null || Nickname == showdownName)
+            introLine += showdownName;
         else
-            introLine += $"{Nickname} ({ShowdownName})";
+            introLine += $"{Nickname} ({showdownName})";
 
         // Gender
         introLine += Gender switch
@@ -134,23 +138,11 @@ public class ShowdownObject : FormatObject, Item_O, Nature_O, Friendship_O, IVs_
 
 
     /* ------------------------------------
-     * Showdown Utility
-     * ------------------------------------
-    */
-    /// <summary>
-    /// Searches the <see cref="SPECIES_DEX"/> for the
-    /// Showdown name of a given pku's species/form/appearance.
-    /// </summary>
-    /// <param name="pku">The pku whose Showdown name is to be determined.</param>
-    /// <returns><paramref name="pku"/>'s Showdown name.</returns>
-    public static string GetShowdownName(pkuObject pku)
-        => SPECIES_DEX.ReadSpeciesDex<string>(pku, "Showdown Name");
-
-
-    /* ------------------------------------
      * Duct Tape
      * ------------------------------------
     */
+    OneOf<IntegralField, Field<string>> Species_O.Species => Species;
+    OneOf<IntegralField, Field<string>> Form_O.Form => Form;
     OneOf<IntegralField, Field<string>> Item_O.Item => Item;
     OneOf<IntegralField, Field<Nature>, Field<Nature?>> Nature_O.Nature => Nature;
     IntegralField Friendship_O.Friendship => Friendship;

@@ -488,7 +488,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     Language_O Language_E.Data => Data;
     protected partial class WorkingVariables : Nature_O, Form_O
     {
-        IntegralField Form_O.Form => Form;
+        OneOf<IntegralField, Field<string>> Form_O.Form => Form;
         OneOf<IntegralField, Field<Nature>, Field<Nature?>> Nature_O.Nature => Nature;
     }
 }
