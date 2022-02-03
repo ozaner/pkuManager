@@ -27,7 +27,10 @@ public abstract class Collection
         PreInit();
         IsCollectionValid = DetermineValidity();
         if (IsCollectionValid)
+        {
             Init();
+            CurrentBox = CreateBox(CurrentBoxID);
+        }
     }
 
     public abstract string[] GetBoxNames();

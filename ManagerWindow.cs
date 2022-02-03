@@ -28,7 +28,10 @@ public partial class ManagerWindow : Form
 
     // Export Variables
     private Slot selectedSlot; //ref to most recently selected pkuslot for exporter logic
-    
+
+    //Event trigger prevention
+    private bool disableEventTrigger = false;
+
     // Constructor initializes UI elements
     public ManagerWindow()
     {
@@ -62,8 +65,12 @@ public partial class ManagerWindow : Form
     {
         // Initialize collectionManager and related GUI components.
         pkuCollectionManager = new pkuCollectionManager(new pkuCollection(path));
+
+        OnPKUBoxDisplayRefreshed(null, null);
         pkuCollectionManager.BoxDisplayRefreshed += OnPKUBoxDisplayRefreshed;
-        UpdateGlobalFlagUI();
+
+        ResetPKUBoxSelector(pkuCollectionManager.CurrentBoxID); //update box selector
+        UpdateGlobalFlagUI(); //update global flag ui
 
         // Code for updating SummaryTab and ExporterButtonVisibility when a slotDisplay is selected.
         pkuCollectionManager.SlotSelected += (s, e) =>
@@ -88,8 +95,6 @@ public partial class ManagerWindow : Form
         collectionOptionsDropDown.Enabled = true;
         boxOptionsDropDown.Enabled = true;
         refreshBoxButton.Enabled = true;
-
-        ResetPKUBoxSelector();
     }
 
     // Opens a dialog to choose a new PKUCollection to open.
@@ -98,7 +103,7 @@ public partial class ManagerWindow : Form
         DialogResult result = folderSelectorDialog.ShowDialog(); // Show the dialog.
         if (result is DialogResult.OK) // Test result.
         {
-            if(pkuCollection.CollectionConfigExistsIn(folderSelectorDialog.SelectedPath))
+            if (pkuCollection.CollectionConfigExistsIn(folderSelectorDialog.SelectedPath))
                 OpenPKUCollection(folderSelectorDialog.SelectedPath);
             else
                 MessageBox.Show("The selected folder does not have a collectionconfig.json file, and so is not a valid Collection.", "Invalid Collection");
@@ -108,12 +113,14 @@ public partial class ManagerWindow : Form
     private void createNewCollectionButton_Click(object sender, EventArgs e)
     {
         string path = pkuCollectionManager.CreateACollection();
-        if(path is not null)
+        if (path is not null)
             OpenPKUCollection(path);
     }
 
     private void OnPKUBoxDisplayRefreshed(object sender, EventArgs e)
     {
+        DeselectSlot(); //clear summary
+
         pkuBoxDisplayDock.Controls.Clear(); //clear old displaybox
         pkuBoxDisplayDock.Controls.Add(pkuCollectionManager.CurrentBoxDisplay); //add new displaybox
 
@@ -132,27 +139,27 @@ public partial class ManagerWindow : Form
         //discord RPC
         discord.Box = (string)pkuBoxSelector.SelectedItem;
         discord.UpdatePresence();
+
     }
 
     private void ResetPKUBoxSelector(int currentBox = 0)
     {
         pkuBoxSelector.Items.Clear();
         pkuBoxSelector.Items.AddRange(pkuCollectionManager.GetBoxNames());
+        disableEventTrigger = true;
         pkuBoxSelector.SelectedIndex = currentBox;
+        disableEventTrigger = false;
     }
 
-    // Behavior when a different pkubox is selected.
-    // Also updates the discord presence
+    private void SwitchPKUBoxToSelectedIndex(object sender, EventArgs e)
+        => pkuCollectionManager.SwitchBox(pkuBoxSelector.SelectedIndex);
+
     private void pkuBoxSelector_SelectedIndexChanged(object sender, EventArgs e)
     {
-        pkuCollectionManager.SwitchBox(pkuBoxSelector.SelectedIndex);
-        DeselectSlot();
-        discord.Box = (string)pkuBoxSelector.SelectedItem;
-        discord.UpdatePresence();
+        if (disableEventTrigger) //allows for changing boxSlot without triggering it
+            return;
+        SwitchPKUBoxToSelectedIndex(sender, e);
     }
-
-    private void refreshBox_Click(object sender, EventArgs e)
-        => pkuBoxSelector_SelectedIndexChanged(null, null);
 
 
     /* ------------------------------------
@@ -198,12 +205,16 @@ public partial class ManagerWindow : Form
     {
         collectionControlPanel.Visible = true;
         collectionManager = new(collection);
+
+        //Init boxDisplayDock
+        boxDisplayDock.Controls.Add(collectionManager.CurrentBoxDisplay);
         collectionManager.BoxDisplayRefreshed += (s, e) =>
         {
             boxDisplayDock.Controls.Clear();
             boxDisplayDock.Controls.Add(collectionManager.CurrentBoxDisplay);
         };
-        collectionManager.SwitchBox(0);
+
+        //Init SlotSelected behavior
         collectionManager.SlotSelected += (s, e) =>
         {
             pkuCollectionManager?.DeselectCurrentSlot();
@@ -214,9 +225,12 @@ public partial class ManagerWindow : Form
             }
         };
 
+        //Init boxSelector
         boxSelector.Items.Clear();
         boxSelector.Items.AddRange(collectionManager.GetBoxNames());
-        boxSelector.SelectedIndex = 0;
+        disableEventTrigger = true;
+        boxSelector.SelectedIndex = collectionManager.CurrentBoxID;
+        disableEventTrigger = false;
     }
 
     private void saveCollectionButton_Click(object sender, EventArgs e)
@@ -232,6 +246,8 @@ public partial class ManagerWindow : Form
 
     private void boxSelector_SelectedIndexChanged(object sender, EventArgs e)
     {
+        if (disableEventTrigger)
+            return;
         DeselectSlot();
         collectionManager.SwitchBox(boxSelector.SelectedIndex);
     }
@@ -370,15 +386,20 @@ public partial class ManagerWindow : Form
         while (invalid && dr is not DialogResult.Cancel);
 
         if (dr is not DialogResult.Cancel)
+        {
             pkuCollectionManager.AddBox(boxname);
-
-        ResetPKUBoxSelector(pkuCollectionManager.BoxCount-1);
+            ResetPKUBoxSelector(pkuCollectionManager.BoxCount - 1);
+            OnPKUBoxDisplayRefreshed(null, null);
+        }
     }
 
     private void removeCurrentBoxButton_Click(object sender, EventArgs e)
     {
         if (pkuCollectionManager.RemoveCurrentBox())
+        {
             ResetPKUBoxSelector();
+            OnPKUBoxDisplayRefreshed(null, null);
+        }
     }
 
     private void openBoxInFileExplorerToolStripMenuItem_Click(object sender, EventArgs e)

@@ -417,7 +417,7 @@
             this.refreshBoxButton.TabIndex = 15;
             this.refreshBoxButton.Text = "Refresh Box";
             this.refreshBoxButton.UseVisualStyleBackColor = true;
-            this.refreshBoxButton.Click += new System.EventHandler(this.refreshBox_Click);
+            this.refreshBoxButton.Click += new System.EventHandler(this.SwitchPKUBoxToSelectedIndex);
             // 
             // summaryTab
             // 

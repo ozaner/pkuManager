@@ -14,13 +14,19 @@ public class CollectionManager
     
     protected Collection Collection { get; }
     public BoxDisplay CurrentBoxDisplay { get; protected set; }
+    public int CurrentBoxID => Collection.CurrentBoxID;
     public Slot CurrentlySelectedSlot { get; protected set; }
 
     public event EventHandler BoxDisplayRefreshed;
     public event EventHandler SlotSelected;
 
     public CollectionManager(Collection collection)
-        => Collection = collection;
+    {
+        Collection = collection;
+        if (!collection.IsCollectionValid)
+            throw new ArgumentException("CollectionManager only accepts valid collections.", nameof(collection));
+        RefreshBoxDisplay();
+    }
 
     public string CollectionName => Collection.Name;
 

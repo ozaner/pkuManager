@@ -22,10 +22,18 @@ public class pkuCollection : Collection
 
     public override string Name => Path.GetFileName(Location);
     public override int BoxCount => config.Boxes.Count;
-    public override int CurrentBoxID { get; protected set; }
-    public pkuBox CurrentPKUBox => CurrentBox as pkuBox;
+    public override int CurrentBoxID
+    {
+        get => config.CurrentBoxID;
+        protected set
+        {
+            config.CurrentBoxID = value;
+            WriteCollectionConfig();
+        }
+    }
 
     private PKUCollectionConfig config;
+    public pkuBox CurrentPKUBox => CurrentBox as pkuBox;
 
     public pkuCollection(string path) : base(path) { }
 
@@ -42,6 +50,9 @@ public class pkuCollection : Collection
     */
     public class PKUCollectionConfig
     {
+        [JsonProperty("Current Box ID")]
+        public int CurrentBoxID;
+
         private List<string> boxes = new() { "Default" };
 
         [JsonProperty("Boxes", ObjectCreationHandling = ObjectCreationHandling.Replace)]
@@ -113,6 +124,11 @@ public class pkuCollection : Collection
 
         // save new box list
         config.Boxes = newBoxList;
+
+        //if currentBoxID not in range, set to 0
+        if (config.CurrentBoxID < 0 || config.CurrentBoxID >= config.Boxes.Count)
+            CurrentBoxID = 0;
+
         WriteCollectionConfig();
     }
 
