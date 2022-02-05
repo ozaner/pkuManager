@@ -413,7 +413,7 @@ public class pkuBox : Box
 
         // (optionally) ask user if they want to add the new files
         DialogResult dr = DialogResult.Yes;
-        if (validPKUs.Count - newBoxConfigNames.Count > 0 && Properties.Settings.Default.Ask_Auto_Add)
+        if (newBoxConfigNames.Count > 0 && Properties.Settings.Default.Ask_Auto_Add)
             dr = MessageBox.Show($"Some new .pku files were added to the {Name} folder since this box was last opened, would you like to add them to the boxconfig?", "New .pku files found", MessageBoxButtons.YesNo);
         bool addNewFiles = dr is DialogResult.Yes;
 
