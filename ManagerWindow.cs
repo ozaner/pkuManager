@@ -3,7 +3,7 @@ using pkuManager.Formats.pku;
 using pkuManager.GUI;
 using pkuManager.Utilities;
 using System;
-using System.Linq;
+using System.IO;
 using System.Windows.Forms;
 using static pkuManager.Formats.pku.pkuBox.pkuBoxConfig;
 
@@ -20,6 +20,7 @@ public partial class ManagerWindow : Form
     private SpriteBox SpriteBox;
 
     // Managers for the currently open collections
+    private string currentpkuCollectionPath;
     private pkuCollectionManager pkuCollectionManager;
     private CollectionManager collectionManager;
 
@@ -65,6 +66,7 @@ public partial class ManagerWindow : Form
     {
         // Initialize collectionManager and related GUI components.
         pkuCollectionManager = new pkuCollectionManager(new pkuCollection(path));
+        currentpkuCollectionPath = path;
 
         OnPKUBoxDisplayRefreshed(null, null);
         pkuCollectionManager.BoxDisplayRefreshed += OnPKUBoxDisplayRefreshed;
@@ -374,22 +376,25 @@ public partial class ManagerWindow : Form
 
     private void addNewBoxButton_Click(object sender, EventArgs e)
     {
-        string boxname = null;
-        bool invalid = false;
-        string[] boxNames = pkuCollectionManager.GetBoxNames();
-        DialogResult dr;
-        do
+        folderSelectorDialog.SelectedPath = currentpkuCollectionPath;
+        folderSelectorDialog.InitialDirectory = currentpkuCollectionPath;
+        folderSelectorDialog.ShowNewFolderButton = true;
+        DialogResult drA = folderSelectorDialog.ShowDialog();
+        if (drA == DialogResult.OK)
         {
-            dr = DataUtil.InputBox("Add New Box", invalid ? "The box name can't be empty or exist in the collection already. Choose another." : "What's the name of the new box?", ref boxname);
-            invalid = boxname is null or "" || boxNames.Contains(boxname, StringComparer.OrdinalIgnoreCase);
-        }
-        while (invalid && dr is not DialogResult.Cancel);
-
-        if (dr is not DialogResult.Cancel)
-        {
-            pkuCollectionManager.AddBox(boxname);
-            ResetPKUBoxSelector(pkuCollectionManager.BoxCount - 1);
-            OnPKUBoxDisplayRefreshed(null, null);
+            if (folderSelectorDialog.SelectedPath.IsSubPathOf(currentpkuCollectionPath))
+            {
+                var relPath = Path.GetRelativePath(currentpkuCollectionPath, folderSelectorDialog.SelectedPath);
+                if (pkuCollectionManager.AddBox(relPath))
+                {
+                    ResetPKUBoxSelector(pkuCollectionManager.BoxCount - 1);
+                    OnPKUBoxDisplayRefreshed(null, null);
+                }
+                else
+                    MessageBox.Show("That folder is invalid, or is already a box in the pkuCollection", "Invalid folder");
+            }
+            else
+                MessageBox.Show("Only folders inside your pkuCollection can be added as new boxes.", "Invalid folder");
         }
     }
 

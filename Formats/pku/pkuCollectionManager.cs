@@ -59,12 +59,14 @@ public class pkuCollectionManager : CollectionManager
      * Box Methods
      * ------------------------------------
     */
-    public void AddBox(string boxName)
+    public bool AddBox(string boxName)
     {
         if (pkuCollection.AddBox(boxName))
+        {
             SwitchBox(Collection.BoxCount - 1);
-        else
-            MessageBox.Show("That box name is invalid or alredy exists.", "Invalid box name");
+            return true;
+        }
+        return false;
     }
 
     public bool RemoveCurrentBox()
