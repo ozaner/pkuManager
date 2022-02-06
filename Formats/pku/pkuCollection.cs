@@ -1,6 +1,8 @@
 ﻿using Microsoft.VisualBasic.FileIO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using pkuManager.Formats.Fields;
+using pkuManager.Formats.Fields.LambdaFields;
 using pkuManager.Formats.Modules;
 using pkuManager.Formats.pkx;
 using pkuManager.Utilities;
@@ -22,15 +24,7 @@ public class pkuCollection : Collection
 
     public override string Name => Path.GetFileName(Location);
     public override int BoxCount => config.Boxes.Count;
-    public override int CurrentBoxID
-    {
-        get => config.CurrentBoxID;
-        protected set
-        {
-            config.CurrentBoxID = value;
-            WriteCollectionConfig();
-        }
-    }
+    public override IntegralField CurrentBoxID { get; protected set; }
 
     private PKUCollectionConfig config;
     public pkuBox CurrentPKUBox => CurrentBox as pkuBox;
@@ -41,7 +35,16 @@ public class pkuCollection : Collection
         => CollectionConfigExistsIn(Location);
 
     protected override void Init()
-        => ReadCollectionConfig(); // Load collection config (collectionConfig.json)
+    {
+        CurrentBoxID = new LambdaIntegralField(
+            () => config.CurrentBoxID,
+            x => {
+                config.CurrentBoxID = (int)x;
+                WriteCollectionConfig();
+            }
+        );
+        ReadCollectionConfig(); // Load collection config (collectionConfig.json)
+    }
 
 
     /* ------------------------------------
@@ -127,7 +130,7 @@ public class pkuCollection : Collection
 
         //if currentBoxID not in range, set to 0
         if (config.CurrentBoxID < 0 || config.CurrentBoxID >= config.Boxes.Count)
-            CurrentBoxID = 0;
+            CurrentBoxID.Set(0);
 
         WriteCollectionConfig();
     }
@@ -192,7 +195,7 @@ public class pkuCollection : Collection
 
     public void RemoveCurrentBox()
     {
-        int id = CurrentBoxID;
+        int id = CurrentBoxID.GetAs<int>();
         SwitchBox(0); //switch to new box 0
         config.Boxes.RemoveAt(id);
         WriteCollectionConfig(); //write new box list

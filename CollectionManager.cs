@@ -13,8 +13,9 @@ public class CollectionManager
     protected static readonly SaveFileDialog SAVE_FILE_DIALOG = new();
     
     protected Collection Collection { get; }
+    protected Box CurrentBox => Collection.CurrentBox;
     public BoxDisplay CurrentBoxDisplay { get; protected set; }
-    public int CurrentBoxID => Collection.CurrentBoxID;
+    public int CurrentBoxID => Collection.CurrentBoxID.GetAs<int>();
     public Slot CurrentlySelectedSlot { get; protected set; }
 
     public event EventHandler BoxDisplayRefreshed;
@@ -35,7 +36,7 @@ public class CollectionManager
 
     protected virtual void RefreshBoxDisplay()
     {
-        CurrentBoxDisplay = new(Collection.CurrentBox);
+        CurrentBoxDisplay = new(CurrentBox);
         CurrentBoxDisplay.ExportRequest += CompleteExportRequest;
         CurrentBoxDisplay.ReleaseRequest += CompleteReleaseRequest;
         CurrentBoxDisplay.SwapRequest += CompleteSwapRequest;
@@ -69,7 +70,7 @@ public class CollectionManager
             return;
 
         // Try to release
-        if (Collection.CurrentBox.ReleaseSlot(slotDisplay.SlotID))
+        if (CurrentBox.ReleaseSlot(slotDisplay.SlotID))
         {
             CurrentBoxDisplay.CompleteReleaseRequest(slotDisplay);
             BoxDisplayRefreshed?.Invoke(null, null);
@@ -82,7 +83,7 @@ public class CollectionManager
     protected void CompleteSwapRequest(object s, EventArgs e)
     {
         (SlotDisplay a, SlotDisplay b) = ((SlotDisplay, SlotDisplay))s;
-        if (Collection.CurrentBox.SwapSlots(a.SlotID, b.SlotID))
+        if (CurrentBox.SwapSlots(a.SlotID, b.SlotID))
             CurrentBoxDisplay.CompleteSwapRequest(a, b);
     }
 
@@ -93,7 +94,7 @@ public class CollectionManager
     }
 
     public bool RoomForOneMore()
-        => Collection.CurrentBox.RoomForOneMore();
+        => CurrentBox.RoomForOneMore();
 
     public void DeselectCurrentSlot()
         => CurrentBoxDisplay.DeselectCurrentSlot();

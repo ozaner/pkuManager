@@ -1,3 +1,4 @@
+using pkuManager.Formats.Fields;
 using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ public abstract class Collection
     public bool IsCollectionValid { get; }
     public abstract string Name { get; }
     public abstract int BoxCount { get; }
-    public abstract int CurrentBoxID { get; protected set; }
+    public abstract IntegralField CurrentBoxID { get; protected set; }
     public Box CurrentBox { get; protected set; }
 
     protected virtual void PreInit() { }
@@ -29,7 +30,7 @@ public abstract class Collection
         if (IsCollectionValid)
         {
             Init();
-            CurrentBox = CreateBox(CurrentBoxID);
+            CurrentBox = CreateBox(CurrentBoxID.GetAs<int>());
         }
     }
 
@@ -37,7 +38,7 @@ public abstract class Collection
     protected abstract Box CreateBox(int boxID);
     public void SwitchBox(int boxID)
     {
-        CurrentBoxID = boxID;
+        CurrentBoxID.Set(boxID);
         CurrentBox = CreateBox(boxID);
     }
 }

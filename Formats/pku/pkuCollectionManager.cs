@@ -9,7 +9,7 @@ namespace pkuManager.Formats.pku;
 public class pkuCollectionManager : CollectionManager
 {
     protected pkuCollection pkuCollection => Collection as pkuCollection;
-    protected pkuBox CurrentBox => pkuCollection.CurrentBox as pkuBox;
+    protected pkuBox pkuCurrentBox => Collection.CurrentBox as pkuBox;
 
     public pkuCollectionManager(pkuCollection collection) : base(collection) { }
 
@@ -119,17 +119,17 @@ public class pkuCollectionManager : CollectionManager
      * ------------------------------------
     */
     public void OpenBoxInFileExplorer()
-        => Process.Start("explorer.exe", @$"{pkuCollection.Location}\{CurrentBox.Name}");
+        => Process.Start("explorer.exe", @$"{pkuCollection.Location}\{pkuCurrentBox.Name}");
 
     public BoxConfigType GetBoxType()
-        => CurrentBox.BoxType;
+        => pkuCurrentBox.BoxType;
 
     public bool CanChangeBoxType(BoxConfigType type)
-        => CurrentBox.CanChangeBoxType(type);
+        => pkuCurrentBox.CanChangeBoxType(type);
 
     public void ChangeBoxType(BoxConfigType type)
     {
-        if (CurrentBox.ChangeBoxType(type))
-            SwitchBox(pkuCollection.CurrentBoxID);
+        if (pkuCurrentBox.ChangeBoxType(type))
+            SwitchBox(CurrentBoxID);
     }
 }
