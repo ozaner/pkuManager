@@ -17,34 +17,33 @@ public static class FieldExtensions
     public static bool IsNull<T>(this IField<T> field)
         => field.Value is null;
 
-    // Integral Cast Accessors
-    public static T GetAs<T>(this IIntegralField field) where T : struct
-        => field.Value.BigIntegerTo<T>();
-
-    public static void SetAs<T>(this IIntegralField field, T val) where T : struct
-        => field.Value = val.ToBigInteger();
-
-    // IntegralArray Cast Accessors
-    public static T[] GetAs<T>(this IIntegralArrayField field) where T : struct
-        => Array.ConvertAll(field.Value, x => x.BigIntegerTo<T>());
-
-    public static void SetAs<T>(this IIntegralArrayField field, T[] vals) where T : struct
-        => field.Value = Array.ConvertAll(vals, x => x.ToBigInteger());
-
-    // Integral Cast Accessors
-    public static T GetAs<T>(this IIntegralArrayField field, int i) where T : struct
-        => field.Value[i].BigIntegerTo<T>();
-
-    public static void SetAs<T>(this IIntegralArrayField field, T val, int i) where T : struct
-        => field.SetAs(val.ToBigInteger(), i);
-
-
-    public static void SetAs(this IIntegralArrayField field, BigInteger val, int i)
+    public static void SetAs(this IField<BigInteger[]> field, BigInteger val, int i)
     {
         BigInteger[] vals = field.Value;
         vals[i] = val;
         field.Value = vals;
     }
+
+    // Integral Cast Accessors
+    public static T GetAs<T>(this IField<BigInteger> field) where T : struct
+        => field.Value.BigIntegerTo<T>();
+
+    public static void SetAs<T>(this IField<BigInteger> field, T val) where T : struct
+        => field.Value = val.ToBigInteger();
+
+    // IntegralArray Cast Accessors
+    public static T[] GetAs<T>(this IField<BigInteger[]> field) where T : struct
+        => Array.ConvertAll(field.Value, x => x.BigIntegerTo<T>());
+
+    public static void SetAs<T>(this IField<BigInteger[]> field, T[] vals) where T : struct
+        => field.Value = Array.ConvertAll(vals, x => x.ToBigInteger());
+
+    // Integral Cast Accessors
+    public static T GetAs<T>(this IField<BigInteger[]> field, int i) where T : struct
+        => field.Value[i].BigIntegerTo<T>();
+
+    public static void SetAs<T>(this IField<BigInteger[]> field, T val, int i) where T : struct
+        => field.SetAs(val.ToBigInteger(), i);
 }
 
 public class IFieldJsonConverter : JsonConverter
@@ -72,6 +71,10 @@ public class IFieldJsonConverter : JsonConverter
             }
             object tempArray = temp.ToArray();
             Type arrType = objectType.GetGenericArguments()[0];
+
+            //fields' element type can be double wrapped
+            if (arrType.IsArray)
+                arrType = arrType.GetElementType();
 
             if (arrType == typeof(BigInteger?)) // integer? arrays need to be converted
                 tempArray = Array.ConvertAll(tempArray as object[], x => x is null ? (BigInteger?)null : (x as ValueType).ToBigInteger());

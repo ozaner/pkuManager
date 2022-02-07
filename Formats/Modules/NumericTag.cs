@@ -13,16 +13,18 @@ public interface NumericTag_E
     public List<Alert> Warnings { get; }
 
     protected void ProcessNumericTag(string tagName, IField<BigInteger?> pkuVal,
-        IIntegralField formatVal, BigInteger defaultVal, bool silentUnspecified)
+        IField<BigInteger> formatVal, BigInteger defaultVal, bool silentUnspecified)
     {
+        (BigInteger? max, BigInteger? min) = formatVal is IBoundable<BigInteger> boundable ?
+            (boundable.Max, boundable.Min) : (null, null);
         (BigInteger checkedVal, AlertType at) = pkuVal.Value switch {
             null => (defaultVal, AlertType.UNSPECIFIED),
-            var x when x > formatVal.Max => (formatVal.Max.Value, AlertType.OVERFLOW),
-            var x when x < formatVal.Min => (formatVal.Min.Value, AlertType.UNDERFLOW),
+            var x when x > max => (max.Value, AlertType.OVERFLOW),
+            var x when x < min => (min.Value, AlertType.UNDERFLOW),
             _ => (pkuVal.Value.Value, AlertType.NONE)
         };
         formatVal.Value = checkedVal;
-        Warnings.Add(GetNumericalAlert(tagName, at, formatVal.Max, formatVal.Min, defaultVal, silentUnspecified));
+        Warnings.Add(GetNumericalAlert(tagName, at, max, min, defaultVal, silentUnspecified));
     }
 
     protected Alert GetNumericalAlert(string name, AlertType at, BigInteger? max, BigInteger? min, BigInteger defaultVal, bool silentUnspecified) => at switch

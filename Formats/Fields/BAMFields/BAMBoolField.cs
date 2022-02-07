@@ -2,16 +2,21 @@
 
 namespace pkuManager.Formats.Fields.BAMFields;
 
-public class BAMBoolField : BAMField, IField<bool>, IByteOverridable
+public class BAMBoolField : BAMIntegralField, IField<bool>
 {
-    public bool Value
+    //bool form of Value
+    public bool ValueAsBool
     {
         get => BAM.Get<bool>(StartByte, StartBit, ByteOrBitLength);
         set => BAM.Set(value, StartByte, StartBit, ByteOrBitLength);
     }
 
+    bool IField<bool>.Value
+    {
+        get => ValueAsBool;
+        set => ValueAsBool = value;
+    }
+
     public BAMBoolField(ByteArrayManipulator bam, int startByte, int startBit)
         : base(bam, startByte, startBit, 1) { }
-
-    public string GetOverride() => $"Set {StartByte}:{StartBit}:{ByteOrBitLength}";
 }

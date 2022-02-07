@@ -3,6 +3,7 @@ using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using static pkuManager.Alerts.Alert;
 
 namespace pkuManager.Formats.Modules;
@@ -12,7 +13,7 @@ public interface IndexTag_E
     public List<Alert> Warnings { get; }
 
     protected void ProcessIndexTag(string tagName, IField<string> tag, string defaultVal,
-        OneOf<IIntegralField, IField<string>> formatVal, bool alertIfUnspecified, Predicate<string> isValid, Func<string, int> getIndex)
+        OneOf<IField<BigInteger>, IField<string>> formatVal, bool alertIfUnspecified, Predicate<string> isValid, Func<string, int> getIndex)
     {
         AlertType at = AlertType.NONE;
         string finalVal = defaultVal;

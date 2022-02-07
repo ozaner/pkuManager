@@ -4,13 +4,14 @@ using pkuManager.Formats.Fields;
 using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using System.Collections.Generic;
+using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules;
 
 public interface Species_O
 {
-    public OneOf<IIntegralField, IField<string>> Species { get; }
+    public OneOf<IField<BigInteger>, IField<string>> Species { get; }
 }
 
 public interface Species_E

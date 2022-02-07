@@ -1,12 +1,13 @@
 ﻿using pkuManager.Formats.Fields;
 using pkuManager.Formats.pkx;
+using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules;
 
 public interface EVs_O
 {
-    public IIntegralArrayField EVs { get; }
+    public IField<BigInteger[]> EVs { get; }
 }
 
 public interface EVs_E : MultiNumericTag

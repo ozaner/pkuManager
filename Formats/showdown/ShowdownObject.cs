@@ -5,6 +5,7 @@ using pkuManager.Formats.Modules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 
 namespace pkuManager.Formats.showdown;
@@ -28,9 +29,9 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Item_O, Nature_O,
     public string Ability { get; set; }
     public string[] Moves { get; set; }
     public byte Level { get; set; }
-    public BackedIntegralField Friendship { get; } = new(255, 0);
-    public BackedIntegralArrayField IVs { get; } = new(6, 31, 0);
-    public BackedIntegralArrayField EVs { get; } = new(6, 255, 0);
+    public BackedBoundableField<BigInteger> Friendship { get; } = new(255, 0);
+    public BackedBoundableArrayField<BigInteger> IVs { get; } = new(new BigInteger[6], 31, 0);
+    public BackedBoundableArrayField<BigInteger> EVs { get; } = new(new BigInteger[6], 255, 0);
     public Gender? Gender { get; set; }
     public BackedField<Nature?> Nature { get; } = new();
     public bool Shiny { get; set; }
@@ -141,11 +142,11 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Item_O, Nature_O,
      * Duct Tape
      * ------------------------------------
     */
-    OneOf<IIntegralField, IField<string>> Species_O.Species => Species;
-    OneOf<IIntegralField, IField<string>> Form_O.Form => Form;
-    OneOf<IIntegralField, IField<string>> Item_O.Item => Item;
-    OneOf<IIntegralField, IField<Nature>, IField<Nature?>> Nature_O.Nature => Nature;
-    IIntegralField Friendship_O.Friendship => Friendship;
-    IIntegralArrayField IVs_O.IVs => IVs;
-    IIntegralArrayField EVs_O.EVs => EVs;
+    OneOf<IField<BigInteger>, IField<string>> Species_O.Species => Species;
+    OneOf<IField<BigInteger>, IField<string>> Form_O.Form => Form;
+    OneOf<IField<BigInteger>, IField<string>> Item_O.Item => Item;
+    OneOf<IField<BigInteger>, IField<Nature>, IField<Nature?>> Nature_O.Nature => Nature;
+    IField<BigInteger> Friendship_O.Friendship => Friendship;
+    IField<BigInteger[]> IVs_O.IVs => IVs;
+    IField<BigInteger[]> EVs_O.EVs => EVs;
 }

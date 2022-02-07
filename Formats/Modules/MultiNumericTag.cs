@@ -16,9 +16,11 @@ public interface MultiNumericTag
     public List<Alert> Warnings { get; }
 
     protected void ProcessMultiNumericTag(string tagName, string[] subTagNames, IField<BigInteger?>[] pkuVals,
-        IIntegralArrayField formatVals, BigInteger defaultVal, bool silentUnspecified)
+        IField<BigInteger[]> formatVals, BigInteger defaultVal, bool silentUnspecified)
     {
         AlertType[] valAlerts = new AlertType[pkuVals.Length];
+        (BigInteger? max, BigInteger? min) = formatVals is IBoundable<BigInteger> boundable ?
+            (boundable.Max, boundable.Min) : (null, null);
         for (int i = 0; i < pkuVals.Length; i++)
         {
             if (pkuVals[i].IsNull())
@@ -26,14 +28,14 @@ public interface MultiNumericTag
                 formatVals.SetAs(defaultVal, i);
                 valAlerts[i] = AlertType.UNSPECIFIED;
             }
-            else if (pkuVals[i].Value > formatVals.Max)
+            else if (pkuVals[i].Value > max)
             {
-                formatVals.SetAs(formatVals.Max.Value, i);
+                formatVals.SetAs(max.Value, i);
                 valAlerts[i] = AlertType.OVERFLOW;
             }
-            else if (pkuVals[i].Value < formatVals.Min)
+            else if (pkuVals[i].Value < min)
             {
-                formatVals.SetAs(formatVals.Min.Value, i);
+                formatVals.SetAs(min.Value, i);
                 valAlerts[i] = AlertType.UNDERFLOW;
             }
             else
@@ -42,7 +44,7 @@ public interface MultiNumericTag
                 valAlerts[i] = AlertType.NONE;
             }
         }
-        Warnings.Add(GetMultiNumericAlert(tagName, subTagNames, valAlerts, formatVals.Max, formatVals.Min, defaultVal, silentUnspecified));
+        Warnings.Add(GetMultiNumericAlert(tagName, subTagNames, valAlerts, max, min, defaultVal, silentUnspecified));
     }
 
     protected static Alert GetMultiNumericAlert(string tagName, string[] subtags, AlertType[] ats,

@@ -1,11 +1,12 @@
 ﻿using pkuManager.Formats.Fields;
+using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules;
 
 public interface Friendship_O
 {
-    public IIntegralField Friendship { get; }
+    public IField<BigInteger> Friendship { get; }
 }
 
 public interface Friendship_E : NumericTag_E

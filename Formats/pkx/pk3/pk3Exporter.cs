@@ -53,7 +53,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     protected WorkingVariables workingVars = new();
     protected partial class WorkingVariables
     {
-        public BackedIntegralField Form { get; } = new(); // Form [Implicit]
+        public BackedBoundableField<BigInteger> Form { get; } = new(); // Form [Implicit]
         public BackedField<Nature?> Nature { get; } = new(); // Nature [Implicit]
     }
     protected int[] moveIndices; //indices of the chosen moves in the pku
@@ -149,7 +149,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessOriginGame))]
     protected virtual void ProcessEgg()
     {
-        Data.Is_Egg.Value = pku.IsEgg();
+        Data.Is_Egg.ValueAsBool = pku.IsEgg();
 
         //Deal with "Legal Gen 3 eggs"
         if (pku.IsEgg() && Data.Origin_Game.Value != 0)
@@ -224,10 +224,10 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     protected virtual void ProcessMarkings()
     {
         HashSet<Marking> markings = pku.Markings.ToEnumSet<Marking>();
-        Data.MarkingCircle.Value = markings.Contains(Marking.Blue_Circle);
-        Data.MarkingSquare.Value = markings.Contains(Marking.Blue_Square);
-        Data.MarkingTriangle.Value = markings.Contains(Marking.Blue_Triangle);
-        Data.MarkingHeart.Value = markings.Contains(Marking.Blue_Heart);
+        Data.MarkingCircle.ValueAsBool = markings.Contains(Marking.Blue_Circle);
+        Data.MarkingSquare.ValueAsBool = markings.Contains(Marking.Blue_Square);
+        Data.MarkingTriangle.ValueAsBool = markings.Contains(Marking.Blue_Triangle);
+        Data.MarkingHeart.ValueAsBool = markings.Contains(Marking.Blue_Heart);
     }
 
     // Experience [ErrorResolver]
@@ -289,7 +289,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         string[] abilitySlots = SPECIES_DEX.ReadDataDex<string[]>(pku.Species, "Gen 3 Ability Slots");
         if (pku.Ability is null) //ability unspecified
         {
-            Data.Ability_Slot.Value = false;
+            Data.Ability_Slot.ValueAsBool = false;
             alert = pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.UNSPECIFIED, pku.Ability, abilitySlots[0]);
         }
         else //ability specified
@@ -297,14 +297,14 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
             int? abilityID = PokeAPIUtil.GetAbilityIndex(pku.Ability);
             if (abilityID is null or > 76) //unofficial ability OR gen4+ ability
             {
-                Data.Ability_Slot.Value = false;
+                Data.Ability_Slot.ValueAsBool = false;
                 alert = pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.INVALID, pku.Ability, abilitySlots[0]);
             }
             else //gen 3- ability
             {
                 bool isSlot1 = abilityID == PokeAPIUtil.GetAbilityIndex(abilitySlots[0]);
                 bool isSlot2 = abilitySlots.Length > 1 && abilityID == PokeAPIUtil.GetAbilityIndex(abilitySlots[1]);
-                Data.Ability_Slot.Value = isSlot2; //else false (i.e. slot 1, or invalid)
+                Data.Ability_Slot.ValueAsBool = isSlot2; //else false (i.e. slot 1, or invalid)
 
                 if (!isSlot1 && !isSlot2) //ability is impossible on this species, alert
                     alert = pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.MISMATCH, pku.Ability, abilitySlots[0]);
@@ -345,18 +345,18 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         Data.Tough_Ribbon_Rank.SetAs(pk3Object.GetRibbonRank(Ribbon.Tough_G3, ribbons));
 
         //Add other ribbons
-        Data.Champion_Ribbon.Value = ribbons.Contains(Ribbon.Champion);
-        Data.Winning_Ribbon.Value = ribbons.Contains(Ribbon.Winning);
-        Data.Victory_Ribbon.Value = ribbons.Contains(Ribbon.Victory);
-        Data.Artist_Ribbon.Value = ribbons.Contains(Ribbon.Artist);
-        Data.Effort_Ribbon.Value = ribbons.Contains(Ribbon.Effort);
-        Data.Battle_Champion_Ribbon.Value = ribbons.Contains(Ribbon.Battle_Champion);
-        Data.Regional_Champion_Ribbon.Value = ribbons.Contains(Ribbon.Regional_Champion);
-        Data.National_Champion_Ribbon.Value = ribbons.Contains(Ribbon.National_Champion);
-        Data.Country_Ribbon.Value = ribbons.Contains(Ribbon.Country);
-        Data.National_Ribbon.Value = ribbons.Contains(Ribbon.National);
-        Data.Earth_Ribbon.Value = ribbons.Contains(Ribbon.Earth);
-        Data.World_Ribbon.Value = ribbons.Contains(Ribbon.World);
+        Data.Champion_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.Champion);
+        Data.Winning_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.Winning);
+        Data.Victory_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.Victory);
+        Data.Artist_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.Artist);
+        Data.Effort_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.Effort);
+        Data.Battle_Champion_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.Battle_Champion);
+        Data.Regional_Champion_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.Regional_Champion);
+        Data.National_Champion_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.National_Champion);
+        Data.Country_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.Country);
+        Data.National_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.National);
+        Data.Earth_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.Earth);
+        Data.World_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.World);
 
         Warnings.Add(a);
     }
@@ -488,7 +488,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     Language_O Language_E.Data => Data;
     protected partial class WorkingVariables : Nature_O, Form_O
     {
-        OneOf<IIntegralField, IField<string>> Form_O.Form => Form;
-        OneOf<IIntegralField, IField<Nature>, IField<Nature?>> Nature_O.Nature => Nature;
+        OneOf<IField<BigInteger>, IField<string>> Form_O.Form => Form;
+        OneOf<IField<BigInteger>, IField<Nature>, IField<Nature?>> Nature_O.Nature => Nature;
     }
 }

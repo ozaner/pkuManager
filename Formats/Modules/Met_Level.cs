@@ -1,11 +1,12 @@
 ﻿using pkuManager.Formats.Fields;
+using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules;
 
 public interface Met_Level_O
 {
-    public IIntegralField Met_Level { get; }
+    public IField<BigInteger> Met_Level { get; }
 }
 
 public interface Met_Level_E : NumericTag_E

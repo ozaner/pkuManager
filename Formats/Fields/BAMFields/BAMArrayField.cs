@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace pkuManager.Formats.Fields.BAMFields;
 
-public class BAMArrayField : BAMField, IIntegralArrayField, IByteOverridable
+public class BAMArrayField : BAMField, IField<BigInteger[]>
 {
     public int Length { get; set; }
 
@@ -26,6 +26,6 @@ public class BAMArrayField : BAMField, IIntegralArrayField, IByteOverridable
     public BAMArrayField(ByteArrayManipulator bam, int startByte, int startBit, int bitLength, int length)
         : base(bam, startByte, startBit, bitLength) => Length = length;
 
-    public string GetOverride() => BitType ? $"Set Array {StartByte}:{StartBit}:{ByteOrBitLength}"
-                                           : $"Set Array {StartByte}:{ByteOrBitLength}";
+    public override string GetOverride() => BitType ? $"Set Array {StartByte}:{StartBit}:{ByteOrBitLength}"
+                                                    : $"Set Array {StartByte}:{ByteOrBitLength}";
 }

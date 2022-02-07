@@ -191,7 +191,7 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
      * E: EVs & Condition Block
      * ------------------------------------
     */
-    public LambdaIntegralArrayField EVs { get; }
+    public LambdaBoundableArrayField<BigInteger> EVs { get; }
     public BAMArrayField Contest_Stats { get; }
 
 
@@ -208,7 +208,7 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
     public BAMIntegralField Ball { get; }
     public BAMBoolField OT_Gender { get; }
 
-    public LambdaIntegralArrayField IVs { get; }
+    public LambdaBoundableArrayField<BigInteger> IVs { get; }
     public BAMBoolField Is_Egg { get; }
     public BAMBoolField Ability_Slot { get; }
 
@@ -400,15 +400,15 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
      * Duct Tape
      * ------------------------------------
     */
-    OneOf<IIntegralField, IField<string>> Species_O.Species => Species;
-    OneOf<IIntegralField, IField<string>> Item_O.Item => Item;
-    IIntegralField Friendship_O.Friendship => Friendship;
-    IIntegralField TID_O.TID => TID;
-    IIntegralArrayField IVs_O.IVs => IVs;
-    IIntegralArrayField EVs_O.EVs => EVs;
-    IIntegralArrayField Contest_Stats_O.Contest_Stats => Contest_Stats;
-    OneOf<IIntegralField, IField<string>> Ball_O.Ball => Ball;
-    IIntegralField Met_Level_O.Met_Level => Met_Level;
-    OneOf<IIntegralField, IField<Gender>, IField<Gender?>, IField<bool>> OT_Gender_O.OT_Gender => OT_Gender;
-    OneOf<IIntegralField, IField<Language>, IField<Language?>> Language_O.Language => Language;
+    OneOf<IField<BigInteger>, IField<string>> Species_O.Species => Species;
+    OneOf<IField<BigInteger>, IField<string>> Item_O.Item => Item;
+    IField<BigInteger> Friendship_O.Friendship => Friendship;
+    IField<BigInteger> TID_O.TID => TID;
+    IField<BigInteger[]> IVs_O.IVs => IVs;
+    IField<BigInteger[]> EVs_O.EVs => EVs;
+    IField<BigInteger[]> Contest_Stats_O.Contest_Stats => Contest_Stats;
+    OneOf<IField<BigInteger>, IField<string>> Ball_O.Ball => Ball;
+    IField<BigInteger> Met_Level_O.Met_Level => Met_Level;
+    OneOf<IField<BigInteger>, IField<Gender>, IField<Gender?>> OT_Gender_O.OT_Gender => OT_Gender;
+    OneOf<IField<BigInteger>, IField<Language>, IField<Language?>> Language_O.Language => Language;
 }

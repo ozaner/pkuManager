@@ -3,6 +3,7 @@ using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.pku;
 using System;
+using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
@@ -10,7 +11,7 @@ namespace pkuManager.Formats.Modules;
 
 public interface Language_O
 {
-    public OneOf<IIntegralField, IField<Language>, IField<Language?>> Language { get; }
+    public OneOf<IField<BigInteger>, IField<Language>, IField<Language?>> Language { get; }
 }
 
 public interface Language_E : EnumTag_E

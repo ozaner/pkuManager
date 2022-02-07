@@ -4,6 +4,7 @@ using pkuManager.Formats.Fields;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using static pkuManager.Alerts.Alert;
 
 namespace pkuManager.Formats.Modules;
@@ -13,7 +14,7 @@ public interface EnumTag_E
     public List<Alert> Warnings { get; }
 
     protected void ProcessEnumTag<T>(string tagName, IField<string> tag, T? defaultVal,
-        OneOf<IIntegralField, IField<T>, IField<T?>> formatVal, bool alertIfUnspecified,
+        OneOf<IField<BigInteger>, IField<T>, IField<T?>> formatVal, bool alertIfUnspecified,
         Func<AlertType, string, string, Alert> customAlert = null, Predicate<T> isValid = null) where T : struct, Enum
     {
         AlertType at = AlertType.NONE;

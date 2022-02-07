@@ -2,13 +2,14 @@
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.pku;
 using pkuManager.Utilities;
+using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules;
 
 public interface Ball_O
 {
-    public OneOf<IIntegralField, IField<string>> Ball { get; }
+    public OneOf<IField<BigInteger>, IField<string>> Ball { get; }
 }
 
 public interface Ball_E : IndexTag_E

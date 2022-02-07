@@ -1,11 +1,12 @@
 ﻿using pkuManager.Formats.Fields;
+using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules;
 
 public interface TID_O
 {
-    public IIntegralField TID { get; }
+    public IField<BigInteger> TID { get; }
 }
 
 public interface TID_E : NumericTag_E

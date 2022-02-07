@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace pkuManager.Formats.Fields.BAMFields;
 
-public class BAMField
+public abstract class BAMField : IBoundable<BigInteger>, IByteOverridable
 {
     protected ByteArrayManipulator BAM { get; }
     protected bool BitType { get; }
@@ -31,5 +31,7 @@ public class BAMField
 
     public BAMField(ByteArrayManipulator bam, int startByte, int startBit, int bitLength)
         : this(bam, true, startByte, bitLength) => StartBit = startBit;
+
+    public abstract string GetOverride();
 }
 

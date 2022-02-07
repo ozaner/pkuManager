@@ -1,12 +1,13 @@
 ﻿using pkuManager.Formats.Fields;
 using pkuManager.Formats.pkx;
+using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules;
 
 public interface Contest_Stats_O
 {
-    public IIntegralArrayField Contest_Stats { get; }
+    public IField<BigInteger[]> Contest_Stats { get; }
 }
 
 public interface Contest_Stats_E : MultiNumericTag
