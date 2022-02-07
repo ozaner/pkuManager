@@ -7,6 +7,7 @@ using System.Numerics;
 using pkuManager.Formats.Modules;
 using pkuManager.Formats.Fields;
 using OneOf;
+using pkuManager.Formats.Fields.LambdaFields;
 
 namespace pkuManager.Formats.pkx.pk3;
 
@@ -87,7 +88,7 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
         PP = new(A, 8, 1, 4);
 
         // Block E
-        EVs = new(E, 0, 1, 6, getStats, setStats);
+        EVs = new(new BAMArrayField(E, 0, 1, 6), getStats, setStats);
         Contest_Stats = new(E, 6, 1, 6);
 
         // Block M
@@ -98,7 +99,7 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
         Origin_Game = new(M, 2, 7, 4);
         Ball = new(M, 2, 11, 4);
         OT_Gender = new(M, 2, 15);
-        IVs = new(M, 4, 0, 5, 6, getStats, setStats);
+        IVs = new(new BAMArrayField(M, 4, 0, 5, 6), getStats, setStats);
         Is_Egg = new(M, 4, 30);
         Ability_Slot = new(M, 4, 31);
         Cool_Ribbon_Rank = new(M, 8, 0, 3);
@@ -190,7 +191,7 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
      * E: EVs & Condition Block
      * ------------------------------------
     */
-    public BAMArrayField EVs { get; }
+    public LambdaIntegralArrayField EVs { get; }
     public BAMArrayField Contest_Stats { get; }
 
 
@@ -207,7 +208,7 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
     public BAMIntegralField Ball { get; }
     public BAMBoolField OT_Gender { get; }
 
-    public BAMArrayField IVs { get; }
+    public LambdaIntegralArrayField IVs { get; }
     public BAMBoolField Is_Egg { get; }
     public BAMBoolField Ability_Slot { get; }
 
@@ -399,15 +400,15 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
      * Duct Tape
      * ------------------------------------
     */
-    OneOf<IntegralField, Field<string>> Species_O.Species => Species;
-    OneOf<IntegralField, Field<string>> Item_O.Item => Item;
-    IntegralField Friendship_O.Friendship => Friendship;
-    IntegralField TID_O.TID => TID;
-    IntegralArrayField IVs_O.IVs => IVs;
-    IntegralArrayField EVs_O.EVs => EVs;
-    IntegralArrayField Contest_Stats_O.Contest_Stats => Contest_Stats;
-    OneOf<IntegralField, Field<string>> Ball_O.Ball => Ball;
-    IntegralField Met_Level_O.Met_Level => Met_Level;
-    OneOf<IntegralField, Field<Gender>, Field<Gender?>, Field<bool>> OT_Gender_O.OT_Gender => OT_Gender;
-    IntegralField Language_O.Language => Language;
+    OneOf<IIntegralField, IField<string>> Species_O.Species => Species;
+    OneOf<IIntegralField, IField<string>> Item_O.Item => Item;
+    IIntegralField Friendship_O.Friendship => Friendship;
+    IIntegralField TID_O.TID => TID;
+    IIntegralArrayField IVs_O.IVs => IVs;
+    IIntegralArrayField EVs_O.EVs => EVs;
+    IIntegralArrayField Contest_Stats_O.Contest_Stats => Contest_Stats;
+    OneOf<IIntegralField, IField<string>> Ball_O.Ball => Ball;
+    IIntegralField Met_Level_O.Met_Level => Met_Level;
+    OneOf<IIntegralField, IField<Gender>, IField<Gender?>, IField<bool>> OT_Gender_O.OT_Gender => OT_Gender;
+    OneOf<IIntegralField, IField<Language>, IField<Language?>> Language_O.Language => Language;
 }

@@ -6,7 +6,7 @@ namespace pkuManager.Formats.Modules;
 
 public interface IVs_O
 {
-    public IntegralArrayField IVs { get; }
+    public IIntegralArrayField IVs { get; }
 }
 
 public interface IVs_E : MultiNumericTag

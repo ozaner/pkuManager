@@ -6,7 +6,7 @@ namespace pkuManager.Formats.Modules;
 
 public interface Contest_Stats_O
 {
-    public IntegralArrayField Contest_Stats { get; }
+    public IIntegralArrayField Contest_Stats { get; }
 }
 
 public interface Contest_Stats_E : MultiNumericTag

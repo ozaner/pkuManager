@@ -8,7 +8,7 @@ namespace pkuManager.Formats.Modules;
 
 public interface Item_O
 {
-    public OneOf<IntegralField, Field<string>> Item { get; }
+    public OneOf<IIntegralField, IField<string>> Item { get; }
 }
 
 public interface Item_E : IndexTag_E

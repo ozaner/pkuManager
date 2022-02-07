@@ -7,44 +7,57 @@ using System.Numerics;
 
 namespace pkuManager.Formats.Fields;
 
-public abstract class Field<T>
+public interface IField<T>
 {
-    protected abstract T Value { get; set; }
-
-    protected Func<T, T> CustomGetter;
-
-    protected Func<T, T> CustomSetter;
-
-    protected Field(Func<T, T> getter, Func<T, T> setter)
-    {
-        CustomGetter = getter ?? (x => x);
-        CustomSetter = setter ?? (x => x);
-    }
-
-    public static implicit operator T(Field<T> f) => f.Get();
-
-    public T Get() => CustomGetter(Value);
-
-    public void Set(T val) => Value = CustomSetter(val);
-
-    public void Set(Field<T> field) => Set(field.Get());
-
-    public bool IsNull => Get() is null;
-
-    public override string ToString() => Get()?.ToString();
+    public T Value { get; set; }
 }
 
-public class FieldJsonConverter : JsonConverter
+public static class FieldExtensions
+{
+    public static bool IsNull<T>(this IField<T> field)
+        => field.Value is null;
+
+    // Integral Cast Accessors
+    public static T GetAs<T>(this IIntegralField field) where T : struct
+        => field.Value.BigIntegerTo<T>();
+
+    public static void SetAs<T>(this IIntegralField field, T val) where T : struct
+        => field.Value = val.ToBigInteger();
+
+    // IntegralArray Cast Accessors
+    public static T[] GetAs<T>(this IIntegralArrayField field) where T : struct
+        => Array.ConvertAll(field.Value, x => x.BigIntegerTo<T>());
+
+    public static void SetAs<T>(this IIntegralArrayField field, T[] vals) where T : struct
+        => field.Value = Array.ConvertAll(vals, x => x.ToBigInteger());
+
+    // Integral Cast Accessors
+    public static T GetAs<T>(this IIntegralArrayField field, int i) where T : struct
+        => field.Value[i].BigIntegerTo<T>();
+
+    public static void SetAs<T>(this IIntegralArrayField field, T val, int i) where T : struct
+        => field.SetAs(val.ToBigInteger(), i);
+
+
+    public static void SetAs(this IIntegralArrayField field, BigInteger val, int i)
+    {
+        BigInteger[] vals = field.Value;
+        vals[i] = val;
+        field.Value = vals;
+    }
+}
+
+public class IFieldJsonConverter : JsonConverter
 {
     public override bool CanConvert(Type objectType)
-        => objectType.IsSubclassOfGeneric(typeof(Field<>));
+        => objectType.ImplementsGenericInterface(typeof(IField<>));
 
     public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
     {
-        // Get the value the Field is encapsulating
+        //Get the value the field is encapsulating
         object value;
 
-        // null JSON token results in a Field<T> with default val.
+        //null JSON token results in a IField<T> with default val.
         if (reader.TokenType is not JsonToken.StartArray && reader.Value is null)
             value = null;
         //handle arrays
@@ -77,12 +90,12 @@ public class FieldJsonConverter : JsonConverter
         else
             value = reader.Value;
 
-        // create Field (only works for fields with matching constructor, i.e. backingfields)
-        var obj = Activator.CreateInstance(objectType, new object[] { null, null });
+        //create field (only works for fields with empty constructor, i.e. backingfields)
+        var obj = Activator.CreateInstance(objectType, Array.Empty<object>());
 
-        // invokes Field.Set(value)
-        objectType.GetMethods().Where(x => x.Name is "Set" && !x.IsGenericMethod && x.GetParameters().Length is 1)
-                  .First().Invoke(obj, new object[] { value });
+        //invokes IField.Value setter
+        objectType.GetProperties().Where(x => x.Name is "Value").First()
+            .GetSetMethod().Invoke(obj, new object[] { value });
 
         return obj;
     }
@@ -91,10 +104,9 @@ public class FieldJsonConverter : JsonConverter
     {
         Type type = value.GetType();
 
-        // Get the value the Field encapsulates.
-        var backedValue = type.GetMethods()
-                              .Where(x => x.Name is "Get" && !x.IsGenericMethod && x.GetParameters().Length is 0)
-                              .First().Invoke(value, Array.Empty<object>());
+        // Get the value the field encapsulates.
+        var backedValue = type.GetProperties().Where(x => x.Name is "Value").First()
+            .GetGetMethod().Invoke(value, Array.Empty<object>());
 
         // null backed values are treated as null.
         if (backedValue is null)
@@ -104,10 +116,10 @@ public class FieldJsonConverter : JsonConverter
         }
 
         // decides which kinds of values get indented or one-lined.
-        bool dontIndent = type.IsSubclassOf(typeof(Field<BigInteger?[]>)) || //all integer arrays
-                          type.IsSubclassOf(typeof(Field<BigInteger[]>)) ||
-                          type.IsSubclassOf(typeof(Field<string[]>)) && (backedValue as Array)?.Length < 4; //string arrays under 4
-        
+        bool dontIndent = typeof(IField<BigInteger?[]>).IsAssignableFrom(type) || //all integer arrays
+                          typeof(IField<BigInteger[]>).IsAssignableFrom(type) ||
+                          typeof(IField<string[]>).IsAssignableFrom(type) && (backedValue as Array)?.Length < 4; //string arrays under 4
+
         // writes the value with the proper indenting.
         writer.WriteRawValue(JsonConvert.SerializeObject(backedValue, dontIndent ? Formatting.None : Formatting.Indented));
     }

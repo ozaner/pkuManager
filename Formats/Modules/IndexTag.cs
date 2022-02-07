@@ -11,22 +11,22 @@ public interface IndexTag_E
 {
     public List<Alert> Warnings { get; }
 
-    protected void ProcessIndexTag(string tagName, Field<string> tag, string defaultVal,
-        OneOf<IntegralField, Field<string>> formatVal, bool alertIfUnspecified, Predicate<string> isValid, Func<string, int> getIndex)
+    protected void ProcessIndexTag(string tagName, IField<string> tag, string defaultVal,
+        OneOf<IIntegralField, IField<string>> formatVal, bool alertIfUnspecified, Predicate<string> isValid, Func<string, int> getIndex)
     {
         AlertType at = AlertType.NONE;
         string finalVal = defaultVal;
 
-        if (!tag.IsNull && isValid(tag)) //tag specified & exists
-            finalVal = tag;
-        else if (!tag.IsNull) //tag specified & DNE
+        if (!tag.IsNull() && isValid(tag.Value)) //tag specified & exists
+            finalVal = tag.Value;
+        else if (!tag.IsNull()) //tag specified & DNE
             at = AlertType.INVALID;
         else //tag unspecified
             at = alertIfUnspecified ? AlertType.UNSPECIFIED : AlertType.NONE;
 
-        formatVal.Switch(x => x.Set(getIndex(finalVal)),
-                         x => x.Set(finalVal));
-        Warnings.Add(GetIndexAlert(tagName, at, tag, defaultVal));
+        formatVal.Switch(x => x.Value = getIndex(finalVal),
+                         x => x.Value = finalVal);
+        Warnings.Add(GetIndexAlert(tagName, at, tag.Value, defaultVal));
     }
 
     protected Alert GetIndexAlert(string tagName, AlertType at, string val, string defaultVal) => at switch

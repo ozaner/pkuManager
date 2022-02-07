@@ -1,4 +1,5 @@
 ﻿using pkuManager.Formats;
+using pkuManager.Formats.Fields;
 using pkuManager.Formats.pku;
 using pkuManager.GUI;
 using pkuManager.Utilities;

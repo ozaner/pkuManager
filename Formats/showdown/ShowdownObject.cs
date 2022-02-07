@@ -29,8 +29,8 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Item_O, Nature_O,
     public string[] Moves { get; set; }
     public byte Level { get; set; }
     public BackedIntegralField Friendship { get; } = new(255, 0);
-    public BackedIntegralArrayField IVs { get; } = new(31, 0, 6);
-    public BackedIntegralArrayField EVs { get; } = new(31, 0, 6);
+    public BackedIntegralArrayField IVs { get; } = new(6, 31, 0);
+    public BackedIntegralArrayField EVs { get; } = new(6, 255, 0);
     public Gender? Gender { get; set; }
     public BackedField<Nature?> Nature { get; } = new();
     public bool Shiny { get; set; }
@@ -50,9 +50,9 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Item_O, Nature_O,
     protected virtual void CompileLines()
     {
         //Full Showdown Name
-        string showdownName = Species;
-        if (!Form.IsNull)
-            showdownName += $"-{Form}";
+        string showdownName = Species.Value;
+        if (!Form.IsNull())
+            showdownName += $"-{Form.Value}";
 
         // Nickname
         string introLine = "";
@@ -70,8 +70,8 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Item_O, Nature_O,
         };
 
         // Item
-        if (!Item.IsNull)
-            introLine += $" @ {Item}";
+        if (!Item.IsNull())
+            introLine += $" @ {Item.Value}";
 
         Lines.Add(introLine);
 
@@ -88,32 +88,32 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Item_O, Nature_O,
             Lines.Add("Shiny: true");
 
         // Friendship
-        if (Friendship.Get() != 255)
-            Lines.Add($"Happiness: {Friendship}");
+        if (Friendship.Value != 255)
+            Lines.Add($"Happiness: {Friendship.Value}");
 
         // IVs
-        if (!IVs.Get().All(x => x == 31))
+        if (!IVs.Value.All(x => x == 31))
         {
-            string ivs = $"IVs: {(IVs[0] != 31 ? $"{IVs[0]} HP / " : "")}{(IVs[1] != 31 ? $"{IVs[1]} Atk / " : "")}" +
-                            $"{(IVs[2] != 31 ? $"{IVs[2]} Def / " : "")}{(IVs[3] != 31 ? $"{IVs[3]} SpA / " : "")}" +
-                            $"{(IVs[4] != 31 ? $"{IVs[4]} SpD / " : "")}{(IVs[5] != 31 ? $"{IVs[5]} Spe / " : "")}";
+            string ivs = $"IVs: {(IVs.Value[0] != 31 ? $"{IVs.Value[0]} HP / " : "")}{(IVs.Value[1] != 31 ? $"{IVs.Value[1]} Atk / " : "")}" +
+                            $"{(IVs.Value[2] != 31 ? $"{IVs.Value[2]} Def / " : "")}{(IVs.Value[3] != 31 ? $"{IVs.Value[3]} SpA / " : "")}" +
+                            $"{(IVs.Value[4] != 31 ? $"{IVs.Value[4]} SpD / " : "")}{(IVs.Value[5] != 31 ? $"{IVs.Value[5]} Spe / " : "")}";
             ivs = ivs[0..^3]; //remove extra " / "
             Lines.Add(ivs);
         }
 
         // EVs
-        if (!EVs.Get().All(x => x == 0))
+        if (!EVs.Value.All(x => x == 0))
         {
-            string evs = $"EVs: {(EVs[0] != 0 ? $"{EVs[0]} HP / " : "")}{(EVs[1] != 0 ? $"{EVs[1]} Atk / " : "")}" +
-                            $"{(EVs[2] != 0 ? $"{EVs[2]} Def / " : "")}{(EVs[3] != 0 ? $"{EVs[3]} SpA / " : "")}" +
-                            $"{(EVs[4] != 0 ? $"{EVs[4]} SpD / " : "")}{(EVs[5] != 0 ? $"{EVs[5]} Spe / " : "")}";
+            string evs = $"EVs: {(EVs.Value[0] != 0 ? $"{EVs.Value[0]} HP / " : "")}{(EVs.Value[1] != 0 ? $"{EVs.Value[1]} Atk / " : "")}" +
+                            $"{(EVs.Value[2] != 0 ? $"{EVs.Value[2]} Def / " : "")}{(EVs.Value[3] != 0 ? $"{EVs.Value[3]} SpA / " : "")}" +
+                            $"{(EVs.Value[4] != 0 ? $"{EVs.Value[4]} SpD / " : "")}{(EVs.Value[5] != 0 ? $"{EVs.Value[5]} Spe / " : "")}";
             evs = evs[0..^3]; //remove extra " / "
             Lines.Add(evs);
         }
 
         // Nature
-        if (!Nature.IsNull)
-            Lines.Add($"{Nature} Nature");
+        if (!Nature.IsNull())
+            Lines.Add($"{Nature.Value} Nature");
 
         // Gigantamax
         if (Gigantamax_Factor)
@@ -141,11 +141,11 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Item_O, Nature_O,
      * Duct Tape
      * ------------------------------------
     */
-    OneOf<IntegralField, Field<string>> Species_O.Species => Species;
-    OneOf<IntegralField, Field<string>> Form_O.Form => Form;
-    OneOf<IntegralField, Field<string>> Item_O.Item => Item;
-    OneOf<IntegralField, Field<Nature>, Field<Nature?>> Nature_O.Nature => Nature;
-    IntegralField Friendship_O.Friendship => Friendship;
-    IntegralArrayField IVs_O.IVs => IVs;
-    IntegralArrayField EVs_O.EVs => EVs;
+    OneOf<IIntegralField, IField<string>> Species_O.Species => Species;
+    OneOf<IIntegralField, IField<string>> Form_O.Form => Form;
+    OneOf<IIntegralField, IField<string>> Item_O.Item => Item;
+    OneOf<IIntegralField, IField<Nature>, IField<Nature?>> Nature_O.Nature => Nature;
+    IIntegralField Friendship_O.Friendship => Friendship;
+    IIntegralArrayField IVs_O.IVs => IVs;
+    IIntegralArrayField EVs_O.EVs => EVs;
 }

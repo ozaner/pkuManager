@@ -116,20 +116,23 @@ public class ByteArrayManipulator
     /// <returns>An enumerable of the physical (byte, bit) offsets of the given value.</returns>
     public IEnumerable<(int by, int bi)> GetVirtualBitIndices(int byteIndex, int bitIndex, int bitLength)
     {
+        //normalize byte/bit addresses
         byteIndex += bitIndex / 8;
         bitIndex %= 8;
-        var byteIndices = GetVirtualByteIndices(byteIndex, bitLength / 8 + 1).GetEnumerator();
-        for (int i = 0; i < bitLength; i++)
+
+        //produce a single bit address at a time until all bits are given.
+        int bitsGiven = 0;
+        foreach (int by in GetVirtualByteIndices(byteIndex, bitLength / 8 + 2))
         {
-            yield return (byteIndices.Current, bitIndex);
-            bitIndex++;
-            if (bitIndex > 7)
+            while (bitsGiven < bitLength && bitIndex < 8)
             {
-                bitIndex = 0;
-                byteIndex++;
-                if (!byteIndices.MoveNext())
-                    throw new ArgumentException("not enough bytes...");
+                yield return (by, bitIndex);
+                bitIndex++;
+                bitsGiven++;
             }
+            bitIndex = 0;
+            if (bitsGiven >= bitLength)
+                yield break;
         }
     }
 

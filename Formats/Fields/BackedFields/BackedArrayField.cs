@@ -1,16 +1,10 @@
-﻿using System;
+﻿namespace pkuManager.Formats.Fields.BackedFields;
 
-namespace pkuManager.Formats.Fields.BackedFields;
-
-public class BackedArrayField<T> : ArrayField<T>
+public class BackedArrayField<T> : BackedField<T[]>, IArrayField<T>
 {
-    protected override T[] Value { get; set; }
+    public BackedArrayField() : base() { }
 
-    public override int Length => Value.Length;
+    public BackedArrayField(T[] vals) : base(vals) { }
 
-    public BackedArrayField(Func<T[], T[]> getter = null, Func<T[], T[]> setter = null)
-        : base(getter, setter) { }
-
-    public BackedArrayField(int length, Func<T[], T[]> getter = null, Func<T[], T[]> setter = null)
-        : this(getter, setter) => Set(new T[length]);
+    public BackedArrayField(int length) : base(new T[length]) { }
 }

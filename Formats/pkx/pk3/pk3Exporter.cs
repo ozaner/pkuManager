@@ -101,12 +101,12 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         (this as Form_E).ProcessFormBase();
 
         Alert alert = null; //to return
-        BigInteger speciesIndex = Data.Species.Get();
-        BigInteger formIndex = workingVars.Form.Get();
+        BigInteger speciesIndex = Data.Species.Value;
+        BigInteger formIndex = workingVars.Form.Value;
         if (speciesIndex == 410) //deoxys
             alert = GetFormAlert(AlertType.NONE, null, true);
         else if (speciesIndex == 385 && formIndex != 0) //castform
-            alert = GetFormAlert(AlertType.IN_BATTLE, pku.Forms);
+            alert = GetFormAlert(AlertType.IN_BATTLE, pku.Forms.Value);
         Warnings.Add(alert);
     }
 
@@ -115,9 +115,9 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
                                                 "ProcessNature", "ProcessTID")]
     protected virtual void ProcessPID()
     {
-        int? unownForm = Data.Species.Get() == 201 ? workingVars.Form.GetAs<int>() : null;
+        int? unownForm = Data.Species.Value == 201 ? workingVars.Form.GetAs<int>() : null;
         var (pids, alert) = pkxUtil.ExportTags.ProcessPID(pku, Data.TID.GetAs<uint>(), false,
-            gender, workingVars.Nature, unownForm);
+            gender, workingVars.Nature.Value, unownForm);
         BigInteger[] castedPids = Array.ConvertAll(pids, x => x.ToBigInteger());
         PIDResolver = new(alert, Data.PID, castedPids);
         if (alert is RadioButtonAlert)
@@ -149,10 +149,10 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessOriginGame))]
     protected virtual void ProcessEgg()
     {
-        Data.Is_Egg.Set(pku.IsEgg());
+        Data.Is_Egg.Value = pku.IsEgg();
 
         //Deal with "Legal Gen 3 eggs"
-        if (pku.IsEgg() && Data.Origin_Game.Get() != 0)
+        if (pku.IsEgg() && Data.Origin_Game.Value != 0)
         {
             Language? lang = DataUtil.ToEnum<Language>(pku.Game_Info?.Language);
             if (lang is not null && pkxUtil.EGG_NICKNAME[lang.Value] == pku.Nickname)
@@ -224,10 +224,10 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     protected virtual void ProcessMarkings()
     {
         HashSet<Marking> markings = pku.Markings.ToEnumSet<Marking>();
-        Data.MarkingCircle.Set(markings.Contains(Marking.Blue_Circle));
-        Data.MarkingSquare.Set(markings.Contains(Marking.Blue_Square));
-        Data.MarkingTriangle.Set(markings.Contains(Marking.Blue_Triangle));
-        Data.MarkingHeart.Set(markings.Contains(Marking.Blue_Heart));
+        Data.MarkingCircle.Value = markings.Contains(Marking.Blue_Circle);
+        Data.MarkingSquare.Value = markings.Contains(Marking.Blue_Square);
+        Data.MarkingTriangle.Value = markings.Contains(Marking.Blue_Triangle);
+        Data.MarkingHeart.Value = markings.Contains(Marking.Blue_Heart);
     }
 
     // Experience [ErrorResolver]
@@ -289,7 +289,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         string[] abilitySlots = SPECIES_DEX.ReadDataDex<string[]>(pku.Species, "Gen 3 Ability Slots");
         if (pku.Ability is null) //ability unspecified
         {
-            Data.Ability_Slot.Set(false);
+            Data.Ability_Slot.Value = false;
             alert = pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.UNSPECIFIED, pku.Ability, abilitySlots[0]);
         }
         else //ability specified
@@ -297,14 +297,14 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
             int? abilityID = PokeAPIUtil.GetAbilityIndex(pku.Ability);
             if (abilityID is null or > 76) //unofficial ability OR gen4+ ability
             {
-                Data.Ability_Slot.Set(false);
+                Data.Ability_Slot.Value = false;
                 alert = pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.INVALID, pku.Ability, abilitySlots[0]);
             }
             else //gen 3- ability
             {
                 bool isSlot1 = abilityID == PokeAPIUtil.GetAbilityIndex(abilitySlots[0]);
                 bool isSlot2 = abilitySlots.Length > 1 && abilityID == PokeAPIUtil.GetAbilityIndex(abilitySlots[1]);
-                Data.Ability_Slot.Set(isSlot2); //else false (i.e. slot 1, or invalid)
+                Data.Ability_Slot.Value = isSlot2; //else false (i.e. slot 1, or invalid)
 
                 if (!isSlot1 && !isSlot2) //ability is impossible on this species, alert
                     alert = pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.MISMATCH, pku.Ability, abilitySlots[0]);
@@ -345,18 +345,18 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         Data.Tough_Ribbon_Rank.SetAs(pk3Object.GetRibbonRank(Ribbon.Tough_G3, ribbons));
 
         //Add other ribbons
-        Data.Champion_Ribbon.Set(ribbons.Contains(Ribbon.Champion));
-        Data.Winning_Ribbon.Set(ribbons.Contains(Ribbon.Winning));
-        Data.Victory_Ribbon.Set(ribbons.Contains(Ribbon.Victory));
-        Data.Artist_Ribbon.Set(ribbons.Contains(Ribbon.Artist));
-        Data.Effort_Ribbon.Set(ribbons.Contains(Ribbon.Effort));
-        Data.Battle_Champion_Ribbon.Set(ribbons.Contains(Ribbon.Battle_Champion));
-        Data.Regional_Champion_Ribbon.Set(ribbons.Contains(Ribbon.Regional_Champion));
-        Data.National_Champion_Ribbon.Set(ribbons.Contains(Ribbon.National_Champion));
-        Data.Country_Ribbon.Set(ribbons.Contains(Ribbon.Country));
-        Data.National_Ribbon.Set(ribbons.Contains(Ribbon.National));
-        Data.Earth_Ribbon.Set(ribbons.Contains(Ribbon.Earth));
-        Data.World_Ribbon.Set(ribbons.Contains(Ribbon.World));
+        Data.Champion_Ribbon.Value = ribbons.Contains(Ribbon.Champion);
+        Data.Winning_Ribbon.Value = ribbons.Contains(Ribbon.Winning);
+        Data.Victory_Ribbon.Value = ribbons.Contains(Ribbon.Victory);
+        Data.Artist_Ribbon.Value = ribbons.Contains(Ribbon.Artist);
+        Data.Effort_Ribbon.Value = ribbons.Contains(Ribbon.Effort);
+        Data.Battle_Champion_Ribbon.Value = ribbons.Contains(Ribbon.Battle_Champion);
+        Data.Regional_Champion_Ribbon.Value = ribbons.Contains(Ribbon.Regional_Champion);
+        Data.National_Champion_Ribbon.Value = ribbons.Contains(Ribbon.National_Champion);
+        Data.Country_Ribbon.Value = ribbons.Contains(Ribbon.Country);
+        Data.National_Ribbon.Value = ribbons.Contains(Ribbon.National);
+        Data.Earth_Ribbon.Value = ribbons.Contains(Ribbon.Earth);
+        Data.World_Ribbon.Value = ribbons.Contains(Ribbon.World);
 
         Warnings.Add(a);
     }
@@ -488,7 +488,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     Language_O Language_E.Data => Data;
     protected partial class WorkingVariables : Nature_O, Form_O
     {
-        OneOf<IntegralField, Field<string>> Form_O.Form => Form;
-        OneOf<IntegralField, Field<Nature>, Field<Nature?>> Nature_O.Nature => Nature;
+        OneOf<IIntegralField, IField<string>> Form_O.Form => Form;
+        OneOf<IIntegralField, IField<Nature>, IField<Nature?>> Nature_O.Nature => Nature;
     }
 }

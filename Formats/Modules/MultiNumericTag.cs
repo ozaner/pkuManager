@@ -15,30 +15,30 @@ public interface MultiNumericTag
     public pkuObject pku { get; }
     public List<Alert> Warnings { get; }
 
-    protected void ProcessMultiNumericTag(string tagName, string[] subTagNames, Field<BigInteger?>[] pkuVals,
-        IntegralArrayField formatVals, BigInteger defaultVal, bool silentUnspecified)
+    protected void ProcessMultiNumericTag(string tagName, string[] subTagNames, IField<BigInteger?>[] pkuVals,
+        IIntegralArrayField formatVals, BigInteger defaultVal, bool silentUnspecified)
     {
         AlertType[] valAlerts = new AlertType[pkuVals.Length];
         for (int i = 0; i < pkuVals.Length; i++)
         {
-            if (pkuVals[i].IsNull)
+            if (pkuVals[i].IsNull())
             {
-                formatVals.Set(defaultVal, i);
+                formatVals.SetAs(defaultVal, i);
                 valAlerts[i] = AlertType.UNSPECIFIED;
             }
-            else if (pkuVals[i] > formatVals.Max)
+            else if (pkuVals[i].Value > formatVals.Max)
             {
-                formatVals.Set(formatVals.Max, i);
+                formatVals.SetAs(formatVals.Max.Value, i);
                 valAlerts[i] = AlertType.OVERFLOW;
             }
-            else if (pkuVals[i] < formatVals.Min)
+            else if (pkuVals[i].Value < formatVals.Min)
             {
-                formatVals.Set(formatVals.Min, i);
+                formatVals.SetAs(formatVals.Min.Value, i);
                 valAlerts[i] = AlertType.UNDERFLOW;
             }
             else
             {
-                formatVals.Set(pkuVals[i].Get().Value, i);
+                formatVals.SetAs(pkuVals[i].Value.Value, i);
                 valAlerts[i] = AlertType.NONE;
             }
         }
@@ -46,7 +46,7 @@ public interface MultiNumericTag
     }
 
     protected static Alert GetMultiNumericAlert(string tagName, string[] subtags, AlertType[] ats,
-        BigInteger max, BigInteger min, BigInteger defaultVal, bool silentUnspecified)
+        BigInteger? max, BigInteger? min, BigInteger defaultVal, bool silentUnspecified)
     {
         if (subtags?.Length != ats?.Length)
             throw new ArgumentException($"{nameof(subtags)} must have the same length as {nameof(ats)}.", nameof(subtags));

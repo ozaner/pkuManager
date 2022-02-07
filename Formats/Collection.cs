@@ -15,7 +15,7 @@ public abstract class Collection
     public bool IsCollectionValid { get; }
     public abstract string Name { get; }
     public abstract int BoxCount { get; }
-    public abstract IntegralField CurrentBoxID { get; protected set; }
+    public abstract IIntegralField CurrentBoxID { get; protected set; }
     public Box CurrentBox { get; protected set; }
 
     protected virtual void PreInit() { }
@@ -38,7 +38,7 @@ public abstract class Collection
     protected abstract Box CreateBox(int boxID);
     public void SwitchBox(int boxID)
     {
-        CurrentBoxID.Set(boxID);
+        CurrentBoxID.Value = boxID;
         CurrentBox = CreateBox(boxID);
     }
 }

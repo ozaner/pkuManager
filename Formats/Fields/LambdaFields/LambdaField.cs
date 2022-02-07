@@ -2,16 +2,43 @@
 
 namespace pkuManager.Formats.Fields.LambdaFields;
 
-public class LambdaField<T> : Field<T>, ILambdaField<T>
+public class LambdaField<T> : IField<T>
 {
-    protected override T Value { get => LambdaGet(); set => LambdaSet(value); }
-    public Func<T> LambdaGet { get; }
-    public Action<T> LambdaSet { get; }
+    protected bool IsWrapped { get; }
 
-    public LambdaField(Func<T> get, Action<T> set, Func<T, T> getter = null, Func<T, T> setter = null)
-        : base(getter, setter)
+    //No wrap parameters
+    protected Func<T> LambdaGet { get; }
+    protected Action<T> LambdaSet { get; }
+    
+    //wrap parameters
+    protected IField<T> WrappedField { get; }
+    protected Func<T, T> LambdaGetModifier { get; }
+    protected Func<T, T> LambdaSetModifier { get; }
+
+    public T Value
     {
+        get => IsWrapped ? LambdaGetModifier(WrappedField.Value) : LambdaGet();
+        set
+        {
+            if (IsWrapped)
+                WrappedField.Value = LambdaSetModifier(value);
+            else
+                LambdaSet(value);
+        }
+    }
+
+    public LambdaField(Func<T> get, Action<T> set)
+    {
+        IsWrapped = false;
         LambdaGet = get;
         LambdaSet = set;
+    }
+
+    public LambdaField(IField<T> wrappedField, Func<T, T> getModifier, Func<T, T> setModifier)
+    {
+        IsWrapped = true;
+        WrappedField = wrappedField;
+        LambdaGetModifier = getModifier;
+        LambdaSetModifier = setModifier;
     }
 }

@@ -1,20 +1,13 @@
-﻿using System;
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace pkuManager.Formats.Fields.BackedFields;
 
-public class BackedIntegralField : IntegralField
+public class BackedIntegralField : BackedField<BigInteger>, IIntegralField
 {
-    // Field
-    protected override BigInteger Value { get; set; }
+    public BigInteger? Max { get; }
+    public BigInteger? Min { get; }
 
-    // IntegralField
-    public override BigInteger? Max { get; }
-    public override BigInteger? Min { get; }
-
-
-    public BackedIntegralField(BigInteger? max = null, BigInteger? min = null, Func<BigInteger, BigInteger> getter = null,
-        Func<BigInteger, BigInteger> setter = null) : base(getter, setter)
+    public BackedIntegralField(BigInteger? max = null, BigInteger? min = null, BigInteger val = default) : base(val)
     {
         Max = max;
         Min = min;

@@ -414,7 +414,6 @@ public class pkuObject : FormatObject
             errormsg = error is null ? ".pku file is misformatted."
                                      : $"Something is wrong with '{error.Path}' or one of it's sub-tags.";
         }
-
         return (pku, errormsg);
     }
 
@@ -478,7 +477,7 @@ public class pkuObject : FormatObject
     */
     private static readonly JsonSerializerSettings jsonSettings = new()
     {
-        Converters = new List<JsonConverter> { new FieldJsonConverter() },
+        Converters = new List<JsonConverter> { new IFieldJsonConverter() },
         NullValueHandling = NullValueHandling.Ignore,
         ContractResolver = ShouldSerializeContractResolver.Instance
     };
@@ -496,11 +495,10 @@ public class pkuObject : FormatObject
             Type valueType = value.GetType();
 
             // check backing of fields
-            if (valueType.IsSubclassOfGeneric(typeof(Field<>)))
+            if (valueType.ImplementsGenericInterface(typeof(IField<>)))
             {
-                value = valueType.GetMethods()
-                                 .Where(x => x.Name is "Get" && !x.IsGenericMethod && x.GetParameters().Length is 0)
-                                 .First().Invoke(value, Array.Empty<object>());
+                value = valueType.GetProperties().Where(x => x.Name is "Value").First()
+                    .GetGetMethod().Invoke(value, Array.Empty<object>());
 
                 if (value is null) //backing value was null
                     return true;

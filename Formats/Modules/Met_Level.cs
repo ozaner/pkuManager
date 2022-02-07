@@ -5,7 +5,7 @@ namespace pkuManager.Formats.Modules;
 
 public interface Met_Level_O
 {
-    public IntegralField Met_Level { get; }
+    public IIntegralField Met_Level { get; }
 }
 
 public interface Met_Level_E : NumericTag_E

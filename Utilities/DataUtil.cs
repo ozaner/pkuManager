@@ -406,8 +406,8 @@ public static class DataUtil
     }
 
     /// <inheritdoc cref="ToEnum{T}(string)"/>
-    public static T? ToEnum<T>(this Field<string> str) where T : struct
-        => str.Get().ToEnum<T>();
+    public static T? ToEnum<T>(this IField<string> str) where T : struct
+        => str?.Value.ToEnum<T>();
 
     /// <summary>
     /// Attempts to convert an array of strings to a list of enums of type <typeparamref name="T"/>.<br/>
@@ -569,4 +569,13 @@ public static class DataUtil
         }
         return false;
     }
+
+    /// <summary>
+    /// Checks if a given <paramref name="type"/> implements a given <paramref name="generic"/> interface.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <param name="generic">The generic interface type to check against.</param>
+    /// <returns>Whether <paramref name="type"/> implements <paramref name="generic"/>.</returns>
+    public static bool ImplementsGenericInterface(this Type type, Type generic)
+        => type.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == generic);
 }

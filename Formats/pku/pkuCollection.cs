@@ -24,7 +24,7 @@ public class pkuCollection : Collection
 
     public override string Name => Path.GetFileName(Location);
     public override int BoxCount => config.Boxes.Count;
-    public override IntegralField CurrentBoxID { get; protected set; }
+    public override IIntegralField CurrentBoxID { get; protected set; }
 
     private PKUCollectionConfig config;
     public pkuBox CurrentPKUBox => CurrentBox as pkuBox;
@@ -130,7 +130,7 @@ public class pkuCollection : Collection
 
         //if currentBoxID not in range, set to 0
         if (config.CurrentBoxID < 0 || config.CurrentBoxID >= config.Boxes.Count)
-            CurrentBoxID.Set(0);
+            CurrentBoxID.Value = 0;
 
         WriteCollectionConfig();
     }
@@ -347,13 +347,13 @@ public class pkuBox : Box
             pku.Nickname ?? defaultName,
             pku.Species,
             pku.Game_Info.Origin_Game ?? pku.Game_Info.Official_Origin_Game,
-            pku.True_OT.Get() ?? pku.Game_Info.OT,
-            pku.Forms.Get().JoinLexical() ?? DexUtil.GetDefaultForm(pku.Species),
+            pku.True_OT.Value ?? pku.Game_Info.OT,
+            pku.Forms.Value.JoinLexical() ?? DexUtil.GetDefaultForm(pku.Species),
             pku.Appearance.JoinLexical(),
-            pku.Catch_Info.Ball,
+            pku.Catch_Info.Ball.Value,
             pku.IsShadow(),
             ContainsExportedName(filename),
-            !pku.True_OT.IsNull,
+            !pku.True_OT.IsNull(),
             filename
         );
     }

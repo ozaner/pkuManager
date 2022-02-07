@@ -5,7 +5,7 @@ namespace pkuManager.Formats.Modules;
 
 public interface Friendship_O
 {
-    public IntegralField Friendship { get; }
+    public IIntegralField Friendship { get; }
 }
 
 public interface Friendship_E : NumericTag_E

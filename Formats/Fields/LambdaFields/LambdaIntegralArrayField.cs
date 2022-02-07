@@ -3,28 +3,22 @@ using System.Numerics;
 
 namespace pkuManager.Formats.Fields.LambdaFields;
 
-public class LambdaIntegralArrayField : IntegralArrayField
+public class LambdaIntegralArrayField : LambdaField<BigInteger[]>, IIntegralArrayField
 {
-    // Field
-    protected override BigInteger[] Value { get => LambdaGet(); set => LambdaSet(value); }
+    public BigInteger? Max { get; }
+    public BigInteger? Min { get; }
 
-    // ArrayField
-    public override int Length => Value.Length;
-
-    // IntegralArrayField
-    public override BigInteger Max { get; }
-    public override BigInteger Min { get; }
-
-    //Lambda
-    public Func<BigInteger[]> LambdaGet { get; }
-    public Action<BigInteger[]> LambdaSet { get; }
-
-    public LambdaIntegralArrayField(Func<BigInteger[]> get, Action<BigInteger[]> set, BigInteger max, BigInteger min, Func<BigInteger[], BigInteger[]> getter = null,
-        Func<BigInteger[], BigInteger[]> setter = null) : base(getter, setter)
+    public LambdaIntegralArrayField(Func<BigInteger[]> get, Action<BigInteger[]> set,
+        BigInteger? max = null, BigInteger? min = null) : base(get, set)
     {
-        LambdaGet = get;
-        LambdaSet = set;
         Max = max;
         Min = min;
+    }
+
+    public LambdaIntegralArrayField(IIntegralArrayField wrappedField, Func<BigInteger[], BigInteger[]> getModifier,
+        Func<BigInteger[], BigInteger[]> setModifier) : base(wrappedField, getModifier, setModifier)
+    {
+        Max = wrappedField.Max;
+        Min = wrappedField.Min;
     }
 }

@@ -1,57 +1,29 @@
 ﻿using pkuManager.Utilities;
-using System;
 using System.Numerics;
 
 namespace pkuManager.Formats.Fields.BAMFields;
 
-public class BAMIntegralField : IntegralField, IBAMField, IByteOverridable
+public class BAMIntegralField : BAMField, IIntegralField, IByteOverridable
 {
-    // Field
-    protected override BigInteger Value
+    public BigInteger Value
     {
-        get => BitType ? BAM.Get(StartByte, StartBit, BitLength)
-                       : BAM.Get(StartByte, ByteLength);
+        get => BitType ? BAM.Get(StartByte, StartBit, ByteOrBitLength)
+                       : BAM.Get(StartByte, ByteOrBitLength);
         set
         {
             if (BitType)
-                BAM.Set(value, StartByte, StartBit, BitLength);
+                BAM.Set(value, StartByte, StartBit, ByteOrBitLength);
             else
-                BAM.Set(value, StartByte, ByteLength);
+                BAM.Set(value, StartByte, ByteOrBitLength);
         }
     }
 
-    // IntegralField
-    public override BigInteger? Max => (this as IBAMField).GetMax();
-    public override BigInteger? Min => (this as IBAMField).GetMin();
+    public BAMIntegralField(ByteArrayManipulator bam, int startByte, int byteLength)
+        : base(bam, startByte, byteLength) { }
 
-    // IBAMField
-    public ByteArrayManipulator BAM { get; }
-    public bool BitType { get; }
-    public int StartByte { get; }
-    public int ByteLength { get; }
-    public int StartBit { get; }
-    public int BitLength { get; }
+    public BAMIntegralField(ByteArrayManipulator bam, int startByte, int startBit, int bitLength)
+        : base(bam, startByte, startBit, bitLength) { }
 
-
-    public BAMIntegralField(ByteArrayManipulator bam, int startByte, int byteLength,
-        Func<BigInteger, BigInteger> getter = null, Func<BigInteger, BigInteger> setter = null) : base(getter, setter)
-    {
-        BAM = bam;
-        BitType = false;
-        StartByte = startByte;
-        ByteLength = byteLength;
-    }
-
-    public BAMIntegralField(ByteArrayManipulator bam, int startByte, int startBit, int bitLength,
-        Func<BigInteger, BigInteger> getter = null, Func<BigInteger, BigInteger> setter = null) : base(getter, setter)
-    {
-        BAM = bam;
-        BitType = true;
-        StartByte = startByte;
-        StartBit = startBit;
-        BitLength = bitLength;
-    }
-
-    public string GetOverride() => BitType ? $"Set {StartByte}:{StartBit}:{BitLength}"
-                                           : $"Set {StartByte}:{ByteLength}";
+    public string GetOverride() => BitType ? $"Set {StartByte}:{StartBit}:{ByteOrBitLength}"
+                                           : $"Set {StartByte}:{ByteOrBitLength}";
 }

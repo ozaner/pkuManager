@@ -22,9 +22,9 @@ public class ErrorResolver<T>
     protected readonly OneOf<T, Func<T>>[] Options;
 
     /// <summary>
-    /// The Field that will store the chosen value.
+    /// The field that will store the chosen value.
     /// </summary>
-    protected Field<T> Field;
+    protected IField<T> Field;
 
     /// <summary>
     /// Creates an ErrorResolver object.
@@ -34,7 +34,7 @@ public class ErrorResolver<T>
     ///                       the <paramref name="alert"/>.<br/> Should only have one value if
     ///                       <paramref name="alert"/> is not a <see cref="RadioButtonAlert"/>.</param>
     /// <param name="field">A function that sets a value to the desired property.</param>
-    public ErrorResolver(Alert alert, Field<T> field, params OneOf<T, Func<T>>[] options)
+    public ErrorResolver(Alert alert, IField<T> field, params OneOf<T, Func<T>>[] options)
     {
         Options = options;
         Field = field;
@@ -52,9 +52,9 @@ public class ErrorResolver<T>
         }
     }
 
-    /// <inheritdoc cref="ErrorResolver(Alert, Field{T}, NewUnion{T, Func{T}}[])"/>
-    public ErrorResolver(Alert alert, Field<T> field, params T[] options)
-        : this(alert, field, new OneOf<T, Func<T>>[options.Length])
+    /// <inheritdoc cref="ErrorResolver(Alert, IField{T}, OneOf{T, Func{T}}[])"/>
+    public ErrorResolver(Alert alert, IField<T> IField, params T[] options)
+        : this(alert, IField, new OneOf<T, Func<T>>[options.Length])
     {
         for (int i = 0; i < options.Length; i++)
             Options[i] = options[i];
@@ -67,5 +67,5 @@ public class ErrorResolver<T>
     /// Finalizes and sets the value corresponding to the chosen option.
     /// </summary>
     public void DecideValue()
-        => Field.Set(ReadOption(rba is null ? Options[0] : Options[rba.SelectedIndex]));
+        => Field.Value = ReadOption(rba is null ? Options[0] : Options[rba.SelectedIndex]);
 }

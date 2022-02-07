@@ -10,7 +10,7 @@ namespace pkuManager.Formats.Modules;
 
 public interface Species_O
 {
-    public OneOf<IntegralField, Field<string>> Species { get; }
+    public OneOf<IIntegralField, IField<string>> Species { get; }
 }
 
 public interface Species_E
@@ -24,6 +24,6 @@ public interface Species_E
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected void ProcessSpecies() => Data.Species.Switch(
         x => x.SetAs(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, "Indices").Value), //int index
-        x => x.Set(DexUtil.GetSpeciesIndexedValue<string>(pku, FormatName, "Indices")) //string index
+        x => x.Value = DexUtil.GetSpeciesIndexedValue<string>(pku, FormatName, "Indices") //string index
     );
 }

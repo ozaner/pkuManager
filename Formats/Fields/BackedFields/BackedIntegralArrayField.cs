@@ -1,33 +1,27 @@
-﻿using System;
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace pkuManager.Formats.Fields.BackedFields;
 
-public class BackedIntegralArrayField : IntegralArrayField
+public class BackedIntegralArrayField : BackedArrayField<BigInteger>, IIntegralArrayField
 {
-    // Field
-    protected override BigInteger[] Value { get; set; }
+    public BigInteger? Max { get; }
+    public BigInteger? Min { get; }
 
-    // ArrayField
-    public override int Length => Value.Length;
-
-    // IntegralArrayField
-    public override BigInteger Max { get; }
-    public override BigInteger Min { get; }
-
-
-    public BackedIntegralArrayField(BigInteger max, BigInteger min, Func<BigInteger[], BigInteger[]> getter = null,
-        Func<BigInteger[], BigInteger[]> setter = null) : base(getter, setter)
+    public BackedIntegralArrayField(BigInteger? max = null, BigInteger? min = null) : base()
     {
         Max = max;
         Min = min;
     }
 
-    public BackedIntegralArrayField(BigInteger max, BigInteger min, int length, Func<BigInteger[], BigInteger[]> getter = null,
-        Func<BigInteger[], BigInteger[]> setter = null) : base(getter, setter)
+    public BackedIntegralArrayField(BigInteger[] vals, BigInteger? max = null, BigInteger? min = null) : base(vals)
     {
         Max = max;
         Min = min;
-        Set(new BigInteger[length]);
+    }
+
+    public BackedIntegralArrayField(int length, BigInteger? max = null, BigInteger? min = null) : base(new BigInteger[length])
+    {
+        Max = max;
+        Min = min;
     }
 }

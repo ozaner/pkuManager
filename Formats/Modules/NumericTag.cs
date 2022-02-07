@@ -12,16 +12,16 @@ public interface NumericTag_E
     public pkuObject pku { get; }
     public List<Alert> Warnings { get; }
 
-    protected void ProcessNumericTag(string tagName, Field<BigInteger?> pkuVal,
-        IntegralField formatVal, BigInteger defaultVal, bool silentUnspecified)
+    protected void ProcessNumericTag(string tagName, IField<BigInteger?> pkuVal,
+        IIntegralField formatVal, BigInteger defaultVal, bool silentUnspecified)
     {
-        (BigInteger checkedVal, AlertType at) = pkuVal.Get() switch {
+        (BigInteger checkedVal, AlertType at) = pkuVal.Value switch {
             null => (defaultVal, AlertType.UNSPECIFIED),
             var x when x > formatVal.Max => (formatVal.Max.Value, AlertType.OVERFLOW),
             var x when x < formatVal.Min => (formatVal.Min.Value, AlertType.UNDERFLOW),
-            _ => (pkuVal.Get().Value, AlertType.NONE)
+            _ => (pkuVal.Value.Value, AlertType.NONE)
         };
-        formatVal.Set(checkedVal);
+        formatVal.Value = checkedVal;
         Warnings.Add(GetNumericalAlert(tagName, at, formatVal.Max, formatVal.Min, defaultVal, silentUnspecified));
     }
 

@@ -2,18 +2,10 @@
 
 namespace pkuManager.Formats.Fields.LambdaFields;
 
-public class LambdaArrayField<T> : ArrayField<T>, ILambdaField<T[]>
+public class LambdaArrayField<T> : LambdaField<T[]>, IArrayField<T>
 {
-    protected override T[] Value { get => LambdaGet(); set => LambdaSet(value); }
-    public Func<T[]> LambdaGet { get; }
-    public Action<T[]> LambdaSet { get; }
+    public LambdaArrayField(Func<T[]> get, Action<T[]> set) : base(get, set) { }
 
-    public override int Length => Value.Length;
-
-    public LambdaArrayField(Func<T[]> get, Action<T[]> set, Func<T[], T[]> getter = null, Func<T[], T[]> setter = null)
-        : base(getter, setter)
-    {
-        LambdaGet = get;
-        LambdaSet = set;
-    }
+    public LambdaArrayField(IArrayField<T> wrappedField, Func<T[], T[]> getModifier, Func<T[], T[]> setModifier)
+        : base(wrappedField, getModifier, setModifier) { }
 }

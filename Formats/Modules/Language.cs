@@ -1,4 +1,5 @@
-﻿using pkuManager.Alerts;
+﻿using OneOf;
+using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.pku;
 using System;
@@ -9,7 +10,7 @@ namespace pkuManager.Formats.Modules;
 
 public interface Language_O
 {
-    public IntegralField Language { get; }
+    public OneOf<IIntegralField, IField<Language>, IField<Language?>> Language { get; }
 }
 
 public interface Language_E : EnumTag_E

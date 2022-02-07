@@ -1,4 +1,5 @@
 ﻿using pkuManager.Alerts;
+using pkuManager.Formats.Fields;
 using pkuManager.Formats.pku;
 using pkuManager.Formats.pkx;
 using pkuManager.Utilities;
@@ -22,22 +23,22 @@ public interface BattleStatOverride_E
             Alert alert = GetBattleStatAlert(); //generate alert, BEFORE modifying pku
 
             //If stat nature is specified, replace nature with it
-            if (!pku.Stat_Nature.IsNull)
-                pku.Nature.Set(pku.Stat_Nature);
+            if (!pku.Stat_Nature.IsNull())
+                pku.Nature.Value = pku.Stat_Nature.Value;
 
             //If any hyper training is specified, replace corresponding IVs with 31
-            if (pku.Hyper_Training.HP == true)
-                pku.IVs.HP.Set(31);
-            if (pku.Hyper_Training.Attack == true)
-                pku.IVs.Attack.Set(31);
-            if (pku.Hyper_Training.Defense == true)
-                pku.IVs.Defense.Set(31);
-            if (pku.Hyper_Training.Sp_Attack == true)
-                pku.IVs.Sp_Attack.Set(31);
-            if (pku.Hyper_Training.Sp_Defense == true)
-                pku.IVs.Sp_Defense.Set(31);
-            if (pku.Hyper_Training.Speed == true)
-                pku.IVs.Speed.Set(31);
+            if (pku.Hyper_Training.HP.Value == true)
+                pku.IVs.HP.Value = 31;
+            if (pku.Hyper_Training.Attack.Value == true)
+                pku.IVs.Attack.Value = 31;
+            if (pku.Hyper_Training.Defense.Value == true)
+                pku.IVs.Defense.Value = 31;
+            if (pku.Hyper_Training.Sp_Attack.Value == true)
+                pku.IVs.Sp_Attack.Value = 31;
+            if (pku.Hyper_Training.Sp_Defense.Value == true)
+                pku.IVs.Sp_Defense.Value = 31;
+            if (pku.Hyper_Training.Speed.Value == true)
+                pku.IVs.Speed.Value = 31;
 
             Notes.Add(alert);
         }
@@ -48,20 +49,20 @@ public interface BattleStatOverride_E
         string msg = "";
 
         //Deal with stat nature override
-        if (!pku.Stat_Nature.IsNull)
+        if (!pku.Stat_Nature.IsNull())
             msg += $"The pku's Nature " +
-                   (pku.Nature.IsNull ? "is unspecified, replacing it" : $"{pku.Nature}, was replaced") +
-                   $" with it's Stat Nature ({pku.Stat_Nature}).";
+                   (pku.Nature.IsNull() ? "is unspecified, replacing it" : $"{pku.Nature.Value}, was replaced") +
+                   $" with it's Stat Nature ({pku.Stat_Nature.Value}).";
 
-        if (pku.Hyper_Training_Array.Any(x => x == true)) //at least one hyper trained IV
+        if (pku.Hyper_Training_Array.Any(x => x.Value == true)) //at least one hyper trained IV
         {
-            if (!pku.Stat_Nature.IsNull)
+            if (!pku.Stat_Nature.IsNull())
                 msg += DataUtil.Newline(2);
             msg += "Replacing the pku's ";
             for (int i = 0; i < 6; i++)
             {
-                if (pku.Hyper_Training_Array[i] == true)
-                    msg += (pku.IVs_Array[i].IsNull ? $"unspecified" : $"{pku.IVs_Array[i]}") + $" {pkxUtil.STAT_NAMES[i]} IV, ";
+                if (pku.Hyper_Training_Array[i].Value == true)
+                    msg += (pku.IVs_Array[i].IsNull() ? $"unspecified" : $"{pku.IVs_Array[i].Value}") + $" {pkxUtil.STAT_NAMES[i]} IV, ";
             }
             msg += "with 31s as they are Hyper Trained.";
         }

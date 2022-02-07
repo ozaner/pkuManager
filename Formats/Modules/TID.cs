@@ -5,7 +5,7 @@ namespace pkuManager.Formats.Modules;
 
 public interface TID_O
 {
-    public IntegralField TID { get; }
+    public IIntegralField TID { get; }
 }
 
 public interface TID_E : NumericTag_E

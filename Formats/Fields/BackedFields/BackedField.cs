@@ -1,11 +1,10 @@
-﻿using System;
+﻿namespace pkuManager.Formats.Fields.BackedFields;
 
-namespace pkuManager.Formats.Fields.BackedFields;
-
-public class BackedField<T> : Field<T>
+public class BackedField<T> : IField<T>
 {
-    protected override T Value { get; set; }
+    public T Value { get; set; }
 
-    public BackedField(Func<T, T> getter = null, Func<T, T> setter = null)
-        : base(getter, setter) { }
+    public BackedField() { }
+
+    public BackedField(T val) => Value = val;
 }

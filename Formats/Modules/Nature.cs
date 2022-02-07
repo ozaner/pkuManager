@@ -10,7 +10,7 @@ namespace pkuManager.Formats.Modules;
 
 public interface Nature_O
 {
-    public OneOf<IntegralField, Field<Nature>, Field<Nature?>> Nature { get; }
+    public OneOf<IIntegralField, IField<Nature>, IField<Nature?>> Nature { get; }
 }
 
 public interface Nature_E : EnumTag_E

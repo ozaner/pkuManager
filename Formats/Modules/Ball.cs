@@ -8,7 +8,7 @@ namespace pkuManager.Formats.Modules;
 
 public interface Ball_O
 {
-    public OneOf<IntegralField, Field<string>> Ball { get; }
+    public OneOf<IIntegralField, IField<string>> Ball { get; }
 }
 
 public interface Ball_E : IndexTag_E

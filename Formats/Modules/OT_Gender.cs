@@ -11,7 +11,7 @@ namespace pkuManager.Formats.Modules;
 
 public interface OT_Gender_O
 {
-    public OneOf<IntegralField, Field<Gender>, Field<Gender?>, Field<bool>> OT_Gender { get; }
+    public OneOf<IIntegralField, IField<Gender>, IField<Gender?>, IField<bool>> OT_Gender { get; }
 }
 
 public interface OT_Gender_E : EnumTag_E
@@ -26,14 +26,15 @@ public interface OT_Gender_E : EnumTag_E
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected void ProcessOT_Gender()
     {
-        IntegralField boolWrapper = null;
-        if (Data.OT_Gender.TryPickT3(out Field<bool> boolField, out OneOf<IntegralField, Field<Gender>, Field<Gender?>> field))
-            field = boolWrapper = new BackedIntegralField(1, 0);
+        //converts bool field to integralfield
+        if (Data.OT_Gender.TryPickT3(out IField<bool> boolField, out OneOf<IIntegralField, IField<Gender>, IField<Gender?>> field))
+            field = new BackedIntegralField(1, 0);
 
         ProcessEnumTag("OT Gender", pku.Game_Info.Gender, OT_Gender_Default, field, OT_Gender_AlertIfUnspecified,
             OT_Gender_Alert_Func, x => x is Gender.Male or Gender.Female);
 
-        if (boolWrapper is not null)
-            Data.OT_Gender.AsT3.Set(boolWrapper.Get() > 0);
+        //if original field was bool, convert back from integralfield
+        if (Data.OT_Gender.IsT3)
+            Data.OT_Gender.AsT3.Value = field.AsT0.Value > 0;
     }
 }

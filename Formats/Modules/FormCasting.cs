@@ -44,7 +44,7 @@ public interface FormCasting_E
         else //this is impossible
             throw new("There's something wrong with the this method or FirstFormInFormat if we got here...");
 
-        pku.Forms.Set(form.SplitLexical()); //cast form
+        pku.Forms.Value = form.SplitLexical(); //cast form
         Notes.Add(a);
     }
 }

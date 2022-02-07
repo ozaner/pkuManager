@@ -3,25 +3,22 @@ using System.Numerics;
 
 namespace pkuManager.Formats.Fields.LambdaFields;
 
-public class LambdaIntegralField : IntegralField
+public class LambdaIntegralField : LambdaField<BigInteger>, IIntegralField
 {
-    // Field
-    protected override BigInteger Value { get => LambdaGet(); set => LambdaSet(value); }
+    public BigInteger? Max { get; }
+    public BigInteger? Min { get; }
 
-    // IntegralField
-    public override BigInteger? Max { get; }
-    public override BigInteger? Min { get; }
-
-    //Lambda
-    public Func<BigInteger> LambdaGet { get; }
-    public Action<BigInteger> LambdaSet { get; }
-
-    public LambdaIntegralField(Func<BigInteger> get, Action<BigInteger> set, BigInteger? max = null, BigInteger? min = null, Func<BigInteger, BigInteger> getter = null,
-        Func<BigInteger, BigInteger> setter = null) : base(getter, setter)
+    public LambdaIntegralField(Func<BigInteger> get, Action<BigInteger> set,
+        BigInteger? max = null, BigInteger? min = null) : base(get, set)
     {
-        LambdaGet = get;
-        LambdaSet = set;
         Max = max;
         Min = min;
+    }
+
+    public LambdaIntegralField(IIntegralField wrappedField, Func<BigInteger, BigInteger> getModifier,
+        Func<BigInteger, BigInteger> setModifier) : base(wrappedField, getModifier, setModifier)
+    {
+        Max = wrappedField.Max;
+        Min = wrappedField.Min;
     }
 }

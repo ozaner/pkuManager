@@ -1,32 +1,17 @@
 ﻿using pkuManager.Utilities;
-using System;
 
 namespace pkuManager.Formats.Fields.BAMFields;
 
-public class BAMBoolField : Field<bool>, IBAMField, IByteOverridable
+public class BAMBoolField : BAMField, IField<bool>, IByteOverridable
 {
-    // IBAMField
-    public ByteArrayManipulator BAM { get; }
-    public bool BitType => true;
-    public int StartByte { get; }
-    public int StartBit { get; }
-    public int BitLength => 1;
-    public int ByteLength => throw new NotImplementedException();
-
-    // Field
-    protected override bool Value
+    public bool Value
     {
-        get => BAM.Get<bool>(StartByte, StartBit, BitLength);
-        set => BAM.Set(value, StartByte, StartBit, BitLength);
+        get => BAM.Get<bool>(StartByte, StartBit, ByteOrBitLength);
+        set => BAM.Set(value, StartByte, StartBit, ByteOrBitLength);
     }
 
-    public BAMBoolField(ByteArrayManipulator bam, int startByte, int startBit,
-        Func<bool, bool> getter = null, Func<bool, bool> setter = null) : base(getter, setter)
-    {
-        BAM = bam;
-        StartByte = startByte;
-        StartBit = startBit;
-    }
+    public BAMBoolField(ByteArrayManipulator bam, int startByte, int startBit)
+        : base(bam, startByte, startBit, 1) { }
 
-    public string GetOverride() => $"Set {StartByte}:{StartBit}:{BitLength}";
+    public string GetOverride() => $"Set {StartByte}:{StartBit}:{ByteOrBitLength}";
 }
