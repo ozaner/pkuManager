@@ -63,10 +63,10 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
         // Non-Subdata
         PID = new(NonSubData, 0, 4);
         TID = new(NonSubData, 4, 4);
-        Nickname = new(NonSubData, 8, 1, 10);
+        Nickname = new(NonSubData, 8, 10, FormatName, Language, IsValidLang);
         Language = new(NonSubData, 18, 1);
         Egg_Name_Override = new(NonSubData, 19, 1);
-        OT = new(NonSubData, 20, 1, 7);
+        OT = new(NonSubData, 20, 7, FormatName, Language, IsValidLang);
         MarkingCircle = new(NonSubData, 27, 0);
         MarkingSquare = new(NonSubData, 27, 1);
         MarkingTriangle = new(NonSubData, 27, 2);
@@ -154,10 +154,10 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
     */
     public BAMIntegralField PID { get; }
     public BAMIntegralField TID { get; }
-    public BAMArrayField Nickname { get; }
+    public BAMStringField<byte> Nickname { get; }
     public BAMIntegralField Language { get; }
     public BAMIntegralField Egg_Name_Override { get; }
-    public BAMArrayField OT { get; }
+    public BAMStringField<byte> OT { get; }
     public BAMBoolField MarkingCircle { get; }
     public BAMBoolField MarkingSquare { get; }
     public BAMBoolField MarkingTriangle { get; }
