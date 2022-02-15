@@ -27,9 +27,14 @@ public class ByteArrayManipulator
 
     /// <summary>
     /// An array of indices (offset, size) that, when stiched together form a virtual byte array from <see cref="ByteArray"/>.<br/>
-    /// All get and set methods will use this virtual array. Reads from the whole byte array by default.
+    /// If set, all get and set methods will use this virtual array.
     /// </summary>
     public (int offset, int size)[] VirtualIndices { get; }
+
+    /// <summary>
+    /// Whether or not this BAM uses <see cref="VirtualIndices"/>.
+    /// </summary>
+    public bool IsVirtual => VirtualIndices?.Length > 0;
 
     /// <summary>
     /// Constructs a new BAM with an empty underlying byte array.
@@ -49,7 +54,7 @@ public class ByteArrayManipulator
     {
         BigEndian = bigEndian;
         ByteArray = byteArray;
-        VirtualIndices = virutalIndices ?? new (int, int)[] { (0, ByteArray.Length) };
+        VirtualIndices = virutalIndices;
     }
 
     /// <summary>
@@ -148,14 +153,13 @@ public class ByteArrayManipulator
     /// <inheritdoc cref="GetVirtualByteIndices(int, int)"/>
     public BigInteger Get(int byteIndex, int byteLength)
     {
-        byte[] buffer = new byte[byteLength];
-        int i = 0;
-        foreach(int index in GetVirtualByteIndices(byteIndex, byteLength))
-            buffer[i++] = ByteArray[index];
-
         BigInteger sum = 0;
-        for (int j = 0; j < byteLength; j++)
-            sum += buffer[j] * BigInteger.Pow(2, 8 * (BigEndian ? (byteLength - 1 - j) : j));
+        var vInd = GetVirtualByteIndices(byteIndex, byteLength).GetEnumerator();
+        for (int i = 0; i < byteLength; i++)
+        {
+            int by = IsVirtual ? vInd.MoveAndGetNext() : byteIndex + i;
+            sum += ByteArray[by] * BigInteger.Pow(2, 8 * (BigEndian ? (byteLength - 1 - i) : i));
+        }
         return sum;
     }
 
@@ -168,9 +172,13 @@ public class ByteArrayManipulator
     public BigInteger Get(int byteIndex, int bitIndex, int bitLength)
     {
         BigInteger sum = 0;
-        int i = 0;
-        foreach ((int by, int bi) in GetVirtualBitIndices(byteIndex, bitIndex, bitLength))
-            sum += (BigInteger)((ByteArray[by] >> bi) & 1) << i++;
+        var vInd = GetVirtualBitIndices(byteIndex, bitIndex, bitLength).GetEnumerator();
+        for (int i = 0; i < bitLength; i++)
+        {
+            (int by, int bi) = IsVirtual ? vInd.MoveAndGetNext()
+                                         : (byteIndex + (bitIndex + i) / 8, (bitIndex + i) % 8);
+            sum += (BigInteger)((ByteArray[by] >> bi) & 1) << i;
+        }
         return sum;
     }
 
@@ -243,9 +251,12 @@ public class ByteArrayManipulator
     /// <inheritdoc cref="Get(int, int)"/>
     public void Set(BigInteger value, int byteIndex, int byteLength)
     {
-        int i = 0;
-        foreach (int index in GetVirtualByteIndices(byteIndex, byteLength))
-            ByteArray[index] = (byte)((value >> (8 * (BigEndian ? (byteLength - 1 - i++) : i++))) & 0xFF);
+        var vInd = GetVirtualByteIndices(byteIndex, byteLength).GetEnumerator();
+        for (int i = 0; i < byteLength; i++)
+        {
+            int by = IsVirtual ? vInd.MoveAndGetNext() : byteIndex + i;
+            ByteArray[by] = (byte)((value >> (8 * (BigEndian ? (byteLength - 1 - i) : i))) & 0xFF);
+        }
     }
 
     /// <summary>
@@ -256,11 +267,13 @@ public class ByteArrayManipulator
     /// <inheritdoc cref="Get(int, int, int)"/>
     public void Set(BigInteger value, int byteIndex, int bitIndex, int bitLength)
     {
-        int i = 0;
-        foreach ((int by, int bi) in GetVirtualBitIndices(byteIndex, bitIndex, bitLength))
+        var vInd = GetVirtualBitIndices(byteIndex, bitIndex, bitLength).GetEnumerator();
+        for (int i = 0; i < bitLength; i++)
         {
+            (int by, int bi) = IsVirtual ? vInd.MoveAndGetNext()
+                                         : (byteIndex + (bitIndex + i) / 8, (bitIndex + i) % 8);
             BigInteger temp = ByteArray[by];
-            temp.SetBits(value.GetBits(i++, 1), bi, 1);
+            temp.SetBits(value.GetBits(i, 1), bi, 1);
             ByteArray[by] = (byte)temp;
         }
     }

@@ -578,4 +578,8 @@ public static class DataUtil
     /// <returns>Whether <paramref name="type"/> implements <paramref name="generic"/>.</returns>
     public static bool ImplementsGenericInterface(this Type type, Type generic)
         => type.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == generic);
+
+    public static T MoveAndGetNext<T>(this IEnumerator<T> enumerator)
+        => enumerator.MoveNext() ? enumerator.Current
+        : throw new InvalidOperationException("There is no more for this enumerator to return.");
 }
