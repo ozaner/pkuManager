@@ -36,6 +36,9 @@ public class ByteArrayManipulator
     /// </summary>
     public bool IsVirtual => VirtualIndices?.Length > 0;
 
+    //keeps track of the last used virtual byte index, for optimizing sequential reads/writes
+    private (int vIndex, int range, int rIndex) lastVirtualByte = (0, 0, 0);
+
     /// <summary>
     /// Constructs a new BAM with an empty underlying byte array.
     /// </summary>
@@ -87,27 +90,33 @@ public class ByteArrayManipulator
     /// <returns>An enumerable of the physical byte offsets of the given value.</returns>
     public IEnumerable<int> GetVirtualByteIndices(int byteIndex, int byteLength)
     {
+        if (!IsVirtual) //nothing to do for nonvirtual bams
+            yield break;
+
+        (int currentByte, int startRange, int currentByteInRange) =
+            byteIndex > lastVirtualByte.vIndex ? lastVirtualByte : (0, 0, 0);
+
         int bufferLength = 0;
-        int currentByte = 0;
-        foreach ((int s, int l) in VirtualIndices) //loop through each range
+        for (int i = startRange; i < VirtualIndices.Length; i++) //loop through each range
         {
-            int currentByteInRange = 0;
-            while (currentByteInRange < l) //loop through each byte in the range
+            while (currentByteInRange < VirtualIndices[i].size) //loop through each byte in the range
             {
                 if (bufferLength == byteLength) //found enough bytes, done
                     break;
 
                 if (currentByte >= byteIndex) //within desired address
                 {
-                    yield return s + currentByteInRange;
+                    lastVirtualByte = (currentByte, i, currentByteInRange);
+                    yield return VirtualIndices[i].offset + currentByteInRange;
                     bufferLength++;
                 }
 
                 currentByte++;
                 currentByteInRange++;
-                if (currentByteInRange >= l)
+                if (currentByteInRange >= VirtualIndices[i].size)
                     break; //move to next range
             }
+            currentByteInRange = 0;
         }
     }
 
