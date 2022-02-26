@@ -46,6 +46,7 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
         "EGAM", "EGMA", "EAGM", "EAMG", "EMGA", "EMAG",
         "MGAE", "MGEA", "MAGE", "MAEG", "MEGA", "MEAG",
     };
+    protected const int DEFAULT_SUBSTRUCTURE_INDEX = 0;
 
     public ByteArrayManipulator NonSubData { get; } = new(NON_SUBDATA_SIZE, BIG_ENDIANESS);
     public ByteArrayManipulator G { get; } = new(BLOCK_SIZE, BIG_ENDIANESS);
@@ -131,6 +132,25 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
     public override byte[] ToFile()
     {
         UpdateChecksum(); // Calculate Checksum
+        ByteArrayManipulator subData = GroupSubData(SUBSTRUCTURE_ORDER[DEFAULT_SUBSTRUCTURE_INDEX]); // default block order
+
+        // PC .pk3 file is an 80 byte data structure
+        ByteArrayManipulator file = new(FILE_SIZE_PC, BIG_ENDIANESS);
+        file.SetArray<byte>(0, NonSubData); // First 32 bytes
+        file.SetArray<byte>(NON_SUBDATA_SIZE, subData); // Last 48 bytes
+
+        return file;
+    }
+
+    public override void FromFile(byte[] file)
+    {
+        NonSubData.SetArray(0, file, NON_SUBDATA_SIZE);
+        UngroupSubData(new ByteArrayManipulator(file[NON_SUBDATA_SIZE..FILE_SIZE_PC], BIG_ENDIANESS), SUBSTRUCTURE_ORDER[DEFAULT_SUBSTRUCTURE_INDEX]);
+    }
+
+    public byte[] ToEncryptedFile()
+    {
+        UpdateChecksum(); // Calculate Checksum
         ByteArrayManipulator subData = GetEncryptedSubData(); // Encryption Step
 
         // PC .pk3 file is an 80 byte data structure
@@ -141,12 +161,12 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
         return file;
     }
 
-    public override void FromFile(byte[] file)
+    public void FromEncryptedFile(byte[] file)
     {
         NonSubData.SetArray(0, file, NON_SUBDATA_SIZE);
         UnencryptSubData(new ByteArrayManipulator(file[NON_SUBDATA_SIZE..FILE_SIZE_PC], BIG_ENDIANESS));
     }
-        
+
 
     /* ------------------------------------
      * Non-Subdata
@@ -234,9 +254,27 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
 
 
     /* ------------------------------------
-     * Encryption
+     * SubData Packing / Encryption
      * ------------------------------------
     */
+    protected ByteArrayManipulator GroupSubData(string order)
+    {
+        ByteArrayManipulator subData = new(4 * BLOCK_SIZE, BIG_ENDIANESS);
+        subData.SetArray<byte>(BLOCK_SIZE * order.IndexOf('G'), G);
+        subData.SetArray<byte>(BLOCK_SIZE * order.IndexOf('A'), A);
+        subData.SetArray<byte>(BLOCK_SIZE * order.IndexOf('E'), E);
+        subData.SetArray<byte>(BLOCK_SIZE * order.IndexOf('M'), M);
+        return subData;
+    }
+
+    protected void UngroupSubData(ByteArrayManipulator subData, string order)
+    {
+        G.SetArray(0, subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('G'), BLOCK_SIZE));
+        A.SetArray(0, subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('A'), BLOCK_SIZE));
+        E.SetArray(0, subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('E'), BLOCK_SIZE));
+        M.SetArray(0, subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('M'), BLOCK_SIZE));
+    }
+
     /// <summary>
     /// Calculates the checksum of the 4 sub-blocks, and sets it to <see cref="Checksum"/>.
     /// </summary>
@@ -269,13 +307,8 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
     /// <returns>A 48 byte encrypted sub-data array.</returns>
     protected ByteArrayManipulator GetEncryptedSubData()
     {
-        ByteArrayManipulator subData = new(4 * BLOCK_SIZE, BIG_ENDIANESS);
         string order = SUBSTRUCTURE_ORDER[PID.GetAs<uint>() % SUBSTRUCTURE_ORDER.Length];
-        subData.SetArray<byte>(BLOCK_SIZE * order.IndexOf('G'), G);
-        subData.SetArray<byte>(BLOCK_SIZE * order.IndexOf('A'), A);
-        subData.SetArray<byte>(BLOCK_SIZE * order.IndexOf('E'), E);
-        subData.SetArray<byte>(BLOCK_SIZE * order.IndexOf('M'), M);
-
+        ByteArrayManipulator subData = GroupSubData(order);
         ApplyXOR(subData);
         return subData;
     }
@@ -283,12 +316,8 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
     protected void UnencryptSubData(ByteArrayManipulator subData)
     {
         ApplyXOR(subData);
-
         string order = SUBSTRUCTURE_ORDER[PID.GetAs<uint>() % SUBSTRUCTURE_ORDER.Length];
-        G.SetArray(0, subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('G'), BLOCK_SIZE));
-        A.SetArray(0, subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('A'), BLOCK_SIZE));
-        E.SetArray(0, subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('E'), BLOCK_SIZE));
-        M.SetArray(0, subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('M'), BLOCK_SIZE));
+        UngroupSubData(subData, order);
     }
 
 
