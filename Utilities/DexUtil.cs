@@ -148,6 +148,26 @@ public static class DexUtil
     public static T GetIndexedValue<T>(this JObject dex, string format, params string[] keys)
         => dex.GetIndexedValue<T>(format, new List<List<string>>() { keys.ToList() });
 
+    public static string SearchIndexedValue<T>(this JObject dex, T value, string format, string indexName, params string[] keys)
+    {
+        //get chain of indices to be searched.
+        List<string> indexChain = new() { format };
+        string[] indexParents = FORMAT_DEX.ReadDataDex<string[]>(format, "Parent Indices");
+        if (indexParents is not null)
+            indexChain.AddRange(indexParents);
+
+        int xLoc = Array.IndexOf(keys, "$x");
+        foreach (string link in indexChain)
+        {
+            string res = dex.SearchDataDex(value, keys.Append(indexName).Append(link).ToArray());
+            keys[xLoc] = res;
+            if (res is not null && dex.ExistsIn(format, keys))
+                return res;
+            keys[xLoc] = "$x";
+        }
+        return null;
+    }
+
 
     /* ------------------------------------
      * SpeciesDex Methods

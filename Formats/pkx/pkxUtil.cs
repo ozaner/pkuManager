@@ -177,6 +177,9 @@ public static class pkxUtil
         }
     }
 
+    public static bool IsPIDShiny(uint pid, uint tid, bool gen6Plus)
+        => (tid / 65536 ^ tid % 65536 ^ pid / 65536 ^ pid % 65536) < (gen6Plus ? 16 : 8);
+
     /// <summary>
     /// Calculates the PP of the given <paramref name="move"/> with the given number of
     /// <paramref name="ppups"/>, under the given <paramref name="format"/>.
@@ -889,7 +892,7 @@ public static class pkxUtil
                 unownMismatch = checkedUnownForm is not null && checkedUnownForm != oldunownform;
             }
             //always check shiny
-            bool oldshiny = (checkedTID / 65536 ^ checkedTID % 65536 ^ pid / 65536 ^ pid % 65536) < (gen6Plus ? 16 : 8);
+            bool oldshiny = IsPIDShiny(pid, checkedTID, gen6Plus);
             shinyMismatch = pku.IsShiny() != oldshiny;
 
             // Deal with pid-mismatches
