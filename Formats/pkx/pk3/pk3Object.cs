@@ -66,15 +66,18 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
         TID = new(NonSubData, 4, 4);
         Nickname = new(NonSubData, 8, 10, FormatName, Language, IsValidLang);
         Language = new(NonSubData, 18, 1);
-        Egg_Name_Override = new(NonSubData, 19, 1);
+        IsBadEgg = new(NonSubData, 19, 0);
+        HasSpecies = new(NonSubData, 19, 1);
+        UseEggName = new(NonSubData, 19, 2);
+        Unused_A = new(NonSubData, 19, 3, 5); //leftover from egg name byte
         OT = new(NonSubData, 20, 7, FormatName, Language, IsValidLang);
         MarkingCircle = new(NonSubData, 27, 0);
         MarkingSquare = new(NonSubData, 27, 1);
         MarkingTriangle = new(NonSubData, 27, 2);
         MarkingHeart = new(NonSubData, 27, 3);
-        Unused_A = new(NonSubData, 27, 4, 4); // leftover from markings byte
+        Unused_B = new(NonSubData, 27, 4, 4); // leftover from markings byte
         Checksum = new(NonSubData, 28, 2);
-        Unused_B = new(NonSubData, 30, 2); // probably padding
+        Unused_C = new(NonSubData, 30, 2); // probably padding
 
         // Block G
         Species = new(G, 0, 2);
@@ -82,7 +85,7 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
         Experience = new(G, 4, 4);
         PP_Ups = new(G, 8, 0, 2, 4);
         Friendship = new(G, 9, 1);
-        Unused_C = new(G, 10, 2); // probably padding
+        Unused_D = new(G, 10, 2); // probably padding
 
         // Block A
         Moves = new(A, 0, 2, 4);
@@ -120,7 +123,7 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
         National_Ribbon = new(M, 8, 24);
         Earth_Ribbon = new(M, 8, 25);
         World_Ribbon = new(M, 8, 26);
-        Unused_D = new(M, 8, 27, 4); //leftover from ribbon bytes
+        Unused_E = new(M, 8, 27, 4); //leftover from ribbon bytes
         Fateful_Encounter = new(M, 8, 31);
     }
 
@@ -176,15 +179,18 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
     public BAMIntegralField TID { get; }
     public BAMStringField<byte> Nickname { get; }
     public BAMIntegralField Language { get; }
-    public BAMIntegralField Egg_Name_Override { get; }
+    public BAMBoolField IsBadEgg { get; }
+    public BAMBoolField HasSpecies { get; }
+    public BAMBoolField UseEggName { get; }
+    public BAMIntegralField Unused_A { get; }
     public BAMStringField<byte> OT { get; }
     public BAMBoolField MarkingCircle { get; }
     public BAMBoolField MarkingSquare { get; }
     public BAMBoolField MarkingTriangle { get; }
     public BAMBoolField MarkingHeart { get; }
-    public BAMIntegralField Unused_A { get; }
-    public BAMIntegralField Checksum { get; }
     public BAMIntegralField Unused_B { get; }
+    public BAMIntegralField Checksum { get; }
+    public BAMIntegralField Unused_C { get; }
 
 
     /* ------------------------------------
@@ -196,7 +202,7 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
     public BAMIntegralField Experience { get; }
     public BAMArrayField PP_Ups { get; }
     public BAMIntegralField Friendship { get; }
-    public BAMIntegralField Unused_C { get; }
+    public BAMIntegralField Unused_D { get; }
 
 
     /* ------------------------------------
@@ -249,7 +255,7 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
     public BAMBoolField National_Ribbon { get; }
     public BAMBoolField Earth_Ribbon { get; }
     public BAMBoolField World_Ribbon { get; }
-    public BAMIntegralField Unused_D { get; }
+    public BAMIntegralField Unused_E { get; }
     public BAMBoolField Fateful_Encounter { get; }
 
 
@@ -386,12 +392,6 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
      * Misc. Utility
      * ------------------------------------
     */
-    /// <summary>
-    /// When <see cref="Egg_Name_Override"/> is set to this value, the pk3 nickname will<br/>
-    /// be overriden by the <see cref="pkxUtil.EGG_NICKNAME"/> of the game's language.
-    /// </summary>
-    public const byte EGG_NAME_OVERRIDE_CONST = 0x06;
-
     /// <summary>
     /// Returns the rank of the given Gen 3 contest category.
     /// </summary>

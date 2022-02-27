@@ -22,9 +22,11 @@ public interface Species_E
 
     public Species_O Data { get; }
 
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected void ProcessSpecies() => Data.Species.Switch(
+    public void ProcessSpeciesBase() => Data.Species.Switch(
         x => x.SetAs(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, "Indices").Value), //int index
         x => x.Value = DexUtil.GetSpeciesIndexedValue<string>(pku, FormatName, "Indices") //string index
     );
+
+    [PorterDirective(ProcessingPhase.FirstPass)]
+    protected void ProcessSpecies() => ProcessSpeciesBase();
 }

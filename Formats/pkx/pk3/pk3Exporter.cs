@@ -76,6 +76,14 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
      * Tag Processing Methods
      * ------------------------------------
     */
+    // Species
+    [PorterDirective(ProcessingPhase.FirstPass)]
+    protected virtual void ProcessSpecies()
+    {
+        (this as Species_E).ProcessSpeciesBase();
+        Data.HasSpecies.ValueAsBool = true;
+    }
+
     // Gender [Implicit]
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void ProcessGender()
@@ -95,7 +103,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     }
 
     // Form [Implicit]
-    [PorterDirective(ProcessingPhase.FirstPass, "ProcessSpecies")]
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessSpecies))]
     protected virtual void ProcessForm()
     {
         (this as Form_E).ProcessFormBase();
@@ -157,7 +165,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
             Language? lang = DataUtil.ToEnum<Language>(pku.Game_Info?.Language);
             if (lang is not null && pkxUtil.EGG_NICKNAME[lang.Value] == pku.Nickname)
             {
-                Data.Egg_Name_Override.SetAs(pk3Object.EGG_NAME_OVERRIDE_CONST); //override nickname to be 'egg'
+                Data.UseEggName.ValueAsBool = true;
                 legalGen3Egg = true;
             }
         }
