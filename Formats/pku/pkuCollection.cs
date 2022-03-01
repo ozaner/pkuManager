@@ -434,6 +434,8 @@ public class pkuBox : Box
             if (numInConfig >= (int)BoxConfig.BoxType)
                 break;
 
+            if (kvp.Value is null)
+                continue;
             if(validPKUs.TryGetValue(kvp.Value, out pkuObject pku))
             {
                 Data.Add(kvp.Key, CreateSlot(pku, kvp.Value));
