@@ -341,6 +341,8 @@ public class pkuObject : FormatObject
         throw new NotImplementedException();
     }
 
+    public string SourceFilename { get; set; }
+
 
     /* ------------------------------------
      * Utility Methods

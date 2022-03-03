@@ -334,36 +334,10 @@ public class pkuBox : Box
         }
     }
 
-    private Slot CreateSlot(pkuObject pku, string filename)
-    {
-        int? dex = pkxUtil.GetNationalDex(pku.Species);
-        Language? lang = pku.Game_Info.Language.ToEnum<Language>();
-        string defaultName = dex.HasValue && lang.HasValue ? PokeAPIUtil.GetSpeciesNameTranslated(dex.Value, lang.Value) : pku.Species;
-        var sprites = ImageUtil.GetSprites(pku);
-        return new(
-            pku,
-            sprites[0],
-            sprites[1],
-            sprites[2],
-            pku.Nickname ?? defaultName,
-            pku.Species,
-            pku.Game_Info.Origin_Game ?? pku.Game_Info.Official_Origin_Game,
-            pku.True_OT.Value ?? pku.Game_Info.OT,
-            pku.Forms.Value.JoinLexical() ?? DexUtil.GetDefaultForm(pku.Species),
-            pku.Appearance.JoinLexical(),
-            pku.Catch_Info.Ball.Value,
-            pku.IsShadow(),
-            ContainsExportedName(filename),
-            !pku.True_OT.IsNull(),
-            filename
-        );
-    }
-
     // Reads the pku files from the folder, and rectifies them with those in the config
     public void LoadPKUFiles()
     {
-        //maps all valid .pku files (filenames) to loaded in pkus
-        Dictionary<string, pkuObject> validPKUs = new(StringComparer.OrdinalIgnoreCase);
+        List<pkuObject> validPKUs = new();
 
         /* ------------------------------------
          * Read all .pku files from box
@@ -395,7 +369,10 @@ public class pkuBox : Box
             (pkuObject pku, string erorrMsg) = pkuObject.Deserialize(pkuText);
 
             if (erorrMsg is null)
-                validPKUs.Add(fi.Name, pku);
+            {
+                pku.SourceFilename = fi.Name;
+                validPKUs.Add(pku);
+            }
             else
                 invalidPKUs.Add(fi.Name, erorrMsg);
         }
@@ -412,12 +389,13 @@ public class pkuBox : Box
         // -------------------
 
         // Get list of new .pku files
-        List<string> newBoxConfigNames = validPKUs.Keys.Where(x => !BoxConfig.pkuFileNames.Values
-                                            .Contains(x, StringComparer.OrdinalIgnoreCase)).ToList();
+        List<pkuObject> newValidPKUs = validPKUs.Where(x => !BoxConfig.pkuFileNames.Values
+                                                .Contains(x.SourceFilename, StringComparer.OrdinalIgnoreCase))
+                                                .ToList();
 
         // (optionally) ask user if they want to add the new files
         DialogResult dr = DialogResult.Yes;
-        if (newBoxConfigNames.Count > 0 && Properties.Settings.Default.Ask_Auto_Add)
+        if (newValidPKUs.Count > 0 && Properties.Settings.Default.Ask_Auto_Add)
             dr = MessageBox.Show($"Some new .pku files were added to the {Name} folder since this box was last opened, would you like to add them to the boxconfig?", "New .pku files found", MessageBoxButtons.YesNo);
         bool addNewFiles = dr is DialogResult.Yes;
 
@@ -434,11 +412,10 @@ public class pkuBox : Box
             if (numInConfig >= (int)BoxConfig.BoxType)
                 break;
 
-            if (kvp.Value is null)
-                continue;
-            if(validPKUs.TryGetValue(kvp.Value, out pkuObject pku))
+            pkuObject pku = validPKUs.Find(x => x.SourceFilename.EqualsCaseInsensitive(kvp.Value));
+            if (pku is not null)
             {
-                Data.Add(kvp.Key, CreateSlot(pku, kvp.Value));
+                Data.Add(kvp.Key, CreateSlot(pku));
                 numInConfig++;
             }
         }
@@ -446,7 +423,7 @@ public class pkuBox : Box
         //add new pku files if there is space leftover
         if (addNewFiles)
         {
-            foreach (string filename in newBoxConfigNames)
+            foreach (pkuObject pku in newValidPKUs)
             {
                 if (numInConfig >= (int)BoxConfig.BoxType)
                 {
@@ -455,7 +432,7 @@ public class pkuBox : Box
                 }
 
                 int nextAvailableIndex = Enumerable.Range(1, int.MaxValue).Except(Data.Keys).FirstOrDefault(); // gets first available slot
-                Data.Add(nextAvailableIndex, CreateSlot(validPKUs[filename], filename)); // Adds it
+                Data.Add(nextAvailableIndex, CreateSlot(pku)); // Adds it
             }
         }
         WriteBoxConfig(); //Data is updated upon loading
@@ -491,6 +468,30 @@ public class pkuBox : Box
      * Override Box Methods
      * ------------------------------------
     */
+    public Slot CreateSlot(pkuObject pku)
+    {
+        int? dex = pkxUtil.GetNationalDex(pku.Species);
+        Language? lang = pku.Game_Info.Language.ToEnum<Language>();
+        string defaultName = dex.HasValue && lang.HasValue ? PokeAPIUtil.GetSpeciesNameTranslated(dex.Value, lang.Value) : pku.Species;
+        var sprites = ImageUtil.GetSprites(pku);
+        Slot s = new(
+            pku,
+            sprites[0],
+            sprites[1],
+            sprites[2],
+            pku.Nickname ?? defaultName,
+            pku.Species,
+            pku.Game_Info.Origin_Game ?? pku.Game_Info.Official_Origin_Game,
+            pku.True_OT.Value ?? pku.Game_Info.OT,
+            pku.Forms.Value.JoinLexical() ?? DexUtil.GetDefaultForm(pku.Species),
+            pku.Appearance.JoinLexical(),
+            pku.Catch_Info.Ball.Value,
+            pku.IsShadow()
+        );
+        s.AddPKUData(ContainsExportedName(pku.SourceFilename), !pku.True_OT.IsNull(), pku.SourceFilename);
+        return s;
+    }
+
     public override bool SwapSlots(int slotIDA, int slotIDB)
     {
         // switch desired pokemon

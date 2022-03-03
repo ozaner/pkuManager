@@ -63,7 +63,7 @@ public partial class ImportingWindow : Form
     }
 
     // gets a byte array to be imported
-    private static byte[] GetFile(OpenFileDialog ofd, string ext)
+    private static (byte[], string filename) GetFile(OpenFileDialog ofd, string ext)
     {
         ofd.SetExtension(ext);
         ofd.Title = $"Import a .{ext}";
@@ -73,12 +73,12 @@ public partial class ImportingWindow : Form
         if (result is DialogResult.OK) //Successfully found a file
         {
             Debug.WriteLine("File found for importing!");
-            return File.ReadAllBytes(ofd.FileName);
+            return (File.ReadAllBytes(ofd.FileName), Path.GetFileNameWithoutExtension(ofd.SafeFileName) + ".pku");
         }
         else
         {
             Debug.WriteLine("Failed to get file to import...");
-            return null;
+            return (null, null);
         }
     }
 
@@ -98,7 +98,7 @@ public partial class ImportingWindow : Form
 
         ImportingWindow importerWindow = new(format, ext);
 
-        byte[] file = GetFile(ofd, ext);
+        (byte[] file, string filename) = GetFile(ofd, ext);
         if (file is null) //file read was a failure
             return (null, ImportStatus.Canceled, "No file chosen.");
 
@@ -130,6 +130,7 @@ public partial class ImportingWindow : Form
                 if (importedPKU is null)
                     throw new Exception("A null pkuObject was returned by the importer, despite canImport() passing... fix this");
 
+                importedPKU.SourceFilename = filename; //mark with source file
                 return (importedPKU, ImportStatus.Success, null);
             }
             else
@@ -138,6 +139,7 @@ public partial class ImportingWindow : Form
         else // bypass window if no alerts
         {
             importedPKU = importer.ToPKU();
+            importedPKU.SourceFilename = filename; //mark with source file
             return (importedPKU, ImportStatus.Success, null);
         }
     }

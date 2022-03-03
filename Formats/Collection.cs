@@ -1,5 +1,4 @@
 using pkuManager.Formats.Fields;
-using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using System.Collections.Generic;
 using System.Drawing;
@@ -100,9 +99,9 @@ public class Slot
     public bool IsShadow { get; }
 
     //pku stuff
-    public bool IsTrueOT { get; } // most-likely only used for formats supporting pku
+    public bool IsTrueOT { get; protected set; } // most-likely only used for formats supporting pku
     public bool CheckedOut { get; set; } // always false for non pku collections...
-    public string Filename { get; }
+    public string Filename { get; protected set; }
 
     public FormatObject pkmnObj { get; }
 
@@ -124,13 +123,8 @@ public class Slot
         IsShadow = isShadow;
     }
 
-    //pku specfic slot
-    public Slot(pkuObject pku, (string, string) boxSprite, (string, string) frontSprite, (string, string) backSprite,
-        string nickname, string species, string game, string ot, string forms, string appearance,
-        string ball, bool isShadow, bool checkedOut, bool isTrueOT, string filename)
-        : this(pku, boxSprite, frontSprite, backSprite, nickname, species, game, ot, forms, appearance, ball, isShadow)
+    public void AddPKUData(bool checkedOut, bool isTrueOT, string filename)
     {
-        //pku specific
         CheckedOut = checkedOut;
         IsTrueOT = isTrueOT;
         Filename = filename;
