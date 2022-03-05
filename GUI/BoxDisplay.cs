@@ -35,18 +35,18 @@ public class BoxDisplay : FlowLayoutPanel
 
         // box layout setup
         if (isList)
-            ListSetup(box.Data);
+            ListSetup(box);
         else
-            MatrixSetup(box.Data, box.Width, box.Height);
+            MatrixSetup(box);
     }
 
-    private void ListSetup(SortedDictionary<int, Slot> slots)
+    private void ListSetup(Box box)
     {
         Width = SlotDisplay.SLOT_SIZE.Width * 6;
         Height = SlotDisplay.SLOT_SIZE.Height * 5;
 
-        foreach (int slotID in slots.Keys)
-            Controls.Add(new SlotDisplay(slots[slotID], slotID));
+        foreach ((int slotID, FormatObject fo) in box.ReadBox())
+            Controls.Add(new SlotDisplay(box.CreateSlotInfo(fo), slotID));
 
         if (Controls.Count > 30)
             Width += SCROLLBAR_SIZE;
@@ -54,19 +54,20 @@ public class BoxDisplay : FlowLayoutPanel
         AutoScroll = true;
     }
 
-    private void MatrixSetup(SortedDictionary<int, Slot> slots, int width, int height)
+    private void MatrixSetup(Box box)
     {
-        Width = SlotDisplay.SLOT_SIZE.Width * width;
-        Height = SlotDisplay.SLOT_SIZE.Height * height;
-        int max = width * height;
-        for (int i = 1; i <= max; i++)
+        Width = SlotDisplay.SLOT_SIZE.Width * box.Width;
+        Height = SlotDisplay.SLOT_SIZE.Height * box.Height;
+
+        var data = box.ReadBox().ToDictionary(x => x.Item1, x => x.Item2);
+        for (int i = 1; i <= box.Capacity; i++)
         {
-            if (slots.ContainsKey(i))
-                Controls.Add(new SlotDisplay(slots[i], i));
+            if (data.ContainsKey(i))
+                Controls.Add(new SlotDisplay(box.CreateSlotInfo(data[i]), i));
             else
                 Controls.Add(new SlotDisplay(i));
         }
-        if (Controls.Count > max)
+        if (Controls.Count > box.Capacity)
             Width += SCROLLBAR_SIZE;
     }
 

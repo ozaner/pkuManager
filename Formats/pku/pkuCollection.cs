@@ -226,10 +226,16 @@ public class pkuCollection : Collection
 
 public class pkuBox : Box
 {
+    // Box vars
+    public override int Width => GetDims(BoxType).width;
+    public override int Height => GetDims(BoxType).height;
+
+    // pkuBox vars
     private readonly string Path;
     public string Name { get; }
     private pkuBoxConfig BoxConfig;
     public BoxConfigType BoxType => BoxConfig.BoxType;
+    public SortedDictionary<int, pkuObject> Data { get; protected set; } = new();
 
     public pkuBox(string path, string name)
     {
@@ -238,16 +244,6 @@ public class pkuBox : Box
         LoadBoxConfig();
         LoadBackground();
         LoadPKUFiles();
-
-        //get dimensions
-        (Width, Height) = BoxConfig.BoxType switch
-        {
-            BoxConfigType.LIST => (0, 0),
-            BoxConfigType.THIRTY => (6, 5),
-            BoxConfigType.SIXTY => (12, 5),
-            BoxConfigType.NINTYSIX => (12, 8),
-            _ => throw new NotImplementedException()
-        };
     }
 
 
@@ -265,6 +261,15 @@ public class pkuBox : Box
             SIXTY = 60,
             NINTYSIX = 96
         }
+
+        public static (int width, int height) GetDims(BoxConfigType bc) => bc switch
+        {
+            BoxConfigType.LIST => (0, 0),
+            BoxConfigType.THIRTY => (6, 5),
+            BoxConfigType.SIXTY => (12, 5),
+            BoxConfigType.NINTYSIX => (12, 8),
+            _ => throw new NotImplementedException()
+        };
 
         public pkuBoxConfig()
         {
@@ -319,7 +324,7 @@ public class pkuBox : Box
         // Update pkuFiles
         SortedDictionary<int, string> pkfn = new();
         foreach (var kp in Data)
-            pkfn.Add(kp.Key, kp.Value.Filename);
+            pkfn.Add(kp.Key, kp.Value.SourceFilename);
         BoxConfig.pkuFileNames = pkfn;
 
         string configPath = $"{Path}/{Name}/boxConfig.json";
@@ -415,7 +420,7 @@ public class pkuBox : Box
             pkuObject pku = validPKUs.Find(x => x.SourceFilename.EqualsCaseInsensitive(kvp.Value));
             if (pku is not null)
             {
-                Data.Add(kvp.Key, CreateSlot(pku));
+                Data.Add(kvp.Key, pku);
                 numInConfig++;
             }
         }
@@ -432,7 +437,7 @@ public class pkuBox : Box
                 }
 
                 int nextAvailableIndex = Enumerable.Range(1, int.MaxValue).Except(Data.Keys).FirstOrDefault(); // gets first available slot
-                Data.Add(nextAvailableIndex, CreateSlot(pku)); // Adds it
+                Data.Add(nextAvailableIndex, pku); // Adds it
             }
         }
         WriteBoxConfig(); //Data is updated upon loading
@@ -468,8 +473,15 @@ public class pkuBox : Box
      * Override Box Methods
      * ------------------------------------
     */
-    public Slot CreateSlot(pkuObject pku)
+    public override IEnumerable<(int, FormatObject)> ReadBox()
     {
+        foreach((int slotID, pkuObject pku) in Data)
+            yield return (slotID, pku);
+    }
+
+    public override Slot CreateSlotInfo(FormatObject pkmn)
+    {
+        pkuObject pku = pkmn as pkuObject;
         int? dex = pkxUtil.GetNationalDex(pku.Species);
         Language? lang = pku.Game_Info.Language.ToEnum<Language>();
         string defaultName = dex.HasValue && lang.HasValue ? PokeAPIUtil.GetSpeciesNameTranslated(dex.Value, lang.Value) : pku.Species;
@@ -495,22 +507,22 @@ public class pkuBox : Box
     public override bool SwapSlots(int slotIDA, int slotIDB)
     {
         // switch desired pokemon
-        bool aSuccess = Data.TryGetValue(slotIDA, out Slot slotA);
-        bool bSuccess = Data.TryGetValue(slotIDB, out Slot slotB);
+        bool aSuccess = Data.TryGetValue(slotIDA, out pkuObject pkuA);
+        bool bSuccess = Data.TryGetValue(slotIDB, out pkuObject pkuB);
 
         if (aSuccess && bSuccess) //Both slots are not empty
         {
-            Data[slotIDA] = slotB;
-            Data[slotIDB] = slotA;
+            Data[slotIDA] = pkuB;
+            Data[slotIDB] = pkuA;
         }
         else if (aSuccess) //slot b is empty
         {
-            Data[slotIDB] = slotA;
+            Data[slotIDB] = pkuA;
             Data.Remove(slotIDA);
         }
         else if (bSuccess) //slot a is empty
         {
-            Data[slotIDA] = slotB;
+            Data[slotIDA] = pkuB;
             Data.Remove(slotIDB);
         }
         //else both slots are empty, do nothing
@@ -519,20 +531,20 @@ public class pkuBox : Box
         return true; //This can't fail... right?
     }
 
-    public override bool ReleaseSlot(int slotID)
+    public override bool ClearSlot(int slotID)
     {
         if (Data.ContainsKey(slotID))
         {
             try
             {
                 if (Properties.Settings.Default.Send_to_Recycle)
-                    FileSystem.DeleteFile($"{Path}/{Name}/{Data[slotID].Filename}", UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin); //send pku file to recycle bin
+                    FileSystem.DeleteFile($"{Path}/{Name}/{Data[slotID].SourceFilename}", UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin); //send pku file to recycle bin
                 else
-                    File.Delete($"{Path}/{Name}/{Data[slotID].Filename}"); //delete pku file from box folder
+                    File.Delete($"{Path}/{Name}/{Data[slotID].SourceFilename}"); //delete pku file from box folder
             }
             catch
             {
-                Debug.WriteLine($"Failed to delete/recycle {Path}/{Name}/{Data[slotID].Filename}");
+                Debug.WriteLine($"Failed to delete/recycle {Path}/{Name}/{Data[slotID].SourceFilename}");
                 return false; //failed to delete file... already in use? no permission?
             }
         }
@@ -590,7 +602,7 @@ public class pkuBox : Box
             {
                 int tempIndex;
                 int key = kp.Key;
-                Slot val = kp.Value;
+                pkuObject val = kp.Value;
                 if (key > max)
                 {
                     tempIndex = Enumerable.Range(1, max).Except(Data.Keys).FirstOrDefault();

@@ -36,6 +36,7 @@ public abstract class Collection
 
     public abstract string[] GetBoxNames();
     protected abstract Box CreateBox(int boxID);
+
     public void SwitchBox(int boxID)
     {
         CurrentBoxID.Value = boxID;
@@ -73,15 +74,14 @@ public abstract class FileCollection : Collection
 public abstract class Box
 {
     public Image Background { get; protected set; }
-    public int Width { get; protected set; }
-    public int Height { get; protected set; }
+    public abstract int Width { get; }
+    public abstract int Height { get; }
     public int Capacity => Width is 0 && Height is 0 ? int.MaxValue : Width * Height;
-    public SortedDictionary<int, Slot> Data { get; protected set; } = new();
 
+    public abstract IEnumerable<(int, FormatObject)> ReadBox();
+    public abstract Slot CreateSlotInfo(FormatObject pkmn);
     public abstract bool SwapSlots(int slotIDA, int slotIDB);
-    public abstract bool ReleaseSlot(int slotID);
-
-    public bool RoomForOneMore() => Data.Count < Capacity;
+    public abstract bool ClearSlot(int slotID);
 }
 
 public class Slot

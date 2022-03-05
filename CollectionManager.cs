@@ -71,7 +71,7 @@ public class CollectionManager
             return;
 
         // Try to release
-        if (CurrentBox.ReleaseSlot(slotDisplay.SlotID))
+        if (CurrentBox.ClearSlot(slotDisplay.SlotID))
         {
             CurrentBoxDisplay.CompleteReleaseRequest(slotDisplay);
             BoxDisplayRefreshed?.Invoke(null, null);
@@ -93,9 +93,6 @@ public class CollectionManager
         Collection.SwitchBox(boxID);
         RefreshBoxDisplay();
     }
-
-    public bool RoomForOneMore()
-        => CurrentBox.RoomForOneMore();
 
     public void DeselectCurrentSlot()
         => CurrentBoxDisplay.DeselectCurrentSlot();

@@ -2,6 +2,7 @@
 using pkuManager.Formats.Fields.BAMFields;
 using pkuManager.Formats.Modules;
 using pkuManager.Utilities;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
@@ -169,29 +170,50 @@ public class pk3Box : Box
     protected const int PC_BOXES_ADDR = 0x0004;
     protected const int PC_BOX_SIZE = pk3Object.FILE_SIZE_PC * 30;
 
+    // Box vars
+    public override int Width => 6;
+    public override int Height => 5;
+
+    // pk3Box vars
     protected ByteArrayManipulator UnshuffledPCBAM;
     protected int BoxID;
 
+
+    // pk3Box methods
     public pk3Box(int boxID, ByteArrayManipulator unshuffledPCBAM)
     {
         BoxID = boxID;
         UnshuffledPCBAM = unshuffledPCBAM;
-
-        (Width, Height) = (6, 5);
-        LoadBox();
     }
 
+    //indexing: 1-30
     protected int GetSlotAddress(int slotID)
-        => PC_BOXES_ADDR + PC_BOX_SIZE * BoxID + slotID * pk3Object.FILE_SIZE_PC;
+        => PC_BOXES_ADDR + PC_BOX_SIZE * BoxID + (slotID-1) * pk3Object.FILE_SIZE_PC;
 
-    protected byte[] ReadSlotBytes(int slotID)
-        => UnshuffledPCBAM.GetArray<byte>(GetSlotAddress(slotID-1), pk3Object.FILE_SIZE_PC);
+    protected byte[] ReadSlotRaw(int slotID)
+        => UnshuffledPCBAM.GetArray<byte>(GetSlotAddress(slotID), pk3Object.FILE_SIZE_PC);
 
-    protected void SetSlotBytes(byte[] bytes, int slotID)
-        => UnshuffledPCBAM.SetArray(GetSlotAddress(slotID-1), bytes[0..pk3Object.FILE_SIZE_PC]);
+    protected void SetSlotRaw(byte[] bytes, int slotID)
+        => UnshuffledPCBAM.SetArray(GetSlotAddress(slotID), bytes[0..pk3Object.FILE_SIZE_PC]);
 
-    protected static Slot CreateSlot(pk3Object pk3)
+
+    // Box methods
+    public override IEnumerable<(int, FormatObject)> ReadBox()
     {
+        for (int i = 1; i <= Capacity; i++)
+        {
+            byte[] bytes = ReadSlotRaw(i);
+            if (bytes.All(x => x is 0))
+                continue; //empty
+            pk3Object pk3 = new();
+            pk3.FromEncryptedFile(bytes);
+            yield return (i, pk3);
+        }
+    }
+
+    public override Slot CreateSlotInfo(FormatObject pkmn)
+    {
+        pk3Object pk3 = pkmn as pk3Object;
         int form = pk3.Species.GetAs<int>() switch
         {
             210 => pk3Object.GetUnownFormID(pk3.PID.GetAs<uint>()),
@@ -242,32 +264,19 @@ public class pk3Box : Box
         );
     }
 
-    protected void LoadBox()
+    public override bool ClearSlot(int slotID)
     {
-        for (int i = 1; i <= Capacity; i++)
-        {
-            byte[] bytes = ReadSlotBytes(i);
-            if (bytes.All(x => x is 0))
-                continue; //empty
-            pk3Object pk3 = new();
-            pk3.FromEncryptedFile(bytes);
-            Data.Add(i, CreateSlot(pk3));
-        }
-    }
-    
-    public override bool ReleaseSlot(int slotID)
-    {
-        SetSlotBytes(new byte[pk3Object.FILE_SIZE_PC], slotID);
+        SetSlotRaw(new byte[pk3Object.FILE_SIZE_PC], slotID);
         return true;
     }
 
     public override bool SwapSlots(int slotIDA, int slotIDB)
     {
         //physically swap the slots in save file.
-        byte[] pk3A = ReadSlotBytes(slotIDA);
-        byte[] pk3B = ReadSlotBytes(slotIDB);
-        SetSlotBytes(pk3B, slotIDA);
-        SetSlotBytes(pk3A, slotIDB);
+        byte[] pk3A = ReadSlotRaw(slotIDA);
+        byte[] pk3B = ReadSlotRaw(slotIDB);
+        SetSlotRaw(pk3B, slotIDA);
+        SetSlotRaw(pk3A, slotIDB);
 
         return true; //mission accomplished
     }
