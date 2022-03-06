@@ -598,17 +598,17 @@ public class pkuBox : Box
         //squeeze box if neccesary
         if (type is not BoxConfigType.LIST)
         {
+            Dictionary<int, pkuObject> displacedPku = new();
             foreach (var kp in Data)
             {
-                int tempIndex;
-                int key = kp.Key;
-                pkuObject val = kp.Value;
-                if (key > max)
-                {
-                    tempIndex = Enumerable.Range(1, max).Except(Data.Keys).FirstOrDefault();
-                    Data.Remove(key);
-                    Data.Add(tempIndex, val);
-                }
+                if (kp.Key > max)
+                    displacedPku.Add(kp.Key, kp.Value);
+            }
+            foreach ((int id, pkuObject pku) in displacedPku)
+            {
+                Data.Remove(id);
+                int newID = Enumerable.Range(1, max).Except(Data.Keys).FirstOrDefault();
+                Data.Add(newID, pku);
             }
         }
         WriteBoxConfig(); // write out new boxConfig
