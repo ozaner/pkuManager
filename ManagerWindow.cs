@@ -68,8 +68,9 @@ public partial class ManagerWindow : Form
         pkuCollectionManager = new pkuCollectionManager(new pkuCollection(path));
         currentpkuCollectionPath = path;
 
-        OnPKUBoxDisplayRefreshed(null, null);
+        OnPKUBoxDisplayRefreshed(null, null); //initialize boxdisplaydock
         pkuCollectionManager.BoxDisplayRefreshed += OnPKUBoxDisplayRefreshed;
+        pkuCollectionManager.SlotCountChanged += OnPKUSlotCountChanged;
 
         ResetPKUBoxSelector(pkuCollectionManager.CurrentBoxID); //update box selector
         UpdateGlobalFlagUI(); //update global flag ui
@@ -126,6 +127,15 @@ public partial class ManagerWindow : Form
         pkuBoxDisplayDock.Controls.Clear(); //clear old displaybox
         pkuBoxDisplayDock.Controls.Add(pkuCollectionManager.CurrentBoxDisplay); //add new displaybox
 
+        OnPKUSlotCountChanged(null, null); //new boxdisplay, new slot count.
+
+        //discord RPC
+        discord.Box = (string)pkuBoxSelector.SelectedItem;
+        discord.UpdatePresence();
+    }
+
+    public void OnPKUSlotCountChanged(object sender, EventArgs e)
+    {
         //box options check
         boxOptionsList.Enabled = pkuCollectionManager.CanChangeBoxType(BoxConfigType.LIST);
         boxOptions30.Enabled = pkuCollectionManager.CanChangeBoxType(BoxConfigType.THIRTY);
@@ -137,11 +147,6 @@ public partial class ManagerWindow : Form
         boxOptions30.Checked = bcft is BoxConfigType.THIRTY;
         boxOptions60.Checked = bcft is BoxConfigType.SIXTY;
         boxOptions96.Checked = bcft is BoxConfigType.NINTYSIX;
-
-        //discord RPC
-        discord.Box = (string)pkuBoxSelector.SelectedItem;
-        discord.UpdatePresence();
-
     }
 
     private void ResetPKUBoxSelector(int currentBox = 0)

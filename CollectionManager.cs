@@ -19,7 +19,8 @@ public class CollectionManager
     public int CurrentBoxID => Collection.CurrentBoxID.GetAs<int>();
     public Slot CurrentlySelectedSlot { get; protected set; }
 
-    public event EventHandler BoxDisplayRefreshed;
+    public event EventHandler BoxDisplayRefreshed; //entirely new boxdisplay
+    public event EventHandler SlotCountChanged; //same box display, just added/removed some slots
     public event EventHandler SlotSelected;
 
     public CollectionManager(Collection collection)
@@ -74,7 +75,7 @@ public class CollectionManager
         if (CurrentBox.ClearSlot(slotDisplay.SlotID))
         {
             CurrentBoxDisplay.CompleteReleaseRequest(slotDisplay);
-            BoxDisplayRefreshed?.Invoke(null, null);
+            SlotCountChanged?.Invoke(null, null);
             MessageBox.Show($"{slotDisplay.Slot.Nickname} was released.\nBye-Bye, {slotDisplay.Slot.Nickname}!", "Goodbye");
         }
         else
