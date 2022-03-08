@@ -17,8 +17,8 @@ namespace pkuManager.Formats.pkx.pk3;
 /// Exports a <see cref="pkuObject"/> to a <see cref="pk3Object"/>.
 /// </summary>
 public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E,
-                           Item_E, Nature_E, Friendship_E, TID_E, IVs_E, EVs_E,
-                           Contest_Stats_E, Ball_E, Met_Level_E, OT_Gender_E, Language_E
+                           Item_E, Nature_E, Friendship_E, TID_E, IVs_E, EVs_E, Contest_Stats_E,
+                           Ball_E, Origin_Game_E, Met_Level_E, OT_Gender_E, Language_E
 {
     public override string FormatName => "pk3";
 
@@ -56,9 +56,9 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         public BackedBoundableField<BigInteger> Form { get; } = new(); // Form [Implicit]
         public BackedField<Nature?> Nature { get; } = new(); // Nature [Implicit]
     }
+    public string Origin_Game_Name { get; set; } // Game Name (string form of Origin Game)
     protected int[] moveIndices; //indices of the chosen moves in the pku
     protected Gender? gender;
-    protected string checkedGameName;
     protected bool legalGen3Egg;
 
 
@@ -134,27 +134,17 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
             Warnings.Add(alert);
     }
 
-    // Origin Game
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessOriginGame()
-    {
-        var (origingame, gamename, alert) = pkxUtil.ExportTags.ProcessOriginGame(pku, FormatName);
-        Data.Origin_Game.SetAs(origingame);
-        checkedGameName = gamename;
-        Warnings.Add(alert);
-    }
-
     // Met Location [Requires: Origin Game]
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessOriginGame))]
+    [PorterDirective(ProcessingPhase.FirstPass, "ProcessOrigin_Game")]
     protected virtual void ProcessMetLocation()
     {
-        var (location, alert) = pkxUtil.ExportTags.ProcessMetLocation(pku, checkedGameName);
+        var (location, alert) = pkxUtil.ExportTags.ProcessMetLocation(pku, Origin_Game_Name);
         Data.Met_Location.SetAs(location);
         Warnings.Add(alert);
     }
 
     // Egg [Requires: Origin Game]
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessOriginGame))]
+    [PorterDirective(ProcessingPhase.FirstPass, "ProcessOrigin_Game")]
     protected virtual void ProcessEgg()
     {
         Data.Is_Egg.ValueAsBool = pku.IsEgg();
@@ -491,6 +481,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     EVs_O EVs_E.Data => Data;
     Contest_Stats_O Contest_Stats_E.Data => Data;
     Ball_O Ball_E.Data => Data;
+    Origin_Game_O Origin_Game_E.Data => Data;
     Met_Level_O Met_Level_E.Data => Data;
     OT_Gender_O OT_Gender_E.Data => Data;
     Language_O Language_E.Data => Data;

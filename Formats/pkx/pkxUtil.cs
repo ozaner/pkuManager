@@ -248,19 +248,6 @@ public static class pkxUtil
             => ats.Contains(AlertType.OVERFLOW) ?
                throw new ArgumentNullException("maxChars", "Overflow OT Alerts must include the character limit.") : GetOTAlert(-1, ats);
 
-        public static Alert GetOriginGameAlert(AlertType at, string originGame = null, string officialOriginGame = null) => new("Origin Game", at switch
-        {
-            AlertType.UNSPECIFIED => "The met location was unspecified. Using the default of None.",
-            AlertType.INVALID => (originGame, officialOriginGame) switch
-            {
-                (not null, not null) => $"Neither the specified origin game {originGame} nor the official origin game {officialOriginGame}",
-                (not null, null) => $"The specified origin game {originGame} doesn't",
-                (null, not null) => $"The specified official origin game {officialOriginGame} doesn't",
-                _ => throw InvalidAlertType(at) //should be unspecified
-            } + " exist in this format. Using the default of None.",
-            _ => throw InvalidAlertType(at)
-        });
-
 
         // ----------
         // Catch Info Alert Methods
@@ -805,36 +792,6 @@ public static class pkxUtil
             Alert alert = (atName, atOT) is (AlertType.NONE, AlertType.NONE) ? null :
                 GetTrashAlert(atName, atOT, encodedName.Length, encodedOT.Length, max);
             return (trashedName, trashedOT, alert);
-        }
-
-
-        // ----------
-        // Game Info Processing Methods
-        // ----------
-        //For processing origin games in main series games.
-        public static (int gameID, string game, Alert alert) ProcessOriginGame(pkuObject pku, string format)
-        {
-            (int? id, string game) helper(string game)
-            {
-                if (GAME_DEX.ExistsIn(format, game))
-                    return (GAME_DEX.GetIndexedValue<int?>(format, game, "Indices"), game);
-                return (null, game);
-            }
-
-            // if both unspecified
-            if (pku.Game_Info?.Origin_Game is null && pku.Game_Info?.Official_Origin_Game is null) 
-                return (0, null, GetOriginGameAlert(AlertType.UNSPECIFIED));
-
-            // at least one specified
-            (int? id, string game) = helper(pku.Game_Info?.Origin_Game);
-            if(id is null) //origin game failed, try official origin game
-                (id, game) = helper(pku.Game_Info?.Official_Origin_Game);
-
-            // if both have no id in this format
-            if (id is null)
-                return (0, null, GetOriginGameAlert(AlertType.INVALID, pku.Game_Info?.Origin_Game, pku.Game_Info?.Official_Origin_Game));
-
-            return (id.Value, game, null); //no alert
         }
 
 

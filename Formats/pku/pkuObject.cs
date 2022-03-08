@@ -143,11 +143,11 @@ public class pkuObject : FormatObject
     public class Game_Info_Class : pkuDictionaryTag
     {
         [JsonProperty("Origin Game")]
-        public string Origin_Game { get; set; }
+        public BackedField<string> Origin_Game { get; set; } = new();
 
         // Only if exporting to official format and above fails
         [JsonProperty("Official Origin Game")]
-        public string Official_Origin_Game { get; set; }
+        public BackedField<string> Official_Origin_Game { get; set; } = new();
 
         [JsonProperty("OT")]
         public string OT { get; set; }
