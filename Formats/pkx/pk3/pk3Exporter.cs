@@ -63,16 +63,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
 
     /* ------------------------------------
-     * Pre-Processing Methods
-     * ------------------------------------
-    */
-    // Format Override
-    [PorterDirective(ProcessingPhase.FormatOverride)]
-    protected virtual void ProcessFormatOverride()
-        => pku = pkuObject.MergeFormatOverride(pku, FormatName);
-
-
-    /* ------------------------------------
      * Tag Processing Methods
      * ------------------------------------
     */

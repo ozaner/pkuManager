@@ -1,6 +1,7 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.pku;
 using System.Collections.Generic;
+using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats;
 
@@ -40,4 +41,14 @@ public abstract class Exporter : Porter
         SecondHalf();
         return Data.ToFile();
     }
+
+
+    /* ------------------------------------
+     * Universal Export Methods
+     * ------------------------------------
+    */
+    // Format Override
+    [PorterDirective(ProcessingPhase.FormatOverride)]
+    protected virtual void ProcessFormatOverride()
+        => pku = pkuObject.MergeFormatOverride(pku, FormatName);
 }

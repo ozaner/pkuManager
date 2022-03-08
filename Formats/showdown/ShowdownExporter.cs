@@ -47,16 +47,6 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
 
 
     /* ------------------------------------
-     * Pre-Processing Methods
-     * ------------------------------------
-    */
-    // Format Override
-    [PorterDirective(ProcessingPhase.FormatOverride)]
-    protected virtual void ProcessFormatOverride()
-        => pku = pkuObject.MergeFormatOverride(pku, FormatName);
-
-
-    /* ------------------------------------
      * Tag Processing Methods
      * ------------------------------------
     */
