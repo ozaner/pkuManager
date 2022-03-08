@@ -80,8 +80,23 @@ public abstract class Box
 
     public abstract IEnumerable<(int, FormatObject)> ReadBox();
     public abstract Slot CreateSlotInfo(FormatObject pkmn);
+    public abstract int NextAvailableSlot();
+    public abstract bool SetSlot(FormatObject pkmn, int slotID);
     public abstract bool SwapSlots(int slotIDA, int slotIDB);
     public abstract bool ClearSlot(int slotID);
+
+    /// <summary>
+    /// Attempts to inject a pkmn into the first available slot of the box.
+    /// </summary>
+    /// <param name="pkmn">A pkmn that matches the format of this Collection.</param>
+    /// <returns>The slotID and Slot of the added pkmn, or (-1, null) if it failed.</returns>
+    public (int, Slot) TryInjectPKMN(FormatObject pkmn)
+    {
+        int slotID = NextAvailableSlot();
+        if (slotID != -1 && SetSlot(pkmn, slotID))
+            return (slotID, CreateSlotInfo(pkmn)); //success
+        return (-1, null); //failure
+    }
 }
 
 public class Slot

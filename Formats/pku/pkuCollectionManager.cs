@@ -132,4 +132,7 @@ public class pkuCollectionManager : CollectionManager
         if (pkuCurrentBox.ChangeBoxType(type))
             SwitchBox(CurrentBoxID);
     }
+
+    public bool HasSpaceForImport()
+        => CurrentBox.NextAvailableSlot() != -1;
 }

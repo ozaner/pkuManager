@@ -147,6 +147,9 @@ public partial class ManagerWindow : Form
         boxOptions30.Checked = bcft is BoxConfigType.THIRTY;
         boxOptions60.Checked = bcft is BoxConfigType.SIXTY;
         boxOptions96.Checked = bcft is BoxConfigType.NINTYSIX;
+
+        //import button check
+        importButton.Enabled = pkuCollectionManager.HasSpaceForImport();
     }
 
     private void ResetPKUBoxSelector(int currentBox = 0)
@@ -166,6 +169,20 @@ public partial class ManagerWindow : Form
         if (disableEventTrigger) //allows for changing boxSlot without triggering it
             return;
         SwitchPKUBoxToSelectedIndex(sender, e);
+    }
+
+    private void importButton_Click(object sender, EventArgs e)
+    {
+        string format = FormatChooser.ChooseImportFormat(false);
+        if (format is null)
+            return;
+        (pkuObject pku, ImportingWindow.ImportStatus status, string error)
+            = ImportingWindow.RunImportWindow(format, Registry.FORMATS[format], pkuCollectionManager.GetGlobalFlags(), false);
+        
+        if (status is ImportingWindow.ImportStatus.Success)
+            pkuCollectionManager.TryInjectPKMN(pku);
+        else if (status is ImportingWindow.ImportStatus.Invalid_File)
+            MessageBox.Show(error, "Failed to Import File");
     }
 
 

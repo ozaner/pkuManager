@@ -504,6 +504,34 @@ public class pkuBox : Box
         return s;
     }
 
+    public override int NextAvailableSlot()
+    {
+        if (BoxConfig.BoxType is BoxConfigType.LIST)
+        {
+            int maxKey = Data.Keys.Count > 0 ? Data.Keys.Max() : 0;
+            return maxKey + 1; //list type, infinite space
+        }
+        else
+        {
+            for (int i = 1; i <= Capacity; i++)
+                if (!Data.ContainsKey(i))
+                    return i; //matrix type, return first available slot
+        }
+        return -1; //matrix type, full
+    }
+
+    public override bool SetSlot(FormatObject pkmn, int slotID)
+    {
+        //doesnt delete the file that occupied this slot, if any.
+        if (TryWritePKU(pkmn as pkuObject))
+        {
+            Data[slotID] = pkmn as pkuObject;
+            WriteBoxConfig();
+            return true;
+        }
+        return false; //failed to write file
+    }
+
     public override bool SwapSlots(int slotIDA, int slotIDB)
     {
         // switch desired pokemon
@@ -560,6 +588,19 @@ public class pkuBox : Box
      * pku Specific Box Methods
      * ------------------------------------
     */
+    public bool TryWritePKU(pkuObject pku)
+    {
+        try
+        {
+            File.WriteAllBytes(DataUtil.GetNextFilePath($"{Path}/{Name}/{pku.SourceFilename}"), pku.ToFile());
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     private bool ContainsExportedName(string filename)
         => BoxConfig.ExportedPku.Any(s => s.EqualsCaseInsensitive(filename));
 

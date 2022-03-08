@@ -39,7 +39,7 @@
             this.changeBoxImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openBoxInExplorerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkedOutLabel = new System.Windows.Forms.Label();
-            this.viewCheckedoutButton = new System.Windows.Forms.Button();
+            this.importButton = new System.Windows.Forms.Button();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.boxDisplayDock = new System.Windows.Forms.Panel();
             this.pkuBoxDisplayDock = new System.Windows.Forms.Panel();
@@ -169,17 +169,18 @@
             this.checkedOutLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.checkedOutLabel.Visible = false;
             // 
-            // viewCheckedoutButton
+            // importButton
             // 
-            this.viewCheckedoutButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.viewCheckedoutButton.Location = new System.Drawing.Point(244, 5);
-            this.viewCheckedoutButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.viewCheckedoutButton.Name = "viewCheckedoutButton";
-            this.viewCheckedoutButton.Size = new System.Drawing.Size(107, 24);
-            this.viewCheckedoutButton.TabIndex = 12;
-            this.viewCheckedoutButton.Text = "View Check-Out";
-            this.viewCheckedoutButton.UseVisualStyleBackColor = true;
-            this.viewCheckedoutButton.Visible = false;
+            this.importButton.Enabled = false;
+            this.importButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.importButton.Location = new System.Drawing.Point(244, 5);
+            this.importButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.importButton.Name = "importButton";
+            this.importButton.Size = new System.Drawing.Size(62, 24);
+            this.importButton.TabIndex = 12;
+            this.importButton.Text = "Import";
+            this.importButton.UseVisualStyleBackColor = true;
+            this.importButton.Click += new System.EventHandler(this.importButton_Click);
             // 
             // toolStripMenuItem1
             // 
@@ -606,11 +607,11 @@
             this.pkuCollectionControlPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.pkuCollectionControlPanel.Controls.Add(this.refreshBoxButton);
             this.pkuCollectionControlPanel.Controls.Add(this.pkuBoxDisplayDock);
-            this.pkuCollectionControlPanel.Controls.Add(this.viewCheckedoutButton);
+            this.pkuCollectionControlPanel.Controls.Add(this.importButton);
             this.pkuCollectionControlPanel.Controls.Add(this.pkuBoxSelector);
             this.pkuCollectionControlPanel.Location = new System.Drawing.Point(3, 3);
             this.pkuCollectionControlPanel.Name = "pkuCollectionControlPanel";
-            this.pkuCollectionControlPanel.Size = new System.Drawing.Size(355, 49);
+            this.pkuCollectionControlPanel.Size = new System.Drawing.Size(310, 49);
             this.pkuCollectionControlPanel.TabIndex = 15;
             // 
             // collectionControlPanel
@@ -621,7 +622,7 @@
             this.collectionControlPanel.Controls.Add(this.saveCollectionButton);
             this.collectionControlPanel.Controls.Add(this.boxDisplayDock);
             this.collectionControlPanel.Controls.Add(this.boxSelector);
-            this.collectionControlPanel.Location = new System.Drawing.Point(364, 3);
+            this.collectionControlPanel.Location = new System.Drawing.Point(319, 3);
             this.collectionControlPanel.Name = "collectionControlPanel";
             this.collectionControlPanel.Size = new System.Drawing.Size(262, 49);
             this.collectionControlPanel.TabIndex = 16;
@@ -672,7 +673,7 @@
             this.flowLayoutPanel1.Controls.Add(this.collectionControlPanel);
             this.flowLayoutPanel1.Location = new System.Drawing.Point(331, 28);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(629, 55);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(584, 55);
             this.flowLayoutPanel1.TabIndex = 17;
             // 
             // ManagerWindow
@@ -721,7 +722,7 @@
         private System.Windows.Forms.ToolStripMenuItem changeBoxImageToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
         private System.Windows.Forms.Panel boxDisplayDock;
-        private System.Windows.Forms.Button viewCheckedoutButton;
+        private System.Windows.Forms.Button importButton;
         private System.Windows.Forms.Label checkedOutLabel;
         private System.Windows.Forms.Panel pkuBoxDisplayDock;
         private System.Windows.Forms.ToolStripMenuItem openDropDown;

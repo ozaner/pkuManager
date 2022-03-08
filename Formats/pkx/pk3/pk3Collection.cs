@@ -264,6 +264,25 @@ public class pk3Box : Box
         );
     }
 
+    public override int NextAvailableSlot()
+    {
+        for (int i = 1; i <= Capacity; i++)
+        {
+            byte[] bytes = ReadSlotRaw(i);
+            if (bytes.All(x => x is 0))
+                return i;
+        }
+        return -1;
+    }
+
+    public override bool SetSlot(FormatObject pkmn, int slotID)
+    {
+        pk3Object pk3 = pkmn as pk3Object;
+        byte[] raw = pk3.ToEncryptedFile();
+        SetSlotRaw(raw, slotID);
+        return true;
+    }
+
     public override bool ClearSlot(int slotID)
     {
         SetSlotRaw(new byte[pk3Object.FILE_SIZE_PC], slotID);

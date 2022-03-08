@@ -2,7 +2,6 @@
 using pkuManager.Formats;
 using pkuManager.Formats.pku;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
@@ -71,6 +70,20 @@ public class BoxDisplay : FlowLayoutPanel
             Width += SCROLLBAR_SIZE;
     }
 
+
+    public void AddSlotAt(Slot slot, int slotID)
+    {
+        SlotDisplay sd = new(slot, slotID);
+        if (isList)
+            Controls.Add(sd);
+        else
+        {
+            Controls.RemoveAt(slotID - 1);
+            Controls.Add(sd);
+            Controls.SetChildIndex(sd, slotID - 1);
+        }
+        SelectSlot(sd); //select new box
+    }
 
     public void SelectSlot(SlotDisplay slotDisplay)
     {

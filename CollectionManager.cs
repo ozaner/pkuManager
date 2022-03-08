@@ -89,6 +89,18 @@ public class CollectionManager
             CurrentBoxDisplay.CompleteSwapRequest(a, b);
     }
 
+    public bool TryInjectPKMN(FormatObject pkmn)
+    {
+        (int newSlotID, Slot newSlot) = CurrentBox.TryInjectPKMN(pkmn);
+        if (newSlotID != -1) //success
+        {
+            CurrentBoxDisplay.AddSlotAt(newSlot, newSlotID);
+            SlotCountChanged?.Invoke(null, null);
+            return true;
+        }
+        return false;
+    }
+
     public void SwitchBox(int boxID)
     {
         Collection.SwitchBox(boxID);
