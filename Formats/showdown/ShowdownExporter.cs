@@ -4,7 +4,6 @@ using pkuManager.Formats.pku;
 using pkuManager.Formats.pkx;
 using pkuManager.Utilities;
 using System;
-using System.Collections.Generic;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
@@ -14,7 +13,7 @@ namespace pkuManager.Formats.showdown;
 /// Exports a <see cref="pkuObject"/> to a <see cref="ShowdownObject"/>.
 /// </summary>
 public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E, 
-                                Item_E, Nature_E, Friendship_E, IVs_E, EVs_E
+                                Moves_E, Item_E, Nature_E, Friendship_E, IVs_E, EVs_E
 {
     public override string FormatName => "Showdown";
     protected override ShowdownObject Data { get; } = new();
@@ -105,19 +104,6 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     protected virtual void ProcessGigantamaxFactor()
         => Data.Gigantamax_Factor = pku.Gigantamax_Factor is true;
 
-    // Moves
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessMoves()
-    {
-        //doesnt get gmax moves, but showdown doesn't allow them either
-        List<string> moves = new();
-        (_, int[] moveIndices, Alert alert) = pkxUtil.ExportTags.ProcessMoves(pku, FormatName, true);
-        foreach (int id in moveIndices)
-            moves.Add(pku.Moves[id].Name);
-        Data.Moves = moves.ToArray();
-        Warnings.Add(alert);
-    }
-
 
     /* ------------------------------------
      * Showdown Exporting Alerts
@@ -159,9 +145,11 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     */
     Species_O Species_E.Data => Data;
     Form_O Form_E.Data => Data;
+    Moves_O Moves_E.Data => Data;
     Item_O Item_E.Data => Data;
     Nature_O Nature_E.Data => Data;
     Friendship_O Friendship_E.Data => Data;
     IVs_O IVs_E.Data => Data;
     EVs_O EVs_E.Data => Data;
+    int[] Moves_E.Moves_Indices { set { } } //don't need these
 }

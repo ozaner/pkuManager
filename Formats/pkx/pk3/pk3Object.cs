@@ -16,9 +16,9 @@ namespace pkuManager.Formats.pkx.pk3;
 /// Implementation details mostly referenced from
 /// <see href="https://bulbapedia.bulbagarden.net/wiki/Pokémon_data_structure_(Generation_III)">Bulbapedia</see>.
 /// </summary>
-public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
-                         IVs_O, EVs_O, Contest_Stats_O, Ball_O, Origin_Game_O, 
-                         Met_Level_O, OT_Gender_O, Language_O
+public class pk3Object : FormatObject, Species_O, Moves_O, Item_O, TID_O,
+                         Friendship_O, IVs_O, EVs_O, Contest_Stats_O, Ball_O,
+                         Origin_Game_O, Met_Level_O, OT_Gender_O, Language_O
 {
     public override string FormatName => "pk3";
 
@@ -430,6 +430,7 @@ public class pk3Object : FormatObject, Species_O, Item_O, TID_O, Friendship_O,
      * ------------------------------------
     */
     OneOf<IField<BigInteger>, IField<string>> Species_O.Species => Species;
+    OneOf<IField<BigInteger[]>, IField<string[]>> Moves_O.Moves => Moves;
     OneOf<IField<BigInteger>, IField<string>> Item_O.Item => Item;
     IField<BigInteger> Friendship_O.Friendship => Friendship;
     IField<BigInteger> TID_O.TID => TID;

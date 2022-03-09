@@ -420,20 +420,6 @@ public static class pkxUtil
             return new("PP Ups", msg);
         }
 
-        public static Alert GetMoveAlert(AlertType at, int? movesUsed = null)
-        {
-            if (at is AlertType.INVALID && movesUsed is null)
-                throw new ArgumentNullException(nameof(movesUsed), $"Must specify how many moves used for INVALID alerts.");
-            return new("Moves", at switch
-            {
-                AlertType.UNSPECIFIED => "This pku has no moves, the Pokemon's moveset will be empty.",
-                AlertType.INVALID => movesUsed is 0 ? "None of the pku's moves are valid in this format, the Pokemon's moveset will be empty." :
-                        $"Some of the pku's moves are invalid in this format, using the first {movesUsed} valid moves.",
-                AlertType.OVERFLOW => "This pku has more than 4 valid moves, using the first 4.",
-                _ => throw InvalidAlertType(at)
-            });
-        }
-
         public static Alert GetGenderAlert(AlertType at, Gender? correctGender = null, string invalidGender = null)
         {
             if (at is AlertType.MISMATCH or AlertType.INVALID && (correctGender is null || invalidGender is null))
@@ -907,42 +893,6 @@ public static class pkxUtil
                     }
                 }
             };
-        }
-
-        //gmax moves use a different index and cannot even be stored out of battle. Thus, they are irrelevant.
-        public static (int[] moveIDs, int[] moveIndicies, Alert) ProcessMoves(pkuObject pku, string format, bool ignoreIDs = false)
-        {
-            List<int> moveIndices = new(); //indices in pku
-            int[] moveIDs = new int[4]; //index numbers for format
-            Alert alert = null;
-            if (pku.Moves is not null)
-            {
-                int confirmedMoves = 0;
-                bool invalid = false; //at least one move is invalid
-
-                for (int i = 0; i < pku.Moves.Length; i++)
-                {
-                    if(MOVE_DEX.ExistsIn(format, pku.Moves[i].Name)) //move exists in format
-                    {
-                        if (confirmedMoves < 4)
-                        {
-                            if (!ignoreIDs) //move ID must exist if not ignoring IDs and move exists in format.
-                                moveIDs[confirmedMoves] = MOVE_DEX.GetIndexedValue<int?>(format, pku.Moves[i].Name, "Indices").Value;
-                            moveIndices.Add(i);
-                            confirmedMoves++;
-                        }
-                    }
-                    else //move DNE in format
-                        invalid = true;
-                }
-
-                if (confirmedMoves != pku.Moves.Length) //not a perfect match
-                    alert = invalid ? GetMoveAlert(AlertType.INVALID, confirmedMoves) : GetMoveAlert(AlertType.OVERFLOW);
-            }
-            else
-                alert = GetMoveAlert(AlertType.UNSPECIFIED);
-
-            return (moveIDs, moveIndices.ToArray(), alert);
         }
 
         public static (int[], Alert) ProcessPPUps(pkuObject pku, int[] moveIndicies)

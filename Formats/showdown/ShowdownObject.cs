@@ -13,8 +13,8 @@ namespace pkuManager.Formats.showdown;
 /// <summary>
 /// An implementation of the .txt (Showdown!) format used by Pokémon Showdown!.
 /// </summary>
-public class ShowdownObject : FormatObject, Species_O, Form_O, Item_O, Nature_O,
-                              Friendship_O, IVs_O, EVs_O
+public class ShowdownObject : FormatObject, Species_O, Form_O, Moves_O,
+                              Item_O, Nature_O, Friendship_O, IVs_O, EVs_O
 {
     public override string FormatName => "Showdown";
 
@@ -27,7 +27,7 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Item_O, Nature_O,
     public string Nickname { get; set; }
     public BackedField<string> Item { get; } = new();
     public string Ability { get; set; }
-    public string[] Moves { get; set; }
+    public BackedField<string[]> Moves { get; set; } = new();
     public byte Level { get; set; }
     public BackedBoundableField<BigInteger> Friendship { get; } = new(255, 0);
     public BackedBoundableArrayField<BigInteger> IVs { get; } = new(new BigInteger[6], 31, 0);
@@ -121,7 +121,7 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Item_O, Nature_O,
             Lines.Add("Gigantamax: Yes");
 
         // Moves
-        foreach (string move in Moves)
+        foreach (string move in Moves.Value)
             Lines.Add($"- {move}");
     }
 
@@ -144,6 +144,7 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Item_O, Nature_O,
     */
     OneOf<IField<BigInteger>, IField<string>> Species_O.Species => Species;
     OneOf<IField<BigInteger>, IField<string>> Form_O.Form => Form;
+    OneOf<IField<BigInteger[]>, IField<string[]>> Moves_O.Moves => Moves;
     OneOf<IField<BigInteger>, IField<string>> Item_O.Item => Item;
     OneOf<IField<BigInteger>, IField<Nature>, IField<Nature?>> Nature_O.Nature => Nature;
     IField<BigInteger> Friendship_O.Friendship => Friendship;
