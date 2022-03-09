@@ -37,7 +37,8 @@ public class pk3Object : FormatObject, Species_O, Moves_O, Item_O, TID_O,
     internal const int FILE_SIZE_PARTY = 100;
 
     protected const bool BIG_ENDIANESS = false;
-    protected const int NON_SUBDATA_SIZE = FILE_SIZE_PC - 4 * BLOCK_SIZE;
+    protected const int NON_SUBDATA_SIZE = FILE_SIZE_PC - SUBDATA_SIZE;
+    protected const int SUBDATA_SIZE = 4*BLOCK_SIZE;
     protected const int BLOCK_SIZE = 12;
     protected static readonly string[] SUBSTRUCTURE_ORDER =
     {
@@ -46,17 +47,25 @@ public class pk3Object : FormatObject, Species_O, Moves_O, Item_O, TID_O,
         "EGAM", "EGMA", "EAGM", "EAMG", "EMGA", "EMAG",
         "MGAE", "MGEA", "MAGE", "MAEG", "MEGA", "MEAG",
     };
-    protected const int DEFAULT_SUBSTRUCTURE_INDEX = 0;
 
-    public ByteArrayManipulator NonSubData { get; } = new(NON_SUBDATA_SIZE, BIG_ENDIANESS);
-    public ByteArrayManipulator G { get; } = new(BLOCK_SIZE, BIG_ENDIANESS);
-    public ByteArrayManipulator A { get; } = new(BLOCK_SIZE, BIG_ENDIANESS);
-    public ByteArrayManipulator E { get; } = new(BLOCK_SIZE, BIG_ENDIANESS);
-    public ByteArrayManipulator M { get; } = new(BLOCK_SIZE, BIG_ENDIANESS);
+    public ByteArrayManipulator BAM { get; } = new(FILE_SIZE_PC, BIG_ENDIANESS);
 
-    // initializes fields
+    public ByteArrayManipulator NonSubData { get; protected set; }
+    public ByteArrayManipulator G { get; protected set; }
+    public ByteArrayManipulator A { get; protected set; }
+    public ByteArrayManipulator E { get; protected set; }
+    public ByteArrayManipulator M { get; protected set; }
+
+    // initializes blocks and fields
     public pk3Object()
     {
+        // Initialize (virtual) blocks
+        NonSubData = new(BAM, new[]{(0, NON_SUBDATA_SIZE)});
+        G = new(BAM, new[]{(NON_SUBDATA_SIZE, BLOCK_SIZE) });
+        A = new(BAM, new[]{(NON_SUBDATA_SIZE + BLOCK_SIZE, BLOCK_SIZE) });
+        E = new(BAM, new[]{(NON_SUBDATA_SIZE + 2 * BLOCK_SIZE, BLOCK_SIZE) });
+        M = new(BAM, new[]{(NON_SUBDATA_SIZE + 3 * BLOCK_SIZE, BLOCK_SIZE) });
+
         //Rearranges pk3 battle stats to match modern indices (i.e. H/A/SA/S/D/SD <-> H/A/SA/D/SD/S)
         static BigInteger[] getStats(BigInteger[] x) { DataUtil.Permutate(x, (3, 5), (3, 4)); return x; };
         static BigInteger[] setStats(BigInteger[] x) { DataUtil.Permutate(x, (3, 5), (4, 5)); return x; };
@@ -135,21 +144,11 @@ public class pk3Object : FormatObject, Species_O, Moves_O, Item_O, TID_O,
     public override byte[] ToFile()
     {
         UpdateChecksum(); // Calculate Checksum
-        ByteArrayManipulator subData = GroupSubData(SUBSTRUCTURE_ORDER[DEFAULT_SUBSTRUCTURE_INDEX]); // default block order
-
-        // PC .pk3 file is an 80 byte data structure
-        ByteArrayManipulator file = new(FILE_SIZE_PC, BIG_ENDIANESS);
-        file.SetArray<byte>(0, NonSubData); // First 32 bytes
-        file.SetArray<byte>(NON_SUBDATA_SIZE, subData); // Last 48 bytes
-
-        return file;
+        return BAM.ByteArray;
     }
 
     public override void FromFile(byte[] file)
-    {
-        NonSubData.SetArray(0, file, NON_SUBDATA_SIZE);
-        UngroupSubData(new ByteArrayManipulator(file[NON_SUBDATA_SIZE..FILE_SIZE_PC], BIG_ENDIANESS), SUBSTRUCTURE_ORDER[DEFAULT_SUBSTRUCTURE_INDEX]);
-    }
+        => BAM.ByteArray = file;
 
     public byte[] ToEncryptedFile()
     {
@@ -260,38 +259,17 @@ public class pk3Object : FormatObject, Species_O, Moves_O, Item_O, TID_O,
 
 
     /* ------------------------------------
-     * SubData Packing / Encryption
+     * SubData Encryption
      * ------------------------------------
     */
-    protected ByteArrayManipulator GroupSubData(string order)
-    {
-        ByteArrayManipulator subData = new(4 * BLOCK_SIZE, BIG_ENDIANESS);
-        subData.SetArray<byte>(BLOCK_SIZE * order.IndexOf('G'), G);
-        subData.SetArray<byte>(BLOCK_SIZE * order.IndexOf('A'), A);
-        subData.SetArray<byte>(BLOCK_SIZE * order.IndexOf('E'), E);
-        subData.SetArray<byte>(BLOCK_SIZE * order.IndexOf('M'), M);
-        return subData;
-    }
-
-    protected void UngroupSubData(ByteArrayManipulator subData, string order)
-    {
-        G.SetArray(0, subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('G'), BLOCK_SIZE));
-        A.SetArray(0, subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('A'), BLOCK_SIZE));
-        E.SetArray(0, subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('E'), BLOCK_SIZE));
-        M.SetArray(0, subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('M'), BLOCK_SIZE));
-    }
-
     /// <summary>
     /// Calculates the checksum of the 4 sub-blocks, and sets it to <see cref="Checksum"/>.
     /// </summary>
     protected void UpdateChecksum()
     {
         ushort checksum = 0;
-        foreach (ByteArrayManipulator bam in new[] { G, A, E, M })
-        {
-            for (int i = 0; i < BLOCK_SIZE / 2; i++)
-                checksum += bam.Get<ushort>(i * 2);
-        }
+        for (int i = 0; i < SUBDATA_SIZE / 2; i++)
+            checksum += BAM.Get<ushort>(NON_SUBDATA_SIZE + i * 2);
         Checksum.SetAs(checksum);
     }
 
@@ -313,8 +291,14 @@ public class pk3Object : FormatObject, Species_O, Moves_O, Item_O, TID_O,
     /// <returns>A 48 byte encrypted sub-data array.</returns>
     protected ByteArrayManipulator GetEncryptedSubData()
     {
+        ByteArrayManipulator subData = new(4 * BLOCK_SIZE, BIG_ENDIANESS);
         string order = SUBSTRUCTURE_ORDER[PID.GetAs<uint>() % SUBSTRUCTURE_ORDER.Length];
-        ByteArrayManipulator subData = GroupSubData(order);
+        
+        subData.SetArray<byte>(BLOCK_SIZE * order.IndexOf('G'), G);
+        subData.SetArray<byte>(BLOCK_SIZE * order.IndexOf('A'), A);
+        subData.SetArray<byte>(BLOCK_SIZE * order.IndexOf('E'), E);
+        subData.SetArray<byte>(BLOCK_SIZE * order.IndexOf('M'), M);
+
         ApplyXOR(subData);
         return subData;
     }
@@ -323,7 +307,10 @@ public class pk3Object : FormatObject, Species_O, Moves_O, Item_O, TID_O,
     {
         ApplyXOR(subData);
         string order = SUBSTRUCTURE_ORDER[PID.GetAs<uint>() % SUBSTRUCTURE_ORDER.Length];
-        UngroupSubData(subData, order);
+        G.SetArray(0, subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('G'), BLOCK_SIZE));
+        A.SetArray(0, subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('A'), BLOCK_SIZE));
+        E.SetArray(0, subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('E'), BLOCK_SIZE));
+        M.SetArray(0, subData.GetArray<byte>(BLOCK_SIZE * order.IndexOf('M'), BLOCK_SIZE));
     }
 
 
