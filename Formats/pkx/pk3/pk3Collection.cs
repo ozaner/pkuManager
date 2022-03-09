@@ -125,7 +125,7 @@ public class pk3Collection : FileCollection
 
         //Init fields
         OT = new(BAM, trainerInfoAddress + 0x0000, pk3Object.MAX_OT_CHARS, FormatName);
-        UnshuffledPCBAM = new(BAM, BigEndian, pcBufferRanges);
+        UnshuffledPCBAM = new(BAM, pcBufferRanges);
         CurrentBoxID = new BAMIntegralField(UnshuffledPCBAM, 0x0000, 4);
         if (CurrentBoxID.Value > 14)
             CurrentBoxID.Value = 0; //currentbox too large, reset

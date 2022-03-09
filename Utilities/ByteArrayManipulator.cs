@@ -23,7 +23,21 @@ public class ByteArrayManipulator
     /// <summary>
     /// The total number of bytes in the byte array.
     /// </summary>
-    public int Length => ByteArray.Length;
+    public int Length
+    {
+        get
+        {
+            if (IsVirtual)
+            {
+                int sum = 0;
+                foreach ((_, int size) in VirtualIndices)
+                    sum += size;
+                return sum;
+            }
+            else
+                return ByteArray.Length;
+        }
+    }
 
     /// <summary>
     /// An array of indices (offset, size) that, when stiched together form a virtual byte array from <see cref="ByteArray"/>.<br/>
@@ -61,10 +75,19 @@ public class ByteArrayManipulator
     }
 
     /// <summary>
-    /// Implicitly casts a BAM to its underlying byte array.
+    /// Constructs a BAM with a pre-existing one. The same BAM is used, it's just indexed differently.
+    /// </summary>
+    /// <param name="bam">The parent BAM.</param>
+    public ByteArrayManipulator(ByteArrayManipulator bam, (int, int)[] virutalIndices)
+        : this(bam.ByteArray, bam.BigEndian, virutalIndices) { }
+
+    /// <summary>
+    /// Implicitly casts a BAM to its underlying byte array
+    /// or, in the case of virtual BAMs, returns a copy of the virtual byte array.
     /// </summary>
     /// <param name="BAM">The BAM to be casted to a byte array.</param>
-    public static implicit operator byte[](ByteArrayManipulator BAM) => BAM.ByteArray;
+    public static implicit operator byte[](ByteArrayManipulator BAM)
+        => BAM.IsVirtual ? BAM.GetArray<byte>(0, BAM.Length) : BAM.ByteArray;
 
     /// <summary>
     /// Returns the size, in bytes, of a supported value type.
