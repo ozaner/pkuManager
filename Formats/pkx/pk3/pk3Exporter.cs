@@ -241,7 +241,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     }
 
     // PP-Ups [Requires: Moves]
-    [PorterDirective(ProcessingPhase.FirstPass)]
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessMoves))]
     protected virtual void ProcessPPUps()
     {
         var (ppups, alert) = pkxUtil.ExportTags.ProcessPPUps(pku, moveIndices);
@@ -250,7 +250,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     }
 
     // PP [Requires: Moves, PP-Ups]
-    [PorterDirective(ProcessingPhase.FirstPass)]
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessPPUps))]
     protected virtual void ProcessPP()
     {
         int[] pp = new int[4];
