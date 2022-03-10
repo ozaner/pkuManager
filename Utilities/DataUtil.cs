@@ -339,11 +339,11 @@ public static class DataUtil
         ulong x => x,
         long x => x,
         Enum => (int)val,
-        JValue jval => Type.GetTypeCode(jval.Value.GetType()) switch
+        JValue jval when jval.Type is JTokenType.Integer => Type.GetTypeCode(jval.Value.GetType()) switch
         {
             TypeCode.UInt64 => (ulong)jval.Value,
             TypeCode.Int64 => (long)jval.Value,
-            _ => throw new ArgumentException("obj must be an integral valuetype, or JValue.", nameof(val))
+            _ => (BigInteger)jval.Value,
         },
         _ => throw new ArgumentException("obj must be an integral valuetype, or JValue.", nameof(val)),
     };
