@@ -202,23 +202,23 @@ public static class DataUtil
 
     /// <summary>
     /// Returns a concatenated string of the following form: "[str1, str2, str3, ..., strn]".<br/>
-    /// Unless there is only one string, in which case that string is returned.
     /// </summary>
-    /// <param name="strs">An array of strings to be concatenated.</param>
-    /// <returns>A concatenated string of each entry in <paramref name="strs"/>.</returns>
-    public static string ToFormattedString(this string[] strs)
+    /// <param name="objs">An array of objects whose string forms are to be concatenated.</param>
+    /// <returns>A concatenated string of each entry in <paramref name="objs"/>.</returns>
+    public static string ToFormattedString(this Array objs, bool useSquareBrackets = false)
     {
-        if (strs?.Length is not > 0)
+        if (objs is null)
             return null;
 
-        if (strs.Length is 1)
-            return strs[0];
+        string computed = "";
+        foreach (object str in objs)
+            computed += str.ToString() + ", ";
+        if (computed.Length >= 2)
+            computed = computed.Remove(computed.Length - 2);
 
-        string formatted = "[";
-        foreach (string str in strs)
-            formatted += str + ", ";
-            
-        return formatted.Remove(formatted.Length - 2) + "]";
+        if (useSquareBrackets)
+            computed = $"[{computed}]";
+        return computed;
     }
 
     /// <summary>
