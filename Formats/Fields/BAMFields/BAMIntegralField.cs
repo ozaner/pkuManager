@@ -1,4 +1,5 @@
-﻿using pkuManager.Utilities;
+﻿using pkuManager.Formats.Modules;
+using pkuManager.Utilities;
 using System.Numerics;
 
 namespace pkuManager.Formats.Fields.BAMFields;
@@ -24,6 +25,7 @@ public class BAMIntegralField : BAMField, IField<BigInteger>
     public BAMIntegralField(ByteArrayManipulator bam, int startByte, int startBit, int bitLength)
         : base(bam, startByte, startBit, bitLength) { }
 
-    public override string GetOverride() => BitType ? $"Set {StartByte}:{StartBit}:{ByteOrBitLength}"
-                                                    : $"Set {StartByte}:{ByteOrBitLength}";
+    public override ByteOverrideCMD GetOverride()
+        => BitType ? new ByteOverrideCMD(Value, StartByte, StartBit, ByteOrBitLength, BAM.VirtualIndices)
+                   : new ByteOverrideCMD(Value, StartByte, ByteOrBitLength, BAM.VirtualIndices);
 }

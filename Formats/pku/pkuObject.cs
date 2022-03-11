@@ -117,7 +117,7 @@ public class pkuObject : FormatObject
     public Trash_Bytes_Class Trash_Bytes { get; set; }
 
     [JsonProperty("Byte Override")]
-    public Byte_Override_Class Byte_Override { get; set; }
+    public Dictionary<string, JToken> Byte_Override { get; set; } = new();
 
     [JsonProperty("Format Overrides")]
     public Dictionary<string, pkuObject> Format_Overrides { get; set; }
@@ -306,28 +306,6 @@ public class pkuObject : FormatObject
         public int? Heart_Gauge { get; set; }
     }
 
-    public class Byte_Override_Class : pkuDictionaryTag
-    {
-        [JsonProperty("Main Data")]
-        [JsonConverter(typeof(ByteOverrideConverter))]
-        public Dictionary<string, JToken> Main_Data { get; set; }
-
-        [JsonProperty("A")]
-        [JsonConverter(typeof(ByteOverrideConverter))]
-        public Dictionary<string, JToken> A { get; set; }
-
-        [JsonProperty("B")]
-        [JsonConverter(typeof(ByteOverrideConverter))]
-        public Dictionary<string, JToken> B { get; set; }
-
-        [JsonProperty("C")]
-        [JsonConverter(typeof(ByteOverrideConverter))]
-        public Dictionary<string, JToken> C { get; set; }
-
-        [JsonProperty("D")]
-        [JsonConverter(typeof(ByteOverrideConverter))]
-        public Dictionary<string, JToken> D { get; set; }
-    }
 
     /* ------------------------------------
      * FormatObject Methods

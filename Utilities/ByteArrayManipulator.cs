@@ -43,7 +43,7 @@ public class ByteArrayManipulator
     /// An array of indices (offset, size) that, when stiched together form a virtual byte array from <see cref="ByteArray"/>.<br/>
     /// If set, all get and set methods will use this virtual array.
     /// </summary>
-    public (int offset, int size)[] VirtualIndices { get; }
+    public (int offset, int size)[] VirtualIndices { get; set; }
 
     /// <summary>
     /// Whether or not this BAM uses <see cref="VirtualIndices"/>.

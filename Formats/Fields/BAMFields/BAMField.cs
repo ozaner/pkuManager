@@ -1,4 +1,5 @@
-﻿using pkuManager.Utilities;
+﻿using pkuManager.Formats.Modules;
+using pkuManager.Utilities;
 using System.Numerics;
 
 namespace pkuManager.Formats.Fields.BAMFields;
@@ -32,6 +33,6 @@ public abstract class BAMField : IBoundable<BigInteger>, IByteOverridable
     public BAMField(ByteArrayManipulator bam, int startByte, int startBit, int bitLength)
         : this(bam, true, startByte, bitLength) => StartBit = startBit;
 
-    public abstract string GetOverride();
+    public abstract ByteOverrideCMD GetOverride();
 }
 

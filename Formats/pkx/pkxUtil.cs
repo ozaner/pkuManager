@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using pkuManager.Alerts;
+﻿using pkuManager.Alerts;
 using pkuManager.Formats.Modules;
 using pkuManager.Formats.pku;
 using pkuManager.Formats.pkx.pk3;
@@ -7,8 +6,6 @@ using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-using System.Text.RegularExpressions;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.pkx.pkxUtil.ExportAlerts;
 
@@ -195,16 +192,7 @@ public static class pkxUtil
     /* ------------------------------------
      * Alert Generator Methods
      * ------------------------------------
-    */
-    /// <summary>
-    /// Alert generating methods for <see cref="MetaTags"/> methods.
-    /// </summary>
-    public static class MetaAlerts
-    {
-        public static Alert GetByteOverrideAlert(List<string> invalidIndices) =>
-            new("Byte Override", $"Byte Override commands {string.Join(", ", invalidIndices)} are invalid. Ignoring them.");
-    }
-        
+    */        
     /// <summary>
     /// Alert generating methods for <see cref="ExportTags"/> methods.
     /// </summary>
@@ -504,150 +492,6 @@ public static class pkxUtil
      * Tag Processing Methods
      * ------------------------------------
     */
-    /// <summary>
-    /// Methods for processing meta tags that are external to the main exporting process.
-    /// </summary>
-    public static class MetaTags
-    {
-        public static (Alert, Action) ApplyByteOverride(pkuObject pku, params ByteArrayManipulator[] bams)
-        {
-            const string BYTE_OVERRIDE_REGEXP = "^(.*) ([0-9]*)(:[0-9]*)?(:[0-9]*)?$";
-            static BigInteger? valueChecker(JToken tok, int startByte, int secondValue, int? bitLength, int bamLength)
-            {
-                BigInteger newVal;
-                if (tok is JValue val && val.Type is JTokenType.Integer)
-                    newVal = val.ToBigInteger();
-                else
-                    return null; //invalid value
-
-                //make sure values won't crash when put into BAM.Set
-                if (newVal.Sign < 0) return null; //must be nonnegative
-
-                //stay within bam
-                bool bitType = bitLength is not null;
-                if (!bitType && startByte + secondValue > bamLength) return null;
-                if (bitType && startByte
-                    + (secondValue + bitLength) / 8 //how many bytes is value
-                    + (secondValue + (secondValue + bitLength) % 8) / 8 //account for value spilling out of first byte
-                    > bamLength) return null;
-
-                return newVal;
-            }
-            static Action getOverrideAction(JToken val, ByteArrayManipulator bam, int startByte, int secondValue, int? bitLength)
-            {
-                //cast value to an integer
-                BigInteger newVal;
-                BigInteger? temp = valueChecker(val, startByte, secondValue, bitLength, bam.Length);
-                if (temp is null)
-                    return null;
-                else
-                    newVal = temp.Value;
-
-                bool bitType = bitLength is not null;
-                if (bitType)
-                    return () => bam.Set(newVal, startByte, secondValue, bitLength.Value);
-                else
-                    return () => bam.Set(newVal, startByte, secondValue);
-            }
-            static Action getOverrideActionArray(JArray vals, ByteArrayManipulator bam, int startByte, int secondValue, int? bitLength)
-            {
-                bool bitType = bitLength is not null;
-
-                //cast values to integers
-                BigInteger[] newVals = new BigInteger[vals.Count];
-                for (int i = 0; i < newVals.Length; i++)
-                {
-                    BigInteger? temp = bitType ? 
-                        valueChecker(vals[i], startByte, secondValue + i*bitLength.Value, bitLength, bam.Length) :
-                        valueChecker(vals[i], startByte + i*secondValue, secondValue, bitLength, bam.Length);
-
-                    if (temp is null)
-                        return null;
-                    else
-                        newVals[i] = temp.Value;
-                }
-
-                if (bitType)
-                    return () => bam.SetArray(startByte, secondValue, bitLength.Value, newVals);
-                else
-                    return () => bam.SetArray(startByte, secondValue, newVals);
-            }
-                
-            List<Action> validCommands = new();
-            List<string> invalidIndices = new();
-            void singleBam(ByteArrayManipulator bam, Dictionary<string, JToken> bo, string name)
-            {
-                int count = 0;
-                foreach (var kvp in bo)
-                {
-                    Match match = Regex.Match(kvp.Key.ToLowerInvariant(), BYTE_OVERRIDE_REGEXP);
-                    string cmdType = match.Groups[1].Value; //command name
-
-                    //startByte
-                    if (!int.TryParse(match.Groups[2].Value, out int startByte))
-                        goto Failed;
-
-                    //second value (startBit or byteLength)
-                    if (!int.TryParse(match.Groups[3].Value[1..], out int secondValue))
-                        goto Failed;
-
-                    //bitLength (if it has one)
-                    int? bitLength = null;
-                    if (match.Groups[4].Value is not "")
-                    {
-                        if (int.TryParse(match.Groups[4].Value[1..], out int temp))
-                            bitLength = temp;
-                        else
-                            goto Failed;
-                    }
-
-                    //invalid command check
-                    if (!cmdType.EqualsCaseInsensitive("Set") && !cmdType.EqualsCaseInsensitive("Set Array"))
-                        goto Failed;
-
-                    Action a = kvp.Value.Type is JTokenType.Array ?
-                        getOverrideActionArray((JArray)kvp.Value, bam, startByte, secondValue, bitLength) :
-                        getOverrideAction(kvp.Value, bam, startByte, secondValue, bitLength);
-
-                    //values invalid
-                    if (a is null)
-                        goto Failed;
-
-                    //command valid
-                    validCommands.Add(a);
-                    count++;
-                    continue;
-
-                Failed:
-                    invalidIndices.Add($"{name}: {count}");
-                    count++;
-                    continue;
-                }
-            }
-
-            if (bams.Length > 0 && pku.Byte_Override?.Main_Data is not null)
-                singleBam(bams[0], pku.Byte_Override.Main_Data, "Main Data");
-            if (bams.Length > 1 && pku.Byte_Override?.A is not null)
-                singleBam(bams[1], pku.Byte_Override.A, "A");
-            if (bams.Length > 2 && pku.Byte_Override?.B is not null)
-                singleBam(bams[2], pku.Byte_Override.B, "B");
-            if (bams.Length > 3 && pku.Byte_Override?.C is not null)
-                singleBam(bams[3], pku.Byte_Override.C, "C");
-            if (bams.Length > 4 && pku.Byte_Override?.D is not null)
-                singleBam(bams[4], pku.Byte_Override.D, "D");
-            if (bams.Length > 5)
-                throw new ArgumentException($"At most, 5 different BAMs should have been passed.", nameof(bams));
-
-            Alert alert = invalidIndices.Any() ? MetaAlerts.GetByteOverrideAlert(invalidIndices) : null;
-            void action()
-            {
-                foreach (Action a in validCommands)
-                    a.Invoke();
-            }
-            return (alert, action);
-        }
-    }
-
     /// <summary>
     /// Generalized methods for processing attributes of pkx files.
     /// </summary>

@@ -18,7 +18,7 @@ namespace pkuManager.Formats.pkx.pk3;
 /// </summary>
 public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E, Moves_E,
                            Item_E, Nature_E, Friendship_E, TID_E, IVs_E, EVs_E, Contest_Stats_E,
-                           Ball_E, Origin_Game_E, Met_Level_E, OT_Gender_E, Language_E
+                           Ball_E, Origin_Game_E, Met_Level_E, OT_Gender_E, Language_E, ByteOverride_E
 {
     public override string FormatName => "pk3";
 
@@ -362,14 +362,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
             Warnings.Add(alert);
     }
 
-    // Byte Override [ErrorResolver]
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessByteOverride()
-    {
-        (Alert a, ByteOverrideAction) = pkxUtil.MetaTags.ApplyByteOverride(pku, Data.NonSubData, Data.G, Data.A, Data.E, Data.M);
-        Warnings.Add(a);
-    }
-
 
     /* ------------------------------------
      * Error Resolvers
@@ -386,15 +378,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     // Fateful Encounter ErrorResolver
     [PorterDirective(ProcessingPhase.SecondPass)]
     protected virtual ErrorResolver<bool> FatefulEncounterResolver { get; set; }
-
-
-    /* ------------------------------------
-     * Post-Processing Methods
-     * ------------------------------------
-    */
-    // Byte Override Action
-    [PorterDirective(ProcessingPhase.PostProcessing)]
-    protected virtual Action ByteOverrideAction { get; set; }
 
 
     /* ------------------------------------
@@ -467,6 +450,8 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     Met_Level_O Met_Level_E.Data => Data;
     OT_Gender_O OT_Gender_E.Data => Data;
     Language_O Language_E.Data => Data;
+    ByteOverride_O ByteOverride_E.Data => Data;
+    Action ByteOverride_E.ByteOverrideAction { get; set; }
     protected partial class WorkingVariables : Nature_O, Form_O
     {
         OneOf<IField<BigInteger>, IField<string>> Form_O.Form => Form;

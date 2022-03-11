@@ -1,4 +1,6 @@
-﻿namespace pkuManager.Formats.Fields.BAMFields;
+﻿using pkuManager.Formats.Modules;
+
+namespace pkuManager.Formats.Fields.BAMFields;
 
 /// <summary>
 /// To be implemented by a <see cref="Field{T}"/> that can output "Byte Override" commands to a pku.
@@ -9,6 +11,6 @@ public interface IByteOverridable
     /// Gets the byte override commmand corresponding to this field.
     /// </summary>
     /// <returns>A byte override command.</returns>
-    public abstract string GetOverride();
+    public abstract ByteOverrideCMD GetOverride();
 }
 
