@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using Json.Schema;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using NJsonSchema;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Fields.BackedFields;
 using pkuManager.Utilities;
@@ -323,16 +323,9 @@ public class pkuObject : FormatObject
 
 
     /* ------------------------------------
-     * Utility Methods
+     * Copy/Merge Methods
      * ------------------------------------
     */
-    /// <summary>
-    /// The current pkuSchema from the pkuData repo.
-    /// </summary>
-    private static readonly JsonSchema pkuSchema = JsonSchema.FromJsonAsync(DataUtil
-        .DownloadJson("https://raw.githubusercontent.com/project-pku/pkuData/main/pkuSchema.json", "pkuSchema", true)
-        .ToString()).Result;
-
     /// <summary>
     /// Merges two pkuObjects, overriding the non-null entries
     /// of <paramref name="pkuA"/> with <paramref name="pkuB"/>.<br/>
@@ -366,51 +359,17 @@ public class pkuObject : FormatObject
         => pku.Format_Overrides?.TryGetValue(format, out pkuObject pkuOverride) is true ? Merge(pku, pkuOverride) : pku;
 
     /// <summary>
-    /// Attempts to deserialize a .pku file. If this fails, an error string is returned.
-    /// </summary>
-    /// <param name="pkuJson">The pku JSON string.</param>
-    /// <returns>A tuple of the deserialized pkuObject and the error string, if any.<br/>
-    ///          The pkuObject will be null if there was an error.</returns>
-    public static (pkuObject pku, string error) Deserialize(string pkuJson)
-    {
-        pkuObject pku = null;
-        string errormsg = null;
-
-        var errors = pkuSchema.Validate(pkuJson);
-        if (!errors.Any())
-        {
-            try
-            {
-                pku = JsonConvert.DeserializeObject<pkuObject>(pkuJson, jsonSettings);
-            }
-            catch
-            {
-                errormsg = "Could not read .pku file...";
-            }
-        }
-        else
-        {
-            var error = errors.FirstOrDefault();
-            errormsg = error is null ? ".pku file is misformatted."
-                                     : $"Something is wrong with '{error.Path}' or one of it's sub-tags.";
-        }
-        return (pku, errormsg);
-    }
-
-    /// <summary>
-    /// Serializes this pkuObject as a JSON string. Null entries are pruned.
-    /// </summary>
-    /// <returns>A JSON string of this pkuObject.</returns>
-    public string Serialize(bool formatted = false)
-        => JsonConvert.SerializeObject(this, formatted ? Formatting.Indented : Formatting.None, jsonSettings);
-
-    /// <summary>
     /// Creates a deep copy of this <see cref="pkuObject"/>.
     /// </summary>
     /// <returns>A deep copy of this pkuObject.</returns>
     public pkuObject DeepCopy()
         => Deserialize(Serialize()).pku;
 
+
+    /* ------------------------------------
+     * Field Utility Methods
+     * ------------------------------------
+    */
     /// <summary>
     /// Whether this pku has been explictly marked as an egg.
     /// </summary>
@@ -455,6 +414,77 @@ public class pkuObject : FormatObject
      * Serialization Mechanics
      * ------------------------------------
     */
+    /// <summary>
+    /// The current pkuSchema from the pkuData repo.
+    /// </summary>
+    private static readonly JsonSchema pkuSchema = JsonSchema.FromText(DataUtil
+        .DownloadJson("https://raw.githubusercontent.com/project-pku/pkuData/main/pkuSchema.json", "pkuSchema", true)
+        .ToString());
+
+    private static readonly System.Text.Json.JsonDocumentOptions JSON_DOC_OPTIONS = new()
+    {
+        CommentHandling = System.Text.Json.JsonCommentHandling.Skip,
+        AllowTrailingCommas = true
+    };
+
+    private static readonly ValidationOptions JSON_VALIDATION_OPTIONS = new()
+    {
+        OutputFormat = OutputFormat.Detailed
+    };
+
+    /// <summary>
+    /// Attempts to deserialize a .pku file. If this fails, an error string is returned.
+    /// </summary>
+    /// <param name="pkuJson">The pku JSON string.</param>
+    /// <returns>A tuple of the deserialized pkuObject and the error string, if any.<br/>
+    ///          The pkuObject will be null if there was an error.</returns>
+    public static (pkuObject pku, string error) Deserialize(string pkuJson)
+    {
+        pkuObject pku = null;
+        string errormsg = null;
+        System.Text.Json.JsonDocument pkuJsonDoc;
+
+        //try reading json
+        try
+        {
+            pkuJsonDoc = System.Text.Json.JsonDocument.Parse(pkuJson, JSON_DOC_OPTIONS);
+        }
+        catch //invalid json
+        {
+            errormsg = ".pku file is misformatted (invalid JSON)...";
+            return (pku, errormsg);
+        }
+
+        // json valid, verify against pkuSchema
+        ValidationResults results = pkuSchema.Validate(pkuJsonDoc.RootElement, JSON_VALIDATION_OPTIONS);
+        if (results.IsValid) //pku is valid
+        {
+            try //try deserializing pku
+            {
+                pku = JsonConvert.DeserializeObject<pkuObject>(pkuJson, jsonSettings);
+            }
+            catch //failed to deserialize (why?)
+            {
+                errormsg = "Could not read .pku file...";
+            }
+        }
+        else //invalid pku
+        {
+            while (results.HasNestedResults)
+                results = results.NestedResults[0];
+            errormsg = results.Message is null ? ".pku file is misformatted."
+                                               : $"Something is wrong with {results.InstanceLocation}: {results.Message}";
+        }
+        return (pku, errormsg);
+    }
+
+    /// <summary>
+    /// Serializes this pkuObject as a JSON string. Null entries are pruned.
+    /// </summary>
+    /// <returns>A JSON string of this pkuObject.</returns>
+    public string Serialize(bool formatted = false)
+        => JsonConvert.SerializeObject(this, formatted ? Formatting.Indented : Formatting.None, jsonSettings);
+
     private static readonly JsonSerializerSettings jsonSettings = new()
     {
         Converters = new List<JsonConverter> { new IFieldJsonConverter() },
