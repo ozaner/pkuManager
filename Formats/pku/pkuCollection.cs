@@ -327,6 +327,15 @@ public class pkuBox : Box
             pkfn.Add(kp.Key, kp.Value.SourceFilename);
         BoxConfig.pkuFileNames = pkfn;
 
+        // Update exported list
+        List<string> toRemove = new();
+        foreach (string filename in BoxConfig.ExportedPku)
+        {
+            if (!Data.Any(x => x.Value.SourceFilename.EqualsCaseInsensitive(filename)))
+                toRemove.Add(filename);
+        }
+        BoxConfig.ExportedPku.RemoveAll(x => toRemove.Contains(x));
+
         string configPath = $"{Path}/{Name}/boxConfig.json";
         string newConfigText = JsonConvert.SerializeObject(BoxConfig, Formatting.Indented);
         try
