@@ -246,14 +246,14 @@ public static class DexUtil
         string[] appList = sfa.Appearance.SplitLexical();
         if (appList is not null)
         {
-            int effectiveSize = appList.Length > 63 ? 64 : appList.Length;
-            ulong powesize = effectiveSize is 64 ? ulong.MaxValue : ((ulong)1 << effectiveSize) - 1;
-            for (ulong i = 0; i <= powesize; i++)
+            int effectiveSize = appList.Length > 10 ? 10 : appList.Length;
+            int powesize = (1 << effectiveSize) - 1;
+            for (int i = 0; i <= powesize; i++)
             {
                 List<string> apps = new();
                 for (int j = 0; j < effectiveSize; j++)
                 {
-                    if ((i & ((ulong)1 << j)) is 0) //reversed 0 and 1 so loop could go form 0 to powsize
+                    if ((i & (1 << j)) is 0) //reversed 0 and 1 so loop could go form 0 to powsize
                         apps.Add(appList[j]);
                 }
                 yield return apps.ToArray().JoinLexical();

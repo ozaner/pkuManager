@@ -505,7 +505,7 @@ public class pkuBox : Box
             pku.Game_Info.Origin_Game.Value ?? pku.Game_Info.Official_Origin_Game.Value,
             pku.True_OT.Value ?? pku.Game_Info.OT,
             pku.Forms.Value.JoinLexical() ?? DexUtil.GetDefaultForm(pku.Species),
-            pku.Appearance.JoinLexical(),
+            pku.Appearance?.Take(10).ToArray().JoinLexical(),
             pku.Catch_Info.Ball.Value,
             pku.IsShadow()
         );
