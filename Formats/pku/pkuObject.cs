@@ -166,10 +166,10 @@ public class pkuObject : FormatObject
     public class Met_Info_Base : pkuDictionaryTag
     {
         [JsonProperty("Met Location")]
-        public string Met_Location { get; set; }
+        public BackedField<string> Met_Location { get; set; } = new();
 
         [JsonProperty("Met Game Override")]
-        public string Met_Game_Override { get; set; }
+        public BackedField<string> Met_Game_Override { get; set; } = new();
 
         [JsonProperty("Met Date")]
         public DateTime? Met_Date { get; set; }

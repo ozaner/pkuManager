@@ -24,7 +24,7 @@ public interface Origin_Game_E
     public string Origin_Game_Name { set; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    protected void ProcessOrigin_Game()
+    public void ProcessOrigin_Game()
     {
         (int? id, string game) helper(string game)
         {

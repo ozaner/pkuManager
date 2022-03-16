@@ -238,17 +238,6 @@ public static class pkxUtil
 
 
         // ----------
-        // Catch Info Alert Methods
-        // ----------
-        public static Alert GetMetLocationAlert(AlertType at, string defaultLoc, string invalidLocation = null) => new("Met Location", at switch
-        {
-            AlertType.INVALID => $"The location \"{invalidLocation}\" doesn't exist in specified origin game.",
-            AlertType.UNSPECIFIED => $"The met location was unspecified.",
-            _ => throw InvalidAlertType(at)
-        } + $" Using the default location: { defaultLoc ?? "None"}.");
-
-
-        // ----------
         // Pokemon Attribute Alert Methods
         // ----------
         public static Alert GetPIDAlert(AlertType at, List<(string, object, object)> tags = null)
@@ -622,27 +611,6 @@ public static class pkxUtil
             Alert alert = (atName, atOT) is (AlertType.NONE, AlertType.NONE) ? null :
                 GetTrashAlert(atName, atOT, encodedName.Length, encodedOT.Length, max);
             return (trashedName, trashedOT, alert);
-        }
-
-
-        // ----------
-        // Catch Info Processing Methods
-        // ----------
-        public static (int, Alert) ProcessMetLocation(pkuObject pku, string checkedGameName)
-        {
-            checkedGameName = pku.Catch_Info?.Met_Game_Override ?? checkedGameName; //override game for met location
-            bool succ = int.TryParse(GAME_DEX.SearchDataDex(pku.Catch_Info?.Met_Location, checkedGameName, "Locations", "$x"), out int temp);
-            int? locID = succ ? temp : null;
-            string defaultLoc = GAME_DEX.ReadDataDex<string>(checkedGameName, "Locations", "0") ?? "None";
-            return pku.Catch_Info?.Met_Location switch
-            {
-                null => (0, GetMetLocationAlert(AlertType.UNSPECIFIED, defaultLoc)), //met location unspecified
-                _ => locID switch //met location specified
-                {
-                    null => (0, GetMetLocationAlert(AlertType.INVALID, defaultLoc, pku.Catch_Info.Met_Location)), //met location invalid
-                    _ => (locID.Value, null)//met location valid
-                }
-            };
         }
 
 
