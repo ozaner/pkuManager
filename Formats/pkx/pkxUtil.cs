@@ -276,32 +276,6 @@ public static class pkxUtil
             } + ", generating one that matches this pku's other tags.");
         }
 
-        public static Alert GetNicknameAlert(AlertType at1, int? maxCharacters = null, AlertType at2 = AlertType.NONE)
-        {
-            AlertType[] ats = new AlertType[] { at1, at2 };
-            string msg = "";
-            if (ats.Contains(AlertType.INVALID)) //some characters invalid, removing them
-                msg += $"Some of the characters in the nickname are invalid in this format, removing them.";
-            if (ats.Contains(AlertType.OVERFLOW)) //too many characters, truncating
-            {
-                if (maxCharacters is null)
-                    throw new ArgumentNullException(nameof(maxCharacters), "maximum # of chars must be specified for OVERFLOW alerts.");
-                if (msg is not "")
-                    msg += DataUtil.Newline();
-                msg += $"Nickname can only have {maxCharacters} characters in this format, truncating it.";
-            }
-            return msg is not "" ? new("Nickname", msg) : throw InvalidAlertType();
-        }
-
-        public static Alert GetNicknameFlagAlert(bool flagset, string defaultName = null)
-        {
-            if (flagset && defaultName is null)
-                throw new ArgumentNullException(nameof(defaultName), $"A default name must be specified on a when {nameof(flagset)} true.");
-            return new("Nickname Flag", flagset ?
-                $"This pku's Nickname Flag is true, yet it doesn't have a nickname. Setting the nickname to: {defaultName}." :
-                "This pku's Nickname Flag is false, yet it has a nickname.");
-        }
-
         public static Alert GetLevelAlert(AlertType at) => GetNumericalAlert("Level", at, at switch
         {
             AlertType.UNSPECIFIED or AlertType.UNDERFLOW => 1,
@@ -502,58 +476,6 @@ public static class pkxUtil
         // ----------
         // String Processing Methods
         // ----------
-        public static (T[] nickname, Alert nicknameAlert, bool nicknameFlag, Alert nicknameFlagAlert)
-            ProcessNickname<T>(pkuObject pku, int gen, int maxLength, string format, Language? checkedLang = null) where T : struct
-        {
-            T[] name;
-            bool nicknameFlag = pku.Nickname_Flag is true;
-            Alert alert = null;
-            Alert flagAlert = null;
-            int dex = GetNationalDexChecked(pku.Species); //must be valid at this point
-
-            if (pku.Nickname is not null) //specified
-            {
-                //name
-                bool truncated, invalid;
-                (name, truncated, invalid) = DexUtil.CharEncoding<T>.Encode(pku.Nickname, maxLength, format, checkedLang);
-                if (truncated && invalid)
-                    alert = GetNicknameAlert(AlertType.OVERFLOW, maxLength, AlertType.INVALID);
-                else if (truncated)
-                    alert = GetNicknameAlert(AlertType.OVERFLOW, maxLength);
-                else if (invalid)
-                    alert = GetNicknameAlert(AlertType.INVALID);
-
-                //flag
-                if (pku.Nickname_Flag is null)
-                    nicknameFlag = true;
-
-                if (!nicknameFlag)
-                    flagAlert = GetNicknameFlagAlert(false);
-            }
-            else //unspecified, get default name for given language
-            {
-                //name
-                string defaultName = PokeAPIUtil.GetSpeciesNameTranslated(dex, checkedLang.Value);
-
-                if (gen < 5) //Capitalize Gens 1-4
-                    defaultName = defaultName.ToUpperInvariant();
-
-                if (gen < 8 && dex is 83) //farfetch'd uses ’ in Gens 1-7
-                    defaultName = defaultName.Replace('\'', '’'); //Gen 8: verify this once pokeAPI updates
-
-                (name, _, _) = DexUtil.CharEncoding<T>.Encode(defaultName, maxLength, format, checkedLang); //species names shouldn't be truncated/invalid...
-
-                //flag
-                if (pku.Nickname_Flag is null)
-                    nicknameFlag = false;
-
-                if (nicknameFlag)
-                    flagAlert = GetNicknameFlagAlert(true, defaultName);
-            }
-
-            return (name, alert, nicknameFlag, flagAlert);
-        }
-
         public static (T[], Alert)
             ProcessOT<T>(pkuObject pku, int maxLength, string format, Language? checkedLang = null) where T : struct
         {

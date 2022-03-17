@@ -12,12 +12,18 @@ namespace pkuManager.Formats.Modules;
 public interface Language_O
 {
     public OneOf<IField<BigInteger>, IField<Language>, IField<Language?>> Language { get; }
+
+    public Language? Value => Language.Match(
+        x => x.GetAs<Language>(),
+        x => x.Value,
+        x => x.Value
+    );
 }
 
 public interface Language_E : EnumTag_E
 {
     public pkuObject pku { get; }
-    public Language_O Data { get; }
+    public Language_O Language_Data { get; }
 
     public Language? Language_Default => Language.English;
     public bool Language_AlertIfUnspecified => true;
@@ -25,9 +31,9 @@ public interface Language_E : EnumTag_E
     public Predicate<Language> Language_IsValid { get; }
 
     public void ProcessLanguageBase()
-        => ProcessEnumTag("Language", pku.Game_Info.Language, Language_Default, Data.Language,
+        => ProcessEnumTag("Language", pku.Game_Info.Language, Language_Default, Language_Data.Language,
             Language_AlertIfUnspecified, Language_Alert_Func, Language_IsValid);
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    protected void ProcessLanguage() => ProcessLanguageBase();
+    public void ProcessLanguage() => ProcessLanguageBase();
 }

@@ -16,10 +16,10 @@ namespace pkuManager.Formats.pkx.pk3;
 /// <summary>
 /// Exports a <see cref="pkuObject"/> to a <see cref="pk3Object"/>.
 /// </summary>
-public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E, Moves_E,
-                           Item_E, Nature_E, Friendship_E, TID_E, IVs_E, EVs_E, Contest_Stats_E,
-                           Ball_E, Origin_Game_E, Met_Location_E, Met_Level_E, OT_Gender_E, Language_E,
-                           ByteOverride_E
+public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E,
+                           Nickname_E<byte>, Moves_E, Item_E, Nature_E, Friendship_E, TID_E,
+                           IVs_E, EVs_E, Contest_Stats_E, Ball_E, Origin_Game_E, Met_Location_E,
+                           Met_Level_E, OT_Gender_E, Language_E, ByteOverride_E
 {
     public override string FormatName => "pk3";
 
@@ -49,6 +49,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public Nature? Nature_Default => null;
     public Func<AlertType, string, string, Alert> Nature_Alert_Func => GetNatureAlert;
     public Predicate<Language> Language_IsValid => pk3Object.IsValidLang;
+    public bool Nickname_CapitalizeDefault => true;
 
     // Working variables
     protected WorkingVariables workingVars = new();
@@ -161,11 +162,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
             Data.Nickname.SetAs(DexUtil.CharEncoding<byte>.Encode
                 (pkxUtil.EGG_NICKNAME[Data.Language.GetAs<Language>()], pk3Object.MAX_NICKNAME_CHARS, FormatName, Data.Language.GetAs<Language>()).encodedStr);
         else
-        {
-            var (nick, alert, _, _) = pkxUtil.ExportTags.ProcessNickname<byte>(pku, 3, pk3Object.MAX_NICKNAME_CHARS, FormatName, Data.Language.GetAs<Language>());
-            Data.Nickname.SetAs(nick);
-            Warnings.Add(alert);
-        }
+            (this as Nickname_E<byte>).ProcessNickname();
     }
 
     // OT [Requires: Language]
@@ -429,6 +426,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     */
     Species_O Species_E.Data => Data;
     Form_O Form_E.Data => workingVars;
+    Nickname_O<byte> Nickname_E<byte>.Data => Data;
     Moves_O Moves_E.Data => Data;
     Item_O Item_E.Data => Data;
     Nature_O Nature_E.Data => workingVars;
@@ -442,7 +440,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     Met_Location_O Met_Location_E.Data => Data;
     Met_Level_O Met_Level_E.Data => Data;
     OT_Gender_O OT_Gender_E.Data => Data;
-    Language_O Language_E.Data => Data;
+    public Language_O Language_Data => Data;
     ByteOverride_O ByteOverride_E.Data => Data;
     Action ByteOverride_E.ByteOverrideAction { get; set; }
     protected partial class WorkingVariables : Nature_O, Form_O
