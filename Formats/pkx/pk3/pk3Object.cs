@@ -17,7 +17,7 @@ namespace pkuManager.Formats.pkx.pk3;
 /// <see href="https://bulbapedia.bulbagarden.net/wiki/Pokémon_data_structure_(Generation_III)">Bulbapedia</see>.
 /// </summary>
 public class pk3Object : FormatObject, Species_O, Encoded_Nickname_O, Moves_O, Item_O, TID_O,
-                         Friendship_O, IVs_O, EVs_O, Contest_Stats_O, Ball_O, Origin_Game_O,
+                         Friendship_O, IVs_O, EVs_O, Contest_Stats_O, Ball_O, Encoded_OT_O, Origin_Game_O,
                          Met_Location_O, Met_Level_O, OT_Gender_O, Language_O, ByteOverride_O
 {
     public override string FormatName => "pk3";

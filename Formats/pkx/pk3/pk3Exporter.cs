@@ -18,8 +18,8 @@ namespace pkuManager.Formats.pkx.pk3;
 /// </summary>
 public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E,
                            Encoded_Nickname_E, Moves_E, Item_E, Nature_E, Friendship_E, TID_E,
-                           IVs_E, EVs_E, Contest_Stats_E, Ball_E, Origin_Game_E, Met_Location_E,
-                           Met_Level_E, OT_Gender_E, Language_E, ByteOverride_E
+                           IVs_E, EVs_E, Contest_Stats_E, Ball_E, Encoded_OT_E, Origin_Game_E,
+                           Met_Location_E, Met_Level_E, OT_Gender_E, Language_E, ByteOverride_E
 {
     public override string FormatName => "pk3";
 
@@ -159,11 +159,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
             Data.OT.SetAs(DexUtil.CharEncoding.Encode(pku.Game_Info?.OT, pk3Object.MAX_OT_CHARS,
                 FormatName, Data.Language.GetAs<Language>()).encodedStr);
         else
-        {
-            var (ot, alert) = pkxUtil.ExportTags.ProcessOT(pku, pk3Object.MAX_OT_CHARS, FormatName, Data.Language.GetAs<Language>());
-            Data.OT.Value = ot;
-            Warnings.Add(alert);
-        }
+            (this as Encoded_OT_E).ProcessOT();
     }
 
     // Trash Bytes [Requires: Nickname, OT]
@@ -435,6 +431,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public Origin_Game_O Origin_Game_Field => Data;
     public string Origin_Game_Name { get; set; } // Game Name (string form of Origin Game)
 
+    public Encoded_OT_O OT_Field => Data;
     public Met_Location_O Met_Location_Field => Data;
     public Met_Level_O Met_Level_Field => Data;
     public OT_Gender_O OT_Gender_Field => Data;
@@ -444,6 +441,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     public ByteOverride_O ByteOverride_Field => Data;
     public Action ByteOverride_Action { get; set; }
+
 
 
     // Implicit Fields

@@ -212,33 +212,6 @@ public static class pkxUtil
 
 
         // ----------
-        // Game Info Alert Methods
-        // ----------
-        public static Alert GetOTAlert(int maxChars, params AlertType[] ats)
-        {
-            string msg = "";
-            if (ats.Contains(AlertType.UNSPECIFIED))
-                msg = "OT was not specified, leaving blank.";
-            else
-            {
-                if (ats.Contains(AlertType.INVALID)) //invalid characters, removing
-                    msg += $"Some of the characters in the OT are invalid in this format, removing them.";
-                if (ats.Contains(AlertType.OVERFLOW)) //too many characters, truncating
-                {
-                    if (msg is not "")
-                        msg += DataUtil.Newline(2);
-                    msg += $"OTs can only have {maxChars} characters in this format, truncating it.";
-                }
-            }
-            return msg is not "" ? new("OT", msg) : throw InvalidAlertType();
-        }
-
-        public static Alert GetOTAlert(params AlertType[] ats)
-            => ats.Contains(AlertType.OVERFLOW) ?
-               throw new ArgumentNullException("maxChars", "Overflow OT Alerts must include the character limit.") : GetOTAlert(-1, ats);
-
-
-        // ----------
         // Pokemon Attribute Alert Methods
         // ----------
         public static Alert GetPIDAlert(AlertType at, List<(string, object, object)> tags = null)
@@ -477,31 +450,6 @@ public static class pkxUtil
         // ----------
         // String Processing Methods
         // ----------
-        public static (BigInteger[], Alert)
-            ProcessOT(pkuObject pku, int maxLength, string format, Language? checkedLang = null)
-        {
-            BigInteger[] otName;
-            Alert alert = null;
-
-            if (pku.Game_Info?.OT is not null) //OT specified
-            {
-                bool truncated, invalid;
-                (otName, truncated, invalid) = DexUtil.CharEncoding.Encode(pku.Game_Info.OT, maxLength, format, checkedLang);
-                if (truncated && invalid)
-                    alert = GetOTAlert(maxLength, AlertType.OVERFLOW, AlertType.INVALID);
-                else if (truncated)
-                    alert = GetOTAlert(maxLength, AlertType.OVERFLOW);
-                else if (invalid)
-                    alert = GetOTAlert(AlertType.INVALID);
-            }
-            else //OT not specified
-            {
-                (otName, _, _) = DexUtil.CharEncoding.Encode(null, maxLength, format, checkedLang); //blank array
-                alert = GetOTAlert(AlertType.UNSPECIFIED);
-            }
-            return (otName, alert);
-        }
-
         public static (BigInteger[] trashedName, BigInteger[] trashedOT, Alert)
             ProcessTrash(BigInteger[] encodedName, BigInteger[] nameTrash, BigInteger[] encodedOT, BigInteger[] otTrash, int byteLength, string format, Language? checkedLang = null)
         {
