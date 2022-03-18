@@ -7,25 +7,26 @@ using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules;
 
-public interface Nickname_O<T> where T : struct
+public interface Encoded_Nickname_O
 {
-    public BAMStringField<T> Nickname { get; }
+    public BAMStringField Nickname { get; }
     public virtual IField<bool> Nickname_Flag => null; //no nickname flag by default
 }
 
-public interface Nickname_E<T> where T : struct
+public interface Encoded_Nickname_E
 {
     public pkuObject pku { get; }
     public List<Alert> Warnings { get; }
     public string FormatName { get; }
 
-    public Nickname_O<T> Data { get; }
-    public Language_O Language_Data { get; }
+    public Encoded_Nickname_O Nickname_Field { get; }
+    public Language_O Language_Field { get; }
     public virtual bool Nickname_CapitalizeDefault => false;
 
     [PorterDirective(ProcessingPhase.FirstPass, nameof(Language_E.ProcessLanguage))]
@@ -33,7 +34,7 @@ public interface Nickname_E<T> where T : struct
 
     public void ProcessNicknameBase()
     {
-        T[] name;
+        BigInteger[] name;
         bool nicknameFlag = pku.Nickname_Flag is true;
         Alert alert = null;
         Alert flagAlert = null;
@@ -43,11 +44,11 @@ public interface Nickname_E<T> where T : struct
         {
             //name
             bool truncated, invalid;
-            (name, truncated, invalid) = DexUtil.CharEncoding<T>.Encode(pku.Nickname, Data.Nickname.Length, FormatName, Language_Data.Value);
+            (name, truncated, invalid) = DexUtil.CharEncoding.Encode(pku.Nickname, Nickname_Field.Nickname.Length, FormatName, Language_Field.Value);
             if (truncated && invalid)
-                alert = GetNicknameAlert(AlertType.OVERFLOW, Data.Nickname.Length, AlertType.INVALID);
+                alert = GetNicknameAlert(AlertType.OVERFLOW, Nickname_Field.Nickname.Length, AlertType.INVALID);
             else if (truncated)
-                alert = GetNicknameAlert(AlertType.OVERFLOW, Data.Nickname.Length);
+                alert = GetNicknameAlert(AlertType.OVERFLOW, Nickname_Field.Nickname.Length);
             else if (invalid)
                 alert = GetNicknameAlert(AlertType.INVALID);
 
@@ -61,12 +62,12 @@ public interface Nickname_E<T> where T : struct
         else //unspecified, get default name for given language
         {
             //name
-            string defaultName = PokeAPIUtil.GetSpeciesNameTranslated(dex, Language_Data.Value.Value);
+            string defaultName = PokeAPIUtil.GetSpeciesNameTranslated(dex, Language_Field.Value.Value);
 
             if (Nickname_CapitalizeDefault) //e.g. Gens 1-4 are capitalized by default
                 defaultName = defaultName.ToUpperInvariant();
 
-            (name, _, _) = DexUtil.CharEncoding<T>.Encode(defaultName, Data.Nickname.Length, FormatName, Language_Data.Value); //species names shouldn't be truncated/invalid...
+            (name, _, _) = DexUtil.CharEncoding.Encode(defaultName, Nickname_Field.Nickname.Length, FormatName, Language_Field.Value); //species names shouldn't be truncated/invalid...
 
             //flag
             if (pku.Nickname_Flag is null)
@@ -75,13 +76,13 @@ public interface Nickname_E<T> where T : struct
             if (nicknameFlag)
                 flagAlert = GetNicknameFlagAlert(true, defaultName);
         }
-        Data.Nickname.SetAs(name);
+        Nickname_Field.Nickname.Value = name;
         Warnings.Add(alert);
         
         //flag stuff
-        if (Data.Nickname_Flag is not null)
+        if (Nickname_Field.Nickname_Flag is not null)
         {
-            Data.Nickname_Flag.Value = nicknameFlag;
+            Nickname_Field.Nickname_Flag.Value = nicknameFlag;
             Warnings.Add(flagAlert);
         }
     }

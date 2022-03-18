@@ -16,7 +16,7 @@ namespace pkuManager.Formats.pkx.pk3;
 /// Implementation details mostly referenced from
 /// <see href="https://bulbapedia.bulbagarden.net/wiki/Pokémon_data_structure_(Generation_III)">Bulbapedia</see>.
 /// </summary>
-public class pk3Object : FormatObject, Species_O, Nickname_O<byte>, Moves_O, Item_O, TID_O,
+public class pk3Object : FormatObject, Species_O, Encoded_Nickname_O, Moves_O, Item_O, TID_O,
                          Friendship_O, IVs_O, EVs_O, Contest_Stats_O, Ball_O, Origin_Game_O,
                          Met_Location_O, Met_Level_O, OT_Gender_O, Language_O, ByteOverride_O
 {
@@ -73,13 +73,13 @@ public class pk3Object : FormatObject, Species_O, Nickname_O<byte>, Moves_O, Ite
         // Non-Subdata
         PID = new(NonSubData, 0, 4);
         TID = new(NonSubData, 4, 4);
-        Nickname = new(NonSubData, 8, 10, FormatName, Language, IsValidLang);
+        Nickname = new(NonSubData, 8, 1, 10, FormatName, Language, IsValidLang);
         Language = new(NonSubData, 18, 1);
         IsBadEgg = new(NonSubData, 19, 0);
         HasSpecies = new(NonSubData, 19, 1);
         UseEggName = new(NonSubData, 19, 2);
         Unused_A = new(NonSubData, 19, 3, 5); //leftover from egg name byte
-        OT = new(NonSubData, 20, 7, FormatName, Language, IsValidLang);
+        OT = new(NonSubData, 20, 1, 7, FormatName, Language, IsValidLang);
         MarkingCircle = new(NonSubData, 27, 0);
         MarkingSquare = new(NonSubData, 27, 1);
         MarkingTriangle = new(NonSubData, 27, 2);
@@ -176,13 +176,13 @@ public class pk3Object : FormatObject, Species_O, Nickname_O<byte>, Moves_O, Ite
     */
     public BAMIntegralField PID { get; }
     public BAMIntegralField TID { get; }
-    public BAMStringField<byte> Nickname { get; }
+    public BAMStringField Nickname { get; }
     public BAMIntegralField Language { get; }
     public BAMBoolField IsBadEgg { get; }
     public BAMBoolField HasSpecies { get; }
     public BAMBoolField UseEggName { get; }
     public BAMIntegralField Unused_A { get; }
-    public BAMStringField<byte> OT { get; }
+    public BAMStringField OT { get; }
     public BAMBoolField MarkingCircle { get; }
     public BAMBoolField MarkingSquare { get; }
     public BAMBoolField MarkingTriangle { get; }
@@ -417,7 +417,7 @@ public class pk3Object : FormatObject, Species_O, Nickname_O<byte>, Moves_O, Ite
      * ------------------------------------
     */
     OneOf<IField<BigInteger>, IField<string>> Species_O.Species => Species;
-    BAMStringField<byte> Nickname_O<byte>.Nickname => Nickname;
+    BAMStringField Encoded_Nickname_O.Nickname => Nickname;
     OneOf<IField<BigInteger[]>, IField<string[]>> Moves_O.Moves => Moves;
     OneOf<IField<BigInteger>, IField<string>> Item_O.Item => Item;
     IField<BigInteger> Friendship_O.Friendship => Friendship;

@@ -14,10 +14,10 @@ public class pk3Collection : FileCollection
      * pk3 Save fields
      * ------------------------------------
     */
-    public BAMStringField<byte> OT { get; protected set; }
+    public BAMStringField OT { get; protected set; }
     public ByteArrayManipulator UnshuffledPCBAM { get; protected set; }
     public override IField<BigInteger> CurrentBoxID { get; protected set; }
-    public BAMStringField<byte>[] BoxNames { get; protected set; }
+    public BAMStringField[] BoxNames { get; protected set; }
 
 
     /* ------------------------------------
@@ -118,22 +118,23 @@ public class pk3Collection : FileCollection
         for (int i = 0; i < PC_SECTIONS; i++)
             pcBufferRanges[i] = (saveAddress + SECTION_SIZE * boxBufferSections[i], DATA_SIZE);
 
-        //Determine Japanese-ness
+        //Determine Language
         //  International games pad OT with 0xFF's while JPN OTs end in two 0x00's
         //  This is the best we got...
-        bool isJapanese = BAM.Get<ushort>(trainerInfoAddress + 0x0000 + pk3Object.MAX_OT_CHARS - 2) is 0;
+        //  Note: Can't differentiate English from other international langs.
+        Language lang = BAM.Get<ushort>(trainerInfoAddress + 0x0000 + pk3Object.MAX_OT_CHARS - 2)
+            is 0 ? Language.Japanese : Language.English; 
 
         //Init fields
-        OT = new(BAM, trainerInfoAddress + 0x0000, pk3Object.MAX_OT_CHARS, FormatName);
+        OT = new(BAM, trainerInfoAddress + 0x0000, 1, pk3Object.MAX_OT_CHARS, FormatName, lang, pk3Object.IsValidLang);
         UnshuffledPCBAM = new(BAM, pcBufferRanges);
         CurrentBoxID = new BAMIntegralField(UnshuffledPCBAM, 0x0000, 4);
         if (CurrentBoxID.Value > 14)
             CurrentBoxID.Value = 0; //currentbox too large, reset
 
-        BoxNames = new BAMStringField<byte>[BoxCount];
+        BoxNames = new BAMStringField[BoxCount];
         for (int i = 0; i < BoxCount; i++)
-            BoxNames[i] = new(UnshuffledPCBAM, 0x8344 + MAX_BOX_CHARS * i, MAX_BOX_CHARS, FormatName,
-                isJapanese ? Language.Japanese : Language.English, pk3Object.IsValidLang);
+            BoxNames[i] = new(UnshuffledPCBAM, 0x8344 + MAX_BOX_CHARS * i, 1, MAX_BOX_CHARS, FormatName, lang, pk3Object.IsValidLang);
     }
 
     protected override void PreSave()
@@ -253,10 +254,10 @@ public class pk3Box : Box
             sprites[0],
             sprites[1],
             sprites[2],
-            DexUtil.CharEncoding<byte>.Decode(pk3.Nickname.GetAs<byte>(), "pk3", lang),
+            DexUtil.CharEncoding.Decode(pk3.Nickname.Value, "pk3", lang),
             sfa.Species,
             GAME_DEX.SearchIndexedValue<int?>(pk3.Origin_Game.GetAs<int>(), "pk3", "Indices", "$x"),
-            DexUtil.CharEncoding<byte>.Decode(pk3.OT.GetAs<byte>(), "pk3", lang),
+            DexUtil.CharEncoding.Decode(pk3.OT.Value, "pk3", lang),
             sfa.Form, //forms
             null, //appearance
             BALL_DEX.SearchIndexedValue<int?>(pk3.Ball.GetAs<int>(), "pk3", "Indices", "$x"),

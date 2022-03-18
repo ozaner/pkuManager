@@ -17,7 +17,7 @@ namespace pkuManager.Formats.pkx.pk3;
 /// Exports a <see cref="pkuObject"/> to a <see cref="pk3Object"/>.
 /// </summary>
 public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E,
-                           Nickname_E<byte>, Moves_E, Item_E, Nature_E, Friendship_E, TID_E,
+                           Encoded_Nickname_E, Moves_E, Item_E, Nature_E, Friendship_E, TID_E,
                            IVs_E, EVs_E, Contest_Stats_E, Ball_E, Origin_Game_E, Met_Location_E,
                            Met_Level_E, OT_Gender_E, Language_E, ByteOverride_E
 {
@@ -159,10 +159,10 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     protected virtual void ProcessNickname()
     {
         if (legalGen3Egg)
-            Data.Nickname.SetAs(DexUtil.CharEncoding<byte>.Encode
-                (pkxUtil.EGG_NICKNAME[Data.Language.GetAs<Language>()], pk3Object.MAX_NICKNAME_CHARS, FormatName, Data.Language.GetAs<Language>()).encodedStr);
+            Data.Nickname.SetAs(DexUtil.CharEncoding.Encode(pkxUtil.EGG_NICKNAME[Data.Language.GetAs<Language>()],
+                pk3Object.MAX_NICKNAME_CHARS, FormatName, Data.Language.GetAs<Language>()).encodedStr);
         else
-            (this as Nickname_E<byte>).ProcessNickname();
+            (this as Encoded_Nickname_E).ProcessNickname();
     }
 
     // OT [Requires: Language]
@@ -170,12 +170,12 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     protected virtual void ProcessOT()
     {
         if (legalGen3Egg)
-            Data.OT.SetAs(DexUtil.CharEncoding<byte>.Encode
-                (pku.Game_Info?.OT, pk3Object.MAX_OT_CHARS, FormatName, Data.Language.GetAs<Language>()).encodedStr);
+            Data.OT.SetAs(DexUtil.CharEncoding.Encode(pku.Game_Info?.OT, pk3Object.MAX_OT_CHARS,
+                FormatName, Data.Language.GetAs<Language>()).encodedStr);
         else
         {
-            var (ot, alert) = pkxUtil.ExportTags.ProcessOT<byte>(pku, pk3Object.MAX_OT_CHARS, FormatName, Data.Language.GetAs<Language>());
-            Data.OT.SetAs(ot);
+            var (ot, alert) = pkxUtil.ExportTags.ProcessOT(pku, pk3Object.MAX_OT_CHARS, FormatName, Data.Language.GetAs<Language>());
+            Data.OT.Value = ot;
             Warnings.Add(alert);
         }
     }
@@ -187,11 +187,11 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         pkuObject.Trash_Bytes_Class tb = pku?.Trash_Bytes;
         if (tb is not null)
         {
-            ushort[] nicknameTrash = tb?.Nickname?.Length > 0 ? tb.Nickname : null;
-            ushort[] otTrash = tb?.OT?.Length > 0 ? tb.OT : null;
-            var (nick, ot, alert) = pkxUtil.ExportTags.ProcessTrash(Data.Nickname.GetAs<byte>(), nicknameTrash, Data.OT.GetAs<byte>(), otTrash, FormatName, Data.Language.GetAs<Language>());
-            Data.Nickname.SetAs(nick);
-            Data.OT.SetAs(ot);
+            BigInteger[] nicknameTrash = tb?.Nickname?.Length > 0 ? tb.Nickname : null;
+            BigInteger[] otTrash = tb?.OT?.Length > 0 ? tb.OT : null;
+            var (nick, ot, alert) = pkxUtil.ExportTags.ProcessTrash(Data.Nickname.Value, nicknameTrash, Data.OT.Value, otTrash, 1, FormatName, Data.Language.GetAs<Language>());
+            Data.Nickname.Value = nick;
+            Data.OT.Value = ot;
             Warnings.Add(alert);
         }
     }
@@ -426,7 +426,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     */
     Species_O Species_E.Data => Data;
     Form_O Form_E.Data => workingVars;
-    Nickname_O<byte> Nickname_E<byte>.Data => Data;
+    public Encoded_Nickname_O Nickname_Field => Data;
     Moves_O Moves_E.Data => Data;
     Item_O Item_E.Data => Data;
     Nature_O Nature_E.Data => workingVars;
@@ -440,7 +440,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     Met_Location_O Met_Location_E.Data => Data;
     Met_Level_O Met_Level_E.Data => Data;
     OT_Gender_O OT_Gender_E.Data => Data;
-    public Language_O Language_Data => Data;
+    public Language_O Language_Field => Data;
     ByteOverride_O ByteOverride_E.Data => Data;
     Action ByteOverride_E.ByteOverrideAction { get; set; }
     protected partial class WorkingVariables : Nature_O, Form_O

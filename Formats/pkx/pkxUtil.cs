@@ -6,6 +6,7 @@ using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.pkx.pkxUtil.ExportAlerts;
 
@@ -476,16 +477,16 @@ public static class pkxUtil
         // ----------
         // String Processing Methods
         // ----------
-        public static (T[], Alert)
-            ProcessOT<T>(pkuObject pku, int maxLength, string format, Language? checkedLang = null) where T : struct
+        public static (BigInteger[], Alert)
+            ProcessOT(pkuObject pku, int maxLength, string format, Language? checkedLang = null)
         {
-            T[] otName;
+            BigInteger[] otName;
             Alert alert = null;
 
             if (pku.Game_Info?.OT is not null) //OT specified
             {
                 bool truncated, invalid;
-                (otName, truncated, invalid) = DexUtil.CharEncoding<T>.Encode(pku.Game_Info.OT, maxLength, format, checkedLang);
+                (otName, truncated, invalid) = DexUtil.CharEncoding.Encode(pku.Game_Info.OT, maxLength, format, checkedLang);
                 if (truncated && invalid)
                     alert = GetOTAlert(maxLength, AlertType.OVERFLOW, AlertType.INVALID);
                 else if (truncated)
@@ -495,23 +496,22 @@ public static class pkxUtil
             }
             else //OT not specified
             {
-                (otName, _, _) = DexUtil.CharEncoding<T>.Encode(null, maxLength, format, checkedLang); //blank array
+                (otName, _, _) = DexUtil.CharEncoding.Encode(null, maxLength, format, checkedLang); //blank array
                 alert = GetOTAlert(AlertType.UNSPECIFIED);
             }
             return (otName, alert);
         }
 
-        public static (T[] trashedName, T[] trashedOT, Alert)
-            ProcessTrash<T>(T[] encodedName, ushort[] nameTrash, T[] encodedOT, ushort[] otTrash, string format, Language? checkedLang = null) where T : struct
+        public static (BigInteger[] trashedName, BigInteger[] trashedOT, Alert)
+            ProcessTrash(BigInteger[] encodedName, BigInteger[] nameTrash, BigInteger[] encodedOT, BigInteger[] otTrash, int byteLength, string format, Language? checkedLang = null)
         {
-            ushort max = Type.GetTypeCode(typeof(T)) switch
+            ushort max = byteLength switch
             {
-                TypeCode.Byte => ushort.MaxValue,
-                TypeCode.UInt16 => ushort.MaxValue,
-                TypeCode.Char => char.MaxValue,
-                _ => throw new ArgumentException("only 1-byte, 2-byte, and unicode encodings are supported.", nameof(T))
+                1 => byte.MaxValue,
+                2 => ushort.MaxValue,
+                _ => throw new ArgumentException("only 1 and 2 byte encodings are supported.", nameof(byteLength))
             };
-            (T[], AlertType) helper(T[] encodedStr, ushort[] trash)
+            (BigInteger[], AlertType) helper(BigInteger[] encodedStr, BigInteger[] trash)
             {
                 AlertType at = AlertType.NONE;
                 if (trash is null)
@@ -525,11 +525,11 @@ public static class pkxUtil
                     return (encodedStr, at);
 
                 //T is definitely byte, ushort, or byte at this point.
-                return (DexUtil.CharEncoding<T>.Trash(encodedStr, trash, format, checkedLang), at);
+                return (DexUtil.CharEncoding.Trash(encodedStr, trash, format, checkedLang), at);
             }
 
-            (T[] trashedName, AlertType atName) = helper(encodedName, nameTrash);
-            (T[] trashedOT, AlertType atOT) = helper(encodedOT, otTrash);
+            (BigInteger[] trashedName, AlertType atName) = helper(encodedName, nameTrash);
+            (BigInteger[] trashedOT, AlertType atOT) = helper(encodedOT, otTrash);
             Alert alert = (atName, atOT) is (AlertType.NONE, AlertType.NONE) ? null :
                 GetTrashAlert(atName, atOT, encodedName.Length, encodedOT.Length, max);
             return (trashedName, trashedOT, alert);

@@ -125,10 +125,10 @@ public class pkuObject : FormatObject
     public class Trash_Bytes_Class : pkuDictionaryTag
     {
         [JsonProperty("Nickname")]
-        public ushort[] Nickname { get; set; }
+        public BigInteger[] Nickname { get; set; }
 
         [JsonProperty("OT")]
-        public ushort[] OT { get; set; }
+        public BigInteger[] OT { get; set; }
     }
 
     public class Move : pkuDictionaryTag

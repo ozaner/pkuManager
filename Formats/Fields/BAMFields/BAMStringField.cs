@@ -6,7 +6,7 @@ using System.Numerics;
 
 namespace pkuManager.Formats.Fields.BAMFields;
 
-public class BAMStringField<T> : BAMArrayField, IField<string> where T: struct
+public class BAMStringField : BAMArrayField, IField<string>
 {
     protected string FormatName { get; }
 
@@ -17,8 +17,8 @@ public class BAMStringField<T> : BAMArrayField, IField<string> where T: struct
     //string form of Value
     public string ValueAsString
     {
-        get => DexUtil.CharEncoding<T>.Decode(this.GetAs<T>(), FormatName, GetLanguage());
-        set => DexUtil.CharEncoding<T>.Encode(value, Length, FormatName, GetLanguage());
+        get => DexUtil.CharEncoding.Decode(Value, FormatName, GetLanguage());
+        set => DexUtil.CharEncoding.Encode(value, Length, FormatName, GetLanguage());
     }
 
     string IField<string>.Value
@@ -35,14 +35,13 @@ public class BAMStringField<T> : BAMArrayField, IField<string> where T: struct
         x => x
     ) : null;
 
-    public BAMStringField(ByteArrayManipulator bam, int startByte, int length, string formatName)
-        : base(bam, startByte, ByteArrayManipulator.GetByteSize<T>(), length) => FormatName = formatName;
-
-    public BAMStringField(ByteArrayManipulator bam, int startByte, int length, string formatName,
-        OneOf<IField<BigInteger>, Language?> langField, Predicate<Language> isValidLang) : this(bam, startByte, length, formatName)
+    public BAMStringField(ByteArrayManipulator bam, int startByte, int byteLength, int length, string formatName,
+        OneOf<IField<BigInteger>, Language?> langField, Predicate<Language> isValidLang)
+        : base(bam, startByte, byteLength, length)
     {
         LangDependent = true;
         LanguageField = langField;
         IsValidLang = isValidLang;
+        FormatName = formatName;
     }
 }

@@ -4,6 +4,7 @@ using pkuManager.Formats.pku;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 
 namespace pkuManager.Utilities;
@@ -442,12 +443,12 @@ public static class DexUtil
      * Character Encoding Methods
      * ------------------------------------
     */
-    public static class CharEncoding<T> where T : struct
+    public static class CharEncoding
     {
         private static bool IsLangDependent(string format)
             => FORMAT_DEX.ReadDataDex<bool?>(format, "Character Encoding", "Language Dependent") is true;
 
-        private static T GetTerminator(string format, Language? language = null)
+        private static BigInteger GetTerminator(string format, Language? language = null)
             => GetCodepoint('\u0000', format, language).Value;
 
         /// <summary>
@@ -457,10 +458,15 @@ public static class DexUtil
         /// <param name="format">The format being encoded to.</param>
         /// <param name="language">The language to search. Assumed to exist in this <paramref name="format"/>.</param>
         /// <returns>The codepoint that <paramref name="c"/> maps to, or null if none is found.</returns>
-        private static T? GetCodepoint(char c, string format, Language? language = null)
+        private static BigInteger? GetCodepoint(char c, string format, Language? language = null)
         {
             string langStr = IsLangDependent(format) ? language.ToFormattedString() : "All";
-            return FORMAT_DEX.SearchDataDex(c, format, "Character Encoding", langStr, "$x").CastTo<T?>(); //should be byte/ushort
+
+            //should be byte/ushort before conversion
+            var temp = FORMAT_DEX.SearchDataDex(c, format, "Character Encoding", langStr, "$x");
+            if (temp is null)
+                return null;
+            return BigInteger.Parse(temp);
         }
 
         /// <summary>
@@ -471,7 +477,7 @@ public static class DexUtil
         /// <param name="language">The language to search. Assumed to exist in this <paramref name="format"/>.</param>
         /// <returns>The <see langword="char"/> that <paramref name="codepoint"/> maps to,
         ///          or null if none is found.</returns>
-        private static char? GetChar(T codepoint, string format, Language? language = null)
+        private static char? GetChar(BigInteger codepoint, string format, Language? language = null)
         {
             string langStr = IsLangDependent(format) ? language.ToFormattedString() : "All";
             return FORMAT_DEX.ReadDataDex<char?>(format, "Character Encoding", langStr, codepoint.ToString());
@@ -487,17 +493,17 @@ public static class DexUtil
         /// <param name="language">The language to encode <paramref name="str"/>, if <paramref name="format"/>
         ///                        is language dependent. Null otherwise.</param>
         /// <returns>The encoded form of <paramref name="str"/>.</returns>
-        public static (T[] encodedStr, bool truncated, bool hasInvalidChars)
+        public static (BigInteger[] encodedStr, bool truncated, bool hasInvalidChars)
             Encode(string str, int maxLength, string format, Language? language = null)
         {
             bool truncated = false, hasInvalidChars = false;
-            T[] encodedStr = new T[maxLength];
+            BigInteger[] encodedStr = new BigInteger[maxLength];
 
             //Encode string
             int successfulChars = 0;
             while (str?.Length > 0 && successfulChars < maxLength)
             {
-                T? encodedChar = GetCodepoint(str[0], format, language); //get next character
+                BigInteger? encodedChar = GetCodepoint(str[0], format, language); //get next character
                 str = str[1..]; //chop off current character
 
                 //if character invalid
@@ -531,10 +537,10 @@ public static class DexUtil
         /// <param name="language">The language <paramref name="encodedStr"/> was encoded with, if <paramref name="format"/>
         ///                        is language dependent. Null otherwise.</param>
         /// <returns>The string decoded from <paramref name="encodedStr"/>.</returns>
-        public static string Decode(T[] encodedStr, string format, Language? language = null)
+        public static string Decode(BigInteger[] encodedStr, string format, Language? language = null)
         {
             StringBuilder sb = new();
-            foreach (T e in encodedStr)
+            foreach (BigInteger e in encodedStr)
             {
                 if (e.Equals(GetTerminator(format, language)))
                     break;
@@ -554,13 +560,9 @@ public static class DexUtil
         /// <param name="language">The language <paramref name="encodedStr"/> was encoded with, if <paramref name="format"/>
         ///                        is language dependent. Null otherwise.</param>
         /// <returns>The encoded string 'trashed' with the given trash bytes.</returns>
-        public static T[] Trash(T[] encodedStr, ushort[] trash, string format, Language? language = null)
+        public static BigInteger[] Trash(BigInteger[] encodedStr, BigInteger[] trash, string format, Language? language = null)
         {
-            //cast ushort trash to generic T
-            T[] trashedStr = Array.ConvertAll(trash.Clone() as ushort[],
-                x => (T)Convert.ChangeType(x, typeof(T)));
-
-            trashedStr = trashedStr[0..encodedStr.Length];
+            BigInteger[] trashedStr = trash[0..encodedStr.Length];
             for (int i = 0; i < encodedStr.Length; i++)
             {
                 trashedStr[i] = encodedStr[i];
