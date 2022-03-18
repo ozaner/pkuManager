@@ -18,12 +18,6 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     public override string FormatName => "Showdown";
     protected override ShowdownObject Data { get; } = new();
 
-    // Module Parameters
-    public int IVs_Default => 31;
-    public bool IVs_SilentUnspecified => true;
-    public Nature? Nature_Default => null;
-    public int Friendship_Default => 255;
-
     /// <summary>
     /// Creates an exporter that will attempt to export <paramref name="pku"/>
     /// to a .txt (Showdown!) file, encoded in UTF-8, with the given <paramref name="globalFlags"/>.
@@ -140,16 +134,26 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
 
 
     /* ------------------------------------
-     * Duct Tape
+     * Module Parameters 
      * ------------------------------------
     */
-    Species_O Species_E.Data => Data;
-    Form_O Form_E.Data => Data;
-    Moves_O Moves_E.Data => Data;
-    Item_O Item_E.Data => Data;
-    Nature_O Nature_E.Data => Data;
-    Friendship_O Friendship_E.Data => Data;
-    IVs_O IVs_E.Data => Data;
-    EVs_O EVs_E.Data => Data;
-    int[] Moves_E.Moves_Indices { set { } } //don't need these
+    public Species_O Species_Field => Data;
+    public Form_O Form_Field => Data;
+
+    public Moves_O Moves_Field => Data;
+    public int[] Moves_Indices { set { } } //don't need these
+
+    public Item_O Item_Field => Data;
+
+    public Nature_O Nature_Field => Data;
+    public Nature? Nature_Default => null;
+
+    public Friendship_O Friendship_Field => Data;
+    public int Friendship_Default => 255;
+
+    public IVs_O IVs_Field => Data;
+    public int IVs_Default => 31;
+    public bool IVs_SilentUnspecified => true;
+    
+    public EVs_O EVs_Field => Data;
 }

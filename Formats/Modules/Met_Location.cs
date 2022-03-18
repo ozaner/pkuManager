@@ -20,7 +20,7 @@ public interface Met_Location_E
     public List<Alert> Warnings { get; }
     public string FormatName { get; }
 
-    public Met_Location_O Data { get; }
+    public Met_Location_O Met_Location_Field { get; }
     public string Origin_Game_Name { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass, nameof(Origin_Game_E.ProcessOrigin_Game))]
@@ -35,7 +35,7 @@ public interface Met_Location_E
         //null check
         if (pku.Catch_Info.Met_Location.IsNull())
         {
-            Data.Met_Location.Value = 0;
+            Met_Location_Field.Met_Location.Value = 0;
             Warnings.Add(GetMetLocationAlert(AlertType.UNSPECIFIED, defaultLoc()));
             return;
         }
@@ -47,11 +47,11 @@ public interface Met_Location_E
         //location failure
         if (locID is null)
         {
-            Data.Met_Location.Value = 0;
+            Met_Location_Field.Met_Location.Value = 0;
             Warnings.Add(GetMetLocationAlert(AlertType.INVALID, defaultLoc(), pku.Catch_Info.Met_Location.Value));
         }
         else //location success
-            Data.Met_Location.Value = locID.Value;
+            Met_Location_Field.Met_Location.Value = locID.Value;
     }
 
     protected static Alert GetMetLocationAlert(AlertType at, string defaultLoc, string invalidLoc = null) => new("Met Location", at switch

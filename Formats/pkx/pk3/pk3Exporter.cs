@@ -45,21 +45,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         return (true, null); //compatible with .pk3
     }
 
-    // Module Parameters
-    public Nature? Nature_Default => null;
-    public Func<AlertType, string, string, Alert> Nature_Alert_Func => GetNatureAlert;
-    public Predicate<Language> Language_IsValid => pk3Object.IsValidLang;
-    public bool Nickname_CapitalizeDefault => true;
-
-    // Working variables
-    protected WorkingVariables workingVars = new();
-    protected partial class WorkingVariables
-    {
-        public BackedBoundableField<BigInteger> Form { get; } = new(); // Form [Implicit]
-        public BackedField<Nature?> Nature { get; } = new(); // Nature [Implicit]
-    }
-    public string Origin_Game_Name { get; set; } // Game Name (string form of Origin Game)
-    public int[] Moves_Indices { get; set; } //indices of the chosen moves in the pku
+    //working variables
     protected Gender? gender;
     protected bool legalGen3Egg;
 
@@ -102,7 +88,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
         Alert alert = null; //to return
         BigInteger speciesIndex = Data.Species.Value;
-        BigInteger formIndex = workingVars.Form.Value;
+        BigInteger formIndex = implicitFields.Form.Value;
         if (speciesIndex == 410) //deoxys
             alert = GetFormAlert(AlertType.NONE, null, true);
         else if (speciesIndex == 385 && formIndex != 0) //castform
@@ -112,12 +98,12 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     // PID [Requires: Gender, Form, Nature, TID] [ErrorResolver]
     [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessGender), nameof(ProcessForm),
-                                                "ProcessNature", "ProcessTID")]
+                                                nameof(Nature_E.ProcessNature), nameof(TID_E.ProcessTID))]
     protected virtual void ProcessPID()
     {
-        int? unownForm = Data.Species.Value == 201 ? workingVars.Form.GetAs<int>() : null;
+        int? unownForm = Data.Species.Value == 201 ? implicitFields.Form.GetAs<int>() : null;
         var (pids, alert) = pkxUtil.ExportTags.ProcessPID(pku, Data.TID.GetAs<uint>(), false,
-            gender, workingVars.Nature.Value, unownForm);
+            gender, implicitFields.Nature.Value, unownForm);
         BigInteger[] castedPids = Array.ConvertAll(pids, x => x.ToBigInteger());
         PIDResolver = new(alert, Data.PID, castedPids);
         if (alert is RadioButtonAlert)
@@ -221,7 +207,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     }
 
     // PP-Ups [Requires: Moves]
-    [PorterDirective(ProcessingPhase.FirstPass, "ProcessMoves")]
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(Moves_E.ProcessMoves))]
     protected virtual void ProcessPPUps()
     {
         var (ppups, alert) = pkxUtil.ExportTags.ProcessPPUps(pku, Moves_Indices);
@@ -330,7 +316,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     }
 
     // Fateful Encounter [ErrorResolver]
-    [PorterDirective(ProcessingPhase.FirstPass, "ProcessSpecies")]
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessSpecies))]
     protected virtual void ProcessFatefulEncounter()
     {
         Alert alert = null;
@@ -421,30 +407,53 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
 
     /* ------------------------------------
-     * Duct Tape
+     * Module Parameters
      * ------------------------------------
     */
-    Species_O Species_E.Data => Data;
-    Form_O Form_E.Data => workingVars;
+    public Species_O Species_Field => Data;
+    public Form_O Form_Field => implicitFields;
+
     public Encoded_Nickname_O Nickname_Field => Data;
-    Moves_O Moves_E.Data => Data;
-    Item_O Item_E.Data => Data;
-    Nature_O Nature_E.Data => workingVars;
-    Friendship_O Friendship_E.Data => Data;
-    TID_O TID_E.Data => Data;
-    IVs_O IVs_E.Data => Data;
-    EVs_O EVs_E.Data => Data;
-    Contest_Stats_O Contest_Stats_E.Data => Data;
-    Ball_O Ball_E.Data => Data;
-    Origin_Game_O Origin_Game_E.Data => Data;
-    Met_Location_O Met_Location_E.Data => Data;
-    Met_Level_O Met_Level_E.Data => Data;
-    OT_Gender_O OT_Gender_E.Data => Data;
+    public bool Nickname_CapitalizeDefault => true;
+
+    public Moves_O Moves_Field => Data;
+    public int[] Moves_Indices { get; set; } //indices of the chosen moves in the pku
+
+    public Item_O Item_Field => Data;
+
+    public Nature_O Nature_Field => implicitFields;
+    public Func<AlertType, string, string, Alert> Nature_Alert_Func => GetNatureAlert;
+    public Nature? Nature_Default => null;
+
+    public Friendship_O Friendship_Field => Data;
+    public TID_O TID_Field => Data;
+    public IVs_O IVs_Field => Data;
+    public EVs_O EVs_Field => Data;
+    public Contest_Stats_O Contest_Stats_Field => Data;
+    public Ball_O Ball_Field => Data;
+
+    public Origin_Game_O Origin_Game_Field => Data;
+    public string Origin_Game_Name { get; set; } // Game Name (string form of Origin Game)
+
+    public Met_Location_O Met_Location_Field => Data;
+    public Met_Level_O Met_Level_Field => Data;
+    public OT_Gender_O OT_Gender_Field => Data;
+
     public Language_O Language_Field => Data;
-    ByteOverride_O ByteOverride_E.Data => Data;
-    Action ByteOverride_E.ByteOverrideAction { get; set; }
-    protected partial class WorkingVariables : Nature_O, Form_O
+    public Predicate<Language> Language_IsValid => pk3Object.IsValidLang;
+
+    public ByteOverride_O ByteOverride_Field => Data;
+    public Action ByteOverride_Action { get; set; }
+
+
+    // Implicit Fields
+    protected ImplicitFields implicitFields = new();
+    protected partial class ImplicitFields : Nature_O, Form_O
     {
+        public BackedBoundableField<BigInteger> Form { get; } = new(); // Form [Implicit]
+        public BackedField<Nature?> Nature { get; } = new(); // Nature [Implicit]
+
+        //Duct Tape
         OneOf<IField<BigInteger>, IField<string>> Form_O.Form => Form;
         OneOf<IField<BigInteger>, IField<Nature>, IField<Nature?>> Nature_O.Nature => Nature;
     }

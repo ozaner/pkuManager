@@ -20,9 +20,9 @@ public interface Form_E
     public List<Alert> Warnings { get; }
     public string FormatName { get; }
 
-    public Form_O Data { get; }
+    public Form_O Form_Field { get; }
 
-    public void ProcessFormBase() => Data.Form.Switch(
+    public void ProcessFormBase() => Form_Field.Form.Switch(
         x => x.SetAs(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, "Form Indices").Value), //int index
         x => x.Value = DexUtil.GetSpeciesIndexedValue<string>(pku, FormatName, "Form Indices") //string index
     );

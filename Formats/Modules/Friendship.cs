@@ -11,12 +11,12 @@ public interface Friendship_O
 
 public interface Friendship_E : NumericTag_E
 {
-    public Friendship_O Data { get; }
+    public Friendship_O Friendship_Field { get; }
 
     public int Friendship_Default => 0;
     public bool Friendship_SilentUnspecified => true;
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected void ProcessFriendship()
-        => ProcessNumericTag("Friendship", pku.Friendship, Data.Friendship, Friendship_Default, Friendship_SilentUnspecified);
+        => ProcessNumericTag("Friendship", pku.Friendship, Friendship_Field.Friendship, Friendship_Default, Friendship_SilentUnspecified);
 }

@@ -20,7 +20,7 @@ public interface Origin_Game_E
     public List<Alert> Warnings { get; }
     public string FormatName { get; }
 
-    public Origin_Game_O Data { get; }
+    public Origin_Game_O Origin_Game_Field { get; }
     public string Origin_Game_Name { set; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
@@ -34,7 +34,7 @@ public interface Origin_Game_E
         }
 
         // Init
-        Data.Origin_Game.Value = 0;
+        Origin_Game_Field.Origin_Game.Value = 0;
         Origin_Game_Name = null;
 
         // if both unspecified
@@ -51,7 +51,7 @@ public interface Origin_Game_E
                 Warnings.Add(GetOrigin_GameAlert(AlertType.INVALID, pku.Game_Info.Origin_Game.Value, pku.Game_Info.Official_Origin_Game.Value));
             else // success
             {
-                Data.Origin_Game.Value = id.Value;
+                Origin_Game_Field.Origin_Game.Value = id.Value;
                 Origin_Game_Name = game;
             }
         }

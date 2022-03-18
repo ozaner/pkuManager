@@ -22,11 +22,11 @@ public interface Moves_E
     public List<Alert> Warnings { get; }
     public string FormatName { get; }
 
-    public Moves_O Data { get; }
+    public Moves_O Moves_Field { get; }
     public int[] Moves_Indices { set; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    protected void ProcessMoves()
+    public void ProcessMoves()
     {
         List<int> moveIndices = new(); //indices in pku
         int[] moveIDs = new int[4]; //index numbers for format
@@ -42,7 +42,7 @@ public interface Moves_E
                 {
                     if (confirmedMoves < 4)
                     {
-                        if (Data.Moves.IsT0) //ID type moves
+                        if (Moves_Field.Moves.IsT0) //ID type moves
                             moveIDs[confirmedMoves] = MOVE_DEX.GetIndexedValue<int?>(FormatName, pku.Moves[i].Name, "Indices").Value;
                         moveIndices.Add(i);
                         confirmedMoves++;
@@ -58,7 +58,7 @@ public interface Moves_E
         else
             alert = GetMoveAlert(AlertType.UNSPECIFIED);
 
-        Data.Moves.Switch(
+        Moves_Field.Moves.Switch(
             x => x.SetAs(moveIDs),
             x => {
                 string[] moves = new string[moveIndices.Count];

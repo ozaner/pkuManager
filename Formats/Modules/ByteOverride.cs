@@ -22,7 +22,7 @@ public interface ByteOverride_E
     public pkuObject pku { get; }
     public List<Alert> Warnings { get; }
 
-    public ByteOverride_O Data { get; }
+    public ByteOverride_O ByteOverride_Field { get; }
 
     // Processing
     [PorterDirective(ProcessingPhase.FirstPass)]
@@ -62,8 +62,8 @@ public interface ByteOverride_E
 
             //process CMD
             var boCMD = ByteOverrideCMD.FromString(cmd, value);
-            if (boCMD?.IsValid(Data.BAM) == true)
-                validCommands.Add(() => boCMD.Apply(Data.BAM));
+            if (boCMD?.IsValid(ByteOverride_Field.BAM) == true)
+                validCommands.Add(() => boCMD.Apply(ByteOverride_Field.BAM));
             else
             {
                 invalidIndices.Add(index);
@@ -77,13 +77,13 @@ public interface ByteOverride_E
             foreach (Action a in validCommands)
                 a.Invoke();
         }
-        ByteOverrideAction = action;
+        ByteOverride_Action = action;
         Warnings.Add(GetByteOverrideAlert(invalidIndices));
     }
 
     // Action
     [PorterDirective(ProcessingPhase.PostProcessing)]
-    protected Action ByteOverrideAction { get; set; }
+    protected Action ByteOverride_Action { get; set; }
 
     protected static Alert GetByteOverrideAlert(List<int> invalidIndices)
     {

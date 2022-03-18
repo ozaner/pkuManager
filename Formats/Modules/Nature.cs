@@ -17,13 +17,13 @@ public interface Nature_O
 public interface Nature_E : EnumTag_E
 {
     public pkuObject pku { get; }
-    public Nature_O Data { get; }
+    public Nature_O Nature_Field { get; }
 
     public Nature? Nature_Default => Nature.Hardy;
     public bool Nature_AlertIfUnspecified => true;
     public Func<AlertType, string, string, Alert> Nature_Alert_Func => null;
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    protected void ProcessNature()
-        => ProcessEnumTag("Nature", pku.Nature, Nature_Default, Data.Nature, Nature_AlertIfUnspecified, Nature_Alert_Func);
+    public void ProcessNature()
+        => ProcessEnumTag("Nature", pku.Nature, Nature_Default, Nature_Field.Nature, Nature_AlertIfUnspecified, Nature_Alert_Func);
 }
