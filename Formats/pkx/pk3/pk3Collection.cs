@@ -5,6 +5,7 @@ using pkuManager.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using static pkuManager.Formats.Modules.Gender_Util;
 
 namespace pkuManager.Formats.pkx.pk3;
 
@@ -234,7 +235,7 @@ public class pk3Box : Box
         if (sfa.Species is not null)
         {
             //get gender ratio
-            var gr = pkxUtil.GetGenderRatio(sfa);
+            var gr = Gender_Util.GetGenderRatio(sfa);
             bool female = gr is GenderRatio.All_Female ||
                           gr is not GenderRatio.All_Male or GenderRatio.All_Genderless
                           && (int)gr > pk3.PID.Value % 256;

@@ -7,13 +7,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using static pkuManager.Formats.Modules.Gender_Util;
 
 namespace pkuManager.Formats.showdown;
 
 /// <summary>
 /// An implementation of the .txt (Showdown!) format used by Pokémon Showdown!.
 /// </summary>
-public class ShowdownObject : FormatObject, Species_O, Form_O, Moves_O,
+public class ShowdownObject : FormatObject, Species_O, Form_O, Gender_O, Moves_O,
                               Item_O, Nature_O, Friendship_O, IVs_O, EVs_O
 {
     public override string FormatName => "Showdown";
@@ -32,7 +33,7 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Moves_O,
     public BackedBoundableField<BigInteger> Friendship { get; } = new(255, 0);
     public BackedBoundableArrayField<BigInteger> IVs { get; } = new(new BigInteger[6], 31, 0);
     public BackedBoundableArrayField<BigInteger> EVs { get; } = new(new BigInteger[6], 255, 0);
-    public Gender? Gender { get; set; }
+    public BackedField<Gender?> Gender { get; } = new();
     public BackedField<Nature?> Nature { get; } = new();
     public bool Shiny { get; set; }
     public bool Gigantamax_Factor { get; set; }
@@ -63,10 +64,10 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Moves_O,
             introLine += $"{Nickname} ({showdownName})";
 
         // Gender
-        introLine += Gender switch
+        introLine += Gender.Value switch
         {
-            Modules.Gender.Male => " (M)",
-            Modules.Gender.Female => " (F)",
+            Gender_Util.Gender.Male => " (M)",
+            Gender_Util.Gender.Female => " (F)",
             _ => ""
         };
 
@@ -144,6 +145,7 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Moves_O,
     */
     OneOf<IField<BigInteger>, IField<string>> Species_O.Species => Species;
     OneOf<IField<BigInteger>, IField<string>> Form_O.Form => Form;
+    OneOf<IField<BigInteger>, IField<Gender>, IField<Gender?>> Gender_O.Gender => Gender;
     OneOf<IField<BigInteger[]>, IField<string[]>> Moves_O.Moves => Moves;
     OneOf<IField<BigInteger>, IField<string>> Item_O.Item => Item;
     OneOf<IField<BigInteger>, IField<Nature>, IField<Nature?>> Nature_O.Nature => Nature;

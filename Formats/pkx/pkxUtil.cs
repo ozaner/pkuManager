@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
+using static pkuManager.Formats.Modules.Gender_Util;
 using static pkuManager.Formats.pkx.pkxUtil.ExportAlerts;
 
 namespace pkuManager.Formats.pkx;
@@ -21,11 +22,6 @@ public static class pkxUtil
      * Default Values
      * ------------------------------------
     */
-    /// <summary>
-    /// The default gender for Pokémon and trainers used in pkx formats.
-    /// </summary>
-    public const Gender DEFAULT_GENDER = Gender.Male;
-
     /// <summary>
     /// Maps a <see cref="Language"/> to its translation of "Egg".
     /// </summary>
@@ -89,30 +85,6 @@ public static class pkxUtil
     ///          Null if there is no match.</returns>
     public static string GetSpeciesName(int dex)
         => SPECIES_DEX.SearchDataDex<int?>(dex, "$x", "Indices", "main-series");
-
-    /// <summary>
-    /// Gets the gender ratio of the given official <paramref name="species"/>.
-    /// </summary>
-    /// <param name="species">An official species. Will throw an exception otherwise.</param>
-    /// <returns>The gender ratio of <paramref name="species"/>.</returns>
-    public static GenderRatio GetGenderRatio(DexUtil.SFA sfa)
-        => SPECIES_DEX.ReadSpeciesDex<string>(sfa, "Gender Ratio").ToEnum<GenderRatio>().Value;
-
-    /// <summary>
-    /// Returns the gender of a Pokémon with the given <paramref name="pid"/> as determined by Gens 3-5. 
-    /// </summary>
-    /// <param name="gr">The gender ratio of the Pokémon.</param>
-    /// <param name="pid">The PID of the Pokémon.</param>
-    /// <returns>The gender of a Pokémon with the given gender ratio
-    ///          and <paramref name="pid"/> in Gens 3-5.</returns>
-    public static Gender GetPIDGender(GenderRatio gr, uint pid) => gr switch
-    {
-        GenderRatio.All_Female => Gender.Female,
-        GenderRatio.All_Male => Gender.Male,
-        GenderRatio.All_Genderless => Gender.Genderless,
-        GenderRatio x when (int)x > pid % 256 => Gender.Female,
-        _ => Gender.Male
-    };
 
     /// <summary>
     /// Generates a PID that satisfies the given constraints in all generations.<br/>
@@ -345,21 +317,6 @@ public static class pkxUtil
             return new("PP Ups", msg);
         }
 
-        public static Alert GetGenderAlert(AlertType at, Gender? correctGender = null, string invalidGender = null)
-        {
-            if (at is AlertType.MISMATCH or AlertType.INVALID && (correctGender is null || invalidGender is null))
-                throw new ArgumentNullException($"{nameof(correctGender)}, {nameof(invalidGender)}",
-                    "The correct and invalid gender must be given for INVALID & MSIMATCH alerts.");
-            return new("Gender", at switch
-            {
-                AlertType.UNSPECIFIED => "This species can be either male or female, yet no gender was specified." +
-                                            $" Setting to {DEFAULT_GENDER.ToFormattedString()}.",
-                AlertType.MISMATCH => $"This species cannot be {invalidGender}. Setting gender to {correctGender}.",
-                AlertType.INVALID => $"\"{invalidGender}\" is not a valid gender. Setting gender to {correctGender}.",
-                _ => throw InvalidAlertType(at)
-            });
-        }
-
         public static Alert GetFormAlert(AlertType at, string[] invalidForm = null)
         {
             if (at is AlertType.CASTED or AlertType.IN_BATTLE && invalidForm is null)
@@ -547,34 +504,6 @@ public static class pkxUtil
             return (new[] { pid }, alert); //either:
                                             //   warning: pid unspecified or out of bounds, rounding it.
                                             //no warning: pid is in bounds w/ no mismatches.
-        }
-
-        //Gen 6: allow impossible genders in gen 6+ (I think they allow impossible genders...)
-        public static (Gender, Alert) ProcessGender(pkuObject pku)
-        {
-            GenderRatio genderRatio = GetGenderRatio(pku);
-            Gender? mandatoryGender = genderRatio switch
-            {
-                GenderRatio.All_Genderless => Gender.Genderless,
-                GenderRatio.All_Female => Gender.Female,
-                GenderRatio.All_Male => Gender.Male,
-                _ => null
-            };
-            Gender? readGender = pku.Gender.ToEnum<Gender>();
-
-            return pku.Gender switch
-            {
-                null => mandatoryGender is null ? (DEFAULT_GENDER, GetGenderAlert(AlertType.UNSPECIFIED)) : (mandatoryGender.Value, null),
-                _ => readGender switch //gender invalid, make it mandatory/male
-                {
-                    null => (mandatoryGender ?? DEFAULT_GENDER, GetGenderAlert(AlertType.INVALID)), //invalid gender
-                    _ => mandatoryGender switch
-                    {
-                        var x when x is null || x == readGender => (readGender.Value, null), //matches mandatory gender/doesn't have one 
-                        _ => (mandatoryGender.Value, GetGenderAlert(AlertType.MISMATCH, mandatoryGender, readGender.ToFormattedString()))
-                    }
-                }
-            };
         }
 
         public static (int[], Alert) ProcessPPUps(pkuObject pku, int[] moveIndicies)

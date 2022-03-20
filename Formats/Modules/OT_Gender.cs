@@ -5,6 +5,7 @@ using pkuManager.Formats.pku;
 using System;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
+using static pkuManager.Formats.Modules.Gender_Util;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules;

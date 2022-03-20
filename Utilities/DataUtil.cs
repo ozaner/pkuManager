@@ -384,12 +384,11 @@ public static class DataUtil
         => e.ToString().Replace('_', ' '); //Underscores are spaces
 
     /// <summary>
-    /// Attempts to convert a string to an enum of type <typeparamref name="T"/>. Returns null if not possible.
+    /// Attempts to convert the input to an enum of type <typeparamref name="T"/>. Returns null if not possible.
     /// </summary>
     /// <typeparam name="T">An enum type.</typeparam>
     /// <param name="str">A string representing an enum of type <typeparamref name="T"/>.</param>
-    /// <returns><paramref name="str"/> as an enum of type <typeparamref name="T"/>,
-    ///          or <see langword="null"/> if there was no match.</returns>
+    /// <returns>An enum of type <typeparamref name="T"/>, or <see langword="null"/> if there was no match.</returns>
     public static T? ToEnum<T>(this string str) where T : struct
     {
         if (!typeof(T).IsEnum) //Only Enum's allowed
@@ -408,6 +407,20 @@ public static class DataUtil
     /// <inheritdoc cref="ToEnum{T}(string)"/>
     public static T? ToEnum<T>(this IField<string> str) where T : struct
         => str?.Value.ToEnum<T>();
+
+    /// <param name="bi">An integer representing an enum of type <typeparamref name="T"/>.</param>
+    /// <inheritdoc cref="ToEnum{T}(string)"/>
+    public static T? ToEnum<T>(this BigInteger bi) where T : struct
+    {
+        if (!typeof(T).IsEnum) //Only Enum's allowed
+            throw new ArgumentException($"{nameof(T)} must be an {nameof(Enum)}", nameof(T));
+
+        //Returns enum, or null if it DNE
+        if (Enum.IsDefined(typeof(T), (int)bi))
+            return bi.CastTo<T>();
+        else
+            return null;
+    }
 
     /// <summary>
     /// Attempts to convert an array of strings to a list of enums of type <typeparamref name="T"/>.<br/>
@@ -525,6 +538,12 @@ public static class DataUtil
                 return default;
 
             t = Nullable.GetUnderlyingType(t); //if not then just act like its not nullable.
+        }
+        else if (t.IsEnum)
+        {
+            if (obj is BigInteger bi)
+                return (T)Enum.ToObject(t, bi.BigIntegerTo<int>());
+            return (T)Enum.ToObject(t, obj);
         }
         return (T)Convert.ChangeType(obj, t);
     }

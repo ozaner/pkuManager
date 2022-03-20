@@ -13,7 +13,7 @@ namespace pkuManager.Formats.showdown;
 /// Exports a <see cref="pkuObject"/> to a <see cref="ShowdownObject"/>.
 /// </summary>
 public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E, 
-                                Moves_E, Item_E, Nature_E, Friendship_E, IVs_E, EVs_E
+                                Gender_E, Moves_E, Item_E, Nature_E, Friendship_E, IVs_E, EVs_E
 {
     public override string FormatName => "Showdown";
     protected override ShowdownObject Data { get; } = new();
@@ -60,17 +60,6 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
 
         if (Data.Nickname?.Length > 0 && Data.Nickname[0] is ' ') //if first character is a space
             Warnings.Add(GetNicknameAlert(AlertType.INVALID));
-    }
-
-    // Gender
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessGender()
-    {
-        // Notes:
-        //  - Illegal genders are ignored in legal rulesets, but used in illegal ones.
-        //  - Genderless is denoted by no gender.
-
-        Data.Gender = pku.Gender.ToEnum<Gender>();
     }
 
     // Ability
@@ -139,6 +128,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     */
     public Species_O Species_Field => Data;
     public Form_O Form_Field => Data;
+    public Gender_O Gender_Field => Data;
 
     public Moves_O Moves_Field => Data;
     public int[] Moves_Indices { set { } } //don't need these

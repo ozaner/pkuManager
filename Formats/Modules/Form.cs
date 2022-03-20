@@ -28,5 +28,5 @@ public interface Form_E
     );
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    protected void ProcessForm() => ProcessFormBase();
+    public void ProcessForm() => ProcessFormBase();
 }

@@ -208,18 +208,6 @@ public enum GrowthRate
 }
 
 /// <summary>
-/// A gender a Pokémon, or trainer, can have.<br/>
-/// Note that OT genders can only be male or female, not genderless.<br/>
-/// Index numbers correspond to those used in the official games.
-/// </summary>
-public enum Gender
-{
-    Male,
-    Female,
-    Genderless
-}
-
-/// <summary>
 /// An official language a Pokémon can have.
 /// Index numbers correspond to those used in the official games.
 /// </summary>
@@ -313,20 +301,4 @@ public enum Nature
     Sassy,
     Careful,
     Quirky
-}
-
-/// <summary>
-/// A gender ratio a Pokémon species can have.<br/>
-/// Index numbers correspond to the gender threshold use to determine a Pokémon's gender.
-/// </summary>
-public enum GenderRatio
-{
-    All_Male = 0,
-    Male_7_Female_1 = 31,
-    Male_3_Female_1 = 63,
-    Male_1_Female_1 = 127,
-    Male_1_Female_3 = 191,
-    Male_1_Female_7 = 225,
-    All_Female = 254,
-    All_Genderless = 255
 }

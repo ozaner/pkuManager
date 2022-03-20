@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
+using static pkuManager.Formats.Modules.Gender_Util;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.pkx.pk3;
@@ -17,8 +18,8 @@ namespace pkuManager.Formats.pkx.pk3;
 /// Exports a <see cref="pkuObject"/> to a <see cref="pk3Object"/>.
 /// </summary>
 public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E,
-                           Encoded_Nickname_E, Moves_E, Item_E, Nature_E, Friendship_E, TID_E,
-                           IVs_E, EVs_E, Contest_Stats_E, Ball_E, Encoded_OT_E, Origin_Game_E,
+                           Gender_E, Encoded_Nickname_E, Moves_E, Item_E, Nature_E, Friendship_E,
+                           TID_E, IVs_E, EVs_E, Contest_Stats_E, Ball_E, Encoded_OT_E, Origin_Game_E,
                            Met_Location_E, Met_Level_E, OT_Gender_E, Language_E, ByteOverride_E
 {
     public override string FormatName => "pk3";
@@ -46,7 +47,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     }
 
     //working variables
-    protected Gender? gender;
     protected bool legalGen3Egg;
 
 
@@ -60,24 +60,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     {
         (this as Species_E).ProcessSpeciesBase();
         Data.HasSpecies.ValueAsBool = true;
-    }
-
-    // Gender [Implicit]
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessGender()
-    {
-        GenderRatio gr = pkxUtil.GetGenderRatio(pku);
-        bool onlyOneGender = gr is GenderRatio.All_Genderless or GenderRatio.All_Female or GenderRatio.All_Male;
-
-        Alert alert;
-        if (pku.Gender is null && !onlyOneGender) //unspecified and has more than one possible gender
-            alert = GetGenderAlert(AlertType.UNSPECIFIED);
-        else if (pku.Gender.ToEnum<Gender>() is null && !onlyOneGender)
-            alert = GetGenderAlert(AlertType.INVALID, null, pku.Gender);
-        else
-            (gender, alert) = pkxUtil.ExportTags.ProcessGender(pku);
-
-        Warnings.Add(alert);
     }
 
     // Form [Implicit]
@@ -97,13 +79,13 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     }
 
     // PID [Requires: Gender, Form, Nature, TID] [ErrorResolver]
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessGender), nameof(ProcessForm),
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(Gender_E.ProcessGender), nameof(ProcessForm),
                                                 nameof(Nature_E.ProcessNature), nameof(TID_E.ProcessTID))]
     protected virtual void ProcessPID()
     {
         int? unownForm = Data.Species.Value == 201 ? implicitFields.Form.GetAs<int>() : null;
         var (pids, alert) = pkxUtil.ExportTags.ProcessPID(pku, Data.TID.GetAs<uint>(), false,
-            gender, implicitFields.Nature.Value, unownForm);
+            implicitFields.Gender.Value, implicitFields.Nature.Value, unownForm);
         BigInteger[] castedPids = Array.ConvertAll(pids, x => x.ToBigInteger());
         PIDResolver = new(alert, Data.PID, castedPids);
         if (alert is RadioButtonAlert)
@@ -374,14 +356,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         _ => EnumTag_E.GetEnumAlert("Nature", at, val, defaultVal)
     };
 
-    // Changes the UNSPECIFIED & INVALID AlertTypes from the pkxUtil method to account for PID-Nature dependence.
-    public static Alert GetGenderAlert(AlertType at, Gender? correctGender = null, string invalidGender = null) => at switch
-    {
-        AlertType.UNSPECIFIED => new Alert("Gender", "No gender specified, using the gender decided by the PID."),
-        AlertType.INVALID => new Alert("Gender", $"The gender \"{invalidGender}\" is not valid in this format. Using the gender decided by the PID."),
-        _ => pkxUtil.ExportAlerts.GetGenderAlert(at, correctGender, invalidGender)
-    };
-
     public static RadioButtonAlert GetFatefulEncounterAlert(bool isMew)
     {
         string pkmn = isMew ? "Mew" : "Deoxys";
@@ -408,6 +382,10 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     */
     public Species_O Species_Field => Data;
     public Form_O Form_Field => implicitFields;
+
+    public Gender_O Gender_Field => implicitFields;
+    public bool Gender_DisallowImpossibleGenders => true;
+    public bool Gender_PIDDependent => true;
 
     public Encoded_Nickname_O Nickname_Field => Data;
     public bool Nickname_CapitalizeDefault => true;
@@ -443,16 +421,17 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public Action ByteOverride_Action { get; set; }
 
 
-
     // Implicit Fields
     protected ImplicitFields implicitFields = new();
-    protected partial class ImplicitFields : Nature_O, Form_O
+    protected partial class ImplicitFields : Form_O, Gender_O, Nature_O
     {
         public BackedBoundableField<BigInteger> Form { get; } = new(); // Form [Implicit]
+        public BackedField<Gender?> Gender { get; } = new(); //Gender [Implicit]
         public BackedField<Nature?> Nature { get; } = new(); // Nature [Implicit]
 
         //Duct Tape
         OneOf<IField<BigInteger>, IField<string>> Form_O.Form => Form;
+        OneOf<IField<BigInteger>, IField<Gender>, IField<Gender?>> Gender_O.Gender => Gender;
         OneOf<IField<BigInteger>, IField<Nature>, IField<Nature?>> Nature_O.Nature => Nature;
     }
 }

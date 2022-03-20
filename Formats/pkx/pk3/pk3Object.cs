@@ -8,6 +8,7 @@ using pkuManager.Formats.Modules;
 using pkuManager.Formats.Fields;
 using OneOf;
 using pkuManager.Formats.Fields.LambdaFields;
+using static pkuManager.Formats.Modules.Gender_Util;
 
 namespace pkuManager.Formats.pkx.pk3;
 
