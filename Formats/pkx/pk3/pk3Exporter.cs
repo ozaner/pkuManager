@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.Modules.Gender_Util;
+using static pkuManager.Formats.Modules.Nature_Util;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.pkx.pk3;

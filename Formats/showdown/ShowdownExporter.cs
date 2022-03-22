@@ -5,6 +5,7 @@ using pkuManager.Formats.pkx;
 using pkuManager.Utilities;
 using System;
 using static pkuManager.Alerts.Alert;
+using static pkuManager.Formats.Modules.Nature_Util;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.showdown;

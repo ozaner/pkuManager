@@ -269,36 +269,3 @@ public enum Language
     /// </summary>
     Chinese_Traditional = 10
 }
-
-/// <summary>
-/// An official nature a Pokémon can have.<br/>
-/// Index numbers correspond to those used in the official games.
-/// </summary>
-public enum Nature
-{
-    Hardy,
-    Lonely,
-    Brave,
-    Adamant,
-    Naughty,
-    Bold,
-    Docile,
-    Relaxed,
-    Impish,
-    Lax,
-    Timid,
-    Hasty,
-    Serious,
-    Jolly,
-    Naive,
-    Modest,
-    Mild,
-    Quiet,
-    Bashful,
-    Rash,
-    Calm,
-    Gentle,
-    Sassy,
-    Careful,
-    Quirky
-}
