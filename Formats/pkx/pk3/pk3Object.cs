@@ -9,6 +9,7 @@ using pkuManager.Formats.Fields;
 using OneOf;
 using pkuManager.Formats.Fields.LambdaFields;
 using static pkuManager.Formats.Modules.Gender_Util;
+using static pkuManager.Formats.Modules.Language_Util;
 
 namespace pkuManager.Formats.pkx.pk3;
 
@@ -323,12 +324,12 @@ public class pk3Object : FormatObject, Species_O, Encoded_Nickname_O, Moves_O, I
     /// Determines whether the given langauge exists in pk3.
     /// </summary>
     public static bool IsValidLang(Language lang) => lang is
-        Modules.Language.Japanese or
-        Modules.Language.English or
-        Modules.Language.French or
-        Modules.Language.Italian or
-        Modules.Language.German or
-        Modules.Language.Spanish;
+        Language_Util.Language.Japanese or
+        Language_Util.Language.English or
+        Language_Util.Language.French or
+        Language_Util.Language.Italian or
+        Language_Util.Language.German or
+        Language_Util.Language.Spanish;
 
     /// <summary>
     /// The maximum number of characters in a .pk3 nickname.<br/>

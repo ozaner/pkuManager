@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json.Linq;
-using pkuManager.Formats.Modules;
 using pkuManager.Formats.pku;
 using System;
 using System.Collections.Generic;
@@ -7,6 +6,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using static pkuManager.Formats.Modules.Gender_Util;
+using static pkuManager.Formats.Modules.Language_Util;
 
 namespace pkuManager.Utilities;
 

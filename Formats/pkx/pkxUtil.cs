@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
+using static pkuManager.Formats.Modules.Language_Util;
 using static pkuManager.Formats.pkx.pkxUtil.ExportAlerts;
 
 namespace pkuManager.Formats.pkx;

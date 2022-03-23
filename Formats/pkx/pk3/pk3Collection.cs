@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using static pkuManager.Formats.Modules.Gender_Util;
+using static pkuManager.Formats.Modules.Language_Util;
 
 namespace pkuManager.Formats.pkx.pk3;
 

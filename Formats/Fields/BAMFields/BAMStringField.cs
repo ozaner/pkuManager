@@ -1,8 +1,8 @@
 ﻿using OneOf;
-using pkuManager.Formats.Modules;
 using pkuManager.Utilities;
 using System;
 using System.Numerics;
+using static pkuManager.Formats.Modules.Language_Util;
 
 namespace pkuManager.Formats.Fields.BAMFields;
 

@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Fields.LambdaFields;
-using pkuManager.Formats.Modules;
 using pkuManager.Formats.pkx;
 using pkuManager.Utilities;
 using System;
@@ -14,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Windows.Forms;
+using static pkuManager.Formats.Modules.Language_Util;
 using static pkuManager.Formats.pku.pkuBox.pkuBoxConfig;
 
 namespace pkuManager.Formats.pku;

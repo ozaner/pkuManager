@@ -1,4 +1,5 @@
-﻿using PokeApiNet;
+﻿using pkuManager.Formats.Modules;
+using PokeApiNet;
 using System;
 using System.Threading.Tasks;
 
@@ -46,19 +47,19 @@ public static class PokeAPIUtil
         }
     }
 
-    public static string GetSpeciesNameTranslated(int dex, Formats.Modules.Language lang)
+    public static string GetSpeciesNameTranslated(int dex, Language_Util.Language lang)
     {
         string langID = lang switch
         {
-            Formats.Modules.Language.Japanese => "ja-Hrkt",
-            Formats.Modules.Language.English => "en",
-            Formats.Modules.Language.French => "fr",
-            Formats.Modules.Language.Italian => "it",
-            Formats.Modules.Language.German => "de",
-            Formats.Modules.Language.Spanish => "es",
-            Formats.Modules.Language.Korean => "ko",
-            Formats.Modules.Language.Chinese_Simplified => "zh-Hans",
-            Formats.Modules.Language.Chinese_Traditional => "zh-Hant",
+            Language_Util.Language.Japanese => "ja-Hrkt",
+            Language_Util.Language.English => "en",
+            Language_Util.Language.French => "fr",
+            Language_Util.Language.Italian => "it",
+            Language_Util.Language.German => "de",
+            Language_Util.Language.Spanish => "es",
+            Language_Util.Language.Korean => "ko",
+            Language_Util.Language.Chinese_Simplified => "zh-Hans",
+            Language_Util.Language.Chinese_Traditional => "zh-Hant",
             _ => throw new ArgumentException("GetSpeciesNameTranslated is missing a language...")
         };
 
@@ -116,7 +117,7 @@ public static class PokeAPIUtil
     private static async Task<Ability> getAbilityAsync(int abilityID)
         => await paClient.GetResourceAsync<Ability>(abilityID);
 
-    private static async Task<GrowthRate> getGrowthRateAsync(int dex)
+    private static async Task<PokeApiNet.GrowthRate> getGrowthRateAsync(int dex)
     {
         PokemonSpecies species = await paClient.GetResourceAsync<PokemonSpecies>(dex); // assume dex is valid
         return await paClient.GetResourceAsync(species.GrowthRate);
