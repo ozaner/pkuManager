@@ -218,7 +218,7 @@ public class pk3Box : Box
         pk3Object pk3 = pkmn as pk3Object;
         int form = pk3.Species.GetAs<int>() switch
         {
-            210 => pk3Object.GetUnownFormID(pk3.PID.GetAs<uint>()),
+            210 => pk3Object.GetUnownFormIDFromPID(pk3.PID.GetAs<uint>()),
             410 => pk3.Origin_Game.GetAs<int>() switch //deoxys
             {
                 3 => 3, //E -> speed
@@ -245,7 +245,7 @@ public class pk3Box : Box
         }
 
         //get other info
-        bool shiny = pkxUtil.IsPIDShiny(pk3.PID.GetAs<uint>(), pk3.TID.GetAs<uint>(), false);
+        bool shiny = PID_Util.IsPIDShiny(pk3.PID.GetAs<uint>(), pk3.TID.GetAs<uint>(), false);
         var sprites = ImageUtil.GetSprites(sfa, shiny, pk3.Is_Egg.ValueAsBool);
         Language lang = (Language)pk3.Language.GetAs<int>();
         lang = pk3Object.IsValidLang(lang) ? lang : Language.English;

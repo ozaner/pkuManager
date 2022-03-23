@@ -17,7 +17,7 @@ namespace pkuManager.Formats.pkx.pk3;
 /// Implementation details mostly referenced from
 /// <see href="https://bulbapedia.bulbagarden.net/wiki/Pokémon_data_structure_(Generation_III)">Bulbapedia</see>.
 /// </summary>
-public class pk3Object : FormatObject, Species_O, Encoded_Nickname_O, Moves_O, Item_O, TID_O,
+public class pk3Object : FormatObject, Species_O, Encoded_Nickname_O, Moves_O, Item_O, PID_O, TID_O,
                          Friendship_O, IVs_O, EVs_O, Contest_Stats_O, Ball_O, Encoded_OT_O, Origin_Game_O,
                          Met_Location_O, Met_Level_O, OT_Gender_O, Language_O, ByteOverride_O
 {
@@ -351,7 +351,7 @@ public class pk3Object : FormatObject, Species_O, Encoded_Nickname_O, Moves_O, I
     /// </summary>
     /// <param name="pid">The Unown's PID.</param>
     /// <returns>The Unown form ID determined by the PID.</returns>
-    public static int GetUnownFormID(uint pid)
+    public static int GetUnownFormIDFromPID(uint pid)
     {
         uint formID = 0;
         formID.SetBits(pid.GetBits(0, 2), 0, 2); //first two bits of byte 0
@@ -372,8 +372,26 @@ public class pk3Object : FormatObject, Species_O, Encoded_Nickname_O, Moves_O, I
         < 0 or > 27 => null, //invalid id
         26 => "!",
         27 => "?",
-        _ => "" + (char)(0x41 + id) //A-Z
+        _ => "" + (char)('A' + id) //A-Z
     };
+
+    /// <summary>
+    /// Gets the Unown form ID the given name corresponds to.
+    /// </summary>
+    /// <param name="name">An Unown form name (i.e. A-Z,!,?).</param>
+    /// <returns>The ID of the Unown form with <paramref name="name"/>. Null if name is invalid.</returns>
+    public static int? GetUnownFormIDFromName(string name)
+    {
+        if (name?.Length != 1)
+            return null; //must be 1 letter long
+        return name[0] switch
+        {
+            '!' => 26,
+            '?' => 27,
+            >= 'A' and <= (char)('A' + 27) => name[0] - 'A',
+            _ => null
+        };
+    }
 
 
     /* ------------------------------------
@@ -422,6 +440,7 @@ public class pk3Object : FormatObject, Species_O, Encoded_Nickname_O, Moves_O, I
     OneOf<IField<BigInteger[]>, IField<string[]>> Moves_O.Moves => Moves;
     OneOf<IField<BigInteger>, IField<string>> Item_O.Item => Item;
     IField<BigInteger> Friendship_O.Friendship => Friendship;
+    IField<BigInteger> PID_O.PID => PID;
     IField<BigInteger> TID_O.TID => TID;
     IField<BigInteger[]> IVs_O.IVs => IVs;
     IField<BigInteger[]> EVs_O.EVs => EVs;

@@ -1,5 +1,6 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.pku;
+using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -81,7 +82,7 @@ public abstract class Porter
         {
             List<MemberInfo> members = new();
             members.AddRange(allMembers.Where(m =>
-                (m.GetCustomAttribute(typeof(PorterDirective), true) as PorterDirective)?.Phase == p));
+                (m.GetCustomAttributeWithInterface(typeof(PorterDirective)) as PorterDirective)?.Phase == p));
             PorterDirectiveMap[p] = members;
         }
     }
@@ -109,7 +110,7 @@ public abstract class Porter
             if (member is null) //already consumed/dne
                 return;
 
-            PorterDirective ed = member.GetCustomAttribute(typeof(PorterDirective), true) as PorterDirective;
+            PorterDirective ed = member.GetCustomAttributeWithInterface(typeof(PorterDirective)) as PorterDirective;
 
             // run prereqs first
             if (ed.Prerequisites?.Length > 0)

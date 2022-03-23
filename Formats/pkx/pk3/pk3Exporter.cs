@@ -19,7 +19,7 @@ namespace pkuManager.Formats.pkx.pk3;
 /// Exports a <see cref="pkuObject"/> to a <see cref="pk3Object"/>.
 /// </summary>
 public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E,
-                           Gender_E, Encoded_Nickname_E, Moves_E, Item_E, Nature_E, Friendship_E,
+                           Gender_E, Encoded_Nickname_E, Moves_E, Item_E, Nature_E, Friendship_E, PID_E,
                            TID_E, IVs_E, EVs_E, Contest_Stats_E, Ball_E, Encoded_OT_E, Origin_Game_E,
                            Met_Location_E, Met_Level_E, OT_Gender_E, Language_E, ByteOverride_E
 {
@@ -77,22 +77,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         else if (speciesIndex == 385 && formIndex != 0) //castform
             alert = GetFormAlert(AlertType.IN_BATTLE, pku.Forms.Value);
         Warnings.Add(alert);
-    }
-
-    // PID [Requires: Gender, Form, Nature, TID] [ErrorResolver]
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(Gender_E.ProcessGender), nameof(ProcessForm),
-                                                nameof(Nature_E.ProcessNature), nameof(TID_E.ProcessTID))]
-    protected virtual void ProcessPID()
-    {
-        int? unownForm = Data.Species.Value == 201 ? implicitFields.Form.GetAs<int>() : null;
-        var (pids, alert) = pkxUtil.ExportTags.ProcessPID(pku, Data.TID.GetAs<uint>(), false,
-            implicitFields.Gender.Value, implicitFields.Nature.Value, unownForm);
-        BigInteger[] castedPids = Array.ConvertAll(pids, x => x.ToBigInteger());
-        PIDResolver = new(alert, Data.PID, castedPids);
-        if (alert is RadioButtonAlert)
-            Errors.Add(alert);
-        else
-            Warnings.Add(alert);
     }
 
     // Egg [Requires: Origin Game]
@@ -321,10 +305,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
      * Error Resolvers
      * ------------------------------------
     */
-    // PID ErrorResolver
-    [PorterDirective(ProcessingPhase.SecondPass)]
-    protected virtual ErrorResolver<BigInteger> PIDResolver { get; set; }
-
     // Experience ErrorResolver
     [PorterDirective(ProcessingPhase.SecondPass)]
     protected virtual ErrorResolver<BigInteger> ExperienceResolver { get; set; }
@@ -401,6 +381,14 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public Nature? Nature_Default => null;
 
     public Friendship_O Friendship_Field => Data;
+
+    public PID_O PID_Field => Data;
+    public ErrorResolver<BigInteger> PID_Resolver { get; set; }
+    public bool PID_GenderDependent => true;
+    public bool PID_UnownFormDependent => true;
+    public bool PID_NatureDependent => true;
+    public bool PID_Gen6ShinyOdds => false;
+
     public TID_O TID_Field => Data;
     public IVs_O IVs_Field => Data;
     public EVs_O EVs_Field => Data;

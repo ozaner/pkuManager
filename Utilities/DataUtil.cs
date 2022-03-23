@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Numerics;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace pkuManager.Utilities;
@@ -454,6 +455,56 @@ public static class DataUtil
 
 
     /* ------------------------------------
+     * Type Methods
+     * ------------------------------------
+    */
+    /// <summary>
+    /// Checks if a given <paramref name="type"/> is a decedent of a given <paramref name="generic"/> type.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <param name="generic">The generic type to check against.</param>
+    /// <returns>Whether <paramref name="type"/> is a decedent of <paramref name="generic"/>.</returns>
+    public static bool IsSubclassOfGeneric(this Type type, Type generic)
+    {
+        while (type is not null && type != typeof(object))
+        {
+            var cur = type.IsGenericType ? type.GetGenericTypeDefinition() : type;
+            if (generic == cur)
+                return true;
+            type = type.BaseType;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if a given <paramref name="type"/> implements a given <paramref name="generic"/> interface.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <param name="generic">The generic interface type to check against.</param>
+    /// <returns>Whether <paramref name="type"/> implements <paramref name="generic"/>.</returns>
+    public static bool ImplementsGenericInterface(this Type type, Type generic)
+        => type.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == generic);
+
+    public static Attribute GetCustomAttributeWithInterface(this MemberInfo mi, Type attributeType)
+    {
+        Attribute att = mi.GetCustomAttribute(attributeType, true);
+        if (att != null)
+            return att; //found attribtue in base or ancestor class
+
+        //try interfaces
+        foreach (var x in mi.DeclaringType.GetInterfaces())
+        {
+            var members = x.GetMember(mi.Name);
+            if (members?.Length > 0)
+                att = members[0].GetCustomAttribute(attributeType);
+            if (att != null)
+                return att; //found attribute in interface
+        }
+        return null; //none found
+    }
+
+
+    /* ------------------------------------
      * Misc. Methods
      * ------------------------------------
     */
@@ -570,33 +621,6 @@ public static class DataUtil
         foreach ((int x, int y) in perms)
             (list[x], list[y]) = (list[y], list[x]);
     }
-
-    /// <summary>
-    /// Checks if a given <paramref name="type"/> is a decedent of a given <paramref name="generic"/> type.
-    /// </summary>
-    /// <param name="type">The type to check.</param>
-    /// <param name="generic">The generic type to check against.</param>
-    /// <returns>Whether <paramref name="type"/> is a decedent of <paramref name="generic"/>.</returns>
-    public static bool IsSubclassOfGeneric(this Type type, Type generic)
-    {
-        while (type is not null && type != typeof(object))
-        {
-            var cur = type.IsGenericType ? type.GetGenericTypeDefinition() : type;
-            if (generic == cur)
-                return true;
-            type = type.BaseType;
-        }
-        return false;
-    }
-
-    /// <summary>
-    /// Checks if a given <paramref name="type"/> implements a given <paramref name="generic"/> interface.
-    /// </summary>
-    /// <param name="type">The type to check.</param>
-    /// <param name="generic">The generic interface type to check against.</param>
-    /// <returns>Whether <paramref name="type"/> implements <paramref name="generic"/>.</returns>
-    public static bool ImplementsGenericInterface(this Type type, Type generic)
-        => type.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == generic);
 
     public static T MoveAndGetNext<T>(this IEnumerator<T> enumerator)
         => enumerator.MoveNext() ? enumerator.Current
