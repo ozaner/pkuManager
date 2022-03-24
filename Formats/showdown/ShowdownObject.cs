@@ -1,6 +1,7 @@
 ﻿using OneOf;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Fields.BackedFields;
+using pkuManager.Formats.Fields.BAMFields;
 using pkuManager.Formats.Modules;
 using System;
 using System.Collections.Generic;
@@ -15,8 +16,8 @@ namespace pkuManager.Formats.showdown;
 /// <summary>
 /// An implementation of the .txt (Showdown!) format used by Pokémon Showdown!.
 /// </summary>
-public class ShowdownObject : FormatObject, Species_O, Form_O, Gender_O, Moves_O,
-                              Item_O, Nature_O, Friendship_O, IVs_O, EVs_O
+public class ShowdownObject : FormatObject, Species_O, Form_O, Nickname_O, Gender_O,
+                              Moves_O, Item_O, Nature_O, Friendship_O, IVs_O, EVs_O
 {
     public override string FormatName => "Showdown";
 
@@ -26,7 +27,7 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Gender_O, Moves_O
     */
     public BackedField<string> Species { get; } = new();
     public BackedField<string> Form { get; } = new();
-    public string Nickname { get; set; }
+    public BackedField<string> Nickname { get; } = new();
     public BackedField<string> Item { get; } = new();
     public string Ability { get; set; }
     public BackedField<string[]> Moves { get; set; } = new();
@@ -59,10 +60,10 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Gender_O, Moves_O
 
         // Nickname
         string introLine = "";
-        if (Nickname is null || Nickname == showdownName)
+        if (Nickname.IsNull() || Nickname.Value is "" || Nickname.Value == showdownName)
             introLine += showdownName;
         else
-            introLine += $"{Nickname} ({showdownName})";
+            introLine += $"{Nickname.Value} ({showdownName})";
 
         // Gender
         introLine += Gender.Value switch
@@ -146,6 +147,7 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Gender_O, Moves_O
     */
     OneOf<IField<BigInteger>, IField<string>> Species_O.Species => Species;
     OneOf<IField<BigInteger>, IField<string>> Form_O.Form => Form;
+    OneOf<BAMStringField, IField<string>> Nickname_O.Nickname => Nickname;
     OneOf<IField<BigInteger>, IField<Gender>, IField<Gender?>> Gender_O.Gender => Gender;
     OneOf<IField<BigInteger[]>, IField<string[]>> Moves_O.Moves => Moves;
     OneOf<IField<BigInteger>, IField<string>> Item_O.Item => Item;

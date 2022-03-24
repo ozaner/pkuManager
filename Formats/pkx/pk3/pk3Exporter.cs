@@ -20,7 +20,7 @@ namespace pkuManager.Formats.pkx.pk3;
 /// Exports a <see cref="pkuObject"/> to a <see cref="pk3Object"/>.
 /// </summary>
 public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E,
-                           Gender_E, Encoded_Nickname_E, Moves_E, Item_E, Nature_E, Friendship_E, PID_E,
+                           Gender_E, Nickname_E, Moves_E, Item_E, Nature_E, Friendship_E, PID_E,
                            TID_E, IVs_E, EVs_E, Contest_Stats_E, Ball_E, Encoded_OT_E, Origin_Game_E,
                            Met_Location_E, Met_Level_E, OT_Gender_E, Language_E, ByteOverride_E
 {
@@ -116,7 +116,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
             Data.Nickname.SetAs(DexUtil.CharEncoding.Encode(pkxUtil.EGG_NICKNAME[Data.Language.GetAs<Language>()],
                 pk3Object.MAX_NICKNAME_CHARS, FormatName, Data.Language.GetAs<Language>()).encodedStr);
         else
-            (this as Encoded_Nickname_E).ProcessNickname();
+            (this as Nickname_E).ProcessNickname();
     }
 
     // OT [Requires: Language]
@@ -369,7 +369,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public bool Gender_DisallowImpossibleGenders => true;
     public bool Gender_PIDDependent => true;
 
-    public Encoded_Nickname_O Nickname_Field => Data;
+    public Nickname_O Nickname_Field => Data;
     public bool Nickname_CapitalizeDefault => true;
 
     public Moves_O Moves_Field => Data;

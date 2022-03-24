@@ -14,7 +14,8 @@ namespace pkuManager.Formats.showdown;
 /// Exports a <see cref="pkuObject"/> to a <see cref="ShowdownObject"/>.
 /// </summary>
 public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E, 
-                                Gender_E, Moves_E, Item_E, Nature_E, Friendship_E, IVs_E, EVs_E
+                                Nickname_E, Gender_E, Moves_E, Item_E, Nature_E, Friendship_E,
+                                IVs_E, EVs_E
 {
     public override string FormatName => "Showdown";
     protected override ShowdownObject Data { get; } = new();
@@ -54,12 +55,8 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
         //  - Empty nickname interpreted as no nickname
         //  - Leading spaces are ignored
 
-        if (pku.Nickname is "") //empty counts as null
-            Data.Nickname = null;
-        else
-            Data.Nickname = pku.Nickname;
-
-        if (Data.Nickname?.Length > 0 && Data.Nickname[0] is ' ') //if first character is a space
+        (this as Nickname_E).ProcessNicknameBase();
+        if (Data.Nickname.Value?.Length > 0 && Data.Nickname.Value[0] is ' ') //if first character is a space
             Warnings.Add(GetNicknameAlert(AlertType.INVALID));
     }
 
@@ -93,11 +90,12 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
      * Showdown Exporting Alerts
      * ------------------------------------
     */
-    public static Alert GetNicknameAlert(AlertType at) => at switch
+    public Alert GetNicknameAlert(AlertType at, int? maxCharacters = null)
     {
-        AlertType.INVALID => new Alert("Nickname", $"Showdown does not recoginize leading spaces in nicknames."),
-        _ => throw InvalidAlertType(at)
-    };
+        if (at.HasFlag(AlertType.INVALID))
+            return new Alert("Nickname", $"Showdown does not recoginize leading spaces in nicknames.");
+        throw InvalidAlertType(at);
+    }
 
     public static Alert GetLevelAlert(AlertType at) => at switch
     {
@@ -130,6 +128,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     public Species_O Species_Field => Data;
     public Form_O Form_Field => Data;
     public Gender_O Gender_Field => Data;
+    public Nickname_O Nickname_Field => Data;
 
     public Moves_O Moves_Field => Data;
     public int[] Moves_Indices { set { } } //don't need these
