@@ -104,13 +104,18 @@ public interface Language_E : EnumTag_E
 
     public Language? Language_Default => Language.English;
     public bool Language_AlertIfUnspecified => true;
-    public Func<AlertType, string, string, Alert> Language_Alert_Func => null;
     public Predicate<Language> Language_IsValid { get; }
 
     public void ProcessLanguageBase()
         => ProcessEnumTag("Language", pku.Game_Info.Language, Language_Default, Language_Field.Language,
-            Language_AlertIfUnspecified, Language_Alert_Func, Language_IsValid);
+            Language_AlertIfUnspecified, GetLanguageAlert, Language_IsValid);
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ProcessLanguage() => ProcessLanguageBase();
+
+    public Alert GetLanguageAlert(AlertType at, string val, string defaultVal)
+        => GetLanguageAlertBase(at, val, defaultVal);
+
+    public Alert GetLanguageAlertBase(AlertType at, string val, string defaultVal)
+        => GetEnumAlert("Language", at, val, defaultVal);
 }

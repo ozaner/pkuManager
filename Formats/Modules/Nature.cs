@@ -3,7 +3,6 @@ using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.pku;
 using pkuManager.Utilities;
-using System;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.Modules.Nature_Util;
@@ -74,9 +73,14 @@ public interface Nature_E : EnumTag_E
 
     public Nature? Nature_Default => DEFAULT_NATURE;
     public bool Nature_AlertIfUnspecified => true;
-    public Func<AlertType, string, string, Alert> Nature_Alert_Func => null;
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ProcessNature()
-        => ProcessEnumTag("Nature", pku.Nature, Nature_Default, Nature_Field.Nature, Nature_AlertIfUnspecified, Nature_Alert_Func);
+        => ProcessEnumTag("Nature", pku.Nature, Nature_Default, Nature_Field.Nature, Nature_AlertIfUnspecified, GetNatureAlert);
+
+    public Alert GetNatureAlert(AlertType at, string val, string defaultVal)
+        => GetNatureAlertBase(at, val, defaultVal);
+
+    public Alert GetNatureAlertBase(AlertType at, string val, string defaultVal)
+        => GetEnumAlert("Nature", at, val, defaultVal);
 }

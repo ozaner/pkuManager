@@ -15,7 +15,7 @@ public interface EnumTag_E
 
     protected void ProcessEnumTag<T>(string tagName, IField<string> tag, T? defaultVal,
         OneOf<IField<BigInteger>, IField<T>, IField<T?>> formatVal, bool alertIfUnspecified,
-        Func<AlertType, string, string, Alert> customAlert = null, Predicate<T> isValid = null) where T : struct, Enum
+        Func<AlertType, string, string, Alert> alertFunc, Predicate<T> isValid = null) where T : struct, Enum
     {
         AlertType at = AlertType.NONE;
         T? finalVal = defaultVal;
@@ -31,12 +31,11 @@ public interface EnumTag_E
         formatVal.Switch(x => x.Value = Convert.ToInt32(finalVal),
                          x => x.Value = finalVal.Value, //exception if default is null, but formatVal is non-nullable 
                          x => x.Value = finalVal);
-        if (customAlert is null)
-            customAlert = (at, v, dv) => GetEnumAlert(tagName, at, v, dv);
-        Warnings.Add(customAlert(at, tag.Value, defaultVal?.ToFormattedString()));
+        if(alertFunc is not null)
+            Warnings.Add(alertFunc(at, tag.Value, defaultVal?.ToFormattedString()));
     }
 
-    public static Alert GetEnumAlert(string tagName, AlertType at, string val, string defaultVal) => at switch
+    protected static Alert GetEnumAlert(string tagName, AlertType at, string val, string defaultVal) => at switch
     {
         AlertType.NONE => null,
         AlertType.UNSPECIFIED => new(tagName, $"No {tagName.ToLowerInvariant()} was specified, using the default: {defaultVal ?? "none"}."),

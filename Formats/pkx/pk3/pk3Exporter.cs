@@ -331,11 +331,11 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         return ribbonAlert;
     }
 
-    public static Alert GetNatureAlert(AlertType at, string val, string defaultVal) => at switch
+    public Alert GetNatureAlert(AlertType at, string val, string defaultVal) => at switch
     {
         AlertType.UNSPECIFIED => new Alert("Nature", "No nature specified, using the nature decided by the PID."),
         AlertType.INVALID => new Alert("Nature", $"The nature \"{val}\" is not valid in this format. Using the nature decided by the PID."),
-        _ => EnumTag_E.GetEnumAlert("Nature", at, val, defaultVal)
+        _ => (this as Nature_E).GetNatureAlertBase(at, val, defaultVal)
     };
 
     public static RadioButtonAlert GetFatefulEncounterAlert(bool isMew)
@@ -378,7 +378,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public Item_O Item_Field => Data;
 
     public Nature_O Nature_Field => implicitFields;
-    public Func<AlertType, string, string, Alert> Nature_Alert_Func => GetNatureAlert;
     public Nature? Nature_Default => null;
 
     public Friendship_O Friendship_Field => Data;
