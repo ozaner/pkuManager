@@ -46,9 +46,9 @@ public interface Encoded_Nickname_E
             bool truncated, invalid;
             (name, truncated, invalid) = DexUtil.CharEncoding.Encode(pku.Nickname, Nickname_Field.Nickname.Length, FormatName, Language_Field.Value);
             if (truncated && invalid)
-                alert = GetNicknameAlert(AlertType.OVERFLOW, Nickname_Field.Nickname.Length, AlertType.INVALID);
+                alert = GetNicknameAlert(AlertType.TOO_LONG, Nickname_Field.Nickname.Length, AlertType.INVALID);
             else if (truncated)
-                alert = GetNicknameAlert(AlertType.OVERFLOW, Nickname_Field.Nickname.Length);
+                alert = GetNicknameAlert(AlertType.TOO_LONG, Nickname_Field.Nickname.Length);
             else if (invalid)
                 alert = GetNicknameAlert(AlertType.INVALID);
 
@@ -93,10 +93,10 @@ public interface Encoded_Nickname_E
         string msg = "";
         if (ats.Contains(AlertType.INVALID)) //some characters invalid, removing them
             msg += $"Some of the characters in the nickname are invalid in this format, removing them.";
-        if (ats.Contains(AlertType.OVERFLOW)) //too many characters, truncating
+        if (ats.Contains(AlertType.TOO_LONG)) //too many characters, truncating
         {
             if (maxCharacters is null)
-                throw new ArgumentNullException(nameof(maxCharacters), "maximum # of chars must be specified for OVERFLOW alerts.");
+                throw new ArgumentNullException(nameof(maxCharacters), "maximum # of chars must be specified for TOO_LONG alerts.");
             if (msg is not "")
                 msg += DataUtil.Newline();
             msg += $"Nickname can only have {maxCharacters} characters in this format, truncating it.";

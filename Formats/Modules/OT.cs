@@ -40,9 +40,9 @@ public interface Encoded_OT_E
             bool truncated, invalid;
             (otName, truncated, invalid) = DexUtil.CharEncoding.Encode(pku.Game_Info.OT, OT_Field.OT.Length, FormatName, Language_Field.Value);
             if (truncated && invalid)
-                alert = GetOTAlert(OT_Field.OT.Length, AlertType.OVERFLOW, AlertType.INVALID);
+                alert = GetOTAlert(OT_Field.OT.Length, AlertType.TOO_LONG, AlertType.INVALID);
             else if (truncated)
-                alert = GetOTAlert(OT_Field.OT.Length, AlertType.OVERFLOW);
+                alert = GetOTAlert(OT_Field.OT.Length, AlertType.TOO_LONG);
             else if (invalid)
                 alert = GetOTAlert(AlertType.INVALID);
         }
@@ -64,7 +64,7 @@ public interface Encoded_OT_E
         {
             if (ats.Contains(AlertType.INVALID)) //invalid characters, removing
                 msg += $"Some of the characters in the OT are invalid in this format, removing them.";
-            if (ats.Contains(AlertType.OVERFLOW)) //too many characters, truncating
+            if (ats.Contains(AlertType.TOO_LONG)) //too many characters, truncating
             {
                 if (msg is not "")
                     msg += DataUtil.Newline(2);
@@ -75,6 +75,6 @@ public interface Encoded_OT_E
     }
 
     public static Alert GetOTAlert(params AlertType[] ats)
-        => ats.Contains(AlertType.OVERFLOW) ?
-           throw new ArgumentNullException("maxChars", "Overflow OT Alerts must include the character limit.") : GetOTAlert(-1, ats);
+        => ats.Contains(AlertType.TOO_LONG) ?
+           throw new ArgumentNullException("maxChars", "TOO_LONG OT Alerts must include the character limit.") : GetOTAlert(-1, ats);
 }

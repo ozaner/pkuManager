@@ -53,7 +53,7 @@ public interface Moves_E
             }
 
             if (confirmedMoves != pku.Moves.Length) //not a perfect match
-                alert = invalid ? GetMoveAlert(AlertType.INVALID, confirmedMoves) : GetMoveAlert(AlertType.OVERFLOW);
+                alert = invalid ? GetMoveAlert(AlertType.INVALID, confirmedMoves) : GetMoveAlert(AlertType.TOO_LONG);
         }
         else
             alert = GetMoveAlert(AlertType.UNSPECIFIED);
@@ -80,7 +80,7 @@ public interface Moves_E
             AlertType.UNSPECIFIED => "This pku has no moves, the Pokemon's moveset will be empty.",
             AlertType.INVALID => movesUsed is 0 ? "None of the pku's moves are valid in this format, the Pokemon's moveset will be empty." :
                     $"Some of the pku's moves are invalid in this format, using the first {movesUsed} valid moves.",
-            AlertType.OVERFLOW => "This pku has more than 4 valid moves, using the first 4.",
+            AlertType.TOO_LONG => "This pku has more than 4 valid moves, using the first 4.",
             _ => throw InvalidAlertType(at)
         });
     }
