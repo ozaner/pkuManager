@@ -22,7 +22,7 @@ namespace pkuManager.Formats.pkx.pk3;
 public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E,
                            Gender_E, Nickname_E, Moves_E, Item_E, Nature_E, Friendship_E, PID_E,
                            TID_E, IVs_E, EVs_E, Contest_Stats_E, Ball_E, Encoded_OT_E, Origin_Game_E,
-                           Met_Location_E, Met_Level_E, OT_Gender_E, Language_E, ByteOverride_E
+                           Met_Location_E, Met_Level_E, OT_Gender_E, Language_E, Trash_Bytes_E, ByteOverride_E
 {
     public override string FormatName => "pk3";
 
@@ -128,22 +128,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
                 FormatName, Data.Language.GetAs<Language>()).encodedStr);
         else
             (this as Encoded_OT_E).ProcessOT();
-    }
-
-    // Trash Bytes [Requires: Nickname, OT]
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessNickname), nameof(ProcessOT))]
-    protected virtual void ProcessTrashBytes()
-    {
-        pkuObject.Trash_Bytes_Class tb = pku?.Trash_Bytes;
-        if (tb is not null)
-        {
-            BigInteger[] nicknameTrash = tb?.Nickname?.Length > 0 ? tb.Nickname : null;
-            BigInteger[] otTrash = tb?.OT?.Length > 0 ? tb.OT : null;
-            var (nick, ot, alert) = pkxUtil.ExportTags.ProcessTrash(Data.Nickname.Value, nicknameTrash, Data.OT.Value, otTrash, 1, FormatName, Data.Language.GetAs<Language>());
-            Data.Nickname.Value = nick;
-            Data.OT.Value = ot;
-            Warnings.Add(alert);
-        }
     }
 
     // Markings

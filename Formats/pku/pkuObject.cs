@@ -114,7 +114,7 @@ public class pkuObject : FormatObject
     public string[] Shiny_Leaf { get; set; }
 
     [JsonProperty("Trash Bytes")]
-    public Trash_Bytes_Class Trash_Bytes { get; set; }
+    public Trash_Bytes_Class Trash_Bytes { get; set; } = new();
 
     [JsonProperty("Byte Override")]
     public Dictionary<string, JToken> Byte_Override { get; set; } = new();
@@ -125,10 +125,10 @@ public class pkuObject : FormatObject
     public class Trash_Bytes_Class : pkuDictionaryTag
     {
         [JsonProperty("Nickname")]
-        public BigInteger[] Nickname { get; set; }
+        public BackedField<BigInteger[]> Nickname { get; set; } = new();
 
         [JsonProperty("OT")]
-        public BigInteger[] OT { get; set; }
+        public BackedField<BigInteger[]> OT { get; set; } = new();
     }
 
     public class Move : pkuDictionaryTag

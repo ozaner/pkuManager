@@ -5,7 +5,6 @@ using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.Modules.Language_Util;
 using static pkuManager.Formats.pkx.pkxUtil.ExportAlerts;
@@ -258,26 +257,6 @@ public static class pkxUtil
 
         public static Alert GetRibbonAlert()
             => new("Ribbons", "Some of the pku's ribbons are not valid in this format. Ignoring them.");
-
-        public static Alert GetTrashAlert(AlertType atNickname, AlertType atOT, int nickEntries, int OTEntries, int? maxVal = null)
-        {
-            if (atNickname is not AlertType.OVERFLOW or AlertType.MISMATCH ||
-                atOT is not AlertType.OVERFLOW or AlertType.MISMATCH)
-                throw InvalidAlertType();
-
-            if ((atNickname is AlertType.OVERFLOW || atOT is AlertType.OVERFLOW) && maxVal is null)
-                throw new ArgumentNullException(nameof(maxVal), "Must give maximum value if there is an OVERFLOW alert.");
-
-            string helper(string name, AlertType at, int entries) => at switch
-            {
-                AlertType.OVERFLOW => $"One or more of the entries in {name} Trash Bytes is too high, the maximum value is ${maxVal}. Ignoring them.",
-                AlertType.MISMATCH => $"The number of entries in the {name} Trash Bytes must be exactly {entries}. Ignoring them.",
-                _ => null
-            };
-
-            return new("Trash Bytes", string.Join(DataUtil.Newline(2), 
-                helper("Nickname", atNickname, nickEntries), helper("OT", atOT, OTEntries)));
-        }
     }
 
 
@@ -301,43 +280,6 @@ public static class pkxUtil
             var x when x < min => (min, getAlertFunc(AlertType.UNDERFLOW)),
             _ => (tag.Value, null)
         };
-
-
-        // ----------
-        // String Processing Methods
-        // ----------
-        public static (BigInteger[] trashedName, BigInteger[] trashedOT, Alert)
-            ProcessTrash(BigInteger[] encodedName, BigInteger[] nameTrash, BigInteger[] encodedOT, BigInteger[] otTrash, int byteLength, string format, Language? checkedLang = null)
-        {
-            ushort max = byteLength switch
-            {
-                1 => byte.MaxValue,
-                2 => ushort.MaxValue,
-                _ => throw new ArgumentException("only 1 and 2 byte encodings are supported.", nameof(byteLength))
-            };
-            (BigInteger[], AlertType) helper(BigInteger[] encodedStr, BigInteger[] trash)
-            {
-                AlertType at = AlertType.NONE;
-                if (trash is null)
-                    return (encodedStr, at);
-                else if (trash.Any(x => x > max))
-                    at = AlertType.OVERFLOW;
-                else if (trash.Length != encodedStr.Length)
-                    at = AlertType.MISMATCH;
-
-                if (at is not AlertType.NONE)
-                    return (encodedStr, at);
-
-                //T is definitely byte, ushort, or byte at this point.
-                return (DexUtil.CharEncoding.Trash(encodedStr, trash, format, checkedLang), at);
-            }
-
-            (BigInteger[] trashedName, AlertType atName) = helper(encodedName, nameTrash);
-            (BigInteger[] trashedOT, AlertType atOT) = helper(encodedOT, otTrash);
-            Alert alert = (atName, atOT) is (AlertType.NONE, AlertType.NONE) ? null :
-                GetTrashAlert(atName, atOT, encodedName.Length, encodedOT.Length, max);
-            return (trashedName, trashedOT, alert);
-        }
 
 
         // ----------

@@ -449,7 +449,7 @@ public static class DexUtil
         private static bool IsLangDependent(string format)
             => FORMAT_DEX.ReadDataDex<bool?>(format, "Character Encoding", "Language Dependent") is true;
 
-        private static BigInteger GetTerminator(string format, Language? language = null)
+        public static BigInteger GetTerminator(string format, Language? language = null)
             => GetCodepoint('\u0000', format, language).Value;
 
         /// <summary>
@@ -550,27 +550,6 @@ public static class DexUtil
                     sb.Append(c.Value);
             }
             return sb.ToString();
-        }
-
-        /// <summary>
-        /// Overlays the given <paramref name="encodedStr"/> over the given <paramref name="trash"/> array.
-        /// </summary>
-        /// <param name="encodedStr">An encoded string.</param>
-        /// <param name="trash">The trash bytes to be applied to <paramref name="encodedStr"/>.</param>
-        /// <param name="format">The format being decoded from.</param>
-        /// <param name="language">The language <paramref name="encodedStr"/> was encoded with, if <paramref name="format"/>
-        ///                        is language dependent. Null otherwise.</param>
-        /// <returns>The encoded string 'trashed' with the given trash bytes.</returns>
-        public static BigInteger[] Trash(BigInteger[] encodedStr, BigInteger[] trash, string format, Language? language = null)
-        {
-            BigInteger[] trashedStr = trash[0..encodedStr.Length];
-            for (int i = 0; i < encodedStr.Length; i++)
-            {
-                trashedStr[i] = encodedStr[i];
-                if (encodedStr[i].Equals(GetTerminator(format, language)))
-                    break;
-            }
-            return trashedStr;
         }
     }
 }
