@@ -22,7 +22,8 @@ namespace pkuManager.Formats.pkx.pk3;
 public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E,
                            Gender_E, Nickname_E, Moves_E, Item_E, Nature_E, Friendship_E, PID_E,
                            TID_E, IVs_E, EVs_E, Contest_Stats_E, Ball_E, Encoded_OT_E, Origin_Game_E,
-                           Met_Location_E, Met_Level_E, OT_Gender_E, Language_E, Trash_Bytes_E, ByteOverride_E
+                           Met_Location_E, Met_Level_E, OT_Gender_E, Language_E, Markings_E,
+                           Trash_Bytes_E, ByteOverride_E
 {
     public override string FormatName => "pk3";
 
@@ -112,17 +113,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
                 FormatName, Data.Language.GetAs<Language>()).encodedStr);
         else
             (this as Encoded_OT_E).ProcessOT();
-    }
-
-    // Markings
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessMarkings()
-    {
-        HashSet<Marking> markings = pku.Markings.ToEnumSet<Marking>();
-        Data.MarkingCircle.ValueAsBool = markings.Contains(Marking.Blue_Circle);
-        Data.MarkingSquare.ValueAsBool = markings.Contains(Marking.Blue_Square);
-        Data.MarkingTriangle.ValueAsBool = markings.Contains(Marking.Blue_Triangle);
-        Data.MarkingHeart.ValueAsBool = markings.Contains(Marking.Blue_Heart);
     }
 
     // Experience [ErrorResolver]
@@ -379,6 +369,8 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     public Language_O Language_Field => Data;
     public Predicate<Language> Language_IsValid => pk3Object.IsValidLang;
+
+    public Markings_O Markings_Field => Data;
 
     public ByteOverride_O ByteOverride_Field => Data;
     public Action ByteOverride_Action { get; set; }

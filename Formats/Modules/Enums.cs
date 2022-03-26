@@ -170,30 +170,6 @@ public enum Ribbon
 }
 
 /// <summary>
-/// A marking a Pokémon can have displayed on their summary screen.
-/// </summary>
-public enum Marking
-{
-    // Blue markings (also refer to the black markings present in Gens 3-5)
-    Blue_Circle,
-    Blue_Triangle,
-    Blue_Square,
-    Blue_Heart,
-    Blue_Star,
-    Blue_Diamond,
-
-    // Pink markings
-    Pink_Circle,
-    Pink_Triangle,
-    Pink_Square,
-    Pink_Heart,
-    Pink_Star,
-    Pink_Diamond,
-
-    Favorite //Only in LGPE
-}
-
-/// <summary>
 /// An EXP growth type a Pokémon species can have.
 /// Index numbers correspond to those used in the official games.
 /// </summary>

@@ -20,7 +20,7 @@ namespace pkuManager.Formats.pkx.pk3;
 /// </summary>
 public class pk3Object : FormatObject, Species_O, Nickname_O, Moves_O, Item_O, PID_O, TID_O,
                          Friendship_O, IVs_O, EVs_O, Contest_Stats_O, Ball_O, Encoded_OT_O, Origin_Game_O,
-                         Met_Location_O, Met_Level_O, OT_Gender_O, Language_O, ByteOverride_O
+                         Met_Location_O, Met_Level_O, OT_Gender_O, Language_O, Markings_O, ByteOverride_O
 {
     public override string FormatName => "pk3";
 
@@ -82,10 +82,10 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Moves_O, Item_O, P
         UseEggName = new(NonSubData, 19, 2);
         Unused_A = new(NonSubData, 19, 3, 5); //leftover from egg name byte
         OT = new(NonSubData, 20, 1, 7, FormatName, Language, IsValidLang);
-        MarkingCircle = new(NonSubData, 27, 0);
-        MarkingSquare = new(NonSubData, 27, 1);
-        MarkingTriangle = new(NonSubData, 27, 2);
-        MarkingHeart = new(NonSubData, 27, 3);
+        Marking_Blue_Circle = new(NonSubData, 27, 0);
+        Marking_Blue_Square = new(NonSubData, 27, 1);
+        Marking_Blue_Triangle = new(NonSubData, 27, 2);
+        Marking_Blue_Heart = new(NonSubData, 27, 3);
         Unused_B = new(NonSubData, 27, 4, 4); // leftover from markings byte
         Checksum = new(NonSubData, 28, 2);
         Unused_C = new(NonSubData, 30, 2); // probably padding
@@ -185,10 +185,10 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Moves_O, Item_O, P
     public BAMBoolField UseEggName { get; }
     public BAMIntegralField Unused_A { get; }
     public BAMStringField OT { get; }
-    public BAMBoolField MarkingCircle { get; }
-    public BAMBoolField MarkingSquare { get; }
-    public BAMBoolField MarkingTriangle { get; }
-    public BAMBoolField MarkingHeart { get; }
+    public BAMBoolField Marking_Blue_Circle { get; }
+    public BAMBoolField Marking_Blue_Square { get; }
+    public BAMBoolField Marking_Blue_Triangle { get; }
+    public BAMBoolField Marking_Blue_Heart { get; }
     public BAMIntegralField Unused_B { get; }
     public BAMIntegralField Checksum { get; }
     public BAMIntegralField Unused_C { get; }
@@ -452,4 +452,9 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Moves_O, Item_O, P
     IField<BigInteger> Met_Level_O.Met_Level => Met_Level;
     OneOf<IField<BigInteger>, IField<Gender>, IField<Gender?>> OT_Gender_O.OT_Gender => OT_Gender;
     OneOf<IField<BigInteger>, IField<Language>, IField<Language?>> Language_O.Language => Language;
+
+    IField<bool> Markings_O.Marking_Blue_Circle => Marking_Blue_Circle;
+    IField<bool> Markings_O.Marking_Blue_Square => Marking_Blue_Square;
+    IField<bool> Markings_O.Marking_Blue_Triangle => Marking_Blue_Triangle;
+    IField<bool> Markings_O.Marking_Blue_Heart => Marking_Blue_Heart;
 }
