@@ -14,13 +14,6 @@ public interface FormCasting_E
     public string FormatName { get; }
     public List<Alert> Notes { get; }
 
-    // Alert strings
-    private const string AlertTitle = "Form Casting";
-    private static string CastingMsg(string originalForm, string castedForm)
-        => $"The pku's form \'{originalForm}\' doesn't exist in this format, but a similar form \'{castedForm}\' does. Using that instead.";
-    private static string DefaultMsg(string originalForm)
-        => $"The pku's form \'{originalForm}\' doesn't exist in this format but, because \'Default Form Override\' is active, casting to the default form.";
-
     [PorterDirective(ProcessingPhase.PreProcessing)]
     public void ProcessFormCasting()
     {
@@ -29,22 +22,32 @@ public interface FormCasting_E
             throw new("FormCasting module should not have been run if this pku has no existant forms in this format.");
 
         string originalForm = ((DexUtil.SFA)pku).Form;
-        if (form.EqualsCaseInsensitive(originalForm)) //no need to cast
+        if (form == originalForm) //no need to cast
             return;
 
         //using a casted/default form
-        Alert a;
+        bool usingDefaultOverride = false;
         var castableForms = DexUtil.GetCastableForms(pku);
         string defaultForm = DexUtil.GetDefaultForm(pku.Species);
-        if (castableForms.Any(x => x.EqualsCaseInsensitive(form)))
-            a = new(AlertTitle, CastingMsg(originalForm.SplitLexical().ToFormattedString(),
-                                           form.SplitLexical().ToFormattedString()));
-        else if (GlobalFlags.Default_Form_Override && form.EqualsCaseInsensitive(defaultForm))
-            a = new(AlertTitle, DefaultMsg(originalForm.SplitLexical().ToFormattedString()));
+        if (castableForms.Any(x => x == form))
+            usingDefaultOverride = false;
+        else if (GlobalFlags.Default_Form_Override && form == defaultForm)
+            usingDefaultOverride = true;
         else //this is impossible
             throw new("There's something wrong with the this method or FirstFormInFormat if we got here...");
 
         pku.Forms.Value = form.SplitLexical(); //cast form
-        Notes.Add(a);
+        Notes.Add(GetFormCastingAlert(usingDefaultOverride, originalForm.SplitLexical().ToFormattedString(),
+                form.SplitLexical().ToFormattedString()));
+    }
+
+    public static Alert GetFormCastingAlert(bool usingDefaultOverride, string originalForm, string castedForm)
+    {
+        string msg = $"The pku's form \'{originalForm}\' doesn't exist in this format, but ";
+        if (usingDefaultOverride)
+            msg += $"because \'Default Form Override\' is active, casting to the default form \'{castedForm}\'.";
+        else
+            msg += $"a similar form \'{castedForm}\' does. Using that instead.";
+        return new("Form Casting", msg);
     }
 }

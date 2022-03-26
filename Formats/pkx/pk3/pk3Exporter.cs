@@ -64,22 +64,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         Data.HasSpecies.ValueAsBool = true;
     }
 
-    // Form [Implicit]
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessSpecies))]
-    protected virtual void ProcessForm()
-    {
-        (this as Form_E).ProcessFormBase();
-
-        Alert alert = null; //to return
-        BigInteger speciesIndex = Data.Species.Value;
-        BigInteger formIndex = implicitFields.Form.Value;
-        if (speciesIndex == 410) //deoxys
-            alert = GetFormAlert(AlertType.NONE, null, true);
-        else if (speciesIndex == 385 && formIndex != 0) //castform
-            alert = GetFormAlert(AlertType.IN_BATTLE, pku.Forms.Value);
-        Warnings.Add(alert);
-    }
-
     // Egg [Requires: Origin Game]
     [PorterDirective(ProcessingPhase.FirstPass, nameof(Origin_Game_E.ProcessOrigin_Game))]
     protected virtual void ProcessEgg()
@@ -303,6 +287,16 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
      * pk3 Exporting Alerts
      * ------------------------------------
     */
+    public Alert GetFormAlert(DexUtil.SFA sfa)
+    {
+        if (sfa.Species == "Deoxys" && sfa.Form != "Normal") //must be another valid deoxys form to get here
+            return new("Form", "Note that in generation 3, Deoxys' form depends on what game it is currently in.");
+        else if (sfa.Species == "Castform" && sfa.Form != "Normal")
+            return new("Form", "Note that in generation 3, Castform can only be in its 'Normal' form out of battle.");
+        else
+            return null;
+    }
+
     // Adds gen 3 contest ribbon alert to an existing pkxUtil ribbon alert (or null), if needed.
     public static Alert AddContestRibbonAlert(Alert ribbonAlert)
     {
@@ -336,10 +330,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
         return new RadioButtonAlert("Fateful Encounter", msg, choices);
     }
-
-    public static Alert GetFormAlert(AlertType at, string[] invalidForm = null, bool isDeoxys = false)
-        => isDeoxys ? new Alert("Form", "Note that in generation 3, Deoxys' form depends on what game it is currently in.")
-                    : pkxUtil.ExportAlerts.GetFormAlert(at, invalidForm);
 
 
     /* ------------------------------------

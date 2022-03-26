@@ -92,24 +92,14 @@ public class Alert
         MISMATCH = 16,
 
         /// <summary>
-        /// For values that can exist only in-battle.
-        /// </summary>
-        IN_BATTLE = 32,
-
-        /// <summary>
-        /// For when a value (e.g. form) was casted to another.
-        /// </summary>
-        CASTED = 64,
-
-        /// <summary>
         /// For when an array/string is too long.
         /// </summary>
-        TOO_LONG = 128,
+        TOO_LONG = 32,
 
         /// <summary>
         /// For when an array/string is too short.
         /// </summary>
-        TOO_SHORT = 256
+        TOO_SHORT = 64
     }
 
     /// <summary>

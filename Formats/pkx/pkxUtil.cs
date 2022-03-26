@@ -215,19 +215,6 @@ public static class pkxUtil
             return new("PP Ups", msg);
         }
 
-        public static Alert GetFormAlert(AlertType at, string[] invalidForm = null)
-        {
-            if (at is AlertType.CASTED or AlertType.IN_BATTLE && invalidForm is null)
-                throw new ArgumentException($"{nameof(invalidForm)} must be given for CASTED and IN_BATTLE alerts.", nameof(invalidForm));
-            return new("Form", at switch
-            {
-                AlertType.UNSPECIFIED => "No form specified, using the default form.",
-                AlertType.CASTED => $"The form \"{invalidForm.ToFormattedString()}\" does not exist in this format and has been casted to its default form.",
-                AlertType.IN_BATTLE => $"The form \"{invalidForm.ToFormattedString()}\" only exists in-battle, using its out of battle form.",
-                _ => throw InvalidAlertType(at)
-            });
-        }
-
         public static Alert GetPokerusAlert(AlertType atStrain, AlertType atDays)
         {
             if ((atStrain, atDays) is (AlertType.NONE, AlertType.NONE))

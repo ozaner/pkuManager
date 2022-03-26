@@ -22,11 +22,17 @@ public interface Form_E
 
     public Form_O Form_Field { get; }
 
-    public void ProcessFormBase() => Form_Field.Form.Switch(
-        x => x.SetAs(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, "Form Indices").Value), //int index
-        x => x.Value = DexUtil.GetSpeciesIndexedValue<string>(pku, FormatName, "Form Indices") //string index
-    );
-
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ProcessForm() => ProcessFormBase();
+
+    public void ProcessFormBase()
+    {
+        Form_Field.Form.Switch(
+            x => x.SetAs(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, "Form Indices").Value), //int index
+            x => x.Value = DexUtil.GetSpeciesIndexedValue<string>(pku, FormatName, "Form Indices") //string index
+        );
+        Warnings.Add(GetFormAlert(pku));
+    }
+
+    public Alert GetFormAlert(DexUtil.SFA sfa) => null;
 }
