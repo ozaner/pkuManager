@@ -4,7 +4,6 @@ using pkuManager.Formats.Modules.MetaTags;
 using pkuManager.Formats.Modules.Tags;
 using pkuManager.Formats.pku;
 using pkuManager.Utilities;
-using System;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
@@ -104,19 +103,11 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
         _ => TagUtil.ExportAlerts.GetLevelAlert(at)
     };
 
-    public static Alert GetNatureAlert(AlertType at, string invalidNature = null)
+    public Alert GetNatureAlert(AlertType at, string val, string defaultVal)
     {
-        Alert a = new("Nature", $"Using the default: None (Showdown uses Serious when no nature is specified.)");
-        if (at is AlertType.INVALID)
-        {
-            if (invalidNature is null)
-                throw new ArgumentException("If INVALID AlertType given, invalidNature must also be given.");
-            a.Message = $"The Nature \"{invalidNature}\" is not valid in this format. " + a.Message;
-        }
-        else if (at is AlertType.UNSPECIFIED)
-            a.Message = $"No nature was specified. " + a.Message;
-        else
-            throw InvalidAlertType(at);
+        Alert a = (this as Nature_E).GetNatureAlertBase(at, val, defaultVal);
+        if (at.HasFlag(AlertType.UNSPECIFIED))
+            a.Message += " (Showdown treats no nature as Serious).";
         return a;
     }
 
