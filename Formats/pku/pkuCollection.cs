@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Fields.LambdaFields;
-using pkuManager.Formats.pkx;
+using pkuManager.Formats.Modules;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,6 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Windows.Forms;
-using static pkuManager.Formats.Modules.Language_Util;
 using static pkuManager.Formats.pku.pkuBox.pkuBoxConfig;
 
 namespace pkuManager.Formats.pku;
@@ -491,7 +490,7 @@ public class pkuBox : Box
     public override Slot CreateSlotInfo(FormatObject pkmn)
     {
         pkuObject pku = pkmn as pkuObject;
-        int? dex = pkxUtil.GetNationalDex(pku.Species);
+        int? dex = TagUtil.GetNationalDex(pku.Species);
         Language? lang = pku.Game_Info.Language.ToEnum<Language>();
         string defaultName = dex.HasValue && lang.HasValue ? PokeAPIUtil.GetSpeciesNameTranslated(dex.Value, lang.Value) : pku.Species;
         var sprites = ImageUtil.GetSprites(pku);

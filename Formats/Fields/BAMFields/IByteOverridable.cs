@@ -1,4 +1,4 @@
-﻿using pkuManager.Formats.Modules;
+﻿using pkuManager.Formats.Modules.MetaTags;
 
 namespace pkuManager.Formats.Fields.BAMFields;
 

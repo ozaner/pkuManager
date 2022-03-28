@@ -47,19 +47,19 @@ public static class PokeAPIUtil
         }
     }
 
-    public static string GetSpeciesNameTranslated(int dex, Language_Util.Language lang)
+    public static string GetSpeciesNameTranslated(int dex, TagEnums.Language lang)
     {
         string langID = lang switch
         {
-            Language_Util.Language.Japanese => "ja-Hrkt",
-            Language_Util.Language.English => "en",
-            Language_Util.Language.French => "fr",
-            Language_Util.Language.Italian => "it",
-            Language_Util.Language.German => "de",
-            Language_Util.Language.Spanish => "es",
-            Language_Util.Language.Korean => "ko",
-            Language_Util.Language.Chinese_Simplified => "zh-Hans",
-            Language_Util.Language.Chinese_Traditional => "zh-Hant",
+            TagEnums.Language.Japanese => "ja-Hrkt",
+            TagEnums.Language.English => "en",
+            TagEnums.Language.French => "fr",
+            TagEnums.Language.Italian => "it",
+            TagEnums.Language.German => "de",
+            TagEnums.Language.Spanish => "es",
+            TagEnums.Language.Korean => "ko",
+            TagEnums.Language.Chinese_Simplified => "zh-Hans",
+            TagEnums.Language.Chinese_Traditional => "zh-Hant",
             _ => throw new ArgumentException("GetSpeciesNameTranslated is missing a language...")
         };
 

@@ -1,11 +1,11 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.Modules;
+using pkuManager.Formats.Modules.MetaTags;
+using pkuManager.Formats.Modules.Tags;
 using pkuManager.Formats.pku;
-using pkuManager.Formats.pkx;
 using pkuManager.Utilities;
 using System;
 using static pkuManager.Alerts.Alert;
-using static pkuManager.Formats.Modules.Nature_Util;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.showdown;
@@ -42,12 +42,12 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
 
 
     /* ------------------------------------
-     * Tag Processing Methods
+     * Custom Processing Methods
      * ------------------------------------
     */
     // Nickname
     [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessNickname()
+    public void ProcessNickname()
     {
         // Notes:
         //  - Practically no character limit
@@ -62,32 +62,32 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
 
     // Ability
     [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessAbility()
+    public void ProcessAbility()
     {
         bool abilityValid = ABILITY_DEX.ExistsIn(FormatName, pku.Ability);
         if (pku.Ability is not null && !abilityValid) //check for invalid alert
-            Warnings.Add(pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.INVALID, pku.Ability, "None (Showdown will pick one)"));
+            Warnings.Add(TagUtil.ExportAlerts.GetAbilityAlert(AlertType.INVALID, pku.Ability, "None (Showdown will pick one)"));
         else
             Data.Ability = pku.Ability;
     }
 
     // Level
     [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessLevel()
+    public void ProcessLevel()
     {
-        var (level, alert) = pkxUtil.ExportTags.ProcessNumericTag(pku.Level, pkxUtil.ExportAlerts.GetLevelAlert, false, 100, 1, 100);
+        var (level, alert) = TagUtil.ExportTags.ProcessNumericTag(pku.Level, TagUtil.ExportAlerts.GetLevelAlert, false, 100, 1, 100);
         Data.Level = (byte)level;
         Warnings.Add(alert);
     }
 
     // Gigantamax Factor
     [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessGigantamaxFactor()
+    public void ProcessGigantamaxFactor()
         => Data.Gigantamax_Factor = pku.Gigantamax_Factor is true;
 
 
     /* ------------------------------------
-     * Showdown Exporting Alerts
+     * Custom Alerts
      * ------------------------------------
     */
     public Alert GetNicknameAlert(AlertType at, int? maxCharacters = null)
@@ -101,7 +101,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     {
         //override pkx's unspecified level of 1 to 100
         AlertType.UNSPECIFIED => new Alert("Level", "No level specified, using the default: 100."),
-        _ => pkxUtil.ExportAlerts.GetLevelAlert(at)
+        _ => TagUtil.ExportAlerts.GetLevelAlert(at)
     };
 
     public static Alert GetNatureAlert(AlertType at, string invalidNature = null)
@@ -134,16 +134,14 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     public int[] Moves_Indices { set { } } //don't need these
 
     public Item_O Item_Field => Data;
-
     public Nature_O Nature_Field => Data;
-    public Nature? Nature_Default => null;
 
     public Friendship_O Friendship_Field => Data;
     public int Friendship_Default => 255;
 
     public IVs_O IVs_Field => Data;
     public int IVs_Default => 31;
-    public bool IVs_AlertOnUnspecified => false;
+    public bool IVs_AlertIfUnspecified => false;
     
     public EVs_O EVs_Field => Data;
 }

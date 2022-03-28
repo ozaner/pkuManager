@@ -3,13 +3,12 @@ using pkuManager.Formats.Fields;
 using pkuManager.Formats.Fields.BackedFields;
 using pkuManager.Formats.Fields.BAMFields;
 using pkuManager.Formats.Modules;
+using pkuManager.Formats.Modules.Tags;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
-using static pkuManager.Formats.Modules.Gender_Util;
-using static pkuManager.Formats.Modules.Nature_Util;
 
 namespace pkuManager.Formats.showdown;
 
@@ -68,8 +67,8 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Nickname_O, Gende
         // Gender
         introLine += Gender.Value switch
         {
-            Gender_Util.Gender.Male => " (M)",
-            Gender_Util.Gender.Female => " (F)",
+            TagEnums.Gender.Male => " (M)",
+            TagEnums.Gender.Female => " (F)",
             _ => ""
         };
 

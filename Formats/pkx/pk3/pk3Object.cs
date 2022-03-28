@@ -8,8 +8,8 @@ using pkuManager.Formats.Modules;
 using pkuManager.Formats.Fields;
 using OneOf;
 using pkuManager.Formats.Fields.LambdaFields;
-using static pkuManager.Formats.Modules.Gender_Util;
-using static pkuManager.Formats.Modules.Language_Util;
+using pkuManager.Formats.Modules.Tags;
+using pkuManager.Formats.Modules.MetaTags;
 
 namespace pkuManager.Formats.pkx.pk3;
 
@@ -324,12 +324,12 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Moves_O, PP_Ups_O,
     /// Determines whether the given langauge exists in pk3.
     /// </summary>
     public static bool IsValidLang(Language lang) => lang is
-        Language_Util.Language.Japanese or
-        Language_Util.Language.English or
-        Language_Util.Language.French or
-        Language_Util.Language.Italian or
-        Language_Util.Language.German or
-        Language_Util.Language.Spanish;
+        TagEnums.Language.Japanese or
+        TagEnums.Language.English or
+        TagEnums.Language.French or
+        TagEnums.Language.Italian or
+        TagEnums.Language.German or
+        TagEnums.Language.Spanish;
 
     /// <summary>
     /// The maximum number of characters in a .pk3 nickname.<br/>
@@ -341,58 +341,6 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Moves_O, PP_Ups_O,
     /// The maximum number of characters in a .pk3 OT name.
     /// </summary>
     public const int MAX_OT_CHARS = 7;
-
-
-    /* ------------------------------------
-     * Form Encoding 
-     * ------------------------------------
-    */
-    /// <summary>
-    /// Gets the form ID of an Unown with the given PID in Gen 3.
-    /// </summary>
-    /// <param name="pid">The Unown's PID.</param>
-    /// <returns>The Unown form ID determined by the PID.</returns>
-    public static int GetUnownFormIDFromPID(uint pid)
-    {
-        uint formID = 0;
-        formID.SetBits(pid.GetBits(0, 2), 0, 2); //first two bits of byte 0
-        formID.SetBits(pid.GetBits(8, 2), 2, 2); //first two bits of byte 1
-        formID.SetBits(pid.GetBits(16, 2), 4, 2); //first two bits of byte 2
-        formID.SetBits(pid.GetBits(24, 2), 6, 2); //first two bits of byte 3
-
-        return (int)formID % 28;
-    }
-
-    /// <summary>
-    /// Gets the Unown form name the given ID corresponds to.
-    /// </summary>
-    /// <param name="id">An Unown form ID.</param>
-    /// <returns>The name of the Unown form with <paramref name="id"/>. Null if ID is invalid.</returns>
-    public static string GetUnownFormName(int id) => id switch
-    {
-        < 0 or > 27 => null, //invalid id
-        26 => "!",
-        27 => "?",
-        _ => "" + (char)('A' + id) //A-Z
-    };
-
-    /// <summary>
-    /// Gets the Unown form ID the given name corresponds to.
-    /// </summary>
-    /// <param name="name">An Unown form name (i.e. A-Z,!,?).</param>
-    /// <returns>The ID of the Unown form with <paramref name="name"/>. Null if name is invalid.</returns>
-    public static int? GetUnownFormIDFromName(string name)
-    {
-        if (name?.Length != 1)
-            return null; //must be 1 letter long
-        return name[0] switch
-        {
-            '!' => 26,
-            '?' => 27,
-            >= 'A' and <= (char)('A' + 27) => name[0] - 'A',
-            _ => null
-        };
-    }
 
 
     /* ------------------------------------

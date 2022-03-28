@@ -3,16 +3,15 @@ using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Fields.BackedFields;
 using pkuManager.Formats.Modules;
+using pkuManager.Formats.Modules.Tags;
 using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
-using static pkuManager.Formats.Modules.Gender_Util;
-using static pkuManager.Formats.Modules.Language_Util;
-using static pkuManager.Formats.Modules.Nature_Util;
 using static pkuManager.Formats.PorterDirective;
+using pkuManager.Formats.Modules.MetaTags;
 
 namespace pkuManager.Formats.pkx.pk3;
 
@@ -49,17 +48,28 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         return (true, null); //compatible with .pk3
     }
 
-    //working variables
+
+    /* ------------------------------------
+     * Working Variables
+     * ------------------------------------
+    */
     protected bool legalGen3Egg;
+    protected ImplicitFields implicitFields = new();
+    protected partial class ImplicitFields
+    {
+        public BackedBoundableField<BigInteger> Form { get; } = new(); // Form [Implicit]
+        public BackedField<Gender?> Gender { get; } = new(); //Gender [Implicit]
+        public BackedField<Nature?> Nature { get; } = new(); // Nature [Implicit]
+    }
 
 
     /* ------------------------------------
-     * Tag Processing Methods
+     * Custom Processing Methods
      * ------------------------------------
     */
     // Species
     [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessSpecies()
+    public virtual void ProcessSpecies()
     {
         (this as Species_E).ProcessSpeciesBase();
         Data.HasSpecies.ValueAsBool = true;
@@ -67,7 +77,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     // Egg [Requires: Origin Game]
     [PorterDirective(ProcessingPhase.FirstPass, nameof(Origin_Game_E.ProcessOrigin_Game))]
-    protected virtual void ProcessEgg()
+    public virtual void ProcessEgg()
     {
         Data.Is_Egg.ValueAsBool = pku.IsEgg();
 
@@ -75,7 +85,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         if (pku.IsEgg() && Data.Origin_Game.Value != 0)
         {
             Language? lang = DataUtil.ToEnum<Language>(pku.Game_Info?.Language);
-            if (lang is not null && pkxUtil.EGG_NICKNAME[lang.Value] == pku.Nickname)
+            if (lang is not null && TagUtil.EGG_NICKNAME[lang.Value] == pku.Nickname)
             {
                 Data.UseEggName.ValueAsBool = true;
                 legalGen3Egg = true;
@@ -85,7 +95,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     // Language [Requires: Egg]
     [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessEgg))]
-    protected virtual void ProcessLanguage()
+    public virtual void ProcessLanguage()
     {
         if (legalGen3Egg)
             Data.Language.SetAs(Language.Japanese);
@@ -95,31 +105,31 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     // Nickname [Requires: Language]
     [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessLanguage))]
-    protected virtual void ProcessNickname()
+    public virtual void ProcessNickname()
     {
         if (legalGen3Egg)
-            Data.Nickname.SetAs(DexUtil.CharEncoding.Encode(pkxUtil.EGG_NICKNAME[Data.Language.GetAs<Language>()],
+            Data.Nickname.SetAs(DexUtil.CharEncoding.Encode(TagUtil.EGG_NICKNAME[Data.Language.GetAs<Language>()],
                 pk3Object.MAX_NICKNAME_CHARS, FormatName, Data.Language.GetAs<Language>()).encodedStr);
         else
-            (this as Nickname_E).ProcessNickname();
+            (this as Nickname_E).ProcessNicknameBase();
     }
 
     // OT [Requires: Language]
     [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessLanguage))]
-    protected virtual void ProcessOT()
+    public virtual void ProcessOT()
     {
         if (legalGen3Egg)
             Data.OT.SetAs(DexUtil.CharEncoding.Encode(pku.Game_Info?.OT, pk3Object.MAX_OT_CHARS,
                 FormatName, Data.Language.GetAs<Language>()).encodedStr);
         else
-            (this as Encoded_OT_E).ProcessOT();
+            (this as Encoded_OT_E).ProcessOTBase();
     }
 
     // Experience [ErrorResolver]
     [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessExperience()
+    public virtual void ProcessExperience()
     {
-        var (options, alert) = pkxUtil.ExportTags.ProcessEXP(pku);
+        var (options, alert) = TagUtil.ExportTags.ProcessEXP(pku);
         BigInteger[] castedOptions = Array.ConvertAll(options, x => x.ToBigInteger());
         ExperienceResolver = new(alert, Data.Experience, castedOptions);
         if (alert is RadioButtonAlert)
@@ -130,19 +140,19 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     // PP [Requires: Moves, PP-Ups]
     [PorterDirective(ProcessingPhase.FirstPass, nameof(PP_Ups_E.ProcessPP_Ups))]
-    protected virtual void ProcessPP()
+    public virtual void ProcessPP()
     {
         int[] pp = new int[4];
         for (int i = 0; i < Moves_Indices.Length; i++)
-            pp[i] = pkxUtil.CalculatePP(pku.Moves[Moves_Indices[i]].Name.Value, Data.PP_Ups.GetAs<byte>(i), FormatName);
+            pp[i] = TagUtil.CalculatePP(pku.Moves[Moves_Indices[i]].Name.Value, Data.PP_Ups.GetAs<byte>(i), FormatName);
         Data.PP.SetAs(pp);
     }
 
     // Pokérus
     [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessPokerus()
+    public virtual void ProcessPokerus()
     {
-        var (strain, days, alert) = pkxUtil.ExportTags.ProcessPokerus(pku);
+        var (strain, days, alert) = TagUtil.ExportTags.ProcessPokerus(pku);
         Data.PKRS_Strain.SetAs(strain);
         Data.PKRS_Days.SetAs(days);
         Warnings.Add(alert);
@@ -150,14 +160,14 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     // Ability Slot
     [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessAbilitySlot()
+    public virtual void ProcessAbilitySlot()
     {
         Alert alert = null;
         string[] abilitySlots = SPECIES_DEX.ReadDataDex<string[]>(pku.Species, "Gen 3 Ability Slots");
         if (pku.Ability is null) //ability unspecified
         {
             Data.Ability_Slot.ValueAsBool = false;
-            alert = pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.UNSPECIFIED, pku.Ability, abilitySlots[0]);
+            alert = TagUtil.ExportAlerts.GetAbilityAlert(AlertType.UNSPECIFIED, pku.Ability, abilitySlots[0]);
         }
         else //ability specified
         {
@@ -165,7 +175,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
             if (abilityID is null or > 76) //unofficial ability OR gen4+ ability
             {
                 Data.Ability_Slot.ValueAsBool = false;
-                alert = pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.INVALID, pku.Ability, abilitySlots[0]);
+                alert = TagUtil.ExportAlerts.GetAbilityAlert(AlertType.INVALID, pku.Ability, abilitySlots[0]);
             }
             else //gen 3- ability
             {
@@ -174,7 +184,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
                 Data.Ability_Slot.ValueAsBool = isSlot2; //else false (i.e. slot 1, or invalid)
 
                 if (!isSlot1 && !isSlot2) //ability is impossible on this species, alert
-                    alert = pkxUtil.ExportAlerts.GetAbilityAlert(AlertType.MISMATCH, pku.Ability, abilitySlots[0]);
+                    alert = TagUtil.ExportAlerts.GetAbilityAlert(AlertType.MISMATCH, pku.Ability, abilitySlots[0]);
             }
         }
         Warnings.Add(alert);
@@ -182,9 +192,9 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     // Ribbons
     [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void ProcessRibbons()
+    public virtual void ProcessRibbons()
     {
-        (HashSet<Ribbon> ribbons, Alert a) = pkxUtil.ExportTags.ProcessRibbons(pku, pk3Object.IsValidRibbon);
+        (HashSet<Ribbon> ribbons, Alert a) = TagUtil.ExportTags.ProcessRibbons(pku, pk3Object.IsValidRibbon);
 
         //In other words, if the pku has a contest ribbon at level x, but not at level x-1 (when x-1 exists).
         if (ribbons.Contains(Ribbon.Cool_Super_G3) && !ribbons.Contains(Ribbon.Cool_G3) ||
@@ -230,7 +240,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     // Fateful Encounter [ErrorResolver]
     [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessSpecies))]
-    protected virtual void ProcessFatefulEncounter()
+    public virtual void ProcessFatefulEncounter()
     {
         Alert alert = null;
         bool[] options;
@@ -255,6 +265,9 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
      * Error Resolvers
      * ------------------------------------
     */
+    public ErrorResolver<BigInteger> PID_Resolver { get; set; }
+    public Action ByteOverride_Action { get; set; }
+
     // Experience ErrorResolver
     [PorterDirective(ProcessingPhase.SecondPass)]
     protected virtual ErrorResolver<BigInteger> ExperienceResolver { get; set; }
@@ -265,7 +278,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
 
     /* ------------------------------------
-     * pk3 Exporting Alerts
+     * Custom Alerts
      * ------------------------------------
     */
     public Alert GetFormAlert(DexUtil.SFA sfa)
@@ -331,16 +344,11 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public int[] Moves_Indices { get; set; } //indices of the chosen moves in the pku
 
     public PP_Ups_O PP_Ups_Field => Data;
-
     public Item_O Item_Field => Data;
-
     public Nature_O Nature_Field => implicitFields;
-    public Nature? Nature_Default => null;
-
     public Friendship_O Friendship_Field => Data;
 
     public PID_O PID_Field => Data;
-    public ErrorResolver<BigInteger> PID_Resolver { get; set; }
     public bool PID_GenderDependent => true;
     public bool PID_UnownFormDependent => true;
     public bool PID_NatureDependent => true;
@@ -364,20 +372,15 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public Predicate<Language> Language_IsValid => pk3Object.IsValidLang;
 
     public Markings_O Markings_Field => Data;
-
     public ByteOverride_O ByteOverride_Field => Data;
-    public Action ByteOverride_Action { get; set; }
 
 
-    // Implicit Fields
-    protected ImplicitFields implicitFields = new();
+    /* ------------------------------------
+     * Duct Tape
+     * ------------------------------------
+    */
     protected partial class ImplicitFields : Form_O, Gender_O, Nature_O
     {
-        public BackedBoundableField<BigInteger> Form { get; } = new(); // Form [Implicit]
-        public BackedField<Gender?> Gender { get; } = new(); //Gender [Implicit]
-        public BackedField<Nature?> Nature { get; } = new(); // Nature [Implicit]
-
-        //Duct Tape
         OneOf<IField<BigInteger>, IField<string>> Form_O.Form => Form;
         OneOf<IField<BigInteger>, IField<Gender>, IField<Gender?>> Gender_O.Gender => Gender;
         OneOf<IField<BigInteger>, IField<Nature>, IField<Nature?>> Nature_O.Nature => Nature;
