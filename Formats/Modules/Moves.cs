@@ -38,12 +38,12 @@ public interface Moves_E
 
             for (int i = 0; i < pku.Moves.Length; i++)
             {
-                if (MOVE_DEX.ExistsIn(FormatName, pku.Moves[i].Name)) //move exists in format
+                if (MOVE_DEX.ExistsIn(FormatName, pku.Moves[i].Name.Value)) //move exists in format
                 {
                     if (confirmedMoves < 4)
                     {
                         if (Moves_Field.Moves.IsT0) //ID type moves
-                            moveIDs[confirmedMoves] = MOVE_DEX.GetIndexedValue<int?>(FormatName, pku.Moves[i].Name, "Indices").Value;
+                            moveIDs[confirmedMoves] = MOVE_DEX.GetIndexedValue<int?>(FormatName, pku.Moves[i].Name.Value, "Indices").Value;
                         moveIndices.Add(i);
                         confirmedMoves++;
                     }
@@ -63,7 +63,7 @@ public interface Moves_E
             x => {
                 string[] moves = new string[moveIndices.Count];
                 for (int i = 0; i < moves.Length; i++)
-                    moves[i] = pku.Moves[i].Name;
+                    moves[i] = pku.Moves[i].Name.Value;
                 x.Value = moves;
             }
         );

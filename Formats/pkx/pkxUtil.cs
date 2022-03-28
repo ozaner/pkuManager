@@ -184,37 +184,6 @@ public static class pkxUtil
             });
         }
 
-        public static Alert GetPPUpAlert(AlertType at, (int[] overflow, int[] underflow)? invalidData = null)
-        {
-            static string helper(int[] xFlow)
-            {
-                string msgXF = "The PP-Ups of "+ (xFlow.Length is 1 ? "move " : "moves "); //plural check
-                foreach (int i in xFlow) //add moves
-                    msgXF += i + 1 + ","; //starts at move 1 not move 0
-                return msgXF;
-            }
-            string msg;
-            switch (at)
-            {
-                case AlertType.UNSPECIFIED: //shouldn't be called, should be silent
-                    msg = "PP Ups tag not specified, giving each move 0 PP ups.";
-                    break;
-                case AlertType.INVALID:
-                    if (invalidData is null || invalidData.Value.overflow.Length < 1 && invalidData.Value.underflow.Length < 1)
-                        throw new ArgumentException($"At least one of {nameof(invalidData)} must be non-empty for INVALID alerts.", nameof(invalidData));
-                    string msgOF = null, msgUF = null;
-                    if (invalidData.Value.overflow.Length > 0)
-                        msgOF = helper(invalidData.Value.overflow)[0..^1] + " are too high, rounding them down to 3.";
-                    if (invalidData.Value.underflow.Length > 0)
-                        msgUF = helper(invalidData.Value.underflow)[0..^1] + " are too low, rounding them up to 0.";
-                    msg = string.Join(DataUtil.Newline(2), msgOF, msgUF);
-                    break;
-                default:
-                    throw InvalidAlertType(at);
-            }
-            return new("PP Ups", msg);
-        }
-
         public static Alert GetPokerusAlert(AlertType atStrain, AlertType atDays)
         {
             if ((atStrain, atDays) is (AlertType.NONE, AlertType.NONE))
@@ -272,36 +241,6 @@ public static class pkxUtil
         // ----------
         // Pokemon Attribute Processing Methods
         // ----------
-        public static (int[], Alert) ProcessPPUps(pkuObject pku, int[] moveIndicies)
-        {
-            //Calculate ppups
-            int[] ppups = new int[4];
-            List<int> overflow = new();
-            List<int> underflow = new();
-            if (moveIndicies?.Length > 4)
-                throw new ArgumentException($"{nameof(moveIndicies)} should be of length 0-4.", nameof(moveIndicies));
-            for (int i = 0; i < moveIndicies.Length; i++)
-            {
-                if (pku?.Moves?[moveIndicies[i]]?.PP_Ups is not null) //this move exists and has a ppup value
-                {
-                    if (pku.Moves[moveIndicies[i]].PP_Ups > 3)
-                    {
-                        ppups[i] = 3;
-                        overflow.Add(i);
-                    }
-                    else if (pku.Moves[moveIndicies[i]].PP_Ups < 0)
-                        underflow.Add(i);
-                    else
-                        ppups[i] = pku.Moves[moveIndicies[i]].PP_Ups.Value;
-                }
-            }
-
-            //Generate alert
-            Alert alert = overflow.Count > 0 || underflow.Count > 0 ? 
-                GetPPUpAlert(AlertType.INVALID, (overflow.ToArray(), underflow.ToArray())) : null;
-            return (ppups, alert);
-        }
-
         public static (uint[], Alert) ProcessEXP(pkuObject pku)
         {
             int dex = GetNationalDexChecked(pku.Species); //must be valid at this point

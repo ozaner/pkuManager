@@ -264,6 +264,17 @@ public static class DataUtil
     /// <returns>The array of strings split from <paramref name="str"/> on '|'.</returns>
     public static string[] SplitLexical(this string str) => str?.Split('|');
 
+    public static string JoinGrammatical(this string[] strs) => strs?.Length switch
+    {
+        null => null,
+        0 => "",
+        1 => strs[0],
+        2 => $"{strs[0]} and {strs[1]}",
+        _ => string.Join(", ", strs[..^1]) + ", and " + strs[^1]
+    };
+
+    public static bool IsEmpty(this string str) => !(str?.Length > 0);
+
 
     /* ------------------------------------
      * Value Type Methods

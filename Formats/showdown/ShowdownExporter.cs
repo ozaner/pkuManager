@@ -143,7 +143,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
 
     public IVs_O IVs_Field => Data;
     public int IVs_Default => 31;
-    public bool IVs_SilentUnspecified => true;
+    public bool IVs_AlertOnUnspecified => false;
     
     public EVs_O EVs_Field => Data;
 }

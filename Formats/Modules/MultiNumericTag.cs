@@ -10,13 +10,13 @@ using static pkuManager.Alerts.Alert;
 
 namespace pkuManager.Formats.Modules;
 
-public interface MultiNumericTag
+public interface MultiNumericTag_E
 {
     public pkuObject pku { get; }
     public List<Alert> Warnings { get; }
 
     protected void ProcessMultiNumericTag(string tagName, string[] subTagNames, IField<BigInteger?>[] pkuVals,
-        IField<BigInteger[]> formatVals, BigInteger defaultVal, bool silentUnspecified)
+        IField<BigInteger[]> formatVals, BigInteger defaultVal, bool alertOnUnspecified)
     {
         AlertType[] valAlerts = new AlertType[pkuVals.Length];
         (BigInteger? max, BigInteger? min) = formatVals is IBoundable<BigInteger> boundable ?
@@ -44,51 +44,29 @@ public interface MultiNumericTag
                 valAlerts[i] = AlertType.NONE;
             }
         }
-        Warnings.Add(GetMultiNumericAlert(tagName, subTagNames, valAlerts, max, min, defaultVal, silentUnspecified));
+        Warnings.Add(GetMultiNumericAlert(tagName, subTagNames, valAlerts, max, min, defaultVal, alertOnUnspecified));
     }
 
     protected static Alert GetMultiNumericAlert(string tagName, string[] subtags, AlertType[] ats,
-        BigInteger? max, BigInteger? min, BigInteger defaultVal, bool silentUnspecified)
+        BigInteger? max, BigInteger? min, BigInteger defaultVal, bool alertOnUnspecified)
     {
         if (subtags?.Length != ats?.Length)
             throw new ArgumentException($"{nameof(subtags)} must have the same length as {nameof(ats)}.", nameof(subtags));
         else if (ats.All(x => x is AlertType.UNSPECIFIED))
-            return silentUnspecified ? null : new(tagName, $"No {tagName} were specified, setting them all to {defaultVal}.");
+            return alertOnUnspecified ? new(tagName, $"No {tagName} were specified, setting them all to {defaultVal}.") : null;
 
-        string msgOverflow = "";
-        string msgUnderflow = "";
-        string msgUnspecifed = "";
+        string msgOverflow = subtags.Where((_, id) => ats[id].HasFlag(AlertType.OVERFLOW)).ToArray().JoinGrammatical();
+        string msgUnderflow = subtags.Where((_, id) => ats[id].HasFlag(AlertType.UNDERFLOW)).ToArray().JoinGrammatical();
+        string msgUnspecifed = subtags.Where((_, id) => ats[id].HasFlag(AlertType.UNSPECIFIED)).ToArray().JoinGrammatical();
 
-        for (int i = 0; i < subtags.Length; i++)
-        {
-            switch (ats[i])
-            {
-                case AlertType.OVERFLOW:
-                    msgOverflow += $"{subtags[i]}, ";
-                    break;
-                case AlertType.UNDERFLOW:
-                    msgUnderflow += $"{subtags[i]}, ";
-                    break;
-                case AlertType.UNSPECIFIED:
-                    msgUnspecifed += $"{subtags[i]}, ";
-                    break;
-                case AlertType.NONE:
-                    break;
-                default:
-                    throw InvalidAlertType(ats[i]);
-            }
-        }
+        Alert a = new(tagName, null);
+        if (!msgOverflow.IsEmpty())
+            a += new Alert(tagName, $"The {msgOverflow} {tagName} are too high. Rounding them down to {max}.");
+        if (!msgUnderflow.IsEmpty())
+            a += new Alert(tagName, $"The {msgUnderflow} {tagName} are too low. Rounding them up to {min}.");
+        if (!msgUnspecifed.IsEmpty() && alertOnUnspecified)
+            a += new Alert(tagName, $"The {msgUnspecifed} {tagName} are unspecified. Setting them to {defaultVal}.");
 
-        string msg = "";
-        if (msgOverflow is not "")
-            msg += $"The {msgOverflow[0..^2]} tag(s) were too high. Rounding them down to {max}.";
-        if (msgUnderflow is not "")
-            msg += (msg is not "" ? DataUtil.Newline(2) : "") +
-                    $"The {msgUnderflow[0..^2]} tag(s) were too low. Rounding them up to {min}.";
-        if (msgUnspecifed is not "")
-            msg += (msg is not "" ? DataUtil.Newline(2) : "") +
-                    $"The {msgUnspecifed[0..^2]} tag(s) were unspecified. Setting them to {defaultVal}.";
-
-        return msg is "" ? null : new(tagName, msg);
+        return a.Message?.Length > 0 ? a : null;
     }
 }

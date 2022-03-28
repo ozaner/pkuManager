@@ -134,10 +134,10 @@ public class pkuObject : FormatObject
     public class Move : pkuDictionaryTag
     {
         [JsonProperty("Name")]
-        public string Name { get; set; }
+        public BackedField<string> Name { get; set; } = new();
 
         [JsonProperty("PP Ups")]
-        public int? PP_Ups { get; set; }
+        public BackedField<BigInteger?> PP_Ups { get; set; } = new();
     }
 
     public class Game_Info_Class : pkuDictionaryTag
@@ -409,6 +409,18 @@ public class pkuObject : FormatObject
         Contest_Stats.Clever, Contest_Stats.Tough, Contest_Stats.Sheen
     };
 
+    public BackedField<BigInteger?>[] PP_Up_ArrayFromIndices(int[] indices)
+    {
+        if (indices == null)
+            return null;
+        else
+        {
+            BackedField<BigInteger?>[] ppUpFields = new BackedField<BigInteger?>[indices.Length];
+            for (int i = 0; i < ppUpFields.Length; i++)
+                ppUpFields[i] = Moves[indices[i]].PP_Ups;
+            return ppUpFields;
+        }
+    }
 
     /* ------------------------------------
      * Serialization Mechanics

@@ -20,10 +20,10 @@ namespace pkuManager.Formats.pkx.pk3;
 /// Exports a <see cref="pkuObject"/> to a <see cref="pk3Object"/>.
 /// </summary>
 public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E,
-                           Gender_E, Nickname_E, Moves_E, Item_E, Nature_E, Friendship_E, PID_E,
-                           TID_E, IVs_E, EVs_E, Contest_Stats_E, Ball_E, Encoded_OT_E, Origin_Game_E,
-                           Met_Location_E, Met_Level_E, OT_Gender_E, Language_E, Markings_E,
-                           Trash_Bytes_E, ByteOverride_E
+                           Gender_E, Nickname_E, Moves_E, PP_Ups_E, Item_E, Nature_E, Friendship_E,
+                           PID_E, TID_E, IVs_E, EVs_E, Contest_Stats_E, Ball_E, Encoded_OT_E,
+                           Origin_Game_E, Met_Location_E, Met_Level_E, OT_Gender_E, Language_E,
+                           Markings_E, Trash_Bytes_E, ByteOverride_E
 {
     public override string FormatName => "pk3";
 
@@ -128,22 +128,13 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
             Warnings.Add(alert);
     }
 
-    // PP-Ups [Requires: Moves]
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(Moves_E.ProcessMoves))]
-    protected virtual void ProcessPPUps()
-    {
-        var (ppups, alert) = pkxUtil.ExportTags.ProcessPPUps(pku, Moves_Indices);
-        Data.PP_Ups.SetAs(ppups);
-        Warnings.Add(alert);
-    }
-
     // PP [Requires: Moves, PP-Ups]
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessPPUps))]
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(PP_Ups_E.ProcessPP_Ups))]
     protected virtual void ProcessPP()
     {
         int[] pp = new int[4];
         for (int i = 0; i < Moves_Indices.Length; i++)
-            pp[i] = pkxUtil.CalculatePP(pku.Moves[Moves_Indices[i]].Name, Data.PP_Ups.GetAs<byte>(i), FormatName);
+            pp[i] = pkxUtil.CalculatePP(pku.Moves[Moves_Indices[i]].Name.Value, Data.PP_Ups.GetAs<byte>(i), FormatName);
         Data.PP.SetAs(pp);
     }
 
@@ -338,6 +329,8 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     public Moves_O Moves_Field => Data;
     public int[] Moves_Indices { get; set; } //indices of the chosen moves in the pku
+
+    public PP_Ups_O PP_Ups_Field => Data;
 
     public Item_O Item_Field => Data;
 

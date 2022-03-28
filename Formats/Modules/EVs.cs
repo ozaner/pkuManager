@@ -10,14 +10,11 @@ public interface EVs_O
     public IField<BigInteger[]> EVs { get; }
 }
 
-public interface EVs_E : MultiNumericTag
+public interface EVs_E : MultiNumericTag_E
 {
     public EVs_O EVs_Field { get; }
 
-    public int EVs_Default => 0;
-    public bool EVs_SilentUnspecified => true;
-
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ProcessEVs()
-        => ProcessMultiNumericTag("EVs", pkxUtil.STAT_NAMES, pku.EVs_Array, EVs_Field.EVs, EVs_Default, EVs_SilentUnspecified);
+        => ProcessMultiNumericTag("EVs", pkxUtil.STAT_NAMES, pku.EVs_Array, EVs_Field.EVs, 0, false);
 }
