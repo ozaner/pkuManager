@@ -12,9 +12,9 @@ namespace pkuManager.Formats.showdown;
 /// <summary>
 /// Exports a <see cref="pkuObject"/> to a <see cref="ShowdownObject"/>.
 /// </summary>
-public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E, 
-                                Nickname_E, Gender_E, Moves_E, Item_E, Nature_E, Friendship_E,
-                                IVs_E, EVs_E
+public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E,
+                                Form_E, Nickname_E, Level_E, Gender_E, Moves_E, Item_E,
+                                Nature_E, Friendship_E, IVs_E, EVs_E
 {
     public override string FormatName => "Showdown";
     protected override ShowdownObject Data { get; } = new();
@@ -70,15 +70,6 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
             Data.Ability = pku.Ability;
     }
 
-    // Level
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessLevel()
-    {
-        var (level, alert) = TagUtil.ExportTags.ProcessNumericTag(pku.Level, TagUtil.ExportAlerts.GetLevelAlert, false, 100, 1, 100);
-        Data.Level = (byte)level;
-        Warnings.Add(alert);
-    }
-
     // Gigantamax Factor
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ProcessGigantamaxFactor()
@@ -95,13 +86,6 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
             return new Alert("Nickname", $"Showdown does not recoginize leading spaces in nicknames.");
         throw InvalidAlertType(at);
     }
-
-    public static Alert GetLevelAlert(AlertType at) => at switch
-    {
-        //override pkx's unspecified level of 1 to 100
-        AlertType.UNSPECIFIED => new Alert("Level", "No level specified, using the default: 100."),
-        _ => TagUtil.ExportAlerts.GetLevelAlert(at)
-    };
 
     public Alert GetNatureAlert(AlertType at, string val, string defaultVal)
     {
@@ -120,6 +104,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     public Form_O Form_Field => Data;
     public Gender_O Gender_Field => Data;
     public Nickname_O Nickname_Field => Data;
+    public Level_O Level_Field => Data;
 
     public Moves_O Moves_Field => Data;
     public int[] Moves_Indices { set { } } //don't need these

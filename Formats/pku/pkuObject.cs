@@ -42,10 +42,10 @@ public class pkuObject : FormatObject
     public string Gender { get; set; }
 
     [JsonProperty("Level")]
-    public int? Level { get; set; }
+    public BackedField<BigInteger?> Level { get; set; } = new();
 
-    [JsonProperty("EXP")]
-    public int? EXP { get; set; }
+    [JsonProperty("Experience")]
+    public BackedField<BigInteger?> Experience { get; set; } = new();
 
     [JsonProperty("Item")]
     public BackedField<string> Item { get; set; } = new();

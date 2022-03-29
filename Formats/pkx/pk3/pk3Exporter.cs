@@ -19,10 +19,10 @@ namespace pkuManager.Formats.pkx.pk3;
 /// Exports a <see cref="pkuObject"/> to a <see cref="pk3Object"/>.
 /// </summary>
 public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E,
-                           Gender_E, Nickname_E, Moves_E, PP_Ups_E, PP_E, Item_E, Nature_E,
-                           Friendship_E, PID_E, TID_E, IVs_E, EVs_E, Contest_Stats_E, Ball_E,
-                           Encoded_OT_E, Origin_Game_E, Met_Location_E, Met_Level_E, OT_Gender_E,
-                           Language_E, Markings_E, Trash_Bytes_E, ByteOverride_E
+                           Gender_E, Nickname_E, Experience_E, Moves_E, PP_Ups_E, PP_E, Item_E,
+                           Nature_E, Friendship_E, PID_E, TID_E, IVs_E, EVs_E, Contest_Stats_E,
+                           Ball_E, Encoded_OT_E, Origin_Game_E, Met_Location_E, Met_Level_E,
+                           OT_Gender_E, Language_E, Markings_E, Trash_Bytes_E, ByteOverride_E
 {
     public override string FormatName => "pk3";
 
@@ -123,19 +123,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
                 FormatName, Data.Language.GetAs<Language>()).encodedStr);
         else
             (this as Encoded_OT_E).ProcessOTBase();
-    }
-
-    // Experience [ErrorResolver]
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    public virtual void ProcessExperience()
-    {
-        var (options, alert) = TagUtil.ExportTags.ProcessEXP(pku);
-        BigInteger[] castedOptions = Array.ConvertAll(options, x => x.ToBigInteger());
-        ExperienceResolver = new(alert, Data.Experience, castedOptions);
-        if (alert is RadioButtonAlert)
-            Errors.Add(alert);
-        else
-            Warnings.Add(alert);
     }
 
     // Pokérus
@@ -255,12 +242,9 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
      * Error Resolvers
      * ------------------------------------
     */
+    public ErrorResolver<BigInteger> Experience_Resolver { get; set; }
     public ErrorResolver<BigInteger> PID_Resolver { get; set; }
     public Action ByteOverride_Action { get; set; }
-
-    // Experience ErrorResolver
-    [PorterDirective(ProcessingPhase.SecondPass)]
-    protected virtual ErrorResolver<BigInteger> ExperienceResolver { get; set; }
 
     // Fateful Encounter ErrorResolver
     [PorterDirective(ProcessingPhase.SecondPass)]
@@ -322,6 +306,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     */
     public Species_O Species_Field => Data;
     public Form_O Form_Field => implicitFields;
+    public Experience_O Experience_Field => Data;
 
     public Gender_O Gender_Field => implicitFields;
     public bool Gender_DisallowImpossibleGenders => true;

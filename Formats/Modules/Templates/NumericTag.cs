@@ -28,7 +28,7 @@ public interface NumericTag_E
         Warnings.Add(GetNumericalAlert(tagName, at, max, min, defaultVal, alertIfUnspecified));
     }
 
-    protected Alert GetNumericalAlert(string name, AlertType at, BigInteger? max, BigInteger? min,
+    public static Alert GetNumericalAlert(string name, AlertType at, BigInteger? max, BigInteger? min,
         BigInteger defaultVal, bool alertIfUnspecified) => at switch
     {
         AlertType.OVERFLOW => new(name, $"This pku's {name} is higher than the maximum. Rounding down to {max}."),
