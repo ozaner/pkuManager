@@ -84,7 +84,7 @@ public class pkuObject : FormatObject
     public Catch_Info_Class Catch_Info { get; set; } = new();
 
     [JsonProperty("Egg Info")]
-    public Egg_Info_Class Egg_Info { get; set; }
+    public Egg_Info_Class Egg_Info { get; set; } = new();
 
     [JsonProperty("IVs")]
     public IVs_Class IVs { get; set; } = new();
@@ -192,8 +192,8 @@ public class pkuObject : FormatObject
 
     public class Egg_Info_Class : Met_Info_Base
     {
-        [JsonProperty("Egg")]
-        public bool? Egg { get; set; }
+        [JsonProperty("Is Egg")]
+        public BackedField<bool?> Is_Egg { get; set; } = new();
 
         // Games dont use this, instead it's implicit from the met location in the egg section not being empty...
         // If you knew it was an egg but not when/where it was hatched, you couldn't represent that in-game...
@@ -373,9 +373,9 @@ public class pkuObject : FormatObject
     /// <summary>
     /// Whether this pku has been explictly marked as an egg.
     /// </summary>
-    /// <returns>Whether <see cref="Egg_Info_Class.Egg"/> is true.</returns>
+    /// <returns>Whether <see cref="Egg_Info_Class.Is_Egg"/> is true.</returns>
     public bool IsEgg()
-        => Egg_Info?.Egg is true;
+        => Egg_Info.Is_Egg.Value is true;
 
     /// <summary>
     /// Whether this pku has been explictly marked as shadow.

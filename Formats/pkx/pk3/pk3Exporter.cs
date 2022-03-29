@@ -22,7 +22,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
                            Gender_E, Nickname_E, Experience_E, Moves_E, PP_Ups_E, PP_E, Item_E,
                            Nature_E, Friendship_E, PID_E, TID_E, IVs_E, EVs_E, Contest_Stats_E,
                            Ball_E, Encoded_OT_E, Origin_Game_E, Met_Location_E, Met_Level_E,
-                           OT_Gender_E, Language_E, Fateful_Encounter_E, Markings_E,
+                           OT_Gender_E, Language_E, Fateful_Encounter_E, Markings_E, Is_Egg_E,
                            Trash_Bytes_E, ByteOverride_E
 {
     public override string FormatName => "pk3";
@@ -78,14 +78,15 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     // Egg [Requires: Origin Game]
     [PorterDirective(ProcessingPhase.FirstPass, nameof(Origin_Game_E.ProcessOrigin_Game))]
-    public virtual void ProcessEgg()
+    public virtual void ProcessIs_Egg()
     {
-        Data.Is_Egg.ValueAsBool = pku.IsEgg();
+        (this as Is_Egg_E).ProcessIs_EggBase();
 
         //Deal with "Legal Gen 3 eggs"
-        if (pku.IsEgg() && Data.Origin_Game.Value != 0)
+        if (pku.IsEgg())
         {
-            Language? lang = DataUtil.ToEnum<Language>(pku.Game_Info?.Language);
+            //To be seen as legal must have a defined language + matching "Egg" nickname.
+            Language? lang = DataUtil.ToEnum<Language>(pku.Game_Info.Language);
             if (lang is not null && TagUtil.EGG_NICKNAME[lang.Value] == pku.Nickname)
             {
                 Data.UseEggName.ValueAsBool = true;
@@ -95,7 +96,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     }
 
     // Language [Requires: Egg]
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessEgg))]
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessIs_Egg))]
     public virtual void ProcessLanguage()
     {
         if (legalGen3Egg)
@@ -109,8 +110,8 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public virtual void ProcessNickname()
     {
         if (legalGen3Egg)
-            Data.Nickname.SetAs(DexUtil.CharEncoding.Encode(TagUtil.EGG_NICKNAME[Data.Language.GetAs<Language>()],
-                pk3Object.MAX_NICKNAME_CHARS, FormatName, Data.Language.GetAs<Language>()).encodedStr);
+            Data.Nickname.SetAs(DexUtil.CharEncoding.Encode(TagUtil.EGG_NICKNAME[Language.Japanese],
+                pk3Object.MAX_NICKNAME_CHARS, FormatName, Language.Japanese).encodedStr);
         else
             (this as Nickname_E).ProcessNicknameBase();
     }
@@ -121,7 +122,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     {
         if (legalGen3Egg)
             Data.OT.SetAs(DexUtil.CharEncoding.Encode(pku.Game_Info?.OT, pk3Object.MAX_OT_CHARS,
-                FormatName, Data.Language.GetAs<Language>()).encodedStr);
+                FormatName, Language.Japanese).encodedStr);
         else
             (this as Encoded_OT_E).ProcessOTBase();
     }
@@ -344,6 +345,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     public Fateful_Encounter_O Fateful_Encounter_Field => Data;
     public Markings_O Markings_Field => Data;
+    public Is_Egg_O Is_Egg_Field => Data;
     public ByteOverride_O ByteOverride_Field => Data;
 
 

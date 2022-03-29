@@ -131,8 +131,11 @@ public abstract class Porter
             else if (member.MemberType is MemberTypes.Property)
             {
                 var resolver = (member as PropertyInfo).GetValue(this);
+                //Empty Resolvers
+                if (resolver is null)
+                    { } //do nothing
                 //Actions
-                if (resolver is Action action)
+                else if (resolver is Action action)
                     action.Invoke();
                 // ErrorResolvers
                 else if (resolver.GetType().GetGenericTypeDefinition() == typeof(ErrorResolver<>))
