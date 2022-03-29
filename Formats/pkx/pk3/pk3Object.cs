@@ -18,10 +18,10 @@ namespace pkuManager.Formats.pkx.pk3;
 /// Implementation details mostly referenced from
 /// <see href="https://bulbapedia.bulbagarden.net/wiki/Pokémon_data_structure_(Generation_III)">Bulbapedia</see>.
 /// </summary>
-public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Moves_O, PP_Ups_O, PP_O, Item_O,
-                         PID_O, TID_O, Friendship_O, IVs_O, EVs_O, Contest_Stats_O, Ball_O, Encoded_OT_O,
-                         Origin_Game_O, Met_Location_O, Met_Level_O, OT_Gender_O, Language_O, Markings_O,
-                         ByteOverride_O
+public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Moves_O, PP_Ups_O,
+                         PP_O, Item_O, PID_O, TID_O, Friendship_O, IVs_O, EVs_O, Contest_Stats_O,
+                         Ball_O, Encoded_OT_O, Origin_Game_O, Met_Location_O, Met_Level_O,
+                         OT_Gender_O, Language_O, Fateful_Encounter_O, Markings_O, ByteOverride_O
 {
     public override string FormatName => "pk3";
 
@@ -404,6 +404,7 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Move
     IField<BigInteger> Met_Level_O.Met_Level => Met_Level;
     OneOf<IField<BigInteger>, IField<Gender>, IField<Gender?>> OT_Gender_O.OT_Gender => OT_Gender;
     OneOf<IField<BigInteger>, IField<Language>, IField<Language?>> Language_O.Language => Language;
+    IField<bool> Fateful_Encounter_O.Fateful_Encounter => Fateful_Encounter;
 
     IField<bool> Markings_O.Marking_Blue_Circle => Marking_Blue_Circle;
     IField<bool> Markings_O.Marking_Blue_Square => Marking_Blue_Square;

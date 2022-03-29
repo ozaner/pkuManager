@@ -184,7 +184,7 @@ public class pkuObject : FormatObject
         public BackedField<BigInteger?> Met_Level { get; set; } = new();
 
         [JsonProperty("Fateful Encounter")]
-        public bool? Fateful_Encounter { get; set; }
+        public BackedField<bool?> Fateful_Encounter { get; set; } = new();
 
         [JsonProperty("Encounter Type")]
         public string Encounter_Type { get; set; }

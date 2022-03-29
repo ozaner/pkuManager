@@ -22,7 +22,8 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
                            Gender_E, Nickname_E, Experience_E, Moves_E, PP_Ups_E, PP_E, Item_E,
                            Nature_E, Friendship_E, PID_E, TID_E, IVs_E, EVs_E, Contest_Stats_E,
                            Ball_E, Encoded_OT_E, Origin_Game_E, Met_Location_E, Met_Level_E,
-                           OT_Gender_E, Language_E, Markings_E, Trash_Bytes_E, ByteOverride_E
+                           OT_Gender_E, Language_E, Fateful_Encounter_E, Markings_E,
+                           Trash_Bytes_E, ByteOverride_E
 {
     public override string FormatName => "pk3";
 
@@ -217,24 +218,19 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     // Fateful Encounter [ErrorResolver]
     [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessSpecies))]
-    public virtual void ProcessFatefulEncounter()
+    public virtual void ProcessFateful_Encounter()
     {
-        Alert alert = null;
-        bool[] options;
         int speciesIndex = Data.Species.GetAs<int>();
-        if (speciesIndex is 151 or 410 && pku.Catch_Info?.Fateful_Encounter is not true) //Mew or Deoxys w/ no fateful encounter
+
+        //Mew or Deoxys w/ no fateful encounter
+        if (speciesIndex is 151 or 410 && pku.Catch_Info.Fateful_Encounter.Value is not true)
         {
-            options = new bool[] { false, true };
-            alert = GetFatefulEncounterAlert(speciesIndex is 151);
+            Alert alert = GetObedienceAlert(speciesIndex is 151);
+            Fateful_EncounterResolver = new(alert, Data.Fateful_Encounter, new[] { false, true });
+            Errors.Add(alert);
         }
         else
-            options = new bool[] { pku.Catch_Info?.Fateful_Encounter is true };
-
-        FatefulEncounterResolver = new(alert, Data.Fateful_Encounter, options);
-        if (alert is RadioButtonAlert)
-            Errors.Add(alert);
-        else
-            Warnings.Add(alert);
+            (this as Fateful_Encounter_E).ProcessFateful_EncounterBase();
     }
 
 
@@ -242,13 +238,12 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
      * Error Resolvers
      * ------------------------------------
     */
+    [PorterDirective(ProcessingPhase.SecondPass)]
+    protected virtual ErrorResolver<bool> Fateful_EncounterResolver { get; set; }
+
     public ErrorResolver<BigInteger> Experience_Resolver { get; set; }
     public ErrorResolver<BigInteger> PID_Resolver { get; set; }
     public Action ByteOverride_Action { get; set; }
-
-    // Fateful Encounter ErrorResolver
-    [PorterDirective(ProcessingPhase.SecondPass)]
-    protected virtual ErrorResolver<bool> FatefulEncounterResolver { get; set; }
 
 
     /* ------------------------------------
@@ -284,7 +279,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         _ => (this as Nature_E).GetNatureAlertBase(at, val, defaultVal)
     };
 
-    public static RadioButtonAlert GetFatefulEncounterAlert(bool isMew)
+    public static Alert GetObedienceAlert(bool isMew)
     {
         string pkmn = isMew ? "Mew" : "Deoxys";
         string msg = $"This {pkmn} was not met in a fateful encounter. " +
@@ -347,6 +342,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public Language_O Language_Field => Data;
     public Predicate<Language> Language_IsValid => pk3Object.IsValidLang;
 
+    public Fateful_Encounter_O Fateful_Encounter_Field => Data;
     public Markings_O Markings_Field => Data;
     public ByteOverride_O ByteOverride_Field => Data;
 
