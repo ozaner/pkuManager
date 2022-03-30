@@ -23,7 +23,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
                            Nature_E, Friendship_E, PID_E, TID_E, IVs_E, EVs_E, Contest_Stats_E,
                            Ball_E, Encoded_OT_E, Origin_Game_E, Met_Location_E, Met_Level_E,
                            OT_Gender_E, Language_E, Fateful_Encounter_E, Markings_E, Is_Egg_E,
-                           Trash_Bytes_E, ByteOverride_E
+                           Pokerus_E, Trash_Bytes_E, ByteOverride_E
 {
     public override string FormatName => "pk3";
 
@@ -125,16 +125,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
                 FormatName, Language.Japanese).encodedStr);
         else
             (this as Encoded_OT_E).ProcessOTBase();
-    }
-
-    // Pokérus
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    public virtual void ProcessPokerus()
-    {
-        var (strain, days, alert) = TagUtil.ExportTags.ProcessPokerus(pku);
-        Data.PKRS_Strain.SetAs(strain);
-        Data.PKRS_Days.SetAs(days);
-        Warnings.Add(alert);
     }
 
     // Ability Slot
@@ -346,6 +336,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public Fateful_Encounter_O Fateful_Encounter_Field => Data;
     public Markings_O Markings_Field => Data;
     public Is_Egg_O Is_Egg_Field => Data;
+    public Pokerus_O Pokerus_Field => Data;
     public ByteOverride_O ByteOverride_Field => Data;
 
 

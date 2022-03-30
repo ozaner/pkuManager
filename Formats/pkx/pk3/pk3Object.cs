@@ -21,7 +21,7 @@ namespace pkuManager.Formats.pkx.pk3;
 public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Moves_O, PP_Ups_O,
                          PP_O, Item_O, PID_O, TID_O, Friendship_O, IVs_O, EVs_O, Contest_Stats_O,
                          Ball_O, Encoded_OT_O, Origin_Game_O, Met_Location_O, Met_Level_O, OT_Gender_O,
-                         Language_O, Fateful_Encounter_O, Markings_O, Is_Egg_O, ByteOverride_O
+                         Language_O, Fateful_Encounter_O, Markings_O, Is_Egg_O, Pokerus_O, ByteOverride_O
 {
     public override string FormatName => "pk3";
 
@@ -108,8 +108,8 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Move
         Contest_Stats = new(E, 6, 1, 6);
 
         // Block M
-        PKRS_Days = new(M, 0, 0, 4);
-        PKRS_Strain = new(M, 0, 4, 4);
+        Pokerus_Days = new(M, 0, 0, 4);
+        Pokerus_Strain = new(M, 0, 4, 4);
         Met_Location = new(M, 1, 1);
         Met_Level = new(M, 2, 0, 7);
         Origin_Game = new(M, 2, 7, 4);
@@ -227,8 +227,8 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Move
      * M: Misc. Block
      * ------------------------------------
     */
-    public BAMIntegralField PKRS_Days { get; }
-    public BAMIntegralField PKRS_Strain { get; }
+    public BAMIntegralField Pokerus_Days { get; }
+    public BAMIntegralField Pokerus_Strain { get; }
 
     public BAMIntegralField Met_Location { get; }
     public BAMIntegralField Met_Level { get; }
@@ -411,4 +411,7 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Move
     IField<bool> Markings_O.Marking_Blue_Square => Marking_Blue_Square;
     IField<bool> Markings_O.Marking_Blue_Triangle => Marking_Blue_Triangle;
     IField<bool> Markings_O.Marking_Blue_Heart => Marking_Blue_Heart;
+
+    IField<BigInteger> Pokerus_O.Pokerus_Strain => Pokerus_Strain;
+    IField<BigInteger> Pokerus_O.Pokerus_Days => Pokerus_Days;
 }

@@ -105,7 +105,7 @@ public class pkuObject : FormatObject
     public string[] Markings { get; set; }
 
     [JsonProperty("Pokérus")]
-    public Pokerus_Class Pokerus { get; set; }
+    public Pokerus_Class Pokerus { get; set; } = new();
 
     [JsonProperty("Shadow Info")]
     public Shadow_Info_Class Shadow_Info { get; set; }
@@ -288,10 +288,10 @@ public class pkuObject : FormatObject
     public class Pokerus_Class : pkuDictionaryTag
     {
         [JsonProperty("Strain")]
-        public int? Strain { get; set; }
+        public BackedField<BigInteger?> Strain { get; set; } = new();
 
         [JsonProperty("Days")]
-        public int? Days { get; set; }
+        public BackedField<BigInteger?> Days { get; set; } = new();
     }
 
     public class Shadow_Info_Class : pkuDictionaryTag

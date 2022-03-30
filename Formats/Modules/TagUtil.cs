@@ -256,34 +256,8 @@ public static class TagUtil
     public static class ExportAlerts
     {
         // ----------
-        // Generalized Alert Methods
-        // ----------
-        public static Alert GetNumericalAlert(string name, AlertType at, long defaultVal) => at switch
-        {
-            AlertType.OVERFLOW => new(name, $"This pku's {name} is higher than the maximum. Rounding down to {defaultVal}."),
-            AlertType.UNDERFLOW => new(name, $"This pku's {name} is lower than the minimum. Rounding up to {defaultVal}."),
-            AlertType.UNSPECIFIED => new(name, $"{name} tag not specified, using the default of {defaultVal}."),
-            _ => throw InvalidAlertType(at)
-        };
-
-
-        // ----------
         // Pokemon Attribute Alert Methods
         // ----------
-        public static Alert GetPokerusAlert(AlertType atStrain, AlertType atDays)
-        {
-            if ((atStrain, atDays) is (AlertType.NONE, AlertType.NONE))
-                return null;
-            Alert helper(string name, AlertType at, int maxVal) => at switch
-            {
-                AlertType.OVERFLOW => GetNumericalAlert($"Pokérus {name}", at, maxVal),
-                AlertType.UNDERFLOW => GetNumericalAlert($"Pokérus {name}", at, 0),
-                AlertType.NONE => null,
-                _ => throw InvalidAlertType(atStrain)
-            };
-            return new("Pokérus", string.Join(DataUtil.Newline(2), helper("strain", atStrain, 15)?.Message, helper("days", atDays, 4)?.Message));
-        }
-
         public static Alert GetAbilityAlert(AlertType at, string invalidAbility = null, string defaultAbility = "None")
         {
             if (at is AlertType.MISMATCH or AlertType.INVALID && invalidAbility is null)
@@ -311,20 +285,6 @@ public static class TagUtil
     /// </summary>
     public static class ExportTags
     {
-        public static (int strain, int days, Alert) ProcessPokerus(pkuObject pku)
-        {
-            static (int, AlertType) helper(int? val, int max) => val switch
-            {
-                null => (0, AlertType.NONE),
-                var x when x > max => (max, AlertType.OVERFLOW),
-                var x when x < 0 => (0, AlertType.UNDERFLOW),
-                _ => (val.Value, AlertType.NONE)
-            };
-            (int strain, AlertType atStrain) = helper(pku.Pokerus?.Strain, 15);
-            (int days, AlertType atDays) = helper(pku.Pokerus?.Days, 4);
-            return (strain, days, GetPokerusAlert(atStrain, atDays));
-        }
-
         public static (HashSet<Ribbon>, Alert) ProcessRibbons(pkuObject pku, Func<Ribbon, bool> isValidRibbon)
         {
             bool anyInvalid = false;
