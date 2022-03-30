@@ -12,8 +12,8 @@ namespace pkuManager.Formats.showdown;
 /// Exports a <see cref="pkuObject"/> to a <see cref="ShowdownObject"/>.
 /// </summary>
 public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E,
-                                Form_E, Nickname_E, Level_E, Gender_E, Ability_E, Moves_E,
-                                Item_E, Nature_E, Friendship_E, IVs_E, EVs_E
+                                Form_E, Shiny_E, Nickname_E, Level_E, Gender_E, Ability_E, Moves_E,
+                                Item_E, Nature_E, Friendship_E, IVs_E, EVs_E, Gigantamax_Factor_E
 {
     public override string FormatName => "Showdown";
     protected override ShowdownObject Data { get; } = new();
@@ -58,11 +58,6 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
             Warnings.Add(GetNicknameAlert(AlertType.INVALID));
     }
 
-    // Gigantamax Factor
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessGigantamaxFactor()
-        => Data.Gigantamax_Factor = pku.Gigantamax_Factor is true;
-
 
     /* ------------------------------------
      * Custom Alerts
@@ -90,6 +85,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     */
     public Species_O Species_Field => Data;
     public Form_O Form_Field => Data;
+    public Shiny_O Shiny_Field => Data;
     public Gender_O Gender_Field => Data;
 
     public Ability_O Ability_Field => Data;
@@ -112,4 +108,5 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     public bool IVs_AlertIfUnspecified => false;
     
     public EVs_O EVs_Field => Data;
+    public Gigantamax_Factor_O Gigantamax_Factor_Field => Data;
 }

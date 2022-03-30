@@ -57,7 +57,7 @@ public class pkuObject : FormatObject
     public uint? PID { get; set; }
 
     [JsonProperty("Shiny")]
-    public bool? Shiny { get; set; }
+    public BackedField<bool?> Shiny { get; set; } = new();
 
     [JsonProperty("Nature")]
     public BackedField<string> Nature { get; set; } = new();
@@ -69,7 +69,7 @@ public class pkuObject : FormatObject
     public BackedField<string> Ability { get; set; } = new();
 
     [JsonProperty("Gigantamax Factor")]
-    public bool? Gigantamax_Factor { get; set; }
+    public BackedField<bool?> Gigantamax_Factor { get; set; } = new();
 
     [JsonProperty("Friendship")]
     public BackedField<BigInteger?> Friendship { get; set; } = new();
@@ -389,7 +389,7 @@ public class pkuObject : FormatObject
     /// </summary>
     /// <returns>Whether <see cref="Shiny"/> is true.</returns>
     public bool IsShiny()
-        => Shiny is true;
+        => Shiny.Value is true;
 
     public BackedField<BigInteger?>[] IVs_Array => new[] {
         IVs.HP, IVs.Attack, IVs.Defense, IVs.Sp_Attack, IVs.Sp_Defense, IVs.Speed

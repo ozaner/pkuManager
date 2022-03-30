@@ -15,8 +15,9 @@ namespace pkuManager.Formats.showdown;
 /// <summary>
 /// An implementation of the .txt (Showdown!) format used by Pokémon Showdown!.
 /// </summary>
-public class ShowdownObject : FormatObject, Species_O, Form_O, Nickname_O, Level_O, Gender_O,
-                              Ability_O, Moves_O, Item_O, Nature_O, Friendship_O, IVs_O, EVs_O
+public class ShowdownObject : FormatObject, Species_O, Form_O, Shiny_O, Nickname_O,
+                              Level_O, Gender_O, Ability_O, Moves_O, Item_O, Nature_O,
+                              Friendship_O, IVs_O, EVs_O, Gigantamax_Factor_O
 {
     public override string FormatName => "Showdown";
 
@@ -36,8 +37,8 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Nickname_O, Level
     public BackedBoundableArrayField<BigInteger> EVs { get; } = new(new BigInteger[6], 255, 0);
     public BackedField<Gender?> Gender { get; } = new();
     public BackedField<Nature?> Nature { get; } = new();
-    public bool Shiny { get; set; }
-    public bool Gigantamax_Factor { get; set; }
+    public BackedField<bool> Shiny { get; } = new();
+    public BackedField<bool> Gigantamax_Factor { get; } = new();
     // PP Ups not used in Showdown, by default always max PP
     // Found one thread regarding it but nothing seems to have come of it:
     // https://www.smogon.com/forums/threads/allow-moves-to-have-non-max-pp.3653621/
@@ -87,7 +88,7 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Nickname_O, Level
             Lines.Add($"Level: {Level.Value}");
 
         // Shiny (no preprocessing)
-        if (Shiny)
+        if (Shiny.Value)
             Lines.Add("Shiny: true");
 
         // Friendship
@@ -119,7 +120,7 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Nickname_O, Level
             Lines.Add($"{Nature.Value} Nature");
 
         // Gigantamax
-        if (Gigantamax_Factor)
+        if (Gigantamax_Factor.Value)
             Lines.Add("Gigantamax: Yes");
 
         // Moves
@@ -146,6 +147,7 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Nickname_O, Level
     */
     OneOf<IField<BigInteger>, IField<string>> Species_O.Species => Species;
     OneOf<IField<BigInteger>, IField<string>> Form_O.Form => Form;
+    IField<bool> Shiny_O.Shiny => Shiny;
     OneOf<BAMStringField, IField<string>> Nickname_O.Nickname => Nickname;
     IField<BigInteger> Level_O.Level => Level;
     OneOf<IField<BigInteger>, IField<Gender>, IField<Gender?>> Gender_O.Gender => Gender;
@@ -156,4 +158,5 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Nickname_O, Level
     IField<BigInteger> Friendship_O.Friendship => Friendship;
     IField<BigInteger[]> IVs_O.IVs => IVs;
     IField<BigInteger[]> EVs_O.EVs => EVs;
+    IField<bool> Gigantamax_Factor_O.Gigantamax_Factor => Gigantamax_Factor;
 }
