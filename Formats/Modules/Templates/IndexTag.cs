@@ -13,7 +13,8 @@ public interface IndexTag_E
     public List<Alert> Warnings { get; }
 
     protected void ProcessIndexTag(string tagName, IField<string> tag, string defaultVal,
-        OneOf<IField<BigInteger>, IField<string>> formatVal, bool alertIfUnspecified, Predicate<string> isValid, Func<string, int> getIndex)
+        OneOf<IField<BigInteger>, IField<string>> formatVal, bool alertIfUnspecified,
+        Predicate<string> isValid, OneOf<Func<string, int>, Func<string, string>> getIndex)
     {
         AlertType at = AlertType.NONE;
         string finalVal = defaultVal;
@@ -25,8 +26,8 @@ public interface IndexTag_E
         else //tag unspecified
             at = alertIfUnspecified ? AlertType.UNSPECIFIED : AlertType.NONE;
 
-        formatVal.Switch(x => x.Value = getIndex(finalVal),
-                         x => x.Value = finalVal);
+        formatVal.Switch(x => x.Value = getIndex.AsT0(finalVal),
+                         x => x.Value = getIndex.AsT1(finalVal));
         Warnings.Add(GetIndexAlert(tagName, at, tag.Value, defaultVal));
     }
 
