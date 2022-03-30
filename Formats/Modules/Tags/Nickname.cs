@@ -35,7 +35,7 @@ public interface Nickname_E
     {
         Nickname_Field.Nickname.Switch(
             x => ProcessEncodedNickname(),
-            x => Nickname_Field.Nickname.AsT1.Value = pku.Nickname); //string implementation
+            x => Nickname_Field.Nickname.AsT1.Value = pku.Nickname.Value); //string implementation
     }
 
     protected void ProcessEncodedNickname()
@@ -43,15 +43,15 @@ public interface Nickname_E
         BAMStringField encodedName = Nickname_Field.Nickname.AsT0;
 
         BigInteger[] name;
-        bool nicknameFlag = pku.Nickname_Flag is true;
+        bool nicknameFlag = pku.Nickname_Flag.Value is true;
         Alert alert = null;
-        int dex = TagUtil.GetNationalDexChecked(pku.Species); //must be valid at this point
+        int dex = TagUtil.GetNationalDexChecked(pku.Species.Value); //must be valid at this point
 
-        if (pku.Nickname is not null) //specified
+        if (!pku.Nickname.IsNull()) //specified
         {
             //name
             bool truncated, invalid;
-            (name, truncated, invalid) = DexUtil.CharEncoding.Encode(pku.Nickname, encodedName.Length, FormatName, Language_Field.Value);
+            (name, truncated, invalid) = DexUtil.CharEncoding.Encode(pku.Nickname.Value, encodedName.Length, FormatName, Language_Field.Value);
             if (truncated && invalid)
                 alert = GetNicknameAlert(AlertType.TOO_LONG | AlertType.INVALID, encodedName.Length);
             else if (truncated)
@@ -60,7 +60,7 @@ public interface Nickname_E
                 alert = GetNicknameAlert(AlertType.INVALID);
 
             //flag
-            if (pku.Nickname_Flag is null)
+            if (pku.Nickname_Flag.IsNull())
                 nicknameFlag = true;
 
             if (!nicknameFlag)
@@ -77,7 +77,7 @@ public interface Nickname_E
             (name, _, _) = DexUtil.CharEncoding.Encode(defaultName, encodedName.Length, FormatName, Language_Field.Value); //species names shouldn't be truncated/invalid...
 
             //flag
-            if (pku.Nickname_Flag is null)
+            if (pku.Nickname_Flag.IsNull())
                 nicknameFlag = false;
 
             if (nicknameFlag)

@@ -88,7 +88,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         {
             //To be seen as legal must have a defined language + matching "Egg" nickname.
             Language? lang = DataUtil.ToEnum<Language>(pku.Game_Info.Language);
-            if (lang is not null && TagUtil.EGG_NICKNAME[lang.Value] == pku.Nickname)
+            if (lang is not null && TagUtil.EGG_NICKNAME[lang.Value] == pku.Nickname.Value)
             {
                 Data.UseEggName.ValueAsBool = true;
                 legalGen3Egg = true;
@@ -111,8 +111,8 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public virtual void ProcessNickname()
     {
         if (legalGen3Egg)
-            Data.Nickname.SetAs(DexUtil.CharEncoding.Encode(TagUtil.EGG_NICKNAME[Language.Japanese],
-                pk3Object.MAX_NICKNAME_CHARS, FormatName, Language.Japanese).encodedStr);
+            Data.Nickname.Value = DexUtil.CharEncoding.Encode(TagUtil.EGG_NICKNAME[Language.Japanese],
+                pk3Object.MAX_NICKNAME_CHARS, FormatName, Language.Japanese).encodedStr;
         else
             (this as Nickname_E).ProcessNicknameBase();
     }
@@ -122,8 +122,8 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public virtual void ProcessOT()
     {
         if (legalGen3Egg)
-            Data.OT.SetAs(DexUtil.CharEncoding.Encode(pku.Game_Info?.OT, pk3Object.MAX_OT_CHARS,
-                FormatName, Language.Japanese).encodedStr);
+            Data.OT.Value = DexUtil.CharEncoding.Encode(pku.Game_Info.OT.Value, pk3Object.MAX_OT_CHARS,
+                FormatName, Language.Japanese).encodedStr;
         else
             (this as Encoded_OT_E).ProcessOTBase();
     }
@@ -136,7 +136,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
             => ABILITY_DEX.GetIndexedValue<int?>(FormatName, name, "Indices").Value; //must have an ID
 
         Alert alert = null;
-        string[] abilitySlots = SPECIES_DEX.ReadDataDex<string[]>(pku.Species, "Gen 3 Ability Slots"); //must exist
+        string[] abilitySlots = SPECIES_DEX.ReadDataDex<string[]>(pku.Species.Value, "Gen 3 Ability Slots"); //must exist
         if (pku.Ability.IsNull()) //ability unspecified
         {
             Data.Ability_Slot.ValueAsBool = false;

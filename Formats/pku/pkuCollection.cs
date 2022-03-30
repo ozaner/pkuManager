@@ -490,21 +490,21 @@ public class pkuBox : Box
     public override Slot CreateSlotInfo(FormatObject pkmn)
     {
         pkuObject pku = pkmn as pkuObject;
-        int? dex = TagUtil.GetNationalDex(pku.Species);
+        int? dex = TagUtil.GetNationalDex(pku.Species.Value);
         Language? lang = pku.Game_Info.Language.ToEnum<Language>();
-        string defaultName = dex.HasValue && lang.HasValue ? PokeAPIUtil.GetSpeciesNameTranslated(dex.Value, lang.Value) : pku.Species;
+        string defaultName = dex.HasValue && lang.HasValue ? PokeAPIUtil.GetSpeciesNameTranslated(dex.Value, lang.Value) : pku.Species.Value;
         var sprites = ImageUtil.GetSprites(pku);
         Slot s = new(
             pku,
             sprites[0],
             sprites[1],
             sprites[2],
-            pku.Nickname ?? defaultName,
-            pku.Species,
+            pku.Nickname.Value ?? defaultName,
+            pku.Species.Value,
             pku.Game_Info.Origin_Game.Value ?? pku.Game_Info.Official_Origin_Game.Value,
-            pku.True_OT.Value ?? pku.Game_Info.OT,
-            pku.Forms.Value.JoinLexical() ?? DexUtil.GetDefaultForm(pku.Species),
-            pku.Appearance?.Take(10).ToArray().JoinLexical(),
+            pku.True_OT.Value ?? pku.Game_Info.OT.Value,
+            pku.Forms.Value.JoinLexical() ?? DexUtil.GetDefaultForm(pku.Species.Value),
+            pku.Appearance.Value?.Take(10).ToArray().JoinLexical(),
             pku.Catch_Info.Ball.Value,
             pku.IsShadow()
         );

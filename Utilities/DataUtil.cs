@@ -434,6 +434,10 @@ public static class DataUtil
             return null;
     }
 
+    /// <inheritdoc cref="ToEnumList{T}(string[])"/>
+    public static List<T> ToEnumList<T>(this IField<string[]> strsField) where T : struct
+        => strsField?.Value.ToEnumList<T>();
+
     /// <summary>
     /// Attempts to convert an array of strings to a list of enums of type <typeparamref name="T"/>.<br/>
     /// If some strings are not valid enums, they are excluded.
@@ -453,6 +457,10 @@ public static class DataUtil
         }
         return enums;
     }
+
+    /// <inheritdoc cref="ToEnumSet{T}(string[])"/>
+    public static HashSet<T> ToEnumSet<T>(this IField<string[]> strsField) where T : struct
+        => strsField?.Value.ToEnumSet<T>();
 
     /// <summary>
     /// Attempts to convert an array of strings to a set of enums of type <typeparamref name="T"/>.<br/>

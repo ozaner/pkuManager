@@ -216,7 +216,7 @@ public static class DexUtil
         }
 
         public static implicit operator SFA(pkuObject pku)
-            => new(pku.Species, pku.Forms.Value, pku.Appearance, pku.Gender.ToEnum<Gender>() is Gender.Female);
+            => new(pku.Species.Value, pku.Forms.Value, pku.Appearance.Value, pku.Gender.ToEnum<Gender>() is Gender.Female);
     }
 
     /// <summary>

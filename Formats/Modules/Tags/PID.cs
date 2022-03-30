@@ -55,9 +55,15 @@ public interface PID_E
                 x => TagUtil.GetUnownFormIDFromName(x.Value)) : null;
         }
 
-        // Deal with null PID. (Always in-bounds since it is a uint)
-        (uint pid, bool pidInBounds, Alert alert) = pku.PID is null ?
-            (uint.MinValue, false, GetPIDAlert(AlertType.UNSPECIFIED)) : (pku.PID.Value, true, null);
+        // Deal with null PID
+        (uint pid, bool pidInBounds, AlertType at) = pku.PID.Value switch
+        {
+            null => ((uint)0, false, AlertType.UNSPECIFIED),
+            var x when x > uint.MaxValue => (uint.MaxValue, false, AlertType.OVERFLOW),
+            var x when x < uint.MinValue => ((uint)0, false, AlertType.UNDERFLOW),
+            _ => ((uint)pku.PID.Value, true, AlertType.NONE)
+        };
+        Alert alert = GetPIDAlert(at);
 
         // Check if any value has a pid-mismatch
         bool genderMismatch = false, natureMismatch = false, unownMismatch = false, shinyMismatch;
@@ -127,6 +133,9 @@ public interface PID_E
 
     protected static Alert GetPIDAlert(AlertType at, List<(string, object, object)> tags = null)
     {
+        if (at is AlertType.NONE)
+            return null;
+
         // PID-Mismatch Alert
         if (at is AlertType.MISMATCH)
         {

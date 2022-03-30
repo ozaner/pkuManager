@@ -21,13 +21,13 @@ public class pkuObject : FormatObject
     public override string FormatName => "pku";
 
     [JsonProperty("Species")]
-    public string Species { get; set; }
+    public BackedField<string> Species { get; set; } = new();
 
     [JsonProperty("Nickname")]
-    public string Nickname { get; set; }
+    public BackedField<string> Nickname { get; set; } = new();
 
     [JsonProperty("Nickname Flag")]
-    public bool? Nickname_Flag { get; set; }
+    public BackedField<bool?> Nickname_Flag { get; set; } = new();
 
     [JsonProperty("True OT")]
     public BackedField<string> True_OT { get; set; } = new();
@@ -36,10 +36,10 @@ public class pkuObject : FormatObject
     public BackedField<string[]> Forms { get; set; } = new();
 
     [JsonProperty("Appearance")]
-    public string[] Appearance { get; set; }
+    public BackedField<string[]> Appearance { get; set; } = new();
 
     [JsonProperty("Gender")]
-    public string Gender { get; set; }
+    public BackedField<string> Gender { get; set; } = new();
 
     [JsonProperty("Level")]
     public BackedField<BigInteger?> Level { get; set; } = new();
@@ -54,7 +54,7 @@ public class pkuObject : FormatObject
     public Move[] Moves { get; set; }
 
     [JsonProperty("PID")]
-    public uint? PID { get; set; }
+    public BackedField<BigInteger?> PID { get; set; } = new();
 
     [JsonProperty("Shiny")]
     public BackedField<bool?> Shiny { get; set; } = new();
@@ -75,7 +75,7 @@ public class pkuObject : FormatObject
     public BackedField<BigInteger?> Friendship { get; set; } = new();
 
     [JsonProperty("Affection")]
-    public int? Affection { get; set; }
+    public BackedField<BigInteger?> Affection { get; set; } = new();
 
     [JsonProperty("Game Info")]
     public Game_Info_Class Game_Info { get; set; } = new();
@@ -99,19 +99,19 @@ public class pkuObject : FormatObject
     public Contest_Stats_Class Contest_Stats { get; set; } = new();
 
     [JsonProperty("Ribbons")]
-    public string[] Ribbons { get; set; }
+    public BackedField<string[]> Ribbons { get; set; } = new();
 
     [JsonProperty("Markings")]
-    public string[] Markings { get; set; }
+    public BackedField<string[]> Markings { get; set; } = new();
 
     [JsonProperty("Pokérus")]
     public Pokerus_Class Pokerus { get; set; } = new();
 
     [JsonProperty("Shadow Info")]
-    public Shadow_Info_Class Shadow_Info { get; set; }
+    public Shadow_Info_Class Shadow_Info { get; set; } = new();
 
     [JsonProperty("Shiny Leaf")]
-    public string[] Shiny_Leaf { get; set; }
+    public BackedField<string[]> Shiny_Leaf { get; set; } = new();
 
     [JsonProperty("Trash Bytes")]
     public Trash_Bytes_Class Trash_Bytes { get; set; } = new();
@@ -120,7 +120,7 @@ public class pkuObject : FormatObject
     public Dictionary<string, JToken> Byte_Override { get; set; } = new();
 
     [JsonProperty("Format Overrides")]
-    public Dictionary<string, pkuObject> Format_Overrides { get; set; }
+    public Dictionary<string, pkuObject> Format_Overrides { get; set; } = new();
 
     public class Trash_Bytes_Class : pkuDictionaryTag
     {
@@ -150,7 +150,7 @@ public class pkuObject : FormatObject
         public BackedField<string> Official_Origin_Game { get; set; } = new();
 
         [JsonProperty("OT")]
-        public string OT { get; set; }
+        public BackedField<string> OT { get; set; } = new();
 
         [JsonProperty("Gender")]
         public BackedField<string> Gender { get; set; } = new();
@@ -185,9 +185,6 @@ public class pkuObject : FormatObject
 
         [JsonProperty("Fateful Encounter")]
         public BackedField<bool?> Fateful_Encounter { get; set; } = new();
-
-        [JsonProperty("Encounter Type")]
-        public string Encounter_Type { get; set; }
     }
 
     public class Egg_Info_Class : Met_Info_Base
@@ -297,13 +294,13 @@ public class pkuObject : FormatObject
     public class Shadow_Info_Class : pkuDictionaryTag
     {
         [JsonProperty("Shadow")]
-        public bool? Shadow { get; set; }
+        public BackedField<bool?> Shadow { get; set; } = new();
 
         [JsonProperty("Purified")]
-        public bool? Purified { get; set; }
+        public BackedField<bool?> Purified { get; set; } = new();
 
         [JsonProperty("Heart Gauge")]
-        public int? Heart_Gauge { get; set; }
+        public BackedField<BigInteger?> Heart_Gauge { get; set; } = new();
     }
 
 
@@ -356,7 +353,7 @@ public class pkuObject : FormatObject
     ///          and and its <paramref name="format"/> override. Or just
     ///          <paramref name="pku"/> if that doesn't exist.</returns>
     public static pkuObject MergeFormatOverride(pkuObject pku, string format)
-        => pku.Format_Overrides?.TryGetValue(format, out pkuObject pkuOverride) is true ? Merge(pku, pkuOverride) : pku;
+        => pku.Format_Overrides.TryGetValue(format, out pkuObject pkuOverride) is true ? Merge(pku, pkuOverride) : pku;
 
     /// <summary>
     /// Creates a deep copy of this <see cref="pkuObject"/>.
@@ -382,7 +379,7 @@ public class pkuObject : FormatObject
     /// </summary>
     /// <returns>Whether <see cref="Shadow_Info_Class.Shadow"/> is true.</returns>
     public bool IsShadow()
-        => Shadow_Info?.Shadow is true;
+        => Shadow_Info.Shadow.Value is true;
 
     /// <summary>
     /// Whether this pku has been explictly marked as shiny.
@@ -421,6 +418,7 @@ public class pkuObject : FormatObject
             return ppUpFields;
         }
     }
+
 
     /* ------------------------------------
      * Serialization Mechanics

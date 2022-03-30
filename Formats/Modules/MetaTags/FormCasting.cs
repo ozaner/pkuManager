@@ -28,7 +28,7 @@ public interface FormCasting_E
         //using a casted/default form
         bool usingDefaultOverride = false;
         var castableForms = DexUtil.GetCastableForms(pku);
-        string defaultForm = DexUtil.GetDefaultForm(pku.Species);
+        string defaultForm = DexUtil.GetDefaultForm(pku.Species.Value);
         if (castableForms.Any(x => x == form))
             usingDefaultOverride = false;
         else if (GlobalFlags.Default_Form_Override && form == defaultForm)

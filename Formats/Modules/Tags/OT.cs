@@ -33,10 +33,10 @@ public interface Encoded_OT_E
         BigInteger[] otName;
         Alert alert = null;
 
-        if (pku.Game_Info?.OT is not null) //OT specified
+        if (!pku.Game_Info.OT.IsNull()) //OT specified
         {
             bool truncated, invalid;
-            (otName, truncated, invalid) = DexUtil.CharEncoding.Encode(pku.Game_Info.OT, OT_Field.OT.Length, FormatName, Language_Field.Value);
+            (otName, truncated, invalid) = DexUtil.CharEncoding.Encode(pku.Game_Info.OT.Value, OT_Field.OT.Length, FormatName, Language_Field.Value);
             if (truncated && invalid)
                 alert = GetOTAlert(AlertType.TOO_LONG | AlertType.INVALID, OT_Field.OT.Length);
             else if (truncated)

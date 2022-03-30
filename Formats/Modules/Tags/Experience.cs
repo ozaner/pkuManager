@@ -27,7 +27,7 @@ public interface Experience_E
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ProcessExperience()
     {
-        int dex = TagUtil.GetNationalDexChecked(pku.Species); //must be valid at this point
+        int dex = TagUtil.GetNationalDexChecked(pku.Species.Value); //must be valid at this point
         int level100EXP = PokeAPIUtil.GetEXPFromLevel(dex, 100);
 
         //data collection - Level

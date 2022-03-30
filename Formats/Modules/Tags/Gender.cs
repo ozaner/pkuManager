@@ -54,7 +54,7 @@ public interface Gender_E
         };
         Gender? defaultGender = Gender_Field.Gender.IsT2 ? null : mandatoryGender ?? DEFAULT_GENDER;
 
-        if (pku.Gender is null)
+        if (pku.Gender.IsNull())
         {
             Gender_Field.Value = defaultGender;
             if (mandatoryGender is null)
@@ -76,7 +76,7 @@ public interface Gender_E
                     at = AlertType.INVALID;
             }
         }
-        Warnings.Add(GetGenderAlert(at, Gender_Field.Value, pku.Gender));
+        Warnings.Add(GetGenderAlert(at, Gender_Field.Value, pku.Gender.Value));
     }
 
     protected Alert GetGenderAlert(AlertType at, Gender? defaultGender, string invalidGender)
