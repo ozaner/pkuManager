@@ -132,8 +132,11 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     [PorterDirective(ProcessingPhase.FirstPass)]
     public virtual void ProcessAbilitySlot()
     {
+        int getGen3AbilityID(string name)
+            => ABILITY_DEX.GetIndexedValue<int?>(FormatName, name, "Indices").Value; //must have an ID
+
         Alert alert = null;
-        string[] abilitySlots = SPECIES_DEX.ReadDataDex<string[]>(pku.Species, "Gen 3 Ability Slots");
+        string[] abilitySlots = SPECIES_DEX.ReadDataDex<string[]>(pku.Species, "Gen 3 Ability Slots"); //must exist
         if (pku.Ability.IsNull()) //ability unspecified
         {
             Data.Ability_Slot.ValueAsBool = false;
@@ -141,20 +144,20 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         }
         else //ability specified
         {
-            int? abilityID = PokeAPIUtil.GetAbilityIndex(pku.Ability.Value);
-            if (abilityID is null or > 76) //unofficial ability/gen 4+ ability
+            if (ABILITY_DEX.ExistsIn(FormatName, pku.Ability.Value)) //gen 3 ability
             {
-                Data.Ability_Slot.ValueAsBool = false;
-                alert = GetAbilitySlotAlert(AlertType.INVALID, pku.Ability.Value, abilitySlots[0]);
-            }
-            else //gen 3 ability
-            {
-                bool isSlot1 = abilityID == PokeAPIUtil.GetAbilityIndex(abilitySlots[0]);
-                bool isSlot2 = abilitySlots.Length > 1 && abilityID == PokeAPIUtil.GetAbilityIndex(abilitySlots[1]);
+                int abilityID = getGen3AbilityID(pku.Ability.Value);
+                bool isSlot1 = abilityID == getGen3AbilityID(abilitySlots[0]);
+                bool isSlot2 = abilitySlots.Length > 1 && abilityID == getGen3AbilityID(abilitySlots[1]);
                 Data.Ability_Slot.ValueAsBool = isSlot2; //else false (i.e. slot 1, or invalid)
 
                 if (!isSlot1 && !isSlot2) //ability is impossible on this species, alert
                     alert = GetAbilitySlotAlert(AlertType.MISMATCH, pku.Ability.Value, abilitySlots[0]);
+            }
+            else //unofficial ability/gen 4+ ability
+            {
+                Data.Ability_Slot.ValueAsBool = false;
+                alert = GetAbilitySlotAlert(AlertType.INVALID, pku.Ability.Value, abilitySlots[0]);
             }
         }
         Warnings.Add(alert);

@@ -13,40 +13,6 @@ public static class PokeAPIUtil
      * Wrapped Info Methods
      * ------------------------------------
     */
-    public static int? GetAbilityIndex(string ability)
-    {
-        if (ability is null)
-            return null;
-
-        string searchAbility = ability.ToLowerInvariant().Replace(' ', '-'); // lower case and replace spaces with dashes
-        try
-        {
-            Ability ab = Task.Run(() => getAbilityAsync(searchAbility)).Result;
-            if (!ab.IsMainSeries)
-                return null; //only main series abilities
-            return ab.Id;
-        }
-        catch
-        {
-            return null; //ability DNE
-        }
-    }
-
-    public static string GetAbility(int abilityID)
-    {
-        try
-        {
-            Ability ab = Task.Run(() => getAbilityAsync(abilityID)).Result;
-            if (!ab.IsMainSeries)
-                return null; //only main series abilities
-            return ab.Names.Find(x => x.Language.Name == "en").Name;
-        }
-        catch
-        {
-            return null; //ability DNE
-        }
-    }
-
     public static string GetSpeciesNameTranslated(int dex, TagEnums.Language lang)
     {
         string langID = lang switch
@@ -110,12 +76,6 @@ public static class PokeAPIUtil
     */
     private static async Task<PokemonSpecies> getPokemonSpeciesAsync(int dex)
         => await paClient.GetResourceAsync<PokemonSpecies>(dex);
-
-    private static async Task<Ability> getAbilityAsync(string ability)
-        => await paClient.GetResourceAsync<Ability>(ability);
-
-    private static async Task<Ability> getAbilityAsync(int abilityID)
-        => await paClient.GetResourceAsync<Ability>(abilityID);
 
     private static async Task<PokeApiNet.GrowthRate> getGrowthRateAsync(int dex)
     {
