@@ -21,7 +21,8 @@ namespace pkuManager.Formats.pkx.pk3;
 public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Moves_O, PP_Ups_O,
                          PP_O, Item_O, PID_O, TID_O, Friendship_O, IVs_O, EVs_O, Contest_Stats_O,
                          Ball_O, Encoded_OT_O, Origin_Game_O, Met_Location_O, Met_Level_O, OT_Gender_O,
-                         Language_O, Fateful_Encounter_O, Markings_O, Is_Egg_O, Pokerus_O, ByteOverride_O
+                         Language_O, Fateful_Encounter_O, Markings_O, Ribbons_O, Is_Egg_O, Pokerus_O,
+                         ByteOverride_O
 {
     public override string FormatName => "pk3";
 
@@ -411,6 +412,19 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Move
     IField<bool> Markings_O.Marking_Blue_Square => Marking_Blue_Square;
     IField<bool> Markings_O.Marking_Blue_Triangle => Marking_Blue_Triangle;
     IField<bool> Markings_O.Marking_Blue_Heart => Marking_Blue_Heart;
+
+    IField<bool> Ribbons_O.Champion_Ribbon => Champion_Ribbon;
+    IField<bool> Ribbons_O.Winning_Ribbon => Winning_Ribbon;
+    IField<bool> Ribbons_O.Victory_Ribbon => Victory_Ribbon;
+    IField<bool> Ribbons_O.Artist_Ribbon => Artist_Ribbon;
+    IField<bool> Ribbons_O.Effort_Ribbon => Effort_Ribbon;
+    IField<bool> Ribbons_O.Battle_Champion_Ribbon => Battle_Champion_Ribbon;
+    IField<bool> Ribbons_O.Regional_Champion_Ribbon => Regional_Champion_Ribbon;
+    IField<bool> Ribbons_O.National_Champion_Ribbon => National_Champion_Ribbon;
+    IField<bool> Ribbons_O.Country_Ribbon => Country_Ribbon;
+    IField<bool> Ribbons_O.National_Ribbon => National_Ribbon;
+    IField<bool> Ribbons_O.Earth_Ribbon => Earth_Ribbon;
+    IField<bool> Ribbons_O.World_Ribbon => World_Ribbon;
 
     IField<BigInteger> Pokerus_O.Pokerus_Strain => Pokerus_Strain;
     IField<BigInteger> Pokerus_O.Pokerus_Days => Pokerus_Days;

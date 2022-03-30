@@ -1,13 +1,10 @@
 ﻿global using static pkuManager.Formats.Modules.TagEnums; //TagEnums are global constants
 
 using pkuManager.Alerts;
-using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using static pkuManager.Alerts.Alert;
-using static pkuManager.Formats.Modules.TagUtil.ExportAlerts;
 
 namespace pkuManager.Formats.Modules;
 
@@ -255,9 +252,6 @@ public static class TagUtil
     /// </summary>
     public static class ExportAlerts
     {
-        // ----------
-        // Pokemon Attribute Alert Methods
-        // ----------
         public static Alert GetAbilityAlert(AlertType at, string invalidAbility = null, string defaultAbility = "None")
         {
             if (at is AlertType.MISMATCH or AlertType.INVALID && invalidAbility is null)
@@ -270,37 +264,6 @@ public static class TagUtil
                 _ => throw InvalidAlertType(at)
             });
         }
-
-        public static Alert GetRibbonAlert()
-            => new("Ribbons", "Some of the pku's ribbons are not valid in this format. Ignoring them.");
-    }
-
-
-    /* ------------------------------------
-     * Tag Processing Methods
-     * ------------------------------------
-    */
-    /// <summary>
-    /// Generalized methods for processing attributes of pkx files.
-    /// </summary>
-    public static class ExportTags
-    {
-        public static (HashSet<Ribbon>, Alert) ProcessRibbons(pkuObject pku, Func<Ribbon, bool> isValidRibbon)
-        {
-            bool anyInvalid = false;
-            HashSet<Ribbon> ribbons = pku.Ribbons.ToEnumSet<Ribbon>();
-            if (pku.Ribbons is not null)
-                anyInvalid = pku.Ribbons.Distinct(StringComparer.InvariantCultureIgnoreCase).Count() > ribbons.Count;
-
-            int oldCount = ribbons.Count;
-            ribbons.RemoveWhere(x => !isValidRibbon(x)); //removes invalid ribbons from set
-            anyInvalid = oldCount > ribbons.Count || anyInvalid;
-
-            return (ribbons, anyInvalid ? GetRibbonAlert() : null);
-        }
-
-        //TODO Gen 4: implement this for gen4+, slot/ability independent in all gens, EXCEPT for gen 3
-        //public static (int abilityID, int slot, Alert) ProcessAbility(PKUObject pku, int maxAbility)
     }
 }
 

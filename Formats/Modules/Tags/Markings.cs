@@ -1,4 +1,5 @@
 ﻿using pkuManager.Formats.Fields;
+using pkuManager.Formats.Modules.Templates;
 using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using System.Collections.Generic;
@@ -25,7 +26,7 @@ public interface Markings_O
     public IField<bool> Marking_Favorite => null;
 }
 
-public interface Markings_E
+public interface Markings_E : MultiEnumTag_E
 {
     public pkuObject pku { get; }
     public string FormatName { get; }
@@ -33,50 +34,25 @@ public interface Markings_E
     public Markings_O Markings_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public sealed void ProcessMarkings()
+    public void ProcessMarkings()
+        => ProcessMultiEnumTag(GetMapping(), pku.Markings.ToEnumSet<Marking>());
+
+    private Dictionary<Marking, IField<bool>> GetMapping() => new()
     {
-        HashSet<Marking> markings = pku.Markings.ToEnumSet<Marking>();
+        { Marking.Blue_Circle, Markings_Field.Marking_Blue_Circle },
+        { Marking.Blue_Square, Markings_Field.Marking_Blue_Square },
+        { Marking.Blue_Triangle, Markings_Field.Marking_Blue_Triangle },
+        { Marking.Blue_Heart, Markings_Field.Marking_Blue_Heart },
+        { Marking.Blue_Star, Markings_Field.Marking_Blue_Star },
+        { Marking.Blue_Diamond, Markings_Field.Marking_Blue_Diamond },
 
-        //blue markings
-        if (Markings_Field.Marking_Blue_Circle is not null)
-            Markings_Field.Marking_Blue_Circle.Value = markings.Contains(Marking.Blue_Circle);
+        { Marking.Pink_Circle, Markings_Field.Marking_Pink_Circle },
+        { Marking.Pink_Square, Markings_Field.Marking_Pink_Square },
+        { Marking.Pink_Triangle, Markings_Field.Marking_Pink_Triangle },
+        { Marking.Pink_Heart, Markings_Field.Marking_Pink_Heart },
+        { Marking.Pink_Star, Markings_Field.Marking_Pink_Star },
+        { Marking.Pink_Diamond, Markings_Field.Marking_Pink_Diamond },
 
-        if (Markings_Field.Marking_Blue_Triangle is not null)
-            Markings_Field.Marking_Blue_Triangle.Value = markings.Contains(Marking.Blue_Triangle);
-
-        if (Markings_Field.Marking_Blue_Square is not null)
-            Markings_Field.Marking_Blue_Square.Value = markings.Contains(Marking.Blue_Square);
-
-        if (Markings_Field.Marking_Blue_Heart is not null)
-            Markings_Field.Marking_Blue_Heart.Value = markings.Contains(Marking.Blue_Heart);
-
-        if (Markings_Field.Marking_Blue_Star is not null)
-            Markings_Field.Marking_Blue_Star.Value = markings.Contains(Marking.Blue_Star);
-
-        if (Markings_Field.Marking_Blue_Diamond is not null)
-            Markings_Field.Marking_Blue_Diamond.Value = markings.Contains(Marking.Blue_Diamond);
-
-        //pink markings
-        if (Markings_Field.Marking_Pink_Circle is not null)
-            Markings_Field.Marking_Pink_Circle.Value = markings.Contains(Marking.Pink_Circle);
-
-        if (Markings_Field.Marking_Pink_Triangle is not null)
-            Markings_Field.Marking_Pink_Triangle.Value = markings.Contains(Marking.Pink_Triangle);
-
-        if (Markings_Field.Marking_Pink_Square is not null)
-            Markings_Field.Marking_Pink_Square.Value = markings.Contains(Marking.Pink_Square);
-
-        if (Markings_Field.Marking_Pink_Heart is not null)
-            Markings_Field.Marking_Pink_Heart.Value = markings.Contains(Marking.Pink_Heart);
-
-        if (Markings_Field.Marking_Pink_Star is not null)
-            Markings_Field.Marking_Pink_Star.Value = markings.Contains(Marking.Pink_Star);
-
-        if (Markings_Field.Marking_Pink_Diamond is not null)
-            Markings_Field.Marking_Pink_Diamond.Value = markings.Contains(Marking.Pink_Diamond);
-
-        //favorite
-        if (Markings_Field.Marking_Favorite is not null)
-            Markings_Field.Marking_Favorite.Value = markings.Contains(Marking.Favorite);
-    }
+        { Marking.Favorite, Markings_Field.Marking_Favorite}
+    };
 }

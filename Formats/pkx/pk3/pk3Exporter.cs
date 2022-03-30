@@ -22,8 +22,8 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
                            Gender_E, Nickname_E, Experience_E, Moves_E, PP_Ups_E, PP_E, Item_E,
                            Nature_E, Friendship_E, PID_E, TID_E, IVs_E, EVs_E, Contest_Stats_E,
                            Ball_E, Encoded_OT_E, Origin_Game_E, Met_Location_E, Met_Level_E,
-                           OT_Gender_E, Language_E, Fateful_Encounter_E, Markings_E, Is_Egg_E,
-                           Pokerus_E, Trash_Bytes_E, ByteOverride_E
+                           OT_Gender_E, Language_E, Fateful_Encounter_E, Markings_E, Ribbons_E,
+                           Is_Egg_E, Pokerus_E, Trash_Bytes_E, ByteOverride_E
 {
     public override string FormatName => "pk3";
 
@@ -163,10 +163,11 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     [PorterDirective(ProcessingPhase.FirstPass)]
     public virtual void ProcessRibbons()
     {
-        (HashSet<Ribbon> ribbons, Alert a) = TagUtil.ExportTags.ProcessRibbons(pku, pk3Object.IsValidRibbon);
+        HashSet<Ribbon> ribbons = pku.Ribbons.ToEnumSet<Ribbon>(); //get ribbon list
 
         //In other words, if the pku has a contest ribbon at level x, but not at level x-1 (when x-1 exists).
-        if (ribbons.Contains(Ribbon.Cool_Super_G3) && !ribbons.Contains(Ribbon.Cool_G3) ||
+        bool ribbonAlert =
+            ribbons.Contains(Ribbon.Cool_Super_G3) && !ribbons.Contains(Ribbon.Cool_G3) ||
             ribbons.Contains(Ribbon.Cool_Hyper_G3) && !ribbons.Contains(Ribbon.Cool_Super_G3) ||
             ribbons.Contains(Ribbon.Cool_Master_G3) && !ribbons.Contains(Ribbon.Cool_Hyper_G3) ||
             ribbons.Contains(Ribbon.Beauty_Super_G3) && !ribbons.Contains(Ribbon.Beauty_G3) ||
@@ -180,8 +181,10 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
             ribbons.Contains(Ribbon.Smart_Master_G3) && !ribbons.Contains(Ribbon.Smart_Hyper_G3) ||
             ribbons.Contains(Ribbon.Tough_Super_G3) && !ribbons.Contains(Ribbon.Tough_G3) ||
             ribbons.Contains(Ribbon.Tough_Hyper_G3) && !ribbons.Contains(Ribbon.Tough_Super_G3) ||
-            ribbons.Contains(Ribbon.Tough_Master_G3) && !ribbons.Contains(Ribbon.Tough_Hyper_G3))
-            a = AddContestRibbonAlert(a);
+            ribbons.Contains(Ribbon.Tough_Master_G3) && !ribbons.Contains(Ribbon.Tough_Hyper_G3);
+        
+        if (ribbonAlert)
+            Warnings.Add(GetContestRibbonAlert());
 
         //Add contest ribbons
         Data.Cool_Ribbon_Rank.SetAs(pk3Object.GetRibbonRank(Ribbon.Cool_G3, ribbons));
@@ -190,21 +193,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         Data.Smart_Ribbon_Rank.SetAs(pk3Object.GetRibbonRank(Ribbon.Smart_G3, ribbons));
         Data.Tough_Ribbon_Rank.SetAs(pk3Object.GetRibbonRank(Ribbon.Tough_G3, ribbons));
 
-        //Add other ribbons
-        Data.Champion_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.Champion);
-        Data.Winning_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.Winning);
-        Data.Victory_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.Victory);
-        Data.Artist_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.Artist);
-        Data.Effort_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.Effort);
-        Data.Battle_Champion_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.Battle_Champion);
-        Data.Regional_Champion_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.Regional_Champion);
-        Data.National_Champion_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.National_Champion);
-        Data.Country_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.Country);
-        Data.National_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.National);
-        Data.Earth_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.Earth);
-        Data.World_Ribbon.ValueAsBool = ribbons.Contains(Ribbon.World);
-
-        Warnings.Add(a);
+        (this as Ribbons_E).ProcessRibbonsBase(); //Process other ribbons
     }
 
     // Fateful Encounter [ErrorResolver]
@@ -251,24 +240,16 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
             return null;
     }
 
-    // Adds gen 3 contest ribbon alert to an existing pkxUtil ribbon alert (or null), if needed.
-    public static Alert AddContestRibbonAlert(Alert ribbonAlert)
-    {
-        string msg = "This pku has a Gen 3 contest ribbon of some category with rank super or higher, " +
-            "but doesn't have the ribbons below that rank. This is impossible in this format, adding those ribbons.";
-        if (ribbonAlert is not null)
-            ribbonAlert.Message += DataUtil.Newline(2) + msg;
-        else
-            ribbonAlert = new Alert("Ribbons", msg);
-        return ribbonAlert;
-    }
-
     public Alert GetNatureAlert(AlertType at, string val, string defaultVal) => at switch
     {
         AlertType.UNSPECIFIED => new Alert("Nature", "No nature specified, using the nature decided by the PID."),
         AlertType.INVALID => new Alert("Nature", $"The nature \"{val}\" is not valid in this format. Using the nature decided by the PID."),
         _ => (this as Nature_E).GetNatureAlertBase(at, val, defaultVal)
     };
+
+    public static Alert GetContestRibbonAlert()
+        => new("Ribbons", "This pku has a Gen 3 contest ribbon of some category with rank super or higher, " +
+            "but doesn't have the ribbons below that rank. This is impossible in this format, adding those ribbons.");
 
     public static Alert GetObedienceAlert(bool isMew)
     {
@@ -335,6 +316,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     public Fateful_Encounter_O Fateful_Encounter_Field => Data;
     public Markings_O Markings_Field => Data;
+    public Ribbons_O Ribbons_Field => Data;
     public Is_Egg_O Is_Egg_Field => Data;
     public Pokerus_O Pokerus_Field => Data;
     public ByteOverride_O ByteOverride_Field => Data;
