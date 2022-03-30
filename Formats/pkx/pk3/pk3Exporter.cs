@@ -12,6 +12,7 @@ using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 using pkuManager.Formats.Modules.MetaTags;
+using pkuManager.Formats.Modules.Templates;
 
 namespace pkuManager.Formats.pkx.pk3;
 
@@ -133,27 +134,27 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     {
         Alert alert = null;
         string[] abilitySlots = SPECIES_DEX.ReadDataDex<string[]>(pku.Species, "Gen 3 Ability Slots");
-        if (pku.Ability is null) //ability unspecified
+        if (pku.Ability.IsNull()) //ability unspecified
         {
             Data.Ability_Slot.ValueAsBool = false;
-            alert = TagUtil.ExportAlerts.GetAbilityAlert(AlertType.UNSPECIFIED, pku.Ability, abilitySlots[0]);
+            alert = GetAbilitySlotAlert(AlertType.UNSPECIFIED, null, abilitySlots[0]);
         }
         else //ability specified
         {
-            int? abilityID = PokeAPIUtil.GetAbilityIndex(pku.Ability);
-            if (abilityID is null or > 76) //unofficial ability OR gen4+ ability
+            int? abilityID = PokeAPIUtil.GetAbilityIndex(pku.Ability.Value);
+            if (abilityID is null or > 76) //unofficial ability/gen 4+ ability
             {
                 Data.Ability_Slot.ValueAsBool = false;
-                alert = TagUtil.ExportAlerts.GetAbilityAlert(AlertType.INVALID, pku.Ability, abilitySlots[0]);
+                alert = GetAbilitySlotAlert(AlertType.INVALID, pku.Ability.Value, abilitySlots[0]);
             }
-            else //gen 3- ability
+            else //gen 3 ability
             {
                 bool isSlot1 = abilityID == PokeAPIUtil.GetAbilityIndex(abilitySlots[0]);
                 bool isSlot2 = abilitySlots.Length > 1 && abilityID == PokeAPIUtil.GetAbilityIndex(abilitySlots[1]);
                 Data.Ability_Slot.ValueAsBool = isSlot2; //else false (i.e. slot 1, or invalid)
 
                 if (!isSlot1 && !isSlot2) //ability is impossible on this species, alert
-                    alert = TagUtil.ExportAlerts.GetAbilityAlert(AlertType.MISMATCH, pku.Ability, abilitySlots[0]);
+                    alert = GetAbilitySlotAlert(AlertType.MISMATCH, pku.Ability.Value, abilitySlots[0]);
             }
         }
         Warnings.Add(alert);
@@ -246,6 +247,14 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         AlertType.INVALID => new Alert("Nature", $"The nature \"{val}\" is not valid in this format. Using the nature decided by the PID."),
         _ => (this as Nature_E).GetNatureAlertBase(at, val, defaultVal)
     };
+
+    public static Alert GetAbilitySlotAlert(AlertType at, string val, string defaultVal)
+    {
+        if (at.HasFlag(AlertType.MISMATCH))
+            return new("Ability", $"This species cannot have the ability '{val}' in this format. Using the default ability: '{defaultVal}'.");
+        else
+            return IndexTag_E.GetIndexAlert("Ability", at, val, defaultVal);
+    }
 
     public static Alert GetContestRibbonAlert()
         => new("Ribbons", "This pku has a Gen 3 contest ribbon of some category with rank super or higher, " +

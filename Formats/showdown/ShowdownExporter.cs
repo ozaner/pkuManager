@@ -1,5 +1,4 @@
 ﻿using pkuManager.Alerts;
-using pkuManager.Formats.Modules;
 using pkuManager.Formats.Modules.MetaTags;
 using pkuManager.Formats.Modules.Tags;
 using pkuManager.Formats.pku;
@@ -13,8 +12,8 @@ namespace pkuManager.Formats.showdown;
 /// Exports a <see cref="pkuObject"/> to a <see cref="ShowdownObject"/>.
 /// </summary>
 public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E,
-                                Form_E, Nickname_E, Level_E, Gender_E, Moves_E, Item_E,
-                                Nature_E, Friendship_E, IVs_E, EVs_E
+                                Form_E, Nickname_E, Level_E, Gender_E, Ability_E, Moves_E,
+                                Item_E, Nature_E, Friendship_E, IVs_E, EVs_E
 {
     public override string FormatName => "Showdown";
     protected override ShowdownObject Data { get; } = new();
@@ -59,17 +58,6 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
             Warnings.Add(GetNicknameAlert(AlertType.INVALID));
     }
 
-    // Ability
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessAbility()
-    {
-        bool abilityValid = ABILITY_DEX.ExistsIn(FormatName, pku.Ability);
-        if (pku.Ability is not null && !abilityValid) //check for invalid alert
-            Warnings.Add(TagUtil.ExportAlerts.GetAbilityAlert(AlertType.INVALID, pku.Ability, "None (Showdown will pick one)"));
-        else
-            Data.Ability = pku.Ability;
-    }
-
     // Gigantamax Factor
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ProcessGigantamaxFactor()
@@ -103,6 +91,10 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     public Species_O Species_Field => Data;
     public Form_O Form_Field => Data;
     public Gender_O Gender_Field => Data;
+
+    public Ability_O Ability_Field => Data;
+    public string Ability_Default => "None (Showdown will pick one)";
+
     public Nickname_O Nickname_Field => Data;
     public Level_O Level_Field => Data;
 

@@ -1,10 +1,8 @@
 ﻿global using static pkuManager.Formats.Modules.TagEnums; //TagEnums are global constants
 
-using pkuManager.Alerts;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
-using static pkuManager.Alerts.Alert;
 
 namespace pkuManager.Formats.Modules;
 
@@ -241,30 +239,6 @@ public static class TagUtil
     /// <returns>The PP <paramref name="move"/> would have with <paramref name="ppups"/> PP Ups.</returns>
     public static int CalculatePP(string move, int ppups, string format)
         => (5 + ppups) * MOVE_DEX.GetIndexedValue<int?>(format, move, "Base PP").Value / 5;
-
-
-    /* ------------------------------------
-     * Alert Generator Methods
-     * ------------------------------------
-    */
-    /// <summary>
-    /// Alert generating methods for <see cref="ExportTags"/> methods.
-    /// </summary>
-    public static class ExportAlerts
-    {
-        public static Alert GetAbilityAlert(AlertType at, string invalidAbility = null, string defaultAbility = "None")
-        {
-            if (at is AlertType.MISMATCH or AlertType.INVALID && invalidAbility is null)
-                throw new ArgumentNullException(nameof(invalidAbility), "Must give the invalid ability for MISMATCH and INVALID alerts.");
-            return new("Ability", at switch
-            {
-                AlertType.UNSPECIFIED => $"No ability was specified, using the default ability: {defaultAbility}.",
-                AlertType.MISMATCH => $"This species cannot have the ability {invalidAbility} in this format. Using the default ability: {defaultAbility}.",
-                AlertType.INVALID => $"The ability {invalidAbility} is not supported by this format, using the default ability: {defaultAbility}.",
-                _ => throw InvalidAlertType(at)
-            });
-        }
-    }
 }
 
 public static class TagEnums

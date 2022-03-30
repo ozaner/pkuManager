@@ -16,7 +16,7 @@ namespace pkuManager.Formats.showdown;
 /// An implementation of the .txt (Showdown!) format used by Pokémon Showdown!.
 /// </summary>
 public class ShowdownObject : FormatObject, Species_O, Form_O, Nickname_O, Level_O, Gender_O,
-                              Moves_O, Item_O, Nature_O, Friendship_O, IVs_O, EVs_O
+                              Ability_O, Moves_O, Item_O, Nature_O, Friendship_O, IVs_O, EVs_O
 {
     public override string FormatName => "Showdown";
 
@@ -28,7 +28,7 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Nickname_O, Level
     public BackedField<string> Form { get; } = new();
     public BackedField<string> Nickname { get; } = new();
     public BackedField<string> Item { get; } = new();
-    public string Ability { get; set; }
+    public BackedField<string> Ability { get; } = new();
     public BackedField<string[]> Moves { get; } = new();
     public BackedBoundableField<BigInteger> Level { get; } = new(100, 1);
     public BackedBoundableField<BigInteger> Friendship { get; } = new(255, 0);
@@ -79,8 +79,8 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Nickname_O, Level
         Lines.Add(introLine);
 
         // Ability
-        if (Ability is not null)
-            Lines.Add($"Ability: {Ability}");
+        if (!Ability.IsNull())
+            Lines.Add($"Ability: {Ability.Value}");
 
         // Level
         if (Level.Value != 100)
@@ -149,6 +149,7 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Nickname_O, Level
     OneOf<BAMStringField, IField<string>> Nickname_O.Nickname => Nickname;
     IField<BigInteger> Level_O.Level => Level;
     OneOf<IField<BigInteger>, IField<Gender>, IField<Gender?>> Gender_O.Gender => Gender;
+    OneOf<IField<BigInteger>, IField<string>> Ability_O.Ability => Ability;
     OneOf<IField<BigInteger[]>, IField<string[]>> Moves_O.Moves => Moves;
     OneOf<IField<BigInteger>, IField<string>> Item_O.Item => Item;
     OneOf<IField<BigInteger>, IField<Nature>, IField<Nature?>> Nature_O.Nature => Nature;
