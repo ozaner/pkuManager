@@ -58,6 +58,19 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
             Warnings.Add(GetNicknameAlert());
     }
 
+    // PP Ups
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(Moves_E.ProcessMoves))]
+    public void ProcessPP_Ups()
+    {
+        bool invalid = false;
+        foreach(var id in Moves_Indices)
+        {
+            var pp = pku.Moves[id].PP_Ups.Value;
+            invalid |= (pp != null && pp != 3);
+        }
+        Warnings.Add(GetPP_UpAlert());
+    }
+
 
     /* ------------------------------------
      * Custom Alerts
@@ -65,6 +78,10 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     */
     public static Alert GetNicknameAlert()
         => new("Nickname", $"Showdown does not recoginize leading spaces in nicknames.");
+
+    public static Alert GetPP_UpAlert()
+        => new("PP Ups", "Note that, even though one or more moves does not have exactly 3 PP Ups," +
+            "the Showdown format treats all moves as having 3 PP Ups.");
 
     public Alert GetNatureAlert(AlertType at, string val, string defaultVal)
     {
@@ -91,7 +108,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     public Level_O Level_Field => Data;
 
     public Moves_O Moves_Field => Data;
-    public int[] Moves_Indices { set { } } //don't need these
+    public int[] Moves_Indices { get; set; }
 
     public Item_O Item_Field => Data;
     public Nature_O Nature_Field => Data;
