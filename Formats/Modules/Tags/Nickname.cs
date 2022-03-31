@@ -26,16 +26,26 @@ public interface Nickname_E
 
     public Nickname_O Nickname_Field { get; }
     public Language_O Language_Field => null;
+    public Is_Egg_O Is_Egg_Field => null;
     public bool Nickname_CapitalizeDefault => false;
 
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(Language_E.ProcessLanguage))]
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(Language_E.ProcessLanguage),
+                                                nameof(Is_Egg_E.ProcessIs_Egg))]
     public void ProcessNickname() => ProcessNicknameBase();
 
     public void ProcessNicknameBase()
     {
         Nickname_Field.Nickname.Switch(
-            x => ProcessEncodedNickname(),
-            x => Nickname_Field.Nickname.AsT1.Value = pku.Nickname.Value); //string implementation
+            _ => ProcessEncodedNickname(),
+            _ => ProcessStringNickname());
+    }
+
+    protected void ProcessStringNickname()
+    {
+        if (Is_Egg_Field?.Is_Egg.Value is true) //is egg
+            Nickname_Field.Nickname.AsT1.Value = TagUtil.EGG_NICKNAME[Language_Field?.Value ?? Language.English];
+        else
+            Nickname_Field.Nickname.AsT1.Value = pku.Nickname.Value;
     }
 
     protected void ProcessEncodedNickname()
@@ -68,12 +78,15 @@ public interface Nickname_E
         }
         else //unspecified, get default name for given language
         {
-            //name
-            string defaultName = PokeAPIUtil.GetSpeciesNameTranslated(dex, Language_Field.Value.Value);
+            string defaultName;
+            if (Is_Egg_Field?.Is_Egg.Value is true) //use egg name
+                defaultName = TagUtil.EGG_NICKNAME[Language_Field.Value.Value];
+            else //use default species name
+                defaultName = PokeAPIUtil.GetSpeciesNameTranslated(dex, Language_Field.Value.Value);
 
             if (Nickname_CapitalizeDefault) //e.g. Gens 1-4 are capitalized by default
                 defaultName = defaultName.ToUpperInvariant();
-
+            
             (name, _, _) = DexUtil.CharEncoding.Encode(defaultName, encodedName.Length, FormatName, Language_Field.Value); //species names shouldn't be truncated/invalid...
 
             //flag
