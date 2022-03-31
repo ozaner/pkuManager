@@ -444,7 +444,7 @@ public static class DexUtil
     */
     public static class CharEncoding
     {
-        private static bool IsLangDependent(string format)
+        public static bool IsLangDependent(string format)
             => FORMAT_DEX.ReadDataDex<bool?>(format, "Character Encoding", "Language Dependent") is true;
 
         public static BigInteger GetTerminator(string format, Language? language = null)

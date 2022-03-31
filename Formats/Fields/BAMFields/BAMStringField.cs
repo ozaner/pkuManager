@@ -9,7 +9,7 @@ public class BAMStringField : BAMArrayField, IField<string>
 {
     protected string FormatName { get; }
 
-    protected bool LangDependent { get; }
+    public bool LangDependent { get; }
     protected OneOf<IField<BigInteger>, Language?> LanguageField { get; }
     protected Predicate<Language> IsValidLang { get; }
 

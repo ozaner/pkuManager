@@ -31,37 +31,37 @@ public interface Encoded_OT_E
     public void ProcessOTBase()
     {
         BigInteger[] otName;
-        Alert alert = null;
-
+        AlertType at = AlertType.NONE;
         if (!pku.Game_Info.OT.IsNull()) //OT specified
         {
             bool truncated, invalid;
             (otName, truncated, invalid) = DexUtil.CharEncoding.Encode(pku.Game_Info.OT.Value, OT_Field.OT.Length, FormatName, Language_Field.Value);
-            if (truncated && invalid)
-                alert = GetOTAlert(AlertType.TOO_LONG | AlertType.INVALID, OT_Field.OT.Length);
-            else if (truncated)
-                alert = GetOTAlert(AlertType.TOO_LONG, OT_Field.OT.Length);
-            else if (invalid)
-                alert = GetOTAlert(AlertType.INVALID);
+            if (truncated)
+                at |= AlertType.TOO_LONG;
+            if (invalid)
+                at |= AlertType.INVALID;
         }
         else //OT not specified
         {
             (otName, _, _) = DexUtil.CharEncoding.Encode(null, OT_Field.OT.Length, FormatName, Language_Field.Value); //blank array
-            alert = GetOTAlert(AlertType.UNSPECIFIED);
+            at = AlertType.UNSPECIFIED;
         }
         OT_Field.OT.Value = otName;
-        Warnings.Add(alert);
+        Warnings.Add(GetOTAlert(at, OT_Field.OT.LangDependent, OT_Field.OT.Length));
     }
 
-    public static Alert GetOTAlert(AlertType at, int? maxChars = null)
+    public static Alert GetOTAlert(AlertType at, bool langDep, int? maxChars = null)
     {
+        if (at == AlertType.NONE)
+            return null;
+
         string msg = "";
         if (at.HasFlag(AlertType.UNSPECIFIED))
             msg = "OT was not specified, leaving blank.";
         else
         {
             if (at.HasFlag(AlertType.INVALID)) //invalid characters, removing
-                msg += $"Some of the characters in the OT are invalid in this format, removing them.";
+                msg += $"Some of the characters in the OT are invalid in this format{(langDep ? "/language": "")}, removing them.";
             if (at.HasFlag(AlertType.TOO_LONG)) //too many characters, truncating
             {
                 if (msg is not "")

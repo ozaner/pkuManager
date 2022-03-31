@@ -61,13 +61,13 @@ public interface Nickname_E
         {
             //name
             bool truncated, invalid;
+            AlertType at = AlertType.NONE;
             (name, truncated, invalid) = DexUtil.CharEncoding.Encode(pku.Nickname.Value, encodedName.Length, FormatName, Language_Field.Value);
-            if (truncated && invalid)
-                alert = GetNicknameAlert(AlertType.TOO_LONG | AlertType.INVALID, encodedName.Length);
-            else if (truncated)
-                alert = GetNicknameAlert(AlertType.TOO_LONG, encodedName.Length);
-            else if (invalid)
-                alert = GetNicknameAlert(AlertType.INVALID);
+            if (truncated)
+                at |= AlertType.TOO_LONG;
+            if (invalid)
+                at |= AlertType.INVALID;
+            alert = GetNicknameAlert(at, encodedName.LangDependent, encodedName.Length);
 
             //flag
             if (pku.Nickname_Flag.IsNull())
@@ -103,21 +103,24 @@ public interface Nickname_E
     }
 
 
-    public Alert GetNicknameAlert(AlertType at, int? maxCharacters = null)
-        => GetNicknameAlertBase(at, maxCharacters);
+    public Alert GetNicknameAlert(AlertType at, bool langDep, int? maxChars = null)
+        => GetNicknameAlertBase(at, langDep, maxChars);
 
-    public Alert GetNicknameAlertBase(AlertType at, int? maxCharacters = null)
+    public Alert GetNicknameAlertBase(AlertType at, bool langDep, int? maxChars = null)
     {
+        if (at == AlertType.NONE)
+            return null;
+
         string msg = "";
         if (at.HasFlag(AlertType.INVALID)) //some characters invalid, removing them
-            msg += $"Some of the characters in the nickname are invalid in this format, removing them.";
+            msg += $"Some of the characters in the nickname are invalid in this format{(langDep ? "/language" : "")}, removing them.";
         if (at.HasFlag(AlertType.TOO_LONG)) //too many characters, truncating
         {
-            if (maxCharacters is null)
-                throw new ArgumentNullException(nameof(maxCharacters), "maximum # of chars must be specified for TOO_LONG alerts.");
+            if (maxChars is null)
+                throw new ArgumentNullException(nameof(maxChars), "maximum # of chars must be specified for TOO_LONG alerts.");
             if (msg is not "")
                 msg += DataUtil.Newline();
-            msg += $"Nickname can only have {maxCharacters} characters in this format, truncating it.";
+            msg += $"Nickname can only have {maxChars} characters in this format, truncating it.";
         }
         return msg is not "" ? new("Nickname", msg) : throw InvalidAlertType();
     }

@@ -55,7 +55,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
 
         (this as Nickname_E).ProcessNicknameBase();
         if (Data.Nickname.Value?.Length > 0 && Data.Nickname.Value[0] is ' ') //if first character is a space
-            Warnings.Add(GetNicknameAlert(AlertType.INVALID));
+            Warnings.Add(GetNicknameAlert());
     }
 
 
@@ -63,12 +63,8 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
      * Custom Alerts
      * ------------------------------------
     */
-    public Alert GetNicknameAlert(AlertType at, int? maxCharacters = null)
-    {
-        if (at.HasFlag(AlertType.INVALID))
-            return new Alert("Nickname", $"Showdown does not recoginize leading spaces in nicknames.");
-        throw InvalidAlertType(at);
-    }
+    public static Alert GetNicknameAlert()
+        => new("Nickname", $"Showdown does not recoginize leading spaces in nicknames.");
 
     public Alert GetNatureAlert(AlertType at, string val, string defaultVal)
     {
