@@ -16,7 +16,7 @@ public class BAMStringField : BAMArrayField, IField<string>
     //string form of Value
     public string ValueAsString
     {
-        get => DexUtil.CharEncoding.Decode(Value, FormatName, GetLanguage());
+        get => DexUtil.CharEncoding.Decode(Value, FormatName, GetLanguage()).decodedStr;
         set => DexUtil.CharEncoding.Encode(value, Length, FormatName, GetLanguage());
     }
 

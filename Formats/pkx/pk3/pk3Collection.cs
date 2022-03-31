@@ -254,10 +254,10 @@ public class pk3Box : Box
             sprites[0],
             sprites[1],
             sprites[2],
-            DexUtil.CharEncoding.Decode(pk3.Nickname.Value, "pk3", lang),
+            DexUtil.CharEncoding.Decode(pk3.Nickname.Value, "pk3", lang).decodedStr,
             sfa.Species,
             GAME_DEX.SearchIndexedValue<int?>(pk3.Origin_Game.GetAs<int>(), "pk3", "Indices", "$x"),
-            DexUtil.CharEncoding.Decode(pk3.OT.Value, "pk3", lang),
+            DexUtil.CharEncoding.Decode(pk3.OT.Value, "pk3", lang).decodedStr,
             sfa.Form, //forms
             null, //appearance
             BALL_DEX.SearchIndexedValue<int?>(pk3.Ball.GetAs<int>(), "pk3", "Indices", "$x"),

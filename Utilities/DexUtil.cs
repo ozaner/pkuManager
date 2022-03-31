@@ -535,10 +535,12 @@ public static class DexUtil
         /// <param name="format">The format being decoded from.</param>
         /// <param name="language">The language <paramref name="encodedStr"/> was encoded with, if <paramref name="format"/>
         ///                        is language dependent. Null otherwise.</param>
-        /// <returns>The string decoded from <paramref name="encodedStr"/>.</returns>
-        public static string Decode(BigInteger[] encodedStr, string format, Language? language = null)
+        /// <returns>A tuple of 1) the string decoded from <paramref name="encodedStr"/> and<br/>
+        ///                     2) whether any characters were skipped due to being invalid.</returns>
+        public static (string decodedStr, bool hasInvalidChars) Decode(BigInteger[] encodedStr, string format, Language? language = null)
         {
             StringBuilder sb = new();
+            bool hasInvalidChars = false;
             foreach (BigInteger e in encodedStr)
             {
                 if (e.Equals(GetTerminator(format, language)))
@@ -546,8 +548,10 @@ public static class DexUtil
                 char? c = GetChar(e, format, language);
                 if (c is not null)
                     sb.Append(c.Value);
+                else
+                    hasInvalidChars = true;
             }
-            return sb.ToString();
+            return (sb.ToString(), hasInvalidChars);
         }
     }
 }
