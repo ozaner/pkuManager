@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OneOf;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -15,10 +16,16 @@ public class ByteArrayManipulator
     /// </summary>
     public bool BigEndian { get; }
 
+    private OneOf<ByteArrayManipulator, byte[]> _BaseByteArray;
+
     /// <summary>
     /// The underlying byte array this BAM is wrapping.
     /// </summary>
-    public byte[] ByteArray;
+    public byte[] ByteArray
+    {
+        get => _BaseByteArray.Match(x => x.ByteArray, x => x);
+        set => _BaseByteArray = value;
+    }
 
     /// <summary>
     /// The total number of bytes in the byte array.
@@ -79,7 +86,11 @@ public class ByteArrayManipulator
     /// </summary>
     /// <param name="bam">The parent BAM.</param>
     public ByteArrayManipulator(ByteArrayManipulator bam, (int, int)[] virutalIndices)
-        : this(bam.ByteArray, bam.BigEndian, virutalIndices) { }
+    {
+        _BaseByteArray = bam;
+        BigEndian = bam.BigEndian;
+        VirtualIndices = virutalIndices;
+    }
 
     /// <summary>
     /// Implicitly casts a BAM to its underlying byte array
