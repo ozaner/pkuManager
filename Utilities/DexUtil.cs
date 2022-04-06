@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using pkuManager.Formats.Modules;
 using pkuManager.Formats.pku;
 using System;
 using System.Collections.Generic;
@@ -447,8 +448,9 @@ public static class DexUtil
         public static bool IsLangDependent(string format)
             => FORMAT_DEX.ReadDataDex<bool?>(format, "Character Encoding", "Language Dependent") is true;
 
-        public static BigInteger GetTerminator(string format, Language? language = null)
-            => GetCodepoint('\u0000', format, language).Value;
+        public static BigInteger GetTerminator(string format)
+            //what lang dependent format doesn't have english?
+            => GetCodepoint('\u0000', format, TagUtil.DEFAULT_SEMANTIC_LANGUAGE).Value;
 
         /// <summary>
         /// Searches for the codepoint associated with the given char.
@@ -457,12 +459,12 @@ public static class DexUtil
         /// <param name="format">The format being encoded to.</param>
         /// <param name="language">The language to search. Assumed to exist in this <paramref name="format"/>.</param>
         /// <returns>The codepoint that <paramref name="c"/> maps to, or null if none is found.</returns>
-        private static BigInteger? GetCodepoint(char c, string format, Language? language = null)
+        private static BigInteger? GetCodepoint(char c, string format, string language = null)
         {
-            string langStr = IsLangDependent(format) ? language.ToFormattedString() : "All";
+            string langKey = IsLangDependent(format) ? language : "All";
 
             //should be byte/ushort before conversion
-            var temp = FORMAT_DEX.SearchDataDex(c, format, "Character Encoding", langStr, "$x");
+            var temp = FORMAT_DEX.SearchDataDex(c, format, "Character Encoding", langKey, "$x");
             if (temp is null)
                 return null;
             return BigInteger.Parse(temp);
@@ -476,10 +478,10 @@ public static class DexUtil
         /// <param name="language">The language to search. Assumed to exist in this <paramref name="format"/>.</param>
         /// <returns>The <see langword="char"/> that <paramref name="codepoint"/> maps to,
         ///          or null if none is found.</returns>
-        private static char? GetChar(BigInteger codepoint, string format, Language? language = null)
+        private static char? GetChar(BigInteger codepoint, string format, string language = null)
         {
-            string langStr = IsLangDependent(format) ? language.ToFormattedString() : "All";
-            return FORMAT_DEX.ReadDataDex<char?>(format, "Character Encoding", langStr, codepoint.ToString());
+            string langKey = IsLangDependent(format) ? language : "All";
+            return FORMAT_DEX.ReadDataDex<char?>(format, "Character Encoding", langKey, codepoint.ToString());
         }
 
         /// <summary>
@@ -493,7 +495,7 @@ public static class DexUtil
         ///                        is language dependent. Null otherwise.</param>
         /// <returns>The encoded form of <paramref name="str"/>.</returns>
         public static (BigInteger[] encodedStr, bool truncated, bool hasInvalidChars)
-            Encode(string str, int maxLength, string format, Language? language = null)
+            Encode(string str, int maxLength, string format, string language = null)
         {
             bool truncated = false, hasInvalidChars = false;
             BigInteger[] encodedStr = new BigInteger[maxLength];
@@ -523,7 +525,7 @@ public static class DexUtil
 
             //Deal with terminator
             if (successfulChars < maxLength)
-                encodedStr[successfulChars] = GetTerminator(format, language); //terminator
+                encodedStr[successfulChars] = GetTerminator(format); //terminator
             return (encodedStr, truncated, hasInvalidChars);
         }
 
@@ -537,13 +539,14 @@ public static class DexUtil
         ///                        is language dependent. Null otherwise.</param>
         /// <returns>A tuple of 1) the string decoded from <paramref name="encodedStr"/> and<br/>
         ///                     2) whether any characters were skipped due to being invalid.</returns>
-        public static (string decodedStr, bool hasInvalidChars) Decode(BigInteger[] encodedStr, string format, Language? language = null)
+        public static (string decodedStr, bool hasInvalidChars)
+            Decode(BigInteger[] encodedStr, string format, string language = null)
         {
             StringBuilder sb = new();
             bool hasInvalidChars = false;
             foreach (BigInteger e in encodedStr)
             {
-                if (e.Equals(GetTerminator(format, language)))
+                if (e.Equals(GetTerminator(format)))
                     break;
                 char? c = GetChar(e, format, language);
                 if (c is not null)

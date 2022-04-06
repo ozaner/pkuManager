@@ -1,6 +1,7 @@
 ﻿using pkuManager.Formats.Fields;
 using pkuManager.Formats.Fields.BAMFields;
 using pkuManager.Formats.Modules;
+using pkuManager.Formats.Modules.Tags;
 using pkuManager.Utilities;
 using System.Collections.Generic;
 using System.Linq;
@@ -122,11 +123,11 @@ public class pk3Collection : FileCollection
         //  International games pad OT with 0xFF's while JPN OTs end in two 0x00's
         //  This is the best we got...
         //  Note: Can't differentiate English from other international langs.
-        Language lang = BAM.Get<ushort>(trainerInfoAddress + 0x0000 + pk3Object.MAX_OT_CHARS - 2)
-            is 0 ? Language.Japanese : Language.English; 
+        string lang = BAM.Get<ushort>(trainerInfoAddress + 0x0000 + pk3Object.MAX_OT_CHARS - 2)
+            is 0 ? "Japanese" : "English"; 
 
         //Init fields
-        OT = new(BAM, trainerInfoAddress + 0x0000, 1, pk3Object.MAX_OT_CHARS, FormatName, lang, pk3Object.IsValidLang);
+        OT = new(BAM, trainerInfoAddress + 0x0000, 1, pk3Object.MAX_OT_CHARS, lang, FormatName);
         UnshuffledPCBAM = new(BAM, pcBufferRanges);
         CurrentBoxID = new BAMIntegralField(UnshuffledPCBAM, 0x0000, 4);
         if (CurrentBoxID.Value > 14)
@@ -134,7 +135,7 @@ public class pk3Collection : FileCollection
 
         BoxNames = new BAMStringField[BoxCount];
         for (int i = 0; i < BoxCount; i++)
-            BoxNames[i] = new(UnshuffledPCBAM, 0x8344 + MAX_BOX_CHARS * i, 1, MAX_BOX_CHARS, FormatName, lang, pk3Object.IsValidLang);
+            BoxNames[i] = new(UnshuffledPCBAM, 0x8344 + MAX_BOX_CHARS * i, 1, MAX_BOX_CHARS, lang, FormatName);
     }
 
     protected override void PreSave()
@@ -246,9 +247,8 @@ public class pk3Box : Box
         //get other info
         bool shiny = TagUtil.IsPIDShiny(pk3.PID.GetAs<uint>(), pk3.TID.GetAs<uint>(), false);
         var sprites = ImageUtil.GetSprites(sfa, shiny, pk3.Is_Egg.ValueAsBool);
-        Language lang = (Language)pk3.Language.GetAs<int>();
-        lang = pk3Object.IsValidLang(lang) ? lang : Language.English;
-
+        Language_O langObj = pk3;
+        string lang = langObj.IsValid ? langObj.AsString : TagUtil.DEFAULT_SEMANTIC_LANGUAGE;
         return new(
             pk3,
             sprites[0],

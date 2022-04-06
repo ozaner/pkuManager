@@ -35,39 +35,52 @@ public interface Nickname_E
 
     public void ProcessNicknameBase()
     {
-        Nickname_Field.Nickname.Switch(
-            _ => ProcessEncodedNickname(),
-            _ => ProcessStringNickname());
+        //calculate nickname
+        string nickname = null;
+        if (pku.Nickname.IsNull()) //invalid langs have no default name
+            nickname = TagUtil.GetDefaultName(pku.Species.Value, Is_Egg_Field?.Is_Egg.Value is true, Language_Field?.AsString);
+        nickname ??= pku.Nickname.Value;
+
+        Alert alert = null;
+        alert += Nickname_Field.Nickname.Match(
+            x => ProcessEncodedNickname(nickname, x),
+            x => ProcessStringNickname(nickname, x));
+
+        Warnings.Add(alert);
     }
 
-    protected void ProcessStringNickname()
+    protected Alert ProcessStringNickname(string nickname, IField<string> nicknameField)
     {
-        if (Is_Egg_Field?.Is_Egg.Value is true) //is egg
-            Nickname_Field.Nickname.AsT1.Value = TagUtil.EGG_NICKNAME[Language_Field?.Value ?? Language.English];
-        else
-            Nickname_Field.Nickname.AsT1.Value = pku.Nickname.Value;
+        nicknameField.Value = nickname;
+        return null;
     }
 
-    protected void ProcessEncodedNickname()
+    protected Alert ProcessEncodedNickname(string nickname, IField<BigInteger[]> nicknameField)
     {
-        BAMStringField encodedName = Nickname_Field.Nickname.AsT0;
-
         BigInteger[] name;
         bool nicknameFlag = pku.Nickname_Flag.Value is true;
         Alert alert = null;
-        int dex = TagUtil.GetNationalDexChecked(pku.Species.Value); //must be valid at this point
+
+        string checkedLang = Language_Field?.AsString;
+        bool langDep = DexUtil.CharEncoding.IsLangDependent(FormatName);
+        if (langDep && !Language_Field.IsValid())
+        {
+            checkedLang = TagUtil.DEFAULT_SEMANTIC_LANGUAGE;
+            alert += GetNicknameLangAlert(checkedLang);
+        }
 
         if (!pku.Nickname.IsNull()) //specified
         {
             //name
             bool truncated, invalid;
             AlertType at = AlertType.NONE;
-            (name, truncated, invalid) = DexUtil.CharEncoding.Encode(pku.Nickname.Value, encodedName.Length, FormatName, Language_Field.Value);
+            (name, truncated, invalid) = DexUtil.CharEncoding.Encode(pku.Nickname.Value,
+                nicknameField.Value.Length, FormatName, checkedLang);
             if (truncated)
                 at |= AlertType.TOO_LONG;
             if (invalid)
                 at |= AlertType.INVALID;
-            alert = GetNicknameAlert(at, encodedName.LangDependent, encodedName.Length);
+            alert += GetNicknameAlert(at, DexUtil.CharEncoding.IsLangDependent(FormatName), nicknameField.Value.Length);
 
             //flag
             if (pku.Nickname_Flag.IsNull())
@@ -78,16 +91,12 @@ public interface Nickname_E
         }
         else //unspecified, get default name for given language
         {
-            string defaultName;
-            if (Is_Egg_Field?.Is_Egg.Value is true) //use egg name
-                defaultName = TagUtil.EGG_NICKNAME[Language_Field.Value.Value];
-            else //use default species name
-                defaultName = PokeAPIUtil.GetSpeciesNameTranslated(dex, Language_Field.Value.Value);
-
+            string defaultName = TagUtil.GetDefaultName(pku.Species.Value, Is_Egg_Field?.Is_Egg.Value is true, checkedLang);
             if (Nickname_CapitalizeDefault) //e.g. Gens 1-4 are capitalized by default
                 defaultName = defaultName.ToUpperInvariant();
-            
-            (name, _, _) = DexUtil.CharEncoding.Encode(defaultName, encodedName.Length, FormatName, Language_Field.Value); //species names shouldn't be truncated/invalid...
+
+            //species names shouldn't be truncated/invalid...
+            (name, _, _) = DexUtil.CharEncoding.Encode(defaultName, nicknameField.Value.Length, FormatName, checkedLang);
 
             //flag
             if (pku.Nickname_Flag.IsNull())
@@ -96,17 +105,14 @@ public interface Nickname_E
             if (nicknameFlag)
                 alert += GetNicknameFlagAlert(true, defaultName);
         }
-        encodedName.Value = name;
+        nicknameField.Value = name;
         if (Nickname_Field.Nickname_Flag is not null)
             Nickname_Field.Nickname_Flag.Value = nicknameFlag;
-        Warnings.Add(alert);
+        return alert;
     }
 
 
     public Alert GetNicknameAlert(AlertType at, bool langDep, int? maxChars = null)
-        => GetNicknameAlertBase(at, langDep, maxChars);
-
-    public Alert GetNicknameAlertBase(AlertType at, bool langDep, int? maxChars = null)
     {
         if (at == AlertType.NONE)
             return null;
@@ -124,6 +130,9 @@ public interface Nickname_E
         }
         return msg is not "" ? new("Nickname", msg) : throw InvalidAlertType();
     }
+
+    public Alert GetNicknameLangAlert(string encodingLang)
+        => new("Nickname", $"Language is invalid, encoding the nickname using {encodingLang}.");
 
     protected static Alert GetNicknameFlagAlert(bool flagset, string defaultName = null)
     {

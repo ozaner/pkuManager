@@ -19,7 +19,6 @@ public interface Trash_Bytes_E
 
     public Nickname_O Nickname_Field { get; }
     public Encoded_OT_O OT_Field { get; }
-    public Language_O Language_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass, nameof(Nickname_E.ProcessNickname),
                                                 nameof(Encoded_OT_E.ProcessOT))]
@@ -48,7 +47,7 @@ public interface Trash_Bytes_E
                 at |= AlertType.TOO_LONG;
 
             BigInteger[] trashedStr = new BigInteger[encodedField.Value.Length];
-            BigInteger terminator = DexUtil.CharEncoding.GetTerminator(FormatName, Language_Field.Value);
+            BigInteger terminator = DexUtil.CharEncoding.GetTerminator(FormatName);
             bool terminatorFound = false;
             for (int i = 0; i < encodedField.Value.Length; i++)
             {

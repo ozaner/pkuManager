@@ -87,8 +87,8 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         if (pku.IsEgg())
         {
             //To be seen as legal must have no nickname or a defined language + matching "Egg" nickname.
-            Language? lang = DataUtil.ToEnum<Language>(pku.Game_Info.Language);
-            if (pku.Nickname.IsNull() || lang is not null && TagUtil.EGG_NICKNAME[lang.Value] == pku.Nickname.Value)
+            Language_Field.AsString = pku.Game_Info.Language.Value;
+            if (pku.Nickname.IsNull() || Language_Field.IsValid && TagUtil.EGG_NICKNAME[Language_Field.AsString] == pku.Nickname.Value)
             {
                 Data.UseEggName.ValueAsBool = true;
                 legalGen3Egg = true;
@@ -101,7 +101,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public virtual void ProcessLanguage()
     {
         if (legalGen3Egg)
-            Data.Language.SetAs(Language.Japanese);
+            Language_Field.AsString = "Japanese";
         else
             (this as Language_E).ProcessLanguageBase();
     }
@@ -111,8 +111,8 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public virtual void ProcessNickname()
     {
         if (legalGen3Egg)
-            Data.Nickname.Value = DexUtil.CharEncoding.Encode(TagUtil.EGG_NICKNAME[Language.Japanese],
-                pk3Object.MAX_NICKNAME_CHARS, FormatName, Language.Japanese).encodedStr;
+            Data.Nickname.Value = DexUtil.CharEncoding.Encode(TagUtil.EGG_NICKNAME["Japanese"],
+                pk3Object.MAX_NICKNAME_CHARS, FormatName, "Japanese").encodedStr;
         else
             (this as Nickname_E).ProcessNicknameBase();
     }
@@ -122,12 +122,12 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public virtual void ProcessOT()
     {
         if (legalGen3Egg) //encode legal egg OTs in their proper lang
-            Language_Field.Value = pku.Game_Info.Language.ToEnum<Language>() ?? Language.English;
+            Language_Field.AsString = pku.Game_Info.Language.Value;
 
         (this as Encoded_OT_E).ProcessOTBase();
         
         if (legalGen3Egg) //return legal egg lang back to japanese
-            Language_Field.Value = Language.Japanese;
+            Language_Field.AsString = "Japanese";
     }
 
     // Ability Slot
@@ -324,9 +324,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public Met_Location_O Met_Location_Field => Data;
     public Met_Level_O Met_Level_Field => Data;
     public OT_Gender_O OT_Gender_Field => Data;
-
     public Language_O Language_Field => Data;
-    public Predicate<Language> Language_IsValid => pk3Object.IsValidLang;
 
     public Fateful_Encounter_O Fateful_Encounter_Field => Data;
     public Markings_O Markings_Field => Data;

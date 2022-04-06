@@ -490,9 +490,9 @@ public class pkuBox : Box
     public override Slot CreateSlotInfo(FormatObject pkmn)
     {
         pkuObject pku = pkmn as pkuObject;
-        int? dex = TagUtil.GetNationalDex(pku.Species.Value);
-        Language? lang = pku.Game_Info.Language.ToEnum<Language>();
-        string defaultName = dex.HasValue && lang.HasValue ? PokeAPIUtil.GetSpeciesNameTranslated(dex.Value, lang.Value) : pku.Species.Value;
+        string defaultName = TagUtil.GetDefaultName(pku.Species.Value, pku.IsEgg(), pku.Game_Info.Language.Value)
+            ?? TagUtil.GetDefaultName(pku.Species.Value, pku.IsEgg(), TagUtil.DEFAULT_SEMANTIC_LANGUAGE)
+            ?? pku.Species.Value;
         var sprites = ImageUtil.GetSprites(pku);
         Slot s = new(
             pku,

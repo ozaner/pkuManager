@@ -1,23 +1,20 @@
-﻿using OneOf;
+﻿using pkuManager.Formats.Modules;
+using pkuManager.Formats.Modules.Tags;
 using pkuManager.Utilities;
-using System;
-using System.Numerics;
 
 namespace pkuManager.Formats.Fields.BAMFields;
 
 public class BAMStringField : BAMArrayField, IField<string>
 {
-    protected string FormatName { get; }
-
-    public bool LangDependent { get; }
-    protected OneOf<IField<BigInteger>, Language?> LanguageField { get; }
-    protected Predicate<Language> IsValidLang { get; }
+    protected Language_O Language_Field { get; }
+    protected (string lang, string format) ExplicitLangFormat;
+    protected bool UseLangField;
 
     //string form of Value
     public string ValueAsString
     {
-        get => DexUtil.CharEncoding.Decode(Value, FormatName, GetLanguage()).decodedStr;
-        set => DexUtil.CharEncoding.Encode(value, Length, FormatName, GetLanguage());
+        get => DexUtil.CharEncoding.Decode(Value, GetFormat(), GetLanguage()).decodedStr;
+        set => DexUtil.CharEncoding.Encode(value, Length, GetFormat(), GetLanguage());
     }
 
     string IField<string>.Value
@@ -26,21 +23,24 @@ public class BAMStringField : BAMArrayField, IField<string>
         set => ValueAsString = value;
     }
 
-    protected Language? GetLanguage() => LangDependent ? LanguageField.Match(
-        x => {
-            var y = (Language)x.GetAs<int>();
-            return IsValidLang(y) ? y : null;
-        },
-        x => x
-    ) : null;
+    protected string GetFormat()
+        => UseLangField ? Language_Field.FormatName: ExplicitLangFormat.format;
 
-    public BAMStringField(ByteArrayManipulator bam, int startByte, int byteLength, int length, string formatName,
-        OneOf<IField<BigInteger>, Language?> langField, Predicate<Language> isValidLang)
+    protected string GetLanguage()
+        => UseLangField ? (Language_Field.IsValid ? Language_Field.AsString : TagUtil.DEFAULT_SEMANTIC_LANGUAGE)
+                        : ExplicitLangFormat.lang; //no checking for invalid langs w/ explicit lang
+
+    public BAMStringField(ByteArrayManipulator bam, int startByte, int byteLength, int length, Language_O langField)
         : base(bam, startByte, byteLength, length)
     {
-        LangDependent = true;
-        LanguageField = langField;
-        IsValidLang = isValidLang;
-        FormatName = formatName;
+        Language_Field = langField;
+        UseLangField = true;
+    }
+
+    public BAMStringField(ByteArrayManipulator bam, int startByte, int byteLength, int length, string lang, string format)
+        : base(bam, startByte, byteLength, length)
+    {
+        ExplicitLangFormat = (lang, format);
+        UseLangField = false;
     }
 }

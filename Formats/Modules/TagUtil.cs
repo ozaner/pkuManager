@@ -15,20 +15,22 @@ public static class TagUtil
      * Constants
      * ------------------------------------
     */
+    public const string DEFAULT_SEMANTIC_LANGUAGE = "English";
+
     /// <summary>
-    /// A map from a <see cref="Language"/> to its translation of "Egg".
+    /// A map from a language to its translation of "Egg".
     /// </summary>
-    public static readonly Dictionary<Language, string> EGG_NICKNAME = new()
+    public static readonly Dictionary<string, string> EGG_NICKNAME = new()
     {
-        { Language.Japanese, "タマゴ" },
-        { Language.English, "Egg" },
-        { Language.French, "Œuf" },
-        { Language.Italian, "Uovo" },
-        { Language.German, "Ei" },
-        { Language.Spanish, "Huevo" },
-        { Language.Korean, "알" },
-        { Language.Chinese_Simplified, "蛋" },
-        { Language.Chinese_Traditional, "蛋" },
+        { "Japanese", "タマゴ" },
+        { "English", "Egg" },
+        { "French", "Œuf" },
+        { "Italian", "Uovo" },
+        { "German", "Ei" },
+        { "Spanish", "Huevo" },
+        { "Korean", "알" },
+        { "Chinese Simplified", "蛋" },
+        { "Chinese Traditional", "蛋" },
     };
 
     /// <summary>
@@ -78,6 +80,18 @@ public static class TagUtil
     ///          Null if there is no match.</returns>
     public static string GetSpeciesName(int dex)
         => SPECIES_DEX.SearchDataDex<int?>(dex, "$x", "Indices", "main-series");
+
+    public static string GetDefaultName(string species, bool isEgg, string lang)
+    {
+        int? dex = GetNationalDex(species);
+        EGG_NICKNAME.TryGetValue(lang ?? "", out string eggName);
+        if (isEgg)
+            return eggName;
+        else if (dex.HasValue)
+            return PokeAPIUtil.GetSpeciesNameTranslated(dex.Value, lang);
+        else
+            return null;
+    }
 
 
     /* ------------------------------------
@@ -247,8 +261,6 @@ public static class TagEnums
      * Default Enums
      * ------------------------------------
     */
-    public const Language DEFAULT_LANGUAGE = Language.English;
-
     /// <summary>
     /// The default gender for Pokémon and trainers.
     /// </summary>
@@ -320,69 +332,6 @@ public static class TagEnums
         Male_1_Female_7 = 225,
         All_Female = 254,
         All_Genderless = 255
-    }
-
-    /// <summary>
-    /// An official language a Pokémon can have.
-    /// Index numbers correspond to those used in the official games.
-    /// </summary>
-    public enum Language
-    {
-        /// <summary>
-        /// Unset language ID.<br/>
-        /// Note that Gen 5 Japanese in-game trades use this value. Great...
-        /// </summary>
-        //None = 0,
-
-        /// <summary>
-        /// Japanese (日本語)
-        /// </summary>
-        Japanese = 1,
-
-        /// <summary>
-        /// English (US/UK/AU)
-        /// </summary>
-        English = 2,
-
-        /// <summary>
-        /// French (Français)
-        /// </summary>
-        French = 3,
-
-        /// <summary>
-        /// Italian (Italiano)
-        /// </summary>
-        Italian = 4,
-
-        /// <summary>
-        /// German (Deutsch)
-        /// </summary>
-        German = 5,
-
-        /// <summary>
-        /// Unused language ID reserved for Korean in Gen 3 but never used.
-        /// </summary>
-        //Korean_Gen_3 = 6,
-
-        /// <summary>
-        /// Spanish (Español)
-        /// </summary>
-        Spanish = 7,
-
-        /// <summary>
-        /// Korean (한국어)
-        /// </summary>
-        Korean = 8,
-
-        /// <summary>
-        /// Chinese Simplified (简体中文)
-        /// </summary>
-        Chinese_Simplified = 9,
-
-        /// <summary>
-        /// Chinese Traditional (繁體中文)
-        /// </summary>
-        Chinese_Traditional = 10
     }
 
     /// <summary>

@@ -1,5 +1,4 @@
-﻿using pkuManager.Formats.Modules;
-using PokeApiNet;
+﻿using PokeApiNet;
 using System;
 using System.Threading.Tasks;
 
@@ -13,22 +12,24 @@ public static class PokeAPIUtil
      * Wrapped Info Methods
      * ------------------------------------
     */
-    public static string GetSpeciesNameTranslated(int dex, TagEnums.Language lang)
+    public static string GetSpeciesNameTranslated(int dex, string lang)
     {
         string langID = lang switch
         {
-            TagEnums.Language.Japanese => "ja-Hrkt",
-            TagEnums.Language.English => "en",
-            TagEnums.Language.French => "fr",
-            TagEnums.Language.Italian => "it",
-            TagEnums.Language.German => "de",
-            TagEnums.Language.Spanish => "es",
-            TagEnums.Language.Korean => "ko",
-            TagEnums.Language.Chinese_Simplified => "zh-Hans",
-            TagEnums.Language.Chinese_Traditional => "zh-Hant",
-            _ => throw new ArgumentException("GetSpeciesNameTranslated is missing a language...")
+            "Japanese" => "ja-Hrkt",
+            "English" => "en",
+            "French" => "fr",
+            "Italian" => "it",
+            "German" => "de",
+            "Spanish" => "es",
+            "Korean" => "ko",
+            "Chinese Simplified" => "zh-Hans",
+            "Chinese Traditional" => "zh-Hant",
+            _ => null //invalid lang
         };
 
+        if (langID is null)
+            return null;
         try
         {
             return Task.Run(() => getPokemonSpeciesAsync(dex)).Result.Names.Find(x => x.Language.Name == langID).Name;

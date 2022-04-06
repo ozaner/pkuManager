@@ -30,12 +30,24 @@ public interface Encoded_OT_E
 
     public void ProcessOTBase()
     {
+        Alert alert = null;
+
+        //determine language
+        string checkedLang = Language_Field.AsString;
+        bool langDep = DexUtil.CharEncoding.IsLangDependent(FormatName);
+        if (langDep && !Language_Field.IsValid)
+        {
+            checkedLang = TagUtil.DEFAULT_SEMANTIC_LANGUAGE;
+            alert += GetOTLangAlert(checkedLang);
+        }
+
+        //determine OT
         BigInteger[] otName;
         AlertType at = AlertType.NONE;
         if (!pku.Game_Info.OT.IsNull()) //OT specified
         {
             bool truncated, invalid;
-            (otName, truncated, invalid) = DexUtil.CharEncoding.Encode(pku.Game_Info.OT.Value, OT_Field.OT.Length, FormatName, Language_Field.Value);
+            (otName, truncated, invalid) = DexUtil.CharEncoding.Encode(pku.Game_Info.OT.Value, OT_Field.OT.Length, FormatName, checkedLang);
             if (truncated)
                 at |= AlertType.TOO_LONG;
             if (invalid)
@@ -43,11 +55,14 @@ public interface Encoded_OT_E
         }
         else //OT not specified
         {
-            (otName, _, _) = DexUtil.CharEncoding.Encode(null, OT_Field.OT.Length, FormatName, Language_Field.Value); //blank array
+            (otName, _, _) = DexUtil.CharEncoding.Encode(null, OT_Field.OT.Length, FormatName, checkedLang); //blank array
             at = AlertType.UNSPECIFIED;
         }
+
+        //set value & alert
         OT_Field.OT.Value = otName;
-        Warnings.Add(GetOTAlert(at, OT_Field.OT.LangDependent, OT_Field.OT.Length));
+        alert += GetOTAlert(at, langDep, OT_Field.OT.Length);
+        Warnings.Add(alert);
     }
 
     public static Alert GetOTAlert(AlertType at, bool langDep, int? maxChars = null)
@@ -71,4 +86,7 @@ public interface Encoded_OT_E
         }
         return msg is not "" ? new("OT", msg) : throw InvalidAlertType();
     }
+
+    public Alert GetOTLangAlert(string encodingLang)
+        => new("OT", $"Language is invalid, encoding the OT using {encodingLang}.");
 }

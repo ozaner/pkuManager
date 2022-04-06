@@ -4,7 +4,6 @@ using System.Linq;
 using System;
 using pkuManager.Formats.Fields.BAMFields;
 using System.Numerics;
-using pkuManager.Formats.Modules;
 using pkuManager.Formats.Fields;
 using OneOf;
 using pkuManager.Formats.Fields.LambdaFields;
@@ -77,13 +76,13 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Move
         // Non-Subdata
         PID = new(NonSubData, 0, 4);
         TID = new(NonSubData, 4, 4);
-        Nickname = new(NonSubData, 8, 1, 10, FormatName, Language, IsValidLang);
+        Nickname = new(NonSubData, 8, 1, 10, this);
         Language = new(NonSubData, 18, 1);
         IsBadEgg = new(NonSubData, 19, 0);
         HasSpecies = new(NonSubData, 19, 1);
         UseEggName = new(NonSubData, 19, 2);
         Unused_A = new(NonSubData, 19, 3, 5); //leftover from egg name byte
-        OT = new(NonSubData, 20, 1, 7, FormatName, Language, IsValidLang);
+        OT = new(NonSubData, 20, 1, 7, this);
         Marking_Blue_Circle = new(NonSubData, 27, 0);
         Marking_Blue_Square = new(NonSubData, 27, 1);
         Marking_Blue_Triangle = new(NonSubData, 27, 2);
@@ -323,17 +322,6 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Move
      * ------------------------------------
     */
     /// <summary>
-    /// Determines whether the given langauge exists in pk3.
-    /// </summary>
-    public static bool IsValidLang(Language lang) => lang is
-        TagEnums.Language.Japanese or
-        TagEnums.Language.English or
-        TagEnums.Language.French or
-        TagEnums.Language.Italian or
-        TagEnums.Language.German or
-        TagEnums.Language.Spanish;
-
-    /// <summary>
     /// The maximum number of characters in a .pk3 nickname.<br/>
     /// Note that while the JPN games only display the first 5 of these, they are all stored under the hood.
     /// </summary>
@@ -404,7 +392,7 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Move
     IField<BigInteger> Met_Location_O.Met_Location => Met_Location;
     IField<BigInteger> Met_Level_O.Met_Level => Met_Level;
     OneOf<IField<BigInteger>, IField<Gender>, IField<Gender?>> OT_Gender_O.OT_Gender => OT_Gender;
-    OneOf<IField<BigInteger>, IField<Language>, IField<Language?>> Language_O.Language => Language;
+    OneOf<IField<BigInteger>, IField<string>> Language_O.Language => Language;
     IField<bool> Fateful_Encounter_O.Fateful_Encounter => Fateful_Encounter;
     IField<bool> Is_Egg_O.Is_Egg => Is_Egg;
 
