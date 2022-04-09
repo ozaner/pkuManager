@@ -248,7 +248,7 @@ public class pk3Box : Box
         bool shiny = TagUtil.IsPIDShiny(pk3.PID.GetAs<uint>(), pk3.TID.GetAs<uint>(), false);
         var sprites = ImageUtil.GetSprites(sfa, shiny, pk3.Is_Egg.ValueAsBool);
         Language_O langObj = pk3;
-        string lang = langObj.IsValid ? langObj.AsString : TagUtil.DEFAULT_SEMANTIC_LANGUAGE;
+        string lang = langObj.IsValid() ? langObj.AsString : TagUtil.DEFAULT_SEMANTIC_LANGUAGE;
         return new(
             pk3,
             sprites[0],

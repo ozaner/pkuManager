@@ -88,7 +88,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         {
             //To be seen as legal must have no nickname or a defined language + matching "Egg" nickname.
             Language_Field.AsString = pku.Game_Info.Language.Value;
-            if (pku.Nickname.IsNull() || Language_Field.IsValid && TagUtil.EGG_NICKNAME[Language_Field.AsString] == pku.Nickname.Value)
+            if (pku.Nickname.IsNull() || Language_Field.IsValid() && TagUtil.EGG_NICKNAME[Language_Field.AsString] == pku.Nickname.Value)
             {
                 Data.UseEggName.ValueAsBool = true;
                 legalGen3Egg = true;

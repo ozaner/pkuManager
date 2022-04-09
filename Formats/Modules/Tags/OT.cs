@@ -35,7 +35,7 @@ public interface Encoded_OT_E
         //determine language
         string checkedLang = Language_Field.AsString;
         bool langDep = DexUtil.CharEncoding.IsLangDependent(FormatName);
-        if (langDep && !Language_Field.IsValid)
+        if (langDep && !Language_Field.IsValid())
         {
             checkedLang = TagUtil.DEFAULT_SEMANTIC_LANGUAGE;
             alert += GetOTLangAlert(checkedLang);

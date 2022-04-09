@@ -11,20 +11,29 @@ namespace pkuManager.Formats.Modules.Tags;
 public interface Ball_O
 {
     public OneOf<IField<BigInteger>, IField<string>> Ball { get; }
+    public string FormatName { get; }
+
+    public bool IsValid(string ball) => BALL_DEX.ExistsIn(FormatName, ball);
+    public bool IsValid() => IsValid(AsString);
+
+    public string AsString
+    {
+        get => Ball.Match(
+            x => BALL_DEX.SearchIndexedValue<int?>(x.GetAs<int>(), FormatName, "Indices", "$x"),
+            x => x.Value);
+        set => Ball.Switch(
+            x => x.Value = BALL_DEX.GetIndexedValue<int?>(FormatName, value, "Indices") ?? 0,
+            x => x.Value = value);
+    }
 }
 
 public interface Ball_E : IndexTag_E
 {
     public pkuObject pku { get; }
-    public string FormatName { get; }
-
     public Ball_O Ball_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ProcessBall()
-        => ProcessIndexTag("Ball", pku.Catch_Info.Ball, "Poké Ball", Ball_Field.Ball, true,
-            x => BALL_DEX.ExistsIn(FormatName, x),
-            x => BALL_DEX.GetIndexedValue<int?>(FormatName, x, "Indices") ?? 0,
-            x => BALL_DEX.GetIndexedValue<string>(FormatName, x, "Indices")
-        );
+        => ProcessIndexTag("Ball", pku.Catch_Info.Ball, "Poké Ball", true,
+            Ball_Field.IsValid, x => Ball_Field.AsString = x);
 }

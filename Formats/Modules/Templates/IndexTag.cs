@@ -1,9 +1,7 @@
-﻿using OneOf;
-using pkuManager.Alerts;
+﻿using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using static pkuManager.Alerts.Alert;
 
 namespace pkuManager.Formats.Modules.Templates;
@@ -13,8 +11,7 @@ public interface IndexTag_E
     public List<Alert> Warnings { get; }
 
     protected void ProcessIndexTag(string tagName, IField<string> tag, string defaultVal,
-        OneOf<IField<BigInteger>, IField<string>> formatVal, bool alertIfUnspecified,
-        Predicate<string> isValid, Func<string, int> getIndexInt, Func<string, string> getIndexString)
+        bool alertIfUnspecified, Predicate<string> isValid, Action<string> setIndexField)
     {
         AlertType at = AlertType.NONE;
         string finalVal = defaultVal;
@@ -26,8 +23,7 @@ public interface IndexTag_E
         else //tag unspecified
             at = alertIfUnspecified ? AlertType.UNSPECIFIED : AlertType.NONE;
 
-        formatVal.Switch(x => x.Value = getIndexInt(finalVal),
-                         x => x.Value = getIndexString(finalVal));
+        setIndexField(finalVal);
         Warnings.Add(GetIndexAlert(tagName, at, tag.Value, defaultVal));
     }
 

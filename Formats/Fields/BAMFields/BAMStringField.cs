@@ -27,7 +27,7 @@ public class BAMStringField : BAMArrayField, IField<string>
         => UseLangField ? Language_Field.FormatName: ExplicitLangFormat.format;
 
     protected string GetLanguage()
-        => UseLangField ? (Language_Field.IsValid ? Language_Field.AsString : TagUtil.DEFAULT_SEMANTIC_LANGUAGE)
+        => UseLangField ? (Language_Field.IsValid() ? Language_Field.AsString : TagUtil.DEFAULT_SEMANTIC_LANGUAGE)
                         : ExplicitLangFormat.lang; //no checking for invalid langs w/ explicit lang
 
     public BAMStringField(ByteArrayManipulator bam, int startByte, int byteLength, int length, Language_O langField)
