@@ -176,12 +176,12 @@ public partial class ManagerWindow : Form
         string format = FormatChooser.ChooseImportFormat(false);
         if (format is null)
             return;
-        (pkuObject pku, ImportingWindow.ImportStatus status, string error)
-            = ImportingWindow.RunImportWindow(format, Registry.FORMATS[format], pkuCollectionManager.GetGlobalFlags(), false);
+        (pkuObject pku, PortingWindow.ImportStatus status, string error)
+            = PortingWindow.RunImportWindow(format, Registry.FORMATS[format], pkuCollectionManager.GetGlobalFlags(), false);
         
-        if (status is ImportingWindow.ImportStatus.Success)
+        if (status is PortingWindow.ImportStatus.Success)
             pkuCollectionManager.TryInjectPKMN(pku);
-        else if (status is ImportingWindow.ImportStatus.Invalid_File)
+        else if (status is PortingWindow.ImportStatus.Invalid_File)
             MessageBox.Show(error, "Failed to Import File");
     }
 

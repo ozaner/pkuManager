@@ -38,6 +38,18 @@ public abstract class Porter
     public List<Alert> Notes { get; } = new();
 
     /// <summary>
+    /// A list of warnings to be displayed on the exporter window.<br/>
+    /// A warning is an alert about a value that, generally, requires no input from the user.
+    /// </summary>
+    public List<Alert> Warnings { get; } = new();
+
+    /// <summary>
+    /// A list of errors to be displayed on the exporter window.<br/>
+    /// An error is an alert about a value that, generally, requires input from the user.
+    /// </summary>
+    public List<Alert> Errors { get; } = new();
+
+    /// <summary>
     /// A dictionary that maps a processing phase to all the members of the porter to be run in that phase.<br/>
     /// Initialized in the <see cref="FirstHalf"/> method.
     /// </summary>

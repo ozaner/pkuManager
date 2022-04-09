@@ -13,27 +13,25 @@ public class AlertBox : Panel
     protected Label titleLabel;
     protected RichTextBox messageTextbox;
 
-    protected virtual int boxWidth => 169;
-    protected virtual int boxMaxHeight => 300;
-    protected virtual int textBoxMaxWidth => 155;
-    protected virtual int textBoxMaxHeight => 200;
+    private const int MAGIC_CONST = 25;
+    private const int MAGIC_CONST_2 = 15;
 
     // Creates a new AlertBox (which is just a pre-formatted Panel)
-    public AlertBox(Alert alert)
+    public AlertBox(Alert alert, int containerWidth)
     {
         titleLabel = new();
-        messageTextbox = newRichTextBox(alert.Message);
+        messageTextbox = newRichTextBox(alert.Message, containerWidth - MAGIC_CONST);
 
         Controls.Add(titleLabel);
         Controls.Add(messageTextbox);
 
-        MinimumSize = new(boxWidth, 10); //30 height
-        MaximumSize = new(boxWidth, boxMaxHeight);
+        MinimumSize = new(0, 10); //30 height
+        MaximumSize = new(containerWidth - MAGIC_CONST, 0);
         BorderStyle = BorderStyle.FixedSingle;
         AutoSize = true;
 
         titleLabel.Location = new(4, 4);
-        titleLabel.MaximumSize = new(textBoxMaxWidth, 15);
+        titleLabel.MaximumSize = new(0, 15);
         titleLabel.MinimumSize = new(0, 15);
         titleLabel.Text = alert.Title;
         titleLabel.Font = new(titleLabel.Font, FontStyle.Bold);
@@ -43,36 +41,25 @@ public class AlertBox : Panel
     }
 
     // Creates a textbox formatted to look like a warning/error box
-    protected TextBox newTextBox(string text, int? maxwidth = null, int? maxheight = null)
+    protected static TextBox newTextBox(string text, int alertBoxWidth)
     {
-        if (maxwidth is null) maxwidth = textBoxMaxWidth;
-        if (maxheight is null) maxheight = textBoxMaxHeight;
-
         TextBox tb = new();
         tb.TextChanged += new(textBox_TextChanged);
-        tb.MaximumSize = new(maxwidth.Value, maxheight.Value);
-        tb.MinimumSize = new(maxwidth.Value, 10);
+        tb.MaximumSize = new(alertBoxWidth - MAGIC_CONST_2, 0);
+        tb.MinimumSize = new(alertBoxWidth - MAGIC_CONST_2, 10);
         tb.Text = text;
         tb.Multiline = true;
         tb.BorderStyle = BorderStyle.None;
-        //tb.TabStop = false;
-        //tb.ReadOnly = true;
 
         return tb;
     }
 
     // Creates a richtextbox formatted to look like a warning/error box
-    protected RichTextBox newRichTextBox(string text, int? maxwidth = null, int? maxheight = null)
+    protected static RichTextBox newRichTextBox(string text, int alertBoxWidth)
     {
-        if (maxwidth is null) maxwidth = textBoxMaxWidth;
-        if (maxheight is null) maxheight = textBoxMaxHeight;
-
-        TextBox test = newTextBox(text, maxwidth, maxheight);
+        TextBox test = newTextBox(text, alertBoxWidth);
 
         RichTextBox tb = new();
-        tb.TextChanged += new(textBox_TextChanged);
-        tb.MaximumSize = new(maxwidth.Value, maxheight.Value);
-        tb.MinimumSize = new(maxwidth.Value, 10);
         tb.Text = text;
         tb.BorderStyle = BorderStyle.None;
         tb.TabStop = false;

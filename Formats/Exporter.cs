@@ -1,6 +1,4 @@
-﻿using pkuManager.Alerts;
-using pkuManager.Formats.pku;
-using System.Collections.Generic;
+﻿using pkuManager.Formats.pku;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats;
@@ -11,18 +9,6 @@ namespace pkuManager.Formats;
 /// </summary>
 public abstract class Exporter : Porter
 {
-    /// <summary>
-    /// A list of warnings to be displayed on the exporter window.<br/>
-    /// A warning is an alert about a value that, generally, requires no input from the user.
-    /// </summary>
-    public List<Alert> Warnings { get; } = new();
-
-    /// <summary>
-    /// A list of errors to be displayed on the exporter window.<br/>
-    /// An error is an alert about a value that, generally, requires input from the user.
-    /// </summary>
-    public List<Alert> Errors { get; } = new();
-
     /// <summary>
     /// The base exporter constructor.
     /// </summary>

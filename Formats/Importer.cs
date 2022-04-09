@@ -1,7 +1,6 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.pku;
 using System;
-using System.Collections.Generic;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats;
@@ -17,12 +16,6 @@ public abstract class Importer : Porter
     /// <see langword="false"/> if it is meant to just import it.
     /// </summary>
     public bool CheckInMode { get; }
-
-    /// <summary>
-    /// A list of questions to be displayed on the exporter window.<br/>
-    /// A question is an alert about a value that, generally, requires input from the user.
-    /// </summary>
-    public List<Alert> Questions { get; } = new();
 
     /// <summary>
     /// Reference to the passed file.
@@ -65,7 +58,7 @@ public abstract class Importer : Porter
             new("Don't Include", null)
         });
         TrueOTResolver = new(rba, pku.True_OT, (Func<string>)(() => rba.Choices[0].TextEntry), (string)null);
-        Questions.Add(rba);
+        Errors.Add(rba);
     }
 
     // TrueOT ErrorResolver

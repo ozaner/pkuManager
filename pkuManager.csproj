@@ -51,8 +51,8 @@
     <None Remove="resources\pk4\**" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="GUI\NoteBox.cs">
-      <SubType>Component</SubType>
+    <Compile Update="GUI\PortingWindow.cs">
+      <SubType>Form</SubType>
     </Compile>
     <Compile Update="GUI\AlertBox.cs">
       <SubType>Component</SubType>
@@ -67,9 +67,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
-    <Compile Update="ImportingWindow.cs">
-      <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>

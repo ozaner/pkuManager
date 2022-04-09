@@ -13,7 +13,7 @@ public class RadioAlertBox : AlertBox
     protected List<RadioButton> radioButtons = new();
 
     // Creates an AlertBox with n RadioButtons for getting xor input form the user. Should be used for error boxes.
-    public RadioAlertBox(RadioButtonAlert alert) : base(alert)
+    public RadioAlertBox(RadioButtonAlert alert, int containerWidth) : base(alert, containerWidth)
     {
         // define positional variables
         int xOffset = messageTextbox.Location.X;
