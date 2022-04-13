@@ -145,16 +145,14 @@ public interface PID_E
             string choice2msg = "";
             foreach ((string name, object a, object b) in tags)
             {
-                choice1msg += $"{name}: {a}{DataUtil.Newline()}";
-                choice2msg += $"{name}: {b}{DataUtil.Newline()}";
+                choice1msg = choice1msg.AddNewLine($"{name}: {a}");
+                choice2msg = choice2msg.AddNewLine($"{name}: {b}");
             }
-            choice1msg = choice1msg[0..^1];
-            choice2msg = choice2msg[0..^1];
             RadioButtonAlert.RBAChoice[] choices =
             {
-                    new("Use original PID", choice1msg),
-                    new("Generate new PID", choice2msg)
-                };
+                new("Use original PID", choice1msg),
+                new("Generate new PID", choice2msg)
+            };
 
             return new RadioButtonAlert("PID-Mismatch", "This pku's PID is incompatible with some of its other " +
                 "tags (in this format). Choose whether to keep the PID or generate a compatible one.", choices);

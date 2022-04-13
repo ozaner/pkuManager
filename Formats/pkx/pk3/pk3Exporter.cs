@@ -22,7 +22,7 @@ namespace pkuManager.Formats.pkx.pk3;
 public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E,
                            Gender_E, Nickname_E, Experience_E, Moves_E, PP_Ups_E, PP_E, Item_E,
                            Nature_E, Friendship_E, PID_E, TID_E, IVs_E, EVs_E, Contest_Stats_E,
-                           Ball_E, Encoded_OT_E, Origin_Game_E, Met_Location_E, Met_Level_E,
+                           Ball_E, OT_E, Origin_Game_E, Met_Location_E, Met_Level_E,
                            OT_Gender_E, Language_E, Fateful_Encounter_E, Markings_E, Ribbons_E,
                            Is_Egg_E, Pokerus_E, Trash_Bytes_E, ByteOverride_E
 {
@@ -100,10 +100,10 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessIs_Egg))]
     public virtual void ProcessLanguage()
     {
+        (this as Language_E).ProcessLanguageBase();
+
         if (legalGen3Egg)
             Language_Field.AsString = "Japanese";
-        else
-            (this as Language_E).ProcessLanguageBase();
     }
 
     // Nickname [Requires: Language]
@@ -124,7 +124,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         if (legalGen3Egg) //encode legal egg OTs in their proper lang
             Language_Field.AsString = pku.Game_Info.Language.Value;
 
-        (this as Encoded_OT_E).ProcessOTBase();
+        (this as OT_E).ProcessOTBase();
         
         if (legalGen3Egg) //return legal egg lang back to japanese
             Language_Field.AsString = "Japanese";
@@ -229,6 +229,9 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     public ErrorResolver<BigInteger> Experience_Resolver { get; set; }
     public ErrorResolver<BigInteger> PID_Resolver { get; set; }
+    public ErrorResolver<BigInteger> Language_Resolver { get; set; }
+    public ErrorResolver<BigInteger[]> Nickname_Resolver { get; set; }
+    public ErrorResolver<BigInteger[]> OT_Resolver { get; set; }
     public Action ByteOverride_Action { get; set; }
 
 
@@ -320,11 +323,13 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public Origin_Game_O Origin_Game_Field => Data;
     public string Origin_Game_Name { get; set; } // Game Name (string form of Origin Game)
 
-    public Encoded_OT_O OT_Field => Data;
+    public OT_O OT_Field => Data;
     public Met_Location_O Met_Location_Field => Data;
     public Met_Level_O Met_Level_Field => Data;
     public OT_Gender_O OT_Gender_Field => Data;
+
     public Language_O Language_Field => Data;
+    public RadioButtonAlert Language_DependencyError { get; set; }
 
     public Fateful_Encounter_O Fateful_Encounter_Field => Data;
     public Markings_O Markings_Field => Data;

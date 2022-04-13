@@ -28,6 +28,8 @@ public static class DexUtil
     public static T ReadDataDex<T>(this JObject dex, params string[] keys)
     {
         JObject temp = dex;
+        if (keys?.Length is 0)
+            return dex.ToObject<T>();
         for (int i = 0; i < keys.Length; i++)
         {
             //null isn't a valid key
@@ -114,6 +116,18 @@ public static class DexUtil
         if (arr is null)
             return false;
         return Array.Exists(arr, x => x.EqualsCaseInsensitive(format));
+    }
+
+    public static string[] AllExistsIn(this JObject dex, string format, params string[] keys)
+    {
+        JObject jobj = ReadDataDex<JObject>(dex, keys);
+        List<string> finalList = new();
+        foreach (var x in jobj)
+        {
+            if (dex.ExistsIn(format, keys.Append(x.Key).ToArray()))
+                finalList.Add(x.Key);
+        }
+        return finalList.ToArray();
     }
 
     // Common GetIndex code, that allows inner looping of keys (e.g. species combos) and outer looping of formats (e.g. pk3 -> main-series)

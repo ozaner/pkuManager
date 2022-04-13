@@ -18,16 +18,17 @@ public interface Trash_Bytes_E
     public List<Alert> Warnings { get; }
 
     public Nickname_O Nickname_Field { get; }
-    public Encoded_OT_O OT_Field { get; }
+    public OT_O OT_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass, nameof(Nickname_E.ProcessNickname),
-                                                nameof(Encoded_OT_E.ProcessOT))]
+                                                nameof(OT_E.ProcessOT))]
     public void ProcessTrash_Bytes()
     {
         BAMStringField encodedNickname = Nickname_Field.Nickname.AsT0;
+        BAMStringField encodedOT = OT_Field.OT.AsT0;
 
         AlertType atName = ProcessTrash_BytesSingle(encodedNickname, pku.Trash_Bytes.Nickname);
-        AlertType atOT = ProcessTrash_BytesSingle(OT_Field.OT, pku.Trash_Bytes.OT);
+        AlertType atOT = ProcessTrash_BytesSingle(encodedOT, pku.Trash_Bytes.OT);
 
         Alert alert = GetTrashAlert(atName, "Nickname") + GetTrashAlert(atOT, "OT");
         Warnings.Add(alert);

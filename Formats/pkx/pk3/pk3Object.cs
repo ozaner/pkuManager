@@ -19,7 +19,7 @@ namespace pkuManager.Formats.pkx.pk3;
 /// </summary>
 public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Moves_O, PP_Ups_O,
                          PP_O, Item_O, PID_O, TID_O, Friendship_O, IVs_O, EVs_O, Contest_Stats_O,
-                         Ball_O, Encoded_OT_O, Origin_Game_O, Met_Location_O, Met_Level_O, OT_Gender_O,
+                         Ball_O, OT_O, Origin_Game_O, Met_Location_O, Met_Level_O, OT_Gender_O,
                          Language_O, Fateful_Encounter_O, Markings_O, Ribbons_O, Is_Egg_O, Pokerus_O,
                          ByteOverride_O
 {
@@ -388,6 +388,7 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Move
     IField<BigInteger[]> EVs_O.EVs => EVs;
     IField<BigInteger[]> Contest_Stats_O.Contest_Stats => Contest_Stats;
     OneOf<IField<BigInteger>, IField<string>> Ball_O.Ball => Ball;
+    OneOf<BAMStringField, IField<string>> OT_O.OT => OT;
     IField<BigInteger> Origin_Game_O.Origin_Game => Origin_Game;
     IField<BigInteger> Met_Location_O.Met_Location => Met_Location;
     IField<BigInteger> Met_Level_O.Met_Level => Met_Level;

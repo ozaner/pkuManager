@@ -275,6 +275,13 @@ public static class DataUtil
 
     public static bool IsEmpty(this string str) => !(str?.Length > 0);
 
+    public static string AddNewLine(this string str, string strA)
+    {
+        if (str?.Length > 0)
+            str += Newline();
+        return str + strA;
+    }
+
 
     /* ------------------------------------
      * Value Type Methods
