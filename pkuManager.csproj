@@ -54,12 +54,9 @@
     <Compile Update="GUI\PortingWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="GUI\AlertBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="GUI\RadioAlertBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Update="GUI\AlertBox.cs" />
+    <Compile Update="GUI\ComboAlertBox.cs" />
+    <Compile Update="GUI\RadioAlertBox.cs" />
     <Compile Update="GUI\BoxDisplay.cs">
       <SubType>Component</SubType>
     </Compile>

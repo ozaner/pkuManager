@@ -119,7 +119,7 @@ public interface PID_E
 
         //set values
         PID_Resolver = new(alert, PID_Field.PID, pids);
-        if (alert is RadioButtonAlert)
+        if (alert is ChoiceAlert)
             Errors.Add(alert);
         else
             Warnings.Add(alert);
@@ -145,14 +145,14 @@ public interface PID_E
                 choice1msg = choice1msg.AddNewLine($"{name}: {a}");
                 choice2msg = choice2msg.AddNewLine($"{name}: {b}");
             }
-            RadioButtonAlert.RBAChoice[] choices =
+            ChoiceAlert.SingleChoice[] choices =
             {
                 new("Use original PID", choice1msg),
                 new("Generate new PID", choice2msg)
             };
 
-            return new RadioButtonAlert("PID-Mismatch", "This pku's PID is incompatible with some of its other " +
-                "tags (in this format). Choose whether to keep the PID or generate a compatible one.", choices);
+            return new ChoiceAlert("PID-Mismatch", "This pku's PID is incompatible with some of its other " +
+                "tags (in this format). Choose whether to keep the PID or generate a compatible one.", choices, true);
         }
 
         // PID Alert

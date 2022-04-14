@@ -39,7 +39,7 @@ public interface Language_E : IndexTag_E
     public List<Alert> Errors { get; }
 
     public Language_O Language_Field { get; }
-    public RadioButtonAlert Language_DependencyError { get => null; set { } }
+    public ChoiceAlert Language_DependencyError { get => null; set { } }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportLanguage() => ExportLanguageBase();
@@ -60,8 +60,8 @@ public interface Language_E : IndexTag_E
             if (defChoice == -1)
                 defChoice = 0;
 
-            RadioButtonAlert alert = GetLanguageDependencyAlert(lang is null ? AlertType.UNSPECIFIED
-                                                                             : AlertType.INVALID, langs, defChoice);
+            ChoiceAlert alert = GetLanguageDependencyAlert(lang is null ? AlertType.UNSPECIFIED
+                                                                        : AlertType.INVALID, langs, defChoice);
             Language_Resolver = new(alert, Language_Field.Language.AsT0, choices); //Assume all lang dep formats are encoded.
             Language_DependencyError = alert;
             Errors.Add(alert);
@@ -76,11 +76,11 @@ public interface Language_E : IndexTag_E
     [PorterDirective(ProcessingPhase.SecondPass)]
     public ErrorResolver<BigInteger> Language_Resolver { get => null; set { } }
 
-    public static RadioButtonAlert GetLanguageDependencyAlert(AlertType at, string[] langs, int defChoice)
+    public static ChoiceAlert GetLanguageDependencyAlert(AlertType at, string[] langs, int defChoice)
     {
-        RadioButtonAlert.RBAChoice[] choices = new RadioButtonAlert.RBAChoice[langs.Length];
+        ChoiceAlert.SingleChoice[] choices = new ChoiceAlert.SingleChoice[langs.Length];
         for (int i = 0; i < langs.Length; i++)
-            choices[i] = new RadioButtonAlert.RBAChoice(langs[i] ?? "None", "");
+            choices[i] = new ChoiceAlert.SingleChoice(langs[i] ?? "None", "");
 
         string msg = "Some text values in this format require a language, but this pku's language is ";
         if (at.HasFlag(AlertType.INVALID))
@@ -91,6 +91,6 @@ public interface Language_E : IndexTag_E
             throw InvalidAlertType(at);
         msg += ". Please choose a language:";
 
-        return new("Language Encoding", msg, choices, defChoice);
+        return new("Language Encoding", msg, choices, false, defChoice);
     }
 }

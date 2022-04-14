@@ -39,8 +39,17 @@ public partial class PortingWindow : Form
             foreach (Alert a in list)
             {
                 if (a is not null)
-                    panel.Controls.Add(a is RadioButtonAlert rba ? new RadioAlertBox(rba, panel.Width)
-                                                                 : new AlertBox(a, panel.Width));
+                {
+                    AlertBox ab;
+                    if (a is ChoiceAlert ca)
+                    {
+                        ab = ca.UsesRadioButtons ? new RadioAlertBox(ca, panel.Width)
+                                                 : new ComboAlertBox(ca, panel.Width);
+                    }
+                    else
+                        ab = new AlertBox(a, panel.Width);
+                    panel.Controls.Add(ab);
+                }
             }
         }
     }

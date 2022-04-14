@@ -269,13 +269,13 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         string msg = $"This {pkmn} was not met in a fateful encounter. " +
             $"Note that, in the Gen 3 games, {pkmn} will only obey the player if it was met in a fateful encounter.";
 
-        RadioButtonAlert.RBAChoice[] choices =
+        ChoiceAlert.SingleChoice[] choices =
         {
             new("Keep Fateful Encounter",$"Fateful Encounter: false\n{pkmn} won't obey."),
             new("Set Fateful Encounter",$"Fateful Encounter: true\n{pkmn} will obey.")
         };
 
-        return new RadioButtonAlert("Fateful Encounter", msg, choices);
+        return new ChoiceAlert("Fateful Encounter", msg, choices, true);
     }
 
 
@@ -324,7 +324,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public OT_Gender_O OT_Gender_Field => Data;
 
     public Language_O Language_Field => Data;
-    public RadioButtonAlert Language_DependencyError { get; set; }
+    public ChoiceAlert Language_DependencyError { get; set; }
 
     public Fateful_Encounter_O Fateful_Encounter_Field => Data;
     public Markings_O Markings_Field => Data;

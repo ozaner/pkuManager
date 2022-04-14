@@ -17,7 +17,7 @@ public interface StringTag_E
     public List<Alert> Warnings { get; }
 
     public Language_O Language_Field => null;
-    public RadioButtonAlert Language_DependencyError => null;
+    public ChoiceAlert Language_DependencyError => null;
 
     public ErrorResolver<BigInteger[]> ExportString(string tagName, string str,
         OneOf<BAMStringField, IField<string>> field) => ExportString(tagName, x => str, field);

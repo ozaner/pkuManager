@@ -52,11 +52,11 @@ public abstract class Importer : Porter
     [PorterDirective(ProcessingPhase.FirstPass)]
     protected virtual void AskTrueOT()
     {
-        RadioButtonAlert rba = new("True OT", "Do you want to include a True OT on this pku?", new RadioButtonAlert.RBAChoice[]
+        ChoiceAlert rba = new("True OT", "Do you want to include a True OT on this pku?", new ChoiceAlert.SingleChoice[]
         {
             new("Include True OT:", null, true),
             new("Don't Include", null)
-        });
+        }, true);
         TrueOTResolver = new(rba, pku.True_OT, (Func<string>)(() => rba.Choices[0].TextEntry), (string)null);
         Errors.Add(rba);
     }

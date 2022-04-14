@@ -14,7 +14,7 @@ public class ErrorResolver<T>
     /// The RadioButtonAlert that this ErrorResolver will decide it's value based on.<br/>
     /// Null if any other type of alert was passed.
     /// </summary>
-    protected RadioButtonAlert rba;
+    protected ChoiceAlert rba;
 
     /// <summary>
     /// Functions that return the values of the different choices the <see cref="rba"/> contains.
@@ -32,14 +32,14 @@ public class ErrorResolver<T>
     /// <param name="alert">The relevant alert.</param>
     /// <param name="options">An array of values, or functions that return values, coresponding to
     ///                       the <paramref name="alert"/>.<br/> Should only have one value if
-    ///                       <paramref name="alert"/> is not a <see cref="RadioButtonAlert"/>.</param>
+    ///                       <paramref name="alert"/> is not a <see cref="ChoiceAlert"/>.</param>
     /// <param name="field">A function that sets a value to the desired property.</param>
     public ErrorResolver(Alert alert, IField<T> field, params OneOf<T, Func<T>>[] options)
     {
         Options = options;
         Field = field;
 
-        if (alert is RadioButtonAlert rba)
+        if (alert is ChoiceAlert rba)
         {
             this.rba = rba;
             if (rba.Choices.Length != options.Length)

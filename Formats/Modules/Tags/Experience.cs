@@ -71,7 +71,7 @@ public interface Experience_E
         BigInteger[] options = expFromLevel is null ? new BigInteger[] { exp }
                                                     : new BigInteger[] { exp, expFromLevel.Value };
         Experience_Resolver = new(alert, Experience_Field.Experience, options);
-        if (alert is RadioButtonAlert)
+        if (alert is ChoiceAlert)
             Errors.Add(alert);
         else
             Warnings.Add(alert);
@@ -112,7 +112,7 @@ public interface Experience_E
             if (mismatchData is null)
                 throw new ArgumentNullException(nameof(mismatchData), $"{nameof(mismatchData)} must be given for MISMATCH alerts.");
 
-            RadioButtonAlert.RBAChoice[] choices = new RadioButtonAlert.RBAChoice[2];
+            ChoiceAlert.SingleChoice[] choices = new ChoiceAlert.SingleChoice[2];
 
             // Deal with phrasing the level option
             choices[0] = new("Use Level Tag", mismatchData.Value.atLevel switch
@@ -133,7 +133,7 @@ public interface Experience_E
             });
 
             //put 2 options together
-            return new RadioButtonAlert("Level/Experience", "The given level and experience don't match, choose which one to use.", choices);
+            return new ChoiceAlert("Level/Experience", "The given level and experience don't match, choose which one to use.", choices, true);
         }
 
         //other alerts
