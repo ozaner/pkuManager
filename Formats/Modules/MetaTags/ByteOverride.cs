@@ -26,7 +26,7 @@ public interface ByteOverride_E
 
     // Processing
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessByteOverride()
+    public void ApplyByteOverride()
     {
         List<Action> validCommands = new();
         List<int> invalidIndices = new();

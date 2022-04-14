@@ -13,7 +13,7 @@ public interface EnumTag_E
 {
     public List<Alert> Warnings { get; }
 
-    protected void ProcessEnumTag<T>(string tagName, IField<string> tag, T? defaultVal,
+    protected void ExportEnumTag<T>(string tagName, IField<string> tag, T? defaultVal,
         OneOf<IField<BigInteger>, IField<T>, IField<T?>> formatVal, bool alertIfUnspecified,
         Func<AlertType, string, string, Alert> alertFunc, Predicate<T> isValid = null) where T : struct, Enum
     {

@@ -19,9 +19,9 @@ public interface PP_E
     public PP_Ups_O PP_Ups_Field { get; }
     public int[] Moves_Indices { get; }
 
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(Moves_E.ProcessMoves),
-                                                nameof(PP_Ups_E.ProcessPP_Ups))]
-    public void ProcessPP()
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(Moves_E.ExportMoves),
+                                                nameof(PP_Ups_E.ExportPP_Ups))]
+    public void ExportPP()
     {
         int[] pp = new int[4];
         for (int i = 0; i < Moves_Indices.Length; i++)

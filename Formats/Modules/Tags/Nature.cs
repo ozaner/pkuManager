@@ -34,8 +34,8 @@ public interface Nature_E : EnumTag_E
     public Nature_O Nature_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessNature()
-        => ProcessEnumTag("Nature", pku.Nature, Nature_Field.Nature.IsT2 ? null : DEFAULT_NATURE,
+    public void ExportNature()
+        => ExportEnumTag("Nature", pku.Nature, Nature_Field.Nature.IsT2 ? null : DEFAULT_NATURE,
             Nature_Field.Nature, true, GetNatureAlert);
 
     public Alert GetNatureAlert(AlertType at, string val, string defaultVal)

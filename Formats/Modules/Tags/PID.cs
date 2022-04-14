@@ -34,12 +34,9 @@ public interface PID_E
     public bool PID_NatureDependent => false;
 
     // PID [Requires: Gender, Form, Nature, TID] [ErrorResolver]
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(TID_E.ProcessTID), nameof(Gender_E.ProcessGender),
-                                                nameof(Form_E.ProcessForm), nameof(Nature_E.ProcessNature))]
-    public virtual void ProcessPID()
-        => ProcessPIDBase();
-
-    public void ProcessPIDBase()
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(TID_E.ExportTID), nameof(Gender_E.ExportGender),
+                                                nameof(Form_E.ExportForm), nameof(Nature_E.ExportNature))]
+    public void ExportPID()
     {
         uint checkedTID = TID_Field.TID.GetAs<uint>();
         Gender? checkedGender = PID_GenderDependent ? Gender_Field.Value : null;

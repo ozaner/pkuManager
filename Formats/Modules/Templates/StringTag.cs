@@ -19,10 +19,10 @@ public interface StringTag_E
     public Language_O Language_Field => null;
     public RadioButtonAlert Language_DependencyError => null;
 
-    public ErrorResolver<BigInteger[]> ProcessString(string tagName, string str,
-        OneOf<BAMStringField, IField<string>> field) => ProcessString(tagName, x => str, field);
+    public ErrorResolver<BigInteger[]> ExportString(string tagName, string str,
+        OneOf<BAMStringField, IField<string>> field) => ExportString(tagName, x => str, field);
 
-    public ErrorResolver<BigInteger[]> ProcessString(string tagName, Func<string, string> valueFromLang,
+    public ErrorResolver<BigInteger[]> ExportString(string tagName, Func<string, string> valueFromLang,
         OneOf<BAMStringField, IField<string>> field)
     {
         if (Language_DependencyError is null) //valid lang/not lang dep

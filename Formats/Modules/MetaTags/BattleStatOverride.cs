@@ -15,7 +15,7 @@ public interface BattleStatOverride_E
     public List<Alert> Notes { get; }
 
     [PorterDirective(ProcessingPhase.PreProcessing)]
-    public void ProcessBattleStatOverride()
+    public void ApplyBattleStatOverride()
     {
         if (GlobalFlags.Battle_Stat_Override)
         {

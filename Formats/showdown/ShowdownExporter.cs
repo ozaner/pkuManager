@@ -44,8 +44,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
      * ------------------------------------
     */
     // Nickname
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessNickname()
+    public void ExportNickname()
     {
         // Notes:
         //  - Practically no character limit
@@ -53,14 +52,14 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
         //  - Empty nickname interpreted as no nickname
         //  - Leading spaces are ignored
 
-        (this as Nickname_E).ProcessNicknameBase();
+        (this as Nickname_E).ExportNicknameBase();
         if (Data.Nickname.Value?.Length > 0 && Data.Nickname.Value[0] is ' ') //if first character is a space
             Warnings.Add(GetNicknameAlert());
     }
 
     // PP Ups
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(Moves_E.ProcessMoves))]
-    public void ProcessPP_Ups()
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(Moves_E.ExportMoves))]
+    public void ExportPP_Ups()
     {
         bool invalid = false;
         foreach(var id in Moves_Indices)
@@ -87,7 +86,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     {
         Alert a = (this as Nature_E).GetNatureAlertBase(at, val, defaultVal);
         if (at.HasFlag(AlertType.UNSPECIFIED))
-            a.Message += " (Showdown treats no nature as Serious).";
+            a.Message += " (Showdown treats a blank nature as Serious).";
         return a;
     }
 

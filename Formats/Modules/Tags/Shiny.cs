@@ -14,6 +14,6 @@ public interface Shiny_E : BooleanTag_E
     public Shiny_O Shiny_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessShiny()
-        => ProcessBooleanTag("Shiny", pku.Shiny, Shiny_Field.Shiny, false, false);
+    public void ExportShiny()
+        => ExportBooleanTag("Shiny", pku.Shiny, Shiny_Field.Shiny, false, false);
 }

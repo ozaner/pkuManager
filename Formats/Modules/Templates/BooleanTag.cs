@@ -11,7 +11,7 @@ public interface BooleanTag_E
     public pkuObject pku { get; }
     public List<Alert> Warnings { get; }
 
-    protected void ProcessBooleanTag(string tagName, IField<bool?> pkuVal,
+    protected void ExportBooleanTag(string tagName, IField<bool?> pkuVal,
         IField<bool> formatVal, bool defaultVal, bool alertIfUnspecified)
     {
         (bool checkedVal, AlertType at) = pkuVal.Value switch

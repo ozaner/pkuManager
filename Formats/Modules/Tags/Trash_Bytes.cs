@@ -20,21 +20,21 @@ public interface Trash_Bytes_E
     public Nickname_O Nickname_Field { get; }
     public OT_O OT_Field { get; }
 
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(Nickname_E.ProcessNickname),
-                                                nameof(OT_E.ProcessOT))]
-    public void ProcessTrash_Bytes()
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(Nickname_E.ExportNickname),
+                                                nameof(OT_E.ExportOT))]
+    public void ExportTrash_Bytes()
     {
         BAMStringField encodedNickname = Nickname_Field.Nickname.AsT0;
         BAMStringField encodedOT = OT_Field.OT.AsT0;
 
-        AlertType atName = ProcessTrash_BytesSingle(encodedNickname, pku.Trash_Bytes.Nickname);
-        AlertType atOT = ProcessTrash_BytesSingle(encodedOT, pku.Trash_Bytes.OT);
+        AlertType atName = ExportTrash_BytesSingle(encodedNickname, pku.Trash_Bytes.Nickname);
+        AlertType atOT = ExportTrash_BytesSingle(encodedOT, pku.Trash_Bytes.OT);
 
         Alert alert = GetTrashAlert(atName, "Nickname") + GetTrashAlert(atOT, "OT");
         Warnings.Add(alert);
     }
 
-    protected AlertType ProcessTrash_BytesSingle<T>(T encodedField, IField<BigInteger[]> trashField)
+    protected AlertType ExportTrash_BytesSingle<T>(T encodedField, IField<BigInteger[]> trashField)
         where T : IField<BigInteger[]>, IBoundable<BigInteger>
     {
         if (!trashField.IsNull())

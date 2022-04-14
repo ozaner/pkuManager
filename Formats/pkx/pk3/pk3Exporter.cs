@@ -70,18 +70,16 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
      * ------------------------------------
     */
     // Species
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    public virtual void ProcessSpecies()
+    public virtual void ExportSpecies()
     {
-        (this as Species_E).ProcessSpeciesBase();
+        (this as Species_E).ExportSpeciesBase();
         Data.HasSpecies.ValueAsBool = true;
     }
 
-    // Egg [Requires: Origin Game]
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(Origin_Game_E.ProcessOrigin_Game))]
-    public virtual void ProcessIs_Egg()
+    // Egg
+    public virtual void ExportIs_Egg()
     {
-        (this as Is_Egg_E).ProcessIs_EggBase();
+        (this as Is_Egg_E).ExportIs_EggBase();
 
         //Deal with "Legal Gen 3 eggs"
         if (pku.IsEgg())
@@ -96,35 +94,33 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         }
     }
 
-    // Language [Requires: Egg]
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessIs_Egg))]
-    public virtual void ProcessLanguage()
+    // Language
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(ExportIs_Egg))]
+    public virtual void ExportLanguage()
     {
-        (this as Language_E).ProcessLanguageBase();
+        (this as Language_E).ExportLanguageBase();
 
         if (legalGen3Egg)
             Language_Field.AsString = "Japanese";
     }
 
-    // Nickname [Requires: Language]
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessLanguage))]
-    public virtual void ProcessNickname()
+    // Nickname
+    public virtual void ExportNickname()
     {
         if (legalGen3Egg)
             Data.Nickname.Value = DexUtil.CharEncoding.Encode(TagUtil.EGG_NICKNAME["Japanese"],
                 pk3Object.MAX_NICKNAME_CHARS, FormatName, "Japanese").encodedStr;
         else
-            (this as Nickname_E).ProcessNicknameBase();
+            (this as Nickname_E).ExportNicknameBase();
     }
 
-    // OT [Requires: Language]
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessLanguage))]
-    public virtual void ProcessOT()
+    // OT
+    public virtual void ExportOT()
     {
         if (legalGen3Egg) //encode legal egg OTs in their proper lang
             Language_Field.AsString = pku.Game_Info.Language.Value;
 
-        (this as OT_E).ProcessOTBase();
+        (this as OT_E).ExportOTBase();
         
         if (legalGen3Egg) //return legal egg lang back to japanese
             Language_Field.AsString = "Japanese";
@@ -132,7 +128,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     // Ability Slot
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public virtual void ProcessAbilitySlot()
+    public virtual void ExportAbilitySlot()
     {
         int getGen3AbilityID(string name)
             => ABILITY_DEX.GetIndexedValue<int?>(FormatName, name, "Indices").Value; //must have an ID
@@ -166,8 +162,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     }
 
     // Ribbons
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    public virtual void ProcessRibbons()
+    public virtual void ExportRibbons()
     {
         HashSet<Ribbon> ribbons = pku.Ribbons.ToEnumSet<Ribbon>(); //get ribbon list
 
@@ -199,12 +194,12 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         Data.Smart_Ribbon_Rank.SetAs(pk3Object.GetRibbonRank(Ribbon.Smart_G3, ribbons));
         Data.Tough_Ribbon_Rank.SetAs(pk3Object.GetRibbonRank(Ribbon.Tough_G3, ribbons));
 
-        (this as Ribbons_E).ProcessRibbonsBase(); //Process other ribbons
+        (this as Ribbons_E).ExportRibbonsBase(); //Process other ribbons
     }
 
-    // Fateful Encounter [ErrorResolver]
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(ProcessSpecies))]
-    public virtual void ProcessFateful_Encounter()
+    // Fateful Encounter
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(ExportSpecies))]
+    public virtual void ExportFateful_Encounter()
     {
         int speciesIndex = Data.Species.GetAs<int>();
 
@@ -216,7 +211,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
             Errors.Add(alert);
         }
         else
-            (this as Fateful_Encounter_E).ProcessFateful_EncounterBase();
+            (this as Fateful_Encounter_E).ExportFateful_EncounterBase();
     }
 
 

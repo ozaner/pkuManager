@@ -26,7 +26,7 @@ public interface Moves_E
     public int[] Moves_Indices { set; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessMoves()
+    public void ExportMoves()
     {
         List<int> moveIndices = new(); //indices in pku
         int[] moveIDsInt = new int[4]; //index numbers for format

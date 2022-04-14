@@ -19,11 +19,11 @@ public interface OT_E : StringTag_E
     public pkuObject pku { get; }
     public OT_O OT_Field { get; }
 
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(Language_E.ProcessLanguage))]
-    public void ProcessOT() => ProcessOTBase();
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(Language_E.ExportLanguage))]
+    public void ExportOT() => ExportOTBase();
 
-    public void ProcessOTBase()
-        => OT_Resolver = ProcessString("OT", pku.Game_Info.OT.Value, OT_Field.OT);
+    public void ExportOTBase()
+        => OT_Resolver = ExportString("OT", pku.Game_Info.OT.Value, OT_Field.OT);
 
     [PorterDirective(ProcessingPhase.SecondPass)]
     public ErrorResolver<BigInteger[]> OT_Resolver { get => null; set { } }

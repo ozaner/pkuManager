@@ -33,7 +33,7 @@ public interface Item_E : IndexTag_E
     public Item_O Item_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessItem()
-        => ProcessIndexTag("Item", pku.Item, "None", false,
+    public void ExportItem()
+        => ExportIndexTag("Item", pku.Item, "None", false,
             Item_Field.IsValid, x => Item_Field.AsString = x);
 }

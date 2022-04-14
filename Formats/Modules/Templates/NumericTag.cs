@@ -12,7 +12,7 @@ public interface NumericTag_E
     public pkuObject pku { get; }
     public List<Alert> Warnings { get; }
 
-    protected void ProcessNumericTag(string tagName, IField<BigInteger?> pkuVal,
+    protected void ExportNumericTag(string tagName, IField<BigInteger?> pkuVal,
         IField<BigInteger> formatVal, BigInteger defaultVal, bool alertIfUnspecified)
     {
         (BigInteger? max, BigInteger? min) = formatVal is IBoundable<BigInteger> boundable ?

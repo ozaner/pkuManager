@@ -38,9 +38,7 @@ public interface Gender_E
     public bool Gender_PIDDependent => false;
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessGender() => ProcessGenderBase();
-
-    public void ProcessGenderBase()
+    public void ExportGender()
     {
         AlertType at = AlertType.NONE;
         Gender? readGender = pku.Gender.ToEnum<Gender>();

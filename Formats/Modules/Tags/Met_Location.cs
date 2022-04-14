@@ -23,8 +23,8 @@ public interface Met_Location_E
     public Met_Location_O Met_Location_Field { get; }
     public string Origin_Game_Name { get; }
 
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(Origin_Game_E.ProcessOrigin_Game))]
-    public void ProcessMet_Location()
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(Origin_Game_E.ExportOrigin_Game))]
+    public void ExportMet_Location()
     {
         //override game for met location
         string checkedGameName = pku.Catch_Info.Met_Game_Override.Value ?? Origin_Game_Name;

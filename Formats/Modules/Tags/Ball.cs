@@ -33,7 +33,7 @@ public interface Ball_E : IndexTag_E
     public Ball_O Ball_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessBall()
-        => ProcessIndexTag("Ball", pku.Catch_Info.Ball, "Poké Ball", true,
+    public void ExportBall()
+        => ExportIndexTag("Ball", pku.Catch_Info.Ball, "Poké Ball", true,
             Ball_Field.IsValid, x => Ball_Field.AsString = x);
 }

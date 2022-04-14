@@ -12,7 +12,7 @@ public interface RelatedNumericTag_E
     public pkuObject pku { get; }
     public List<Alert> Warnings { get; }
 
-    protected void ProcessRelatedNumericTag(string tagName, string[] subTagNames, IField<BigInteger?>[] pkuVals,
+    protected void ExportRelatedNumericTag(string tagName, string[] subTagNames, IField<BigInteger?>[] pkuVals,
         IField<BigInteger>[] formatVals, BigInteger[] defaultVals, bool alertIfUnspecified)
     {
         Alert a = null;

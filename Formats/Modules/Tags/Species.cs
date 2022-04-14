@@ -23,9 +23,9 @@ public interface Species_E
     public Species_O Species_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessSpecies() => ProcessSpeciesBase();
+    public void ExportSpecies() => ExportSpeciesBase();
 
-    public void ProcessSpeciesBase() => Species_Field.Species.Switch(
+    public void ExportSpeciesBase() => Species_Field.Species.Switch(
         x => x.SetAs(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, "Indices").Value), //int index
         x => x.Value = DexUtil.GetSpeciesIndexedValue<string>(pku, FormatName, "Indices") //string index
     );

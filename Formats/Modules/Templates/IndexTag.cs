@@ -10,7 +10,7 @@ public interface IndexTag_E
 {
     public List<Alert> Warnings { get; }
 
-    protected void ProcessIndexTag(string tagName, IField<string> tag, string defaultVal,
+    protected void ExportIndexTag(string tagName, IField<string> tag, string defaultVal,
         bool alertIfUnspecified, Predicate<string> isValid, Action<string> setIndexField)
     {
         AlertType at = AlertType.NONE;

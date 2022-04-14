@@ -34,7 +34,7 @@ public interface Ability_E : IndexTag_E
     public string Ability_Default => "None";
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessAbility()
-        => ProcessIndexTag("Ability", pku.Ability, Ability_Default, true,
+    public void ExportAbility()
+        => ExportIndexTag("Ability", pku.Ability, Ability_Default, true,
             Ability_Field.IsValid, x => Ability_Field.AsString = x);
 }

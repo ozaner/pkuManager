@@ -120,10 +120,10 @@ public interface Ribbons_E : MultiEnumTag_E
     public Ribbons_O Ribbons_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessRibbons() => ProcessRibbonsBase();
+    public void ExportRibbons() => ExportRibbonsBase();
 
-    public void ProcessRibbonsBase()
-        => ProcessMultiEnumTag(GetMapping(), pku.Ribbons.ToEnumSet<Ribbon>());
+    public void ExportRibbonsBase()
+        => ExportMultiEnumTag(GetMapping(), pku.Ribbons.ToEnumSet<Ribbon>());
 
     private Dictionary<Ribbon, IField<bool>> GetMapping() => new()
     {

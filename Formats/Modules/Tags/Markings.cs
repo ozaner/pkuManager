@@ -34,8 +34,8 @@ public interface Markings_E : MultiEnumTag_E
     public Markings_O Markings_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessMarkings()
-        => ProcessMultiEnumTag(GetMapping(), pku.Markings.ToEnumSet<Marking>());
+    public void ExportMarkings()
+        => ExportMultiEnumTag(GetMapping(), pku.Markings.ToEnumSet<Marking>());
 
     private Dictionary<Marking, IField<bool>> GetMapping() => new()
     {

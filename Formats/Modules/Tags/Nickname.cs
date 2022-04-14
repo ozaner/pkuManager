@@ -21,11 +21,11 @@ public interface Nickname_E : StringTag_E
     public Is_Egg_O Is_Egg_Field => null;
     public bool Nickname_CapitalizeDefault => false;
 
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(Language_E.ProcessLanguage),
-                                                nameof(Is_Egg_E.ProcessIs_Egg))]
-    public void ProcessNickname() => ProcessNicknameBase();
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(Language_E.ExportLanguage),
+                                                nameof(Is_Egg_E.ExportIs_Egg))]
+    public void ExportNickname() => ExportNicknameBase();
 
-    public void ProcessNicknameBase()
+    public void ExportNicknameBase()
     {
         string GetNickname(string lang)
         {
@@ -40,7 +40,7 @@ public interface Nickname_E : StringTag_E
                 nickname = pku.Nickname.Value;
             return nickname;
         }
-        Nickname_Resolver = ProcessString("Nickname", GetNickname, Nickname_Field.Nickname);
+        Nickname_Resolver = ExportString("Nickname", GetNickname, Nickname_Field.Nickname);
     }
 
     [PorterDirective(ProcessingPhase.SecondPass)]

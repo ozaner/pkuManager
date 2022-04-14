@@ -15,6 +15,6 @@ public interface TID_E : NumericTag_E
     public TID_O TID_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessTID()
-        => ProcessNumericTag("TID", pku.Game_Info.TID, TID_Field.TID, 0, false);
+    public void ExportTID()
+        => ExportNumericTag("TID", pku.Game_Info.TID, TID_Field.TID, 0, false);
 }

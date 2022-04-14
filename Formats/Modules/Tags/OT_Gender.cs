@@ -23,8 +23,8 @@ public interface OT_Gender_E : EnumTag_E
     public bool OT_Gender_AlertIfUnspecified => true;
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessOT_Gender()
-        => ProcessEnumTag("OT Gender", pku.Game_Info.Gender, OT_Gender_Default, OT_Gender_Field.OT_Gender,
+    public void ExportOT_Gender()
+        => ExportEnumTag("OT Gender", pku.Game_Info.Gender, OT_Gender_Default, OT_Gender_Field.OT_Gender,
             OT_Gender_AlertIfUnspecified, GetOT_GenderAlert, x => x is Gender.Male or Gender.Female);
 
     protected static Alert GetOT_GenderAlert(AlertType at, string val, string defaultVal)

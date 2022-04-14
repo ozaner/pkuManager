@@ -13,7 +13,7 @@ public interface MultiNumericTag_E
 {
     public List<Alert> Warnings { get; }
 
-    protected void ProcessMultiNumericTag(string tagName, string[] subTagNames, IField<BigInteger?>[] pkuVals,
+    protected void ExportMultiNumericTag(string tagName, string[] subTagNames, IField<BigInteger?>[] pkuVals,
         IField<BigInteger[]> formatVals, BigInteger defaultVal, bool alertIfUnspecified)
     {
         AlertType[] valAlerts = new AlertType[pkuVals.Length];

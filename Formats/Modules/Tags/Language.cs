@@ -42,9 +42,9 @@ public interface Language_E : IndexTag_E
     public RadioButtonAlert Language_DependencyError { get => null; set { } }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessLanguage() => ProcessLanguageBase();
+    public void ExportLanguage() => ExportLanguageBase();
 
-    public void ProcessLanguageBase()
+    public void ExportLanguageBase()
     {
         string lang = pku.Game_Info.Language.Value;
         bool langDep = DexUtil.CharEncoding.IsLangDependent(FormatName);
@@ -68,7 +68,7 @@ public interface Language_E : IndexTag_E
         }
         else //independent lang
         {
-            ProcessIndexTag("Language", pku.Game_Info.Language, "None", true,
+            ExportIndexTag("Language", pku.Game_Info.Language, "None", true,
                 Language_Field.IsValid, x => Language_Field.AsString = x);
         }
     }

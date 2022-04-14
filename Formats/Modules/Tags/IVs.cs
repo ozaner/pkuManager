@@ -20,6 +20,6 @@ public interface IVs_E : MultiNumericTag_E
     public bool IVs_AlertIfUnspecified => true;
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessIVs()
-        => ProcessMultiNumericTag("IVs", TagUtil.STAT_NAMES, pku.IVs_Array, IVs_Field.IVs, IVs_Default, IVs_AlertIfUnspecified);
+    public void ExportIVs()
+        => ExportMultiNumericTag("IVs", TagUtil.STAT_NAMES, pku.IVs_Array, IVs_Field.IVs, IVs_Default, IVs_AlertIfUnspecified);
 }

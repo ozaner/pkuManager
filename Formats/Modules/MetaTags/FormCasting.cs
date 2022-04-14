@@ -15,7 +15,7 @@ public interface FormCasting_E
     public List<Alert> Notes { get; }
 
     [PorterDirective(ProcessingPhase.PreProcessing)]
-    public void ProcessFormCasting()
+    public void ApplyFormCasting()
     {
         string form = DexUtil.FirstFormInFormat(pku, FormatName, true, GlobalFlags.Default_Form_Override);
         if (form is null)

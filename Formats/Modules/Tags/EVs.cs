@@ -18,6 +18,6 @@ public interface EVs_E : MultiNumericTag_E
     public EVs_O EVs_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessEVs()
-        => ProcessMultiNumericTag("EVs", TagUtil.STAT_NAMES, pku.EVs_Array, EVs_Field.EVs, 0, false);
+    public void ExportEVs()
+        => ExportMultiNumericTag("EVs", TagUtil.STAT_NAMES, pku.EVs_Array, EVs_Field.EVs, 0, false);
 }

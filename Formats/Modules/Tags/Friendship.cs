@@ -16,6 +16,6 @@ public interface Friendship_E : NumericTag_E
     public int Friendship_Default => 0;
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessFriendship()
-        => ProcessNumericTag("Friendship", pku.Friendship, Friendship_Field.Friendship, Friendship_Default, false);
+    public void ExportFriendship()
+        => ExportNumericTag("Friendship", pku.Friendship, Friendship_Field.Friendship, Friendship_Default, false);
 }

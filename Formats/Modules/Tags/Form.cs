@@ -23,9 +23,7 @@ public interface Form_E
     public Form_O Form_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessForm() => ProcessFormBase();
-
-    public void ProcessFormBase()
+    public void ExportForm()
     {
         Form_Field.Form.Switch(
             x => x.SetAs(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, "Form Indices").Value), //int index

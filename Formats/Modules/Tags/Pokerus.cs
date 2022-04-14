@@ -17,8 +17,8 @@ public interface Pokerus_E : RelatedNumericTag_E
 
     // Pokérus
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ProcessPokerus()
-        => ProcessRelatedNumericTag("Pokérus", new[] { "Pokérus strain", "Pokérus days" },
+    public void ExportPokerus()
+        => ExportRelatedNumericTag("Pokérus", new[] { "Pokérus strain", "Pokérus days" },
             new[] { pku.Pokerus.Strain, pku.Pokerus.Days },
             new[] { Pokerus_Field.Pokerus_Strain, Pokerus_Field.Pokerus_Days }, new BigInteger[] { 0, 0 }, false);
 }
