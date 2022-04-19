@@ -59,6 +59,8 @@ public class pk3Collection : FileCollection
     public override int BoxCount => 14;
     public override string Name => $"{OT.ValueAsString}'s PC";
 
+    public bool IsJapanese { get; protected set; }
+
     public pk3Collection(string filename) : base(filename) { }
 
     protected override bool DetermineValidity()
@@ -123,8 +125,8 @@ public class pk3Collection : FileCollection
         //  International games pad OT with 0xFF's while JPN OTs end in two 0x00's
         //  This is the best we got...
         //  Note: Can't differentiate English from other international langs.
-        string lang = BAM.Get<ushort>(trainerInfoAddress + 0x0000 + pk3Object.MAX_OT_CHARS - 2)
-            is 0 ? "Japanese" : "English"; 
+        IsJapanese = BAM.Get<ushort>(trainerInfoAddress + 0x0000 + pk3Object.MAX_OT_CHARS - 2) is 0;
+        string lang = IsJapanese ? "Japanese" : "English"; 
 
         //Init fields
         OT = new(BAM, trainerInfoAddress + 0x0000, 1, pk3Object.MAX_OT_CHARS, lang, FormatName);
@@ -163,7 +165,7 @@ public class pk3Collection : FileCollection
     }
 
     protected override pk3Box CreateBox(int boxID)
-        => new(boxID, UnshuffledPCBAM);
+        => new(boxID, UnshuffledPCBAM, IsJapanese);
 }
 
 public class pk3Box : Box
@@ -179,13 +181,15 @@ public class pk3Box : Box
     // pk3Box vars
     protected ByteArrayManipulator UnshuffledPCBAM;
     protected int BoxID;
+    protected bool IsJapanese;
 
 
     // pk3Box methods
-    public pk3Box(int boxID, ByteArrayManipulator unshuffledPCBAM)
+    public pk3Box(int boxID, ByteArrayManipulator unshuffledPCBAM, bool isJapanese)
     {
         BoxID = boxID;
         UnshuffledPCBAM = unshuffledPCBAM;
+        IsJapanese = isJapanese;
     }
 
     //indexing: 1-30
@@ -216,6 +220,8 @@ public class pk3Box : Box
     public override Slot CreateSlotInfo(FormatObject pkmn)
     {
         pk3Object pk3 = pkmn as pk3Object;
+        
+        //get form
         int form = pk3.Species.GetAs<int>() switch
         {
             210 => TagUtil.GetUnownFormIDFromPID(pk3.PID.GetAs<uint>()),
@@ -229,9 +235,8 @@ public class pk3Box : Box
             _ => 0
         };
 
-        //assume gender is male to get gender ratio
+        //get SFA
         DexUtil.SFA sfa = DexUtil.GetSFAFromIndices<int?>("pk3", pk3.Species.GetAs<int>(), form, false);
-
         if (sfa.Species is not null)
         {
             //get gender ratio
@@ -244,17 +249,35 @@ public class pk3Box : Box
             sfa = DexUtil.GetSFAFromIndices<int?>("pk3", pk3.Species.GetAs<int>(), form, female);
         }
 
-        //get other info
-        bool shiny = TagUtil.IsPIDShiny(pk3.PID.GetAs<uint>(), pk3.TID.GetAs<uint>(), false);
-        var sprites = ImageUtil.GetSprites(sfa, shiny, pk3.Is_Egg.ValueAsBool);
+        //get lang
         Language_O langObj = pk3;
         string lang = langObj.IsValid() ? langObj.AsString : TagUtil.DEFAULT_SEMANTIC_LANGUAGE;
+
+        //get nickname
+        string nick;
+        nick = DexUtil.CharEncoding.Decode(pk3.Nickname.Value, "pk3", lang).decodedStr;
+        if (pk3.IsBadEggOrInvalidChecksum) //bad eggs
+        {
+            TagUtil.BAD_EGG_NICKNAME.TryGetValue(lang, out string badEggName);
+            nick = badEggName.ToUpperInvariant();
+        }
+        else if (pk3.UseEggName.ValueAsBool) //egg name override (not necessarily eggs)
+        {
+            lang = IsJapanese ? "Japanese" : "English";
+            TagUtil.EGG_NICKNAME.TryGetValue(lang, out string eggName);
+            nick = eggName.ToUpperInvariant();
+        }
+
+        //get sprites
+        bool shiny = TagUtil.IsPIDShiny(pk3.PID.GetAs<uint>(), pk3.TID.GetAs<uint>(), false);
+        var sprites = ImageUtil.GetSprites(sfa, shiny, pk3.Is_Egg.ValueAsBool || pk3.IsBadEggOrInvalidChecksum);
+
         return new(
             pk3,
             sprites[0],
             sprites[1],
             sprites[2],
-            DexUtil.CharEncoding.Decode(pk3.Nickname.Value, "pk3", lang).decodedStr,
+            nick,
             sfa.Species,
             GAME_DEX.SearchIndexedValue<int?>(pk3.Origin_Game.GetAs<int>(), "pk3", "Indices", "$x"),
             DexUtil.CharEncoding.Decode(pk3.OT.Value, "pk3", lang).decodedStr,

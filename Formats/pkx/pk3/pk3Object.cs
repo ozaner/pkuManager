@@ -78,7 +78,7 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Move
         TID = new(NonSubData, 4, 4);
         Nickname = new(NonSubData, 8, 1, 10, this);
         Language = new(NonSubData, 18, 1);
-        IsBadEgg = new(NonSubData, 19, 0);
+        Is_Bad_Egg = new(NonSubData, 19, 0);
         HasSpecies = new(NonSubData, 19, 1);
         UseEggName = new(NonSubData, 19, 2);
         Unused_A = new(NonSubData, 19, 3, 5); //leftover from egg name byte
@@ -146,7 +146,7 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Move
     */
     public override byte[] ToFile()
     {
-        UpdateChecksum(); // Calculate Checksum
+        Checksum.SetAs(CalculateChecksum()); // update checksum
         return BAM.ByteArray;
     }
 
@@ -155,7 +155,7 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Move
 
     public byte[] ToEncryptedFile()
     {
-        UpdateChecksum(); // Calculate Checksum
+        Checksum.SetAs(CalculateChecksum()); // update checksum
         ByteArrayManipulator subData = GetEncryptedSubData(); // Encryption Step
 
         // PC .pk3 file is an 80 byte data structure
@@ -181,7 +181,7 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Move
     public BAMIntegralField TID { get; }
     public BAMStringField Nickname { get; }
     public BAMIntegralField Language { get; }
-    public BAMBoolField IsBadEgg { get; }
+    public BAMBoolField Is_Bad_Egg { get; }
     public BAMBoolField HasSpecies { get; }
     public BAMBoolField UseEggName { get; }
     public BAMIntegralField Unused_A { get; }
@@ -266,14 +266,14 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Move
      * ------------------------------------
     */
     /// <summary>
-    /// Calculates the checksum of the 4 sub-blocks, and sets it to <see cref="Checksum"/>.
+    /// Calculates the checksum of the 4 sub-blocks.
     /// </summary>
-    protected void UpdateChecksum()
+    protected uint CalculateChecksum()
     {
         ushort checksum = 0;
         for (int i = 0; i < SUBDATA_SIZE / 2; i++)
             checksum += BAM.Get<ushort>(NON_SUBDATA_SIZE + i * 2);
-        Checksum.SetAs(checksum);
+        return checksum;
     }
 
     protected void ApplyXOR(ByteArrayManipulator subData)
@@ -368,6 +368,9 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Move
         Ribbon.Winning or Ribbon.Victory or Ribbon.Artist or Ribbon.Effort or 
         Ribbon.Battle_Champion or Ribbon.Regional_Champion or Ribbon.National_Champion or 
         Ribbon.Country or Ribbon.National or Ribbon.Earth or Ribbon.World;
+
+    public bool IsBadEggOrInvalidChecksum
+        => Is_Bad_Egg.ValueAsBool || Checksum.Value != CalculateChecksum();
 
 
     /* ------------------------------------

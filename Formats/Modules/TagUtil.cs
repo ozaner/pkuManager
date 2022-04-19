@@ -34,6 +34,22 @@ public static class TagUtil
     };
 
     /// <summary>
+    /// A map from a language to its translation of "Bad Egg".
+    /// </summary>
+    public static readonly Dictionary<string, string> BAD_EGG_NICKNAME = new()
+    {
+        { "Japanese", "ダメタマゴ" },
+        { "English", "Bad Egg" },
+        { "French", "Mauv. Œuf" },
+        { "Italian", "Uovo peste" },
+        { "German", "Schl. Ei" },
+        { "Spanish", "Huevo malo" },
+        { "Korean", "불량알" },
+        { "Chinese Simplified", "坏蛋" }, //unofficial, but probably what it would be
+        { "Chinese Traditional", "坏蛋" },
+    };
+
+    /// <summary>
     /// A list of the 6 official Pokémon stats' names in canonical order.
     /// </summary>
     public static readonly string[] STAT_NAMES = new[]
