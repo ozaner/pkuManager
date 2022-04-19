@@ -31,7 +31,7 @@ public static class Registry
     public static readonly Dictionary<string, FormatInfo> FORMATS = new()
     {
         { "pku", new FormatInfo("pku", null, null, null, typeof(pkuCollection)) },
-        { "pk3", new FormatInfo("pk3", "sav", null, typeof(pk3Exporter), typeof(pk3Collection)) }, //typeof(pk3Importer) not ready yet
+        { "pk3", new FormatInfo("pk3", "sav", typeof(pk3Importer), typeof(pk3Exporter), typeof(pk3Collection)) },
         { "Showdown", new FormatInfo("txt", null, null, typeof(ShowdownExporter), null, true) }
     };
 

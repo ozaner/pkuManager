@@ -50,6 +50,16 @@ public abstract class Porter
     public List<Alert> Errors { get; } = new();
 
     /// <summary>
+    /// Whether this porter is clear to use FirstHalf. Should be set on construction.
+    /// </summary>
+    public bool CanPort { get; protected set; }
+
+    /// <summary>
+    /// Why this porter cannot be run, or null if <see cref="CanPort"/> is true. Should be set on construction.
+    /// </summary>
+    public string Reason { get; protected set; }
+
+    /// <summary>
     /// A dictionary that maps a processing phase to all the members of the porter to be run in that phase.<br/>
     /// Initialized in the <see cref="FirstHalf"/> method.
     /// </summary>
@@ -65,13 +75,6 @@ public abstract class Porter
         this.pku = pku ?? throw new ArgumentException("Can't initialize an exporter with a null .pku!");
         GlobalFlags = globalFlags;
     }
-
-    /// <summary>
-    /// Determines whether or not the given file can be ported to the desired format, and a reason why if it cannot.
-    /// </summary>
-    /// <returns>A 2-tuple of a bool of whether the port is possible and a string with a reason why if it can't.<br/>
-    ///          The string is <see langword="null"/> if a) is <see langword="true"/>.</returns>
-    public abstract (bool canPort, string reason) CanPort();
 
     /// <summary>
     /// Initializes the <see cref="PorterDirectiveMap"/> with all the members in this<br/>
@@ -171,11 +174,11 @@ public abstract class Porter
     /// <summary>
     /// The first half of the exporting process. Runs the <see cref="ProcessingPhase.FormatOverride"/>, 
     /// <see cref="ProcessingPhase.PreProcessing"/> and <see cref="ProcessingPhase.FirstPass"/> phases.<br/>
-    /// Should only be run if <see cref="CanPort"/> returns true.
+    /// Should only be run if <see cref="CanPort"/> is true.
     /// </summary>
     public void FirstHalf()
     {
-        if (!CanPort().canPort)
+        if (!CanPort)
             throw new Exception("This .pku can't be exported to this format! This should not have happened...");
 
         InitPorterDirectiveMap(); //get all PorterDirectives

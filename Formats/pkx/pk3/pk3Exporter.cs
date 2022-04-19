@@ -33,22 +33,20 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     /// to a .pk3 file with the given <paramref name="globalFlags"/>.
     /// </summary>
     /// <inheritdoc cref="Exporter(pkuObject, GlobalFlags, FormatObject)"/>
-    public pk3Exporter(pkuObject pku, GlobalFlags globalFlags) : base(pku, globalFlags) { }
-
-    protected override pk3Object Data { get; } = new();
-
-    public override (bool canPort, string reason) CanPort()
+    public pk3Exporter(pkuObject pku, GlobalFlags globalFlags) : base(pku, globalFlags)
     {
         // Screen Species & Form
         if (DexUtil.FirstFormInFormat(pku, FormatName, true, GlobalFlags.Default_Form_Override) is null)
-            return (false, "Must be a species & form that exists in Gen 3.");
-
+            Reason = "Must be a species & form that exists in Gen 3.";
+        
         // Screen Shadow Pokemon
-        if (pku.IsShadow())
-            return (false, "Cannot be a Shadow Pokémon.");
+        else if (pku.IsShadow())
+            Reason = "This format doesn't support Shadow Pokémon.";
 
-        return (true, null); //compatible with .pk3
+        CanPort = Reason is null;
     }
+
+    protected override pk3Object Data { get; } = new();
 
 
     /* ------------------------------------

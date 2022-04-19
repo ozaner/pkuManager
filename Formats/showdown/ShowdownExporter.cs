@@ -23,19 +23,21 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     /// to a .txt (Showdown!) file, encoded in UTF-8, with the given <paramref name="globalFlags"/>.
     /// </summary>
     /// <inheritdoc cref="Exporter(pkuObject, GlobalFlags, FormatObject)"/>
-    public ShowdownExporter(pkuObject pku, GlobalFlags globalFlags) : base(pku, globalFlags) { }
-
-    public override (bool, string) CanPort()
+    public ShowdownExporter(pkuObject pku, GlobalFlags globalFlags) : base(pku, globalFlags)
     {
         // Screen Species & Form
         if (DexUtil.FirstFormInFormat(pku, FormatName, true, GlobalFlags.Default_Form_Override) is null)
-            return (false, "Must be a species & form that exists in Showdown.");
+            Reason = "Must be a species & form that exists in Showdown.";
 
-        //Showdown doesn't support eggs (they can't exactly battle...).
-        if (pku.IsEgg())
-            return (false, "Cannot be an Egg.");
+        // Screen Shadow Pokemon
+        else if (pku.IsShadow())
+            Reason = "This format doesn't support Shadow Pokémon.";
 
-        return (true, null);
+        //Showdown doesn't support eggs (they can't exactly battle...)
+        else if (pku.IsEgg())
+            Reason = "Cannot be an Egg.";
+
+        CanPort = Reason is null;
     }
 
 

@@ -92,9 +92,8 @@ public partial class PortingWindow : Form
 
         Importer importer = (Importer)Activator.CreateInstance(fi.Importer, file, flags, checkInMode);
 
-        (bool canPort, string reason) = importer.CanPort();
-        if (!canPort) //file is invalid for this format
-            return (null, ImportStatus.Invalid_File, reason);
+        if (!importer.CanPort) //file is invalid for this format
+            return (null, ImportStatus.Invalid_File, importer.Reason);
 
         importer.FirstHalf(); //importer calculates what needs to be added to alert lists
         importerWindow.PopulateAlerts(importer.Warnings, importer.Errors, importer.Notes); //add these to the importerWindow
@@ -167,7 +166,7 @@ public partial class PortingWindow : Form
     public static bool CanExport(Registry.FormatInfo fi, pkuObject pku, GlobalFlags flags)
     {
         Exporter exporter = (Exporter)Activator.CreateInstance(fi.Exporter, new object[] { pku.DeepCopy(), flags });
-        return exporter.CanPort().canPort;
+        return exporter.CanPort;
     }
 
     // Sets up and opens the warning window, or just auto accepts if there are no warnings, errors, or notes
@@ -178,7 +177,7 @@ public partial class PortingWindow : Form
         PortingWindow exporterWindow = new(false, format, fi.Ext);
         Exporter exporter = (Exporter)Activator.CreateInstance(fi.Exporter, new object[] { pku.DeepCopy(), flags });
 
-        if (!exporter.CanPort().canPort) //pku is invalid for this format
+        if (!exporter.CanPort) //pku is invalid for this format
         {
             //should never get here because only valid formats should have been called...
             Debug.WriteLine($"Export failed, pku is invalid for this format.");
