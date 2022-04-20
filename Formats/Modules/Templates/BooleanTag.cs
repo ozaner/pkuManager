@@ -30,3 +30,14 @@ public interface BooleanTag_E
         _ => throw InvalidAlertType(at)
     };
 }
+
+public interface BooleanTag_I
+{
+    protected void ImportBooleanTag(string tagName, IField<bool?> pkuVal, IField<bool> formatVal, bool explicitFalse)
+    {
+        if (!explicitFalse && !formatVal.Value)
+            pkuVal.Value = null;
+        else
+            pkuVal.Value = formatVal.Value;
+    }
+}
