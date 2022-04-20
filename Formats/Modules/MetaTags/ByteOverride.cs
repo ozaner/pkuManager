@@ -93,6 +93,18 @@ public interface ByteOverride_E
     }
 }
 
+public static class ByteOverride_I
+{
+    public static Alert AddByteOverrideCMD(string tag, ByteOverrideCMD cmd, IDictionary<string, JToken> cmds)
+    {
+        cmds.Add(cmd.ToString(), JToken.FromObject(cmd.Value.Value));
+        return GetByteOverrideAlert(tag);
+    }
+
+    public static Alert GetByteOverrideAlert(string tag)
+        => new(tag, $"The {tag} value is invalid, an override will be added for this format.");
+}
+
 public class ByteOverrideCMD
 {
     public bool IsBitType { get; }
