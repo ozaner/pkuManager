@@ -2,6 +2,9 @@
 using OneOf;
 using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
+using pkuManager.Formats.Fields.BAMFields;
+using pkuManager.Formats.Modules.MetaTags;
+using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
@@ -31,21 +34,21 @@ public interface IndexTag_E
 {
     public List<Alert> Warnings { get; }
 
-    protected void ExportIndexTag(string tagName, IField<string> tag, string defaultVal,
+    protected void ExportIndexTag(string tagName, IField<string> pkuTag, string defaultVal,
         bool alertIfUnspecified, Predicate<string> isValid, Action<string> setIndexField)
     {
         AlertType at = AlertType.NONE;
         string finalVal = defaultVal;
 
-        if (!tag.IsNull() && isValid(tag.Value)) //tag specified & exists
-            finalVal = tag.Value;
-        else if (!tag.IsNull()) //tag specified & DNE
+        if (!pkuTag.IsNull() && isValid(pkuTag.Value)) //tag specified & exists
+            finalVal = pkuTag.Value;
+        else if (!pkuTag.IsNull()) //tag specified & DNE
             at = AlertType.INVALID;
         else //tag unspecified
             at = alertIfUnspecified ? AlertType.UNSPECIFIED : AlertType.NONE;
 
         setIndexField(finalVal);
-        Warnings.Add(GetIndexAlert(tagName, at, tag.Value, defaultVal));
+        Warnings.Add(GetIndexAlert(tagName, at, pkuTag.Value, defaultVal));
     }
 
     protected static Alert GetIndexAlert(string tagName, AlertType at, string val, string defaultVal) => at switch
@@ -55,4 +58,19 @@ public interface IndexTag_E
         AlertType.INVALID => new(tagName, $"The {tagName.ToLowerInvariant()} \"{val}\" is not supported by this format, using the default: {defaultVal ?? "None"}."),
         _ => throw InvalidAlertType(at)
     };
+}
+
+public interface IndexTag_I
+{
+    public pkuObject pku { get; }
+    public List<Alert> Warnings { get; }
+
+    protected void ImportIndexTag(string tagName, IField<string> pkuTag, bool isValid, string asString, IField<BigInteger> encodedField)
+    {
+        if (isValid) //valid
+            pkuTag.Value = asString;
+        else if (encodedField is IByteOverridable bf) //invalid encoded language, add to byte override
+            Warnings.Add(ByteOverride_I.AddByteOverrideCMD(tagName, bf.GetOverride(), pku.Byte_Override));
+        //first two cases didn't work. invalid string value? no string override yet...
+    }
 }

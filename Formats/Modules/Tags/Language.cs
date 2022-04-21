@@ -27,14 +27,9 @@ public interface Language_O : IndexTag_O
     }
 }
 
-public interface Language_E : IndexTag_E
+public interface Language_E : Language_P, IndexTag_E
 {
     public pkuObject pku { get; }
-    public string FormatName { get; }
-    public List<Alert> Errors { get; }
-
-    public Language_O Language_Field { get; }
-    public ChoiceAlert Language_DependencyError { get => null; set { } }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportLanguage() => ExportLanguageBase();
@@ -45,39 +40,79 @@ public interface Language_E : IndexTag_E
         bool langDep = DexUtil.CharEncoding.IsLangDependent(FormatName);
         if (langDep && !Language_Field.IsValid(lang)) //invalid lang w/ dependency
         {
-            string[] langs = LANGUAGE_DEX.AllExistsIn(FormatName).Append(null).ToArray();
-            BigInteger[] choices = new BigInteger[langs.Length];
+            string[] langs = InitLangDepError(lang is null ? AlertType.UNSPECIFIED : AlertType.INVALID);
+            BigInteger[] langsEnc = new BigInteger[langs.Length];
             for (int i = 0; i < langs.Length; i++)
-                choices[i] = LANGUAGE_DEX.GetIndexedValue<int?>(FormatName, langs[i], "Indices") ?? 0;
-            
-            //get default choice
-            int defChoice = Array.IndexOf(langs, TagUtil.DEFAULT_SEMANTIC_LANGUAGE);
-            if (defChoice == -1)
-                defChoice = 0;
+                langsEnc[i] = LANGUAGE_DEX.GetIndexedValue<int?>(FormatName, langs[i], "Indices") ?? 0;
 
-            ChoiceAlert alert = GetLanguageDependencyAlert(lang is null ? AlertType.UNSPECIFIED
-                                                                        : AlertType.INVALID, langs, defChoice);
-            Language_Resolver = new(alert, Language_Field.Language.AsT0, choices); //Assume all lang dep formats are encoded.
-            Language_DependencyError = alert;
-            Errors.Add(alert);
+            //Assume all lang dep formats are encoded.
+            Language_Resolver = new(Language_DependencyError, Language_Field.Language.AsT0, langsEnc);
         }
-        else //independent lang
-        {
+        else
             ExportIndexTag("Language", pku.Game_Info.Language, "None", true,
                 Language_Field.IsValid, x => Language_Field.AsString = x);
-        }
     }
 
     [PorterDirective(ProcessingPhase.SecondPass)]
     public ErrorResolver<BigInteger> Language_Resolver { get => null; set { } }
+}
 
-    public static ChoiceAlert GetLanguageDependencyAlert(AlertType at, string[] langs, int defChoice)
+public interface Language_I : Language_P, IndexTag_I
+{
+    [PorterDirective(ProcessingPhase.FirstPass)]
+    public void ImportLanguage() => ImportLanguageBase();
+    
+    public void ImportLanguageBase()
+    {
+        bool langDep = DexUtil.CharEncoding.IsLangDependent(FormatName);
+        if (langDep && !Language_Field.IsValid(Language_Field.AsString)) //invalid lang w/ dependency
+        {
+            string[] langs = InitLangDepError(AlertType.INVALID);
+            Language_Resolver = new(Language_DependencyError, pku.Game_Info.Language, langs);
+        }
+        else
+            ImportIndexTag("Language", pku.Game_Info.Language, Language_Field.IsValid(),
+                Language_Field.AsString, Language_Field.Language.AsT0);
+    }
+
+    [PorterDirective(ProcessingPhase.SecondPass)]
+    public ErrorResolver<string> Language_Resolver { get => null; set { } }
+}
+
+public interface Language_P
+{
+    public string FormatName { get; }
+    public List<Alert> Errors { get; }
+
+    public Language_O Language_Field { get; }
+    public ChoiceAlert Language_DependencyError { get => null; set { } }
+
+    protected string[] InitLangDepError(AlertType at)
+    {
+        string[] langs = LANGUAGE_DEX.AllExistsIn(FormatName).Append(null).ToArray();
+
+        //get default choice
+        int defChoice = Array.IndexOf(langs, TagUtil.DEFAULT_SEMANTIC_LANGUAGE);
+        if (defChoice == -1)
+            defChoice = 0;
+
+        ChoiceAlert alert = GetLanguageDependencyAlert(at, langs, defChoice);
+        Language_DependencyError = alert;
+        Errors.Add(alert);
+
+        return langs;
+    }
+
+    public ChoiceAlert GetLanguageDependencyAlert(AlertType at, string[] langs, int defChoice)
+        => GetLanguageDependencyAlertBase(at, langs, defChoice);
+
+    public ChoiceAlert GetLanguageDependencyAlertBase(AlertType at, string[] langs, int defChoice)
     {
         ChoiceAlert.SingleChoice[] choices = new ChoiceAlert.SingleChoice[langs.Length];
         for (int i = 0; i < langs.Length; i++)
             choices[i] = new ChoiceAlert.SingleChoice(langs[i] ?? "None", "");
 
-        string msg = "Some text values in this format require a language, but this pku's language is ";
+        string msg = "Some text values in this format require a language, but this Pokémon's language is ";
         if (at.HasFlag(AlertType.INVALID))
             msg += "invalid in this format";
         else if (at.HasFlag(AlertType.UNSPECIFIED))
