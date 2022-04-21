@@ -2,28 +2,22 @@
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
 using pkuManager.Formats.pku;
-using pkuManager.Utilities;
 using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.Tags;
 
-public interface Item_O
+public interface Item_O : IndexTag_O
 {
     public OneOf<IField<BigInteger>, IField<string>> Item { get; }
-    public string FormatName { get; }
 
-    public bool IsValid(string item) => ITEM_DEX.ExistsIn(FormatName, item);
+    public bool IsValid(string item) => IsValid(ITEM_DEX, item);
     public bool IsValid() => IsValid(AsString);
 
     public string AsString
     {
-        get => Item.Match(
-            x => ITEM_DEX.SearchIndexedValue<int?>(x.GetAs<int>(), FormatName, "Indices", "$x"),
-            x => x.Value);
-        set => Item.Switch(
-            x => x.Value = ITEM_DEX.GetIndexedValue<int?>(FormatName, value, "Indices") ?? 0,
-            x => x.Value = value);
+        get => AsStringGet(ITEM_DEX, Item);
+        set => AsStringSet(ITEM_DEX, Item, value);
     }
 }
 

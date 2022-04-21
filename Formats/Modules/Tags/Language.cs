@@ -13,22 +13,17 @@ using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.Tags;
 
-public interface Language_O
+public interface Language_O : IndexTag_O
 {
     public OneOf<IField<BigInteger>, IField<string>> Language { get; }
-    public string FormatName { get; }
 
-    public bool IsValid(string lang) => LANGUAGE_DEX.ExistsIn(FormatName, lang);
+    public bool IsValid(string lang) => IsValid(LANGUAGE_DEX, lang);
     public bool IsValid() => IsValid(AsString);
 
     public string AsString
     {
-        get => Language.Match(
-            x => LANGUAGE_DEX.SearchIndexedValue<int?>(x.GetAs<int>(), FormatName, "Indices", "$x"),
-            x => x.Value);
-        set => Language.Switch(
-            x => x.Value = LANGUAGE_DEX.GetIndexedValue<int?>(FormatName, value, "Indices") ?? 0,
-            x => x.Value = value);
+        get => AsStringGet(LANGUAGE_DEX, Language);
+        set => AsStringSet(LANGUAGE_DEX, Language, value);
     }
 }
 

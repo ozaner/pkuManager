@@ -1,10 +1,31 @@
-﻿using pkuManager.Alerts;
+﻿using Newtonsoft.Json.Linq;
+using OneOf;
+using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
+using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using static pkuManager.Alerts.Alert;
 
 namespace pkuManager.Formats.Modules.Templates;
+
+public interface IndexTag_O
+{
+    public string FormatName { get; }
+
+    protected bool IsValid(JObject dex, string val) => dex.ExistsIn(FormatName, val);
+
+    protected string AsStringGet(JObject dex, OneOf<IField<BigInteger>, IField<string>> field)
+        => field.Match(
+            x => dex.SearchIndexedValue<int?>(x.GetAs<int>(), FormatName, "Indices", "$x"),
+            x => dex.SearchIndexedValue(x.Value, FormatName, "Indices", "$x"));
+
+    protected void AsStringSet(JObject dex, OneOf<IField<BigInteger>, IField<string>> field, string value)
+        => field.Switch(
+            x => x.Value = dex.GetIndexedValue<int?>(FormatName, value, "Indices") ?? 0,
+            x => x.Value = dex.GetIndexedValue<string>(FormatName, value, "Indices"));
+}
 
 public interface IndexTag_E
 {
