@@ -59,8 +59,6 @@ public interface Nickname_I : StringTag_I
     public void ImportNicknameBase()
     {
         var errRes = ImportString("Nickname", pku.Nickname, Nickname_Field.Nickname);
-        if (errRes is not null)
-            Nickname_Resolver = () => errRes.DecideValue();
 
         //deal with default names (invalid langs have no default name)
         void dealWithDefault()
@@ -74,7 +72,7 @@ public interface Nickname_I : StringTag_I
         if (errRes is null)
             dealWithDefault();
         else
-            Nickname_Resolver += dealWithDefault;
+            Nickname_Resolver = (Action)errRes + dealWithDefault;
     }
 
     [PorterDirective(ProcessingPhase.SecondPass)]

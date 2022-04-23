@@ -60,6 +60,8 @@ public class ErrorResolver<T>
             Options[i] = options[i];
     }
 
+    public static implicit operator Action(ErrorResolver<T> er) => () => er.DecideValue();
+
     private static T ReadOption(OneOf<T, Func<T>> val)
         => val.Match(x => x, x => x.Invoke());
 
