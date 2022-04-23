@@ -1,10 +1,8 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
-using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
@@ -16,12 +14,8 @@ public interface Experience_O
     public IField<BigInteger> Experience { get; }
 }
 
-public interface Experience_E
+public interface Experience_E : Tag
 {
-    public pkuObject pku { get; }
-    List<Alert> Warnings { get; }
-    List<Alert> Errors { get; }
-
     public Experience_O Experience_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]

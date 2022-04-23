@@ -1,6 +1,5 @@
 ﻿using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
-using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using System.Collections.Generic;
 using static pkuManager.Formats.PorterDirective;
@@ -28,9 +27,6 @@ public interface Markings_O
 
 public interface Markings_E : MultiEnumTag_E
 {
-    public pkuObject pku { get; }
-    public string FormatName { get; }
-
     public Markings_O Markings_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]

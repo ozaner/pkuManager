@@ -5,17 +5,13 @@ using pkuManager.Formats.Fields.BAMFields;
 using pkuManager.Formats.Modules.Tags;
 using pkuManager.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
 
 namespace pkuManager.Formats.Modules.Templates;
 
-public interface StringTag_E
+public interface StringTag_E : Tag
 {
-    public string FormatName { get; }
-    public List<Alert> Warnings { get; }
-
     public Language_O Language_Field => null;
     public ChoiceAlert Language_DependencyError => null;
 

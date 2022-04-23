@@ -1,9 +1,7 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Fields.BAMFields;
-using pkuManager.Formats.pku;
 using pkuManager.Utilities;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
@@ -11,12 +9,8 @@ using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.Tags;
 
-public interface Trash_Bytes_E
+public interface Trash_Bytes_E : Tag
 {
-    public pkuObject pku { get; }
-    public string FormatName { get; }
-    public List<Alert> Warnings { get; }
-
     public Nickname_O Nickname_Field { get; }
     public OT_O OT_Field { get; }
 

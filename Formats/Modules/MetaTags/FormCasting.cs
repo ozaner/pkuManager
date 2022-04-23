@@ -1,19 +1,13 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.pku;
 using pkuManager.Utilities;
-using System.Collections.Generic;
 using System.Linq;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.MetaTags;
 
-public interface FormCasting_E
+public interface FormCasting_E : Tag
 {
-    public pkuObject pku { get; }
-    public GlobalFlags GlobalFlags { get; }
-    public string FormatName { get; }
-    public List<Alert> Notes { get; }
-
     [PorterDirective(ProcessingPhase.PreProcessing)]
     public void ApplyFormCasting()
     {

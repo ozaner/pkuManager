@@ -3,7 +3,6 @@ using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Fields.BAMFields;
 using pkuManager.Formats.Modules.Templates;
-using pkuManager.Formats.pku;
 using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
@@ -16,7 +15,6 @@ public interface Nickname_O
 
 public interface Nickname_E : StringTag_E
 {
-    public pkuObject pku { get; }
     public Nickname_O Nickname_Field { get; }
     public Is_Egg_O Is_Egg_Field => null;
     public bool Nickname_CapitalizeDefault => false;

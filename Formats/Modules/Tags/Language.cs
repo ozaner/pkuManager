@@ -2,10 +2,8 @@
 using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
-using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
@@ -29,8 +27,6 @@ public interface Language_O : IndexTag_O
 
 public interface Language_E : Language_P, IndexTag_E
 {
-    public pkuObject pku { get; }
-
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportLanguage() => ExportLanguageBase();
 
@@ -79,11 +75,8 @@ public interface Language_I : Language_P, IndexTag_I
     public ErrorResolver<string> Language_Resolver { get => null; set { } }
 }
 
-public interface Language_P
+public interface Language_P : Tag
 {
-    public string FormatName { get; }
-    public List<Alert> Errors { get; }
-
     public Language_O Language_Field { get; }
     public ChoiceAlert Language_DependencyError { get => null; set { } }
 

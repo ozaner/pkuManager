@@ -4,10 +4,8 @@ using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Fields.BAMFields;
 using pkuManager.Formats.Modules.MetaTags;
-using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
 
@@ -30,10 +28,8 @@ public interface IndexTag_O
             x => x.Value = dex.GetIndexedValue<string>(FormatName, value, "Indices"));
 }
 
-public interface IndexTag_E
+public interface IndexTag_E : Tag
 {
-    public List<Alert> Warnings { get; }
-
     protected void ExportIndexTag(string tagName, IField<string> pkuTag, string defaultVal,
         bool alertIfUnspecified, Predicate<string> isValid, Action<string> setIndexField)
     {
@@ -60,11 +56,8 @@ public interface IndexTag_E
     };
 }
 
-public interface IndexTag_I
+public interface IndexTag_I : Tag
 {
-    public pkuObject pku { get; }
-    public List<Alert> Warnings { get; }
-
     protected void ImportIndexTag(string tagName, IField<string> pkuTag, bool isValid, string asString, IField<BigInteger> encodedField)
     {
         if (isValid) //valid

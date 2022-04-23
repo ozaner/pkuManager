@@ -1,7 +1,6 @@
 ﻿using OneOf;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
-using pkuManager.Formats.pku;
 using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
@@ -23,7 +22,6 @@ public interface Item_O : IndexTag_O
 
 public interface Item_E : IndexTag_E
 {
-    public pkuObject pku { get; }
     public Item_O Item_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]

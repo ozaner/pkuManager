@@ -1,6 +1,5 @@
 ﻿using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
-using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using System.Collections.Generic;
 using static pkuManager.Formats.PorterDirective;
@@ -114,9 +113,6 @@ public interface Ribbons_O
 
 public interface Ribbons_E : MultiEnumTag_E
 {
-    public pkuObject pku { get; }
-    public string FormatName { get; }
-
     public Ribbons_O Ribbons_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace pkuManager.Formats.Modules.Templates;
 
-public interface MultiEnumTag_E
+public interface MultiEnumTag_E : Tag
 {
     protected void ExportMultiEnumTag<T>(IDictionary<T, IField<bool>> enumToFieldMap, HashSet<T> enums) where T : struct, Enum
     {

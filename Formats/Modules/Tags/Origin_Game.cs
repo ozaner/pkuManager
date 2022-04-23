@@ -1,8 +1,6 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
-using pkuManager.Formats.pku;
 using pkuManager.Utilities;
-using System.Collections.Generic;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
@@ -14,12 +12,8 @@ public interface Origin_Game_O
     public IField<BigInteger> Origin_Game { get; }
 }
 
-public interface Origin_Game_E
+public interface Origin_Game_E : Tag
 {
-    public pkuObject pku { get; }
-    public List<Alert> Warnings { get; }
-    public string FormatName { get; }
-
     public Origin_Game_O Origin_Game_Field { get; }
     public string Origin_Game_Name { set; }
 

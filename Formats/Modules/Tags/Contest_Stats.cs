@@ -1,6 +1,5 @@
 ﻿using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
-using pkuManager.Formats.pku;
 using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
@@ -13,8 +12,6 @@ public interface Contest_Stats_O
 
 public interface Contest_Stats_E : MultiNumericTag_E
 {
-    public pkuObject pku { get; }
-
     public Contest_Stats_O Contest_Stats_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]

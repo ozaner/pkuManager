@@ -1,7 +1,6 @@
 ﻿using OneOf;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
-using pkuManager.Formats.pku;
 using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
@@ -23,7 +22,6 @@ public interface Ability_O : IndexTag_O
 
 public interface Ability_E : IndexTag_E
 {
-    public pkuObject pku { get; }
     public Ability_O Ability_Field { get; }
     public string Ability_Default => "None";
 

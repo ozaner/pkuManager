@@ -1,7 +1,6 @@
 ﻿using OneOf;
 using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
-using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
@@ -16,12 +15,8 @@ public interface Moves_O
     public OneOf<IField<BigInteger[]>, IField<string[]>> Moves { get; }
 }
 
-public interface Moves_E
+public interface Moves_E : Tag
 {
-    public pkuObject pku { get; }
-    public List<Alert> Warnings { get; }
-    public string FormatName { get; }
-
     public Moves_O Moves_Field { get; }
     public int[] Moves_Indices { set; }
 

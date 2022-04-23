@@ -1,6 +1,5 @@
 ﻿using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
-using pkuManager.Formats.pku;
 using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
@@ -13,8 +12,6 @@ public interface EVs_O
 
 public interface EVs_E : MultiNumericTag_E
 {
-    public pkuObject pku { get; }
-
     public EVs_O EVs_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]

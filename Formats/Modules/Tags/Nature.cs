@@ -2,7 +2,6 @@
 using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
-using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
@@ -30,7 +29,6 @@ public interface Nature_O
 
 public interface Nature_E : EnumTag_E
 {
-    public pkuObject pku { get; }
     public Nature_O Nature_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]

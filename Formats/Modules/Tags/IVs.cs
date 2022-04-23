@@ -1,6 +1,5 @@
 ﻿using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
-using pkuManager.Formats.pku;
 using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
@@ -13,8 +12,6 @@ public interface IVs_O
 
 public interface IVs_E : MultiNumericTag_E
 {
-    public pkuObject pku { get; }
-
     public IVs_O IVs_Field { get; }
     public int IVs_Default => 0;
     public bool IVs_AlertIfUnspecified => true;

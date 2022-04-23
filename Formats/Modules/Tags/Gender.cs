@@ -1,9 +1,7 @@
 ﻿using OneOf;
 using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
-using pkuManager.Formats.pku;
 using pkuManager.Utilities;
-using System.Collections.Generic;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
@@ -28,11 +26,8 @@ public interface Gender_O
     }
 }
 
-public interface Gender_E
+public interface Gender_E : Tag
 {
-    public pkuObject pku { get; }
-    List<Alert> Warnings { get; }
-
     public Gender_O Gender_Field { get; }
     public bool Gender_DisallowImpossibleGenders => false;
     public bool Gender_PIDDependent => false;

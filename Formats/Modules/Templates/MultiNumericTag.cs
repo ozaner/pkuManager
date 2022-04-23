@@ -2,17 +2,14 @@
 using pkuManager.Formats.Fields;
 using pkuManager.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
 
 namespace pkuManager.Formats.Modules.Templates;
 
-public interface MultiNumericTag_E
+public interface MultiNumericTag_E : Tag
 {
-    public List<Alert> Warnings { get; }
-
     protected void ExportMultiNumericTag(string tagName, string[] subTagNames, IField<BigInteger?>[] pkuVals,
         IField<BigInteger[]> formatVals, BigInteger defaultVal, bool alertIfUnspecified)
     {

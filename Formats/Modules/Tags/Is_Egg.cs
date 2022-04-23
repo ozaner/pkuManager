@@ -1,6 +1,5 @@
 ﻿using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
-using pkuManager.Formats.pku;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.Tags;
@@ -23,7 +22,6 @@ public interface Is_Egg_E : BooleanTag_E
 
 public interface Is_Egg_I : BooleanTag_I
 {
-    public pkuObject pku { get; }
     public Is_Egg_O Is_Egg_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]

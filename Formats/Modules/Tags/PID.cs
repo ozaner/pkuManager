@@ -1,6 +1,5 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
-using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
@@ -15,12 +14,8 @@ public interface PID_O
     public IField<BigInteger> PID { get; }
 }
 
-public interface PID_E
+public interface PID_E : Tag
 {
-    public pkuObject pku { get; }
-    List<Alert> Warnings { get; }
-    List<Alert> Errors { get; }
-
     public PID_O PID_Field { get; }
     public TID_O TID_Field { get; } //deals with shiny
     public Species_O Species_Field { get; }

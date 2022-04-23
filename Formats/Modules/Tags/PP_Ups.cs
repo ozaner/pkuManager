@@ -2,7 +2,6 @@
 using pkuManager.Formats.Fields.BackedFields;
 using System;
 using pkuManager.Formats.Modules.Templates;
-using pkuManager.Formats.pku;
 using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
@@ -16,8 +15,6 @@ public interface PP_Ups_O
 public interface PP_Ups_E : MultiNumericTag_E
 {
     protected static readonly string[] TagNames = new[] { "move 1", "move 2", "move 3", "move 4" };
-
-    public pkuObject pku { get; }
 
     public PP_Ups_O PP_Ups_Field { get; }
     public int[] Moves_Indices { get; }

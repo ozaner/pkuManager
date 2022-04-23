@@ -1,16 +1,11 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
-using pkuManager.Formats.pku;
-using System.Collections.Generic;
 using static pkuManager.Alerts.Alert;
 
 namespace pkuManager.Formats.Modules.Templates;
 
-public interface BooleanTag_E
+public interface BooleanTag_E : Tag
 {
-    public pkuObject pku { get; }
-    public List<Alert> Warnings { get; }
-
     protected void ExportBooleanTag(string tagName, IField<bool?> pkuVal,
         IField<bool> formatVal, bool defaultVal, bool alertIfUnspecified)
     {
@@ -31,7 +26,7 @@ public interface BooleanTag_E
     };
 }
 
-public interface BooleanTag_I
+public interface BooleanTag_I : Tag
 {
     protected void ImportBooleanTag(string tagName, IField<bool?> pkuVal, IField<bool> formatVal, bool explicitFalse)
     {

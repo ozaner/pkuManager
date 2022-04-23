@@ -1,5 +1,4 @@
 ﻿using pkuManager.Formats.Fields;
-using pkuManager.Formats.pku;
 using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
@@ -10,11 +9,8 @@ public interface PP_O
     public IField<BigInteger[]> PP { get; }
 }
 
-public interface PP_E
+public interface PP_E : Tag
 {
-    public pkuObject pku { get; }
-    public string FormatName { get; }
-
     public PP_O PP_Field { get; }
     public PP_Ups_O PP_Ups_Field { get; }
     public int[] Moves_Indices { get; }

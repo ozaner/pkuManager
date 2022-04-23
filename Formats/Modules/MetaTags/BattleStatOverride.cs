@@ -8,12 +8,8 @@ using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.MetaTags;
 
-public interface BattleStatOverride_E
+public interface BattleStatOverride_E : Tag
 {
-    public pkuObject pku { get; }
-    public GlobalFlags GlobalFlags { get; }
-    public List<Alert> Notes { get; }
-
     [PorterDirective(ProcessingPhase.PreProcessing)]
     public void ApplyBattleStatOverride()
     {

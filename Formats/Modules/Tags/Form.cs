@@ -1,9 +1,7 @@
 ﻿using OneOf;
 using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
-using pkuManager.Formats.pku;
 using pkuManager.Utilities;
-using System.Collections.Generic;
 using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
@@ -14,12 +12,8 @@ public interface Form_O
     public OneOf<IField<BigInteger>, IField<string>> Form { get; }
 }
 
-public interface Form_E
+public interface Form_E : Tag
 {
-    public pkuObject pku { get; }
-    public List<Alert> Warnings { get; }
-    public string FormatName { get; }
-
     public Form_O Form_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]

@@ -1,9 +1,6 @@
 ﻿using OneOf;
-using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
-using pkuManager.Formats.pku;
 using pkuManager.Utilities;
-using System.Collections.Generic;
 using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
@@ -14,12 +11,8 @@ public interface Species_O
     public OneOf<IField<BigInteger>, IField<string>> Species { get; }
 }
 
-public interface Species_E
+public interface Species_E : Tag
 {
-    public pkuObject pku { get; }
-    public List<Alert> Warnings { get; }
-    public string FormatName { get; }
-
     public Species_O Species_Field { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]

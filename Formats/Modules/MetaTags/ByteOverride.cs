@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using OneOf;
 using pkuManager.Alerts;
-using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
@@ -17,11 +16,8 @@ public interface ByteOverride_O
     public ByteArrayManipulator BAM { get; }
 }
 
-public interface ByteOverride_E
+public interface ByteOverride_E : Tag
 {
-    public pkuObject pku { get; }
-    public List<Alert> Warnings { get; }
-
     public ByteOverride_O ByteOverride_Field { get; }
 
     // Processing

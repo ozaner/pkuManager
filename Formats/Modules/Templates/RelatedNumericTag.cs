@@ -1,17 +1,12 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
-using pkuManager.Formats.pku;
-using System.Collections.Generic;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
 
 namespace pkuManager.Formats.Modules.Templates;
 
-public interface RelatedNumericTag_E
+public interface RelatedNumericTag_E : Tag
 {
-    public pkuObject pku { get; }
-    public List<Alert> Warnings { get; }
-
     protected void ExportRelatedNumericTag(string tagName, string[] subTagNames, IField<BigInteger?>[] pkuVals,
         IField<BigInteger>[] formatVals, BigInteger[] defaultVals, bool alertIfUnspecified)
     {

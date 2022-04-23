@@ -1,8 +1,6 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
-using pkuManager.Formats.pku;
 using pkuManager.Utilities;
-using System.Collections.Generic;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
@@ -14,12 +12,8 @@ public interface Met_Location_O
     public IField<BigInteger> Met_Location { get; }
 }
 
-public interface Met_Location_E
+public interface Met_Location_E : Tag
 {
-    public pkuObject pku { get; }
-    public List<Alert> Warnings { get; }
-    public string FormatName { get; }
-
     public Met_Location_O Met_Location_Field { get; }
     public string Origin_Game_Name { get; }
 

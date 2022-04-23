@@ -2,7 +2,6 @@
 using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
-using pkuManager.Formats.pku;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
@@ -16,7 +15,6 @@ public interface OT_Gender_O
 
 public interface OT_Gender_E : EnumTag_E
 {
-    public pkuObject pku { get; }
     public OT_Gender_O OT_Gender_Field { get; }
 
     public Gender? OT_Gender_Default => Gender.Male;
