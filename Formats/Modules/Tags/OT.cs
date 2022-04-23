@@ -26,3 +26,15 @@ public interface OT_E : StringTag_E
     [PorterDirective(ProcessingPhase.SecondPass)]
     public ErrorResolver<BigInteger[]> OT_Resolver { get => null; set { } }
 }
+
+public interface OT_I : StringTag_I
+{
+    public OT_O OT_Field { get; }
+
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(Language_E.ExportLanguage))]
+    public void ImportOT()
+        => OT_Resolver = ImportString("OT", pku.Game_Info.OT, OT_Field.OT);
+
+    [PorterDirective(ProcessingPhase.SecondPass)]
+    public ErrorResolver<string> OT_Resolver { get => null; set { } }
+}

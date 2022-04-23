@@ -4,12 +4,13 @@ using pkuManager.Formats.Modules.MetaTags;
 using pkuManager.Formats.Modules.Tags;
 using pkuManager.Formats.pku;
 using pkuManager.Utilities;
+using System;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.pkx.pk3;
 
-public class pk3Importer : Importer, Is_Egg_I, Language_I
+public class pk3Importer : Importer, Is_Egg_I, Language_I, Nickname_I, OT_I
 {
     public override string FormatName => "pk3";
 
@@ -70,12 +71,23 @@ public class pk3Importer : Importer, Is_Egg_I, Language_I
             Language_Field.AsString = "Japanese";
     }
 
+    // Nickname
+    public void ImportNickname()
+    {
+        if (legalGen3Egg)
+            pku.Nickname.Value = null;
+        else
+            (this as Nickname_I).ImportNicknameBase();
+    }
+
 
     /* ------------------------------------
      * Error Resolvers
      * ------------------------------------
     */
     public ErrorResolver<string> Language_Resolver { get; set; }
+    public Action Nickname_Resolver { get; set; }
+    public ErrorResolver<string> OT_Resolver { get; set; }
 
 
     /* ------------------------------------
@@ -98,4 +110,9 @@ public class pk3Importer : Importer, Is_Egg_I, Language_I
 
     public Language_O Language_Field => Data;
     public ChoiceAlert Language_DependencyError { get; set; }
+
+    public Nickname_O Nickname_Field => Data;
+    public bool Nickname_CapitalizeDefault => true;
+
+    public OT_O OT_Field => Data;
 }

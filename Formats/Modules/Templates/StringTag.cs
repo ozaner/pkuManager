@@ -2,6 +2,7 @@
 using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Fields.BAMFields;
+using pkuManager.Formats.Modules.MetaTags;
 using pkuManager.Formats.Modules.Tags;
 using pkuManager.Utilities;
 using System;
@@ -43,19 +44,24 @@ public interface StringTag_E : Tag
         }
         else //invalid dependent lang
         {
-            BAMStringField encField = field.AsT0; //errors only occur with encoded strings
+            string[] langs = LANGUAGE_DEX.AllExistsIn(FormatName);
+            string[] decodedStrs = new string[langs.Length + 1];
+            BigInteger[][] encodedStrs = new BigInteger[langs.Length + 1][];
             var alertChoices = Language_DependencyError.Choices;
 
-            string[] langs = LANGUAGE_DEX.AllExistsIn(FormatName);
-            BigInteger[][] choices = new BigInteger[langs.Length + 1][];
             for (int i = 0; i < langs.Length; i++)
             {
-                (choices[i], _, _) = DexUtil.CharEncoding.Encode(valueFromLang(langs[i]), encField.Length, FormatName, langs[i]);
-                string decodedStr = DexUtil.CharEncoding.Decode(choices[i], FormatName, langs[i]).decodedStr;
-                alertChoices[i].Message = alertChoices[i].Message.AddNewLine($"{tagName}: {decodedStr}");
+                (encodedStrs[i], _, _) = DexUtil.CharEncoding.Encode(valueFromLang(langs[i]), field.AsT0.Length, FormatName, langs[i]);
+                decodedStrs[i] = DexUtil.CharEncoding.Decode(encodedStrs[i], FormatName, langs[i]).decodedStr;
+                alertChoices[i].Message = alertChoices[i].Message.AddNewLine($"{tagName}: {decodedStrs[i]}");
             }
-            alertChoices[langs.Length].Message = alertChoices[langs.Length].Message.AddNewLine($"{tagName}: "); // "None" lang option
-            return new(Language_DependencyError, encField, choices);
+
+            // "None" lang option
+            (encodedStrs[langs.Length], _, _) = DexUtil.CharEncoding.Encode(null, field.AsT0.Length, FormatName);
+            decodedStrs[langs.Length] = "";
+            alertChoices[langs.Length].Message = alertChoices[langs.Length].Message.AddNewLine($"{tagName}: ");
+            
+            return new(Language_DependencyError, field.AsT0, encodedStrs);
         }
         return null;
     }
@@ -74,6 +80,56 @@ public interface StringTag_E : Tag
                 msg += DataUtil.Newline();
             msg += $"{tagName} can only have {maxChars} characters in this format, truncating it.";
         }
-        return msg is not "" ? new("Nickname", msg) : throw InvalidAlertType();
+        return msg is not "" ? new(tagName, msg) : throw InvalidAlertType();
+    }
+}
+
+public interface StringTag_I : ByteOverride_I
+{
+    public Language_O Language_Field => null;
+    public ChoiceAlert Language_DependencyError => null;
+
+    public ErrorResolver<string> ImportString(string tagName, IField<string> pkuField, OneOf<BAMStringField, IField<string>> field)
+    {
+        if (Language_DependencyError is null) //valid lang/not lang dep
+        {
+            bool langDep = DexUtil.CharEncoding.IsLangDependent(FormatName);
+            string lang = langDep ? Language_Field.AsString : null;
+            field.Switch(
+                x => {
+                    (pkuField.Value, bool invalid) = DexUtil.CharEncoding.Decode(x.Value, FormatName, lang);
+                    if (invalid)
+                        Warnings.Add(GetStringAlert(tagName, AlertType.INVALID) //string invalid
+                                   + AddByteOverrideCMD(tagName, x.GetOverride())); //adding byte override
+                },
+                x => pkuField.Value = x.Value);
+        }
+        else //invalid dependent lang
+        {
+            string[] langs = LANGUAGE_DEX.AllExistsIn(FormatName);
+            string[] decodedStrs = new string[langs.Length + 1];
+            var alertChoices = Language_DependencyError.Choices;
+
+            for (int i = 0; i < langs.Length; i++)
+            {
+                decodedStrs[i] = DexUtil.CharEncoding.Decode(field.AsT0.Value, FormatName, langs[i]).decodedStr;
+                alertChoices[i].Message = alertChoices[i].Message.AddNewLine($"{tagName}: {decodedStrs[i]}");
+            }
+            decodedStrs[langs.Length] = ""; // "None" lang option
+            alertChoices[langs.Length].Message = alertChoices[langs.Length].Message.AddNewLine($"{tagName}: ");
+            
+            return new(Language_DependencyError, pkuField, decodedStrs);
+        }
+        return null;
+    }
+
+    public Alert GetStringAlert(string tagName, AlertType at)
+    {
+        if (at == AlertType.NONE)
+            return null;
+        string msg = "";
+        if (at.HasFlag(AlertType.INVALID)) //some characters invalid, removing them
+            msg += $"Some of the characters in the {tagName} are invalid, removing them.";
+        return msg is not "" ? new(tagName, msg) : throw InvalidAlertType();
     }
 }
