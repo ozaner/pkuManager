@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using OneOf;
 using pkuManager.Alerts;
+using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
@@ -89,11 +90,18 @@ public interface ByteOverride_E : Tag
     }
 }
 
-public static class ByteOverride_I
+public interface ByteOverride_I : Tag
 {
-    public static Alert AddByteOverrideCMD(string tag, ByteOverrideCMD cmd, IDictionary<string, JToken> cmds)
+    public Alert AddByteOverrideCMD(string tag, ByteOverrideCMD cmd)
+        => AddByteOverrideCMD(tag, cmd, pku, FormatName);
+
+    //static method for anonymous calls
+    public static Alert AddByteOverrideCMD(string tag, ByteOverrideCMD cmd, pkuObject pku, string formatName)
     {
-        cmds.Add(cmd.ToString(), JToken.FromObject(cmd.Value.Value));
+        if (!pku.Format_Overrides.ContainsKey(formatName) || pku.Format_Overrides[formatName] is null)
+            pku.Format_Overrides.Add(formatName, new pkuObject());
+
+        pku.Format_Overrides[formatName].Byte_Override.Add(cmd.ToString(), JToken.FromObject(cmd.Value.Value));
         return GetByteOverrideAlert(tag);
     }
 
