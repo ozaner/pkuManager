@@ -20,11 +20,11 @@ namespace pkuManager.Formats.pkx.pk3;
 /// Exports a <see cref="pkuObject"/> to a <see cref="pk3Object"/>.
 /// </summary>
 public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E,
-                           Gender_E, Nickname_E, Experience_E, Moves_E, PP_Ups_E, PP_E, Item_E,
-                           Nature_E, Friendship_E, PID_E, TID_E, IVs_E, EVs_E, Contest_Stats_E,
-                           Ball_E, OT_E, Origin_Game_E, Met_Location_E, Met_Level_E,
-                           OT_Gender_E, Language_E, Fateful_Encounter_E, Markings_E, Ribbons_E,
-                           Is_Egg_E, Pokerus_E, Trash_Bytes_E, ByteOverride_E
+                           Shiny_E, Gender_E, Nickname_E, Experience_E, Moves_E, PP_Ups_E, PP_E,
+                           Item_E, Nature_E, Friendship_E, PID_E, TID_E, IVs_E, EVs_E, Contest_Stats_E,
+                           Ball_E, OT_E, Origin_Game_E, Met_Location_E, Met_Level_E, OT_Gender_E,
+                           Language_E, Fateful_Encounter_E, Markings_E, Ribbons_E, Is_Egg_E,
+                           Pokerus_E, Trash_Bytes_E, ByteOverride_E
 {
     public override string FormatName => "pk3";
 
@@ -58,6 +58,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     protected partial class ImplicitFields
     {
         public BackedBoundableField<BigInteger> Form { get; } = new(); // Form [Implicit]
+        public BackedField<bool> Shiny = new(); // Shiny [Implicit]
         public BackedField<Gender?> Gender { get; } = new(); //Gender [Implicit]
         public BackedField<Nature?> Nature { get; } = new(); // Nature [Implicit]
     }
@@ -283,6 +284,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     */
     public Species_O Species_Field => Data;
     public Form_O Form_Field => implicitFields;
+    public Shiny_O Shiny_Field => implicitFields;
     public Experience_O Experience_Field => Data;
 
     public Gender_O Gender_Field => implicitFields;
@@ -305,6 +307,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public bool PID_GenderDependent => true;
     public bool PID_UnownFormDependent => true;
     public bool PID_NatureDependent => true;
+    public bool PID_ShinyDependent => true;
     public bool PID_Gen6ShinyOdds => false;
 
     public TID_O TID_Field => Data;
@@ -336,9 +339,10 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
      * Duct Tape
      * ------------------------------------
     */
-    protected partial class ImplicitFields : Form_O, Gender_O, Nature_O
+    protected partial class ImplicitFields : Form_O, Gender_O, Nature_O, Shiny_O
     {
         OneOf<IField<BigInteger>, IField<string>> Form_O.Form => Form;
+        IField<bool> Shiny_O.Shiny => Shiny;
         OneOf<IField<BigInteger>, IField<Gender>, IField<Gender?>> Gender_O.Gender => Gender;
         OneOf<IField<BigInteger>, IField<Nature>, IField<Nature?>> Nature_O.Nature => Nature;
     }

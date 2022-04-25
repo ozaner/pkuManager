@@ -20,20 +20,23 @@ public interface PID_E : Tag
     public TID_O TID_Field { get; } //deals with shiny
     public Species_O Species_Field { get; }
     public Form_O Form_Field { get; } //unown form
+    public Shiny_O Shiny_Field { get; }
     public Gender_O Gender_Field { get; }
     public Nature_O Nature_Field { get; }
 
+    public bool PID_ShinyDependent => false;
     public bool PID_Gen6ShinyOdds => true;
     public bool PID_GenderDependent => false;
     public bool PID_UnownFormDependent => false;
     public bool PID_NatureDependent => false;
 
     // PID [Requires: Gender, Form, Nature, TID] [ErrorResolver]
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(TID_E.ExportTID), nameof(Gender_E.ExportGender),
-                                                nameof(Form_E.ExportForm), nameof(Nature_E.ExportNature))]
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(TID_E.ExportTID), nameof(Shiny_E.ExportShiny),
+              nameof(Gender_E.ExportGender), nameof(Form_E.ExportForm), nameof(Nature_E.ExportNature))]
     public void ExportPID()
     {
         uint checkedTID = TID_Field.TID.GetAs<uint>();
+        bool? checkedShiny = PID_ShinyDependent ? Shiny_Field.Shiny.Value : null;
         Gender? checkedGender = PID_GenderDependent ? Gender_Field.Value : null;
         Nature? checkedNature = PID_NatureDependent ? Nature_Field.Value : null;
         int? checkedUnownForm = null;
@@ -58,10 +61,11 @@ public interface PID_E : Tag
         Alert alert = GetPIDAlert(at);
 
         // Check if any value has a pid-mismatch
-        bool genderMismatch = false, natureMismatch = false, unownMismatch = false, shinyMismatch;
+        bool genderMismatch = false, natureMismatch = false, unownMismatch = false, shinyMismatch = false;
         int oldunownform = 0;
-        Nature oldnature = DEFAULT_NATURE;
+        bool oldshiny = false;
         Gender oldgender = DEFAULT_GENDER;
+        Nature oldnature = DEFAULT_NATURE;
 
         if (checkedGender is not null) //gender mismatch check
         {
@@ -78,15 +82,17 @@ public interface PID_E : Tag
             oldunownform = TagUtil.GetUnownFormIDFromPID(pid);
             unownMismatch = checkedUnownForm is not null && checkedUnownForm != oldunownform;
         }
-        //always check shiny
-        bool oldshiny = TagUtil.IsPIDShiny(pid, checkedTID, PID_Gen6ShinyOdds);
-        shinyMismatch = pku.IsShiny() != oldshiny;
+        if (checkedShiny is not null)
+        {
+            oldshiny = TagUtil.IsPIDShiny(pid, checkedTID, PID_Gen6ShinyOdds);
+            shinyMismatch = checkedShiny != oldshiny;
+        }
 
         // Deal with pid-mismatches
         BigInteger[] pids;
         if (unownMismatch || genderMismatch || natureMismatch || shinyMismatch)
         {
-            uint newPID = TagUtil.GenerateRandomPID(pku.IsShiny(), checkedTID, checkedGender,
+            uint newPID = TagUtil.GenerateRandomPID(checkedShiny, checkedTID, checkedGender,
                 TagUtil.GetGenderRatio(pku), checkedNature, checkedUnownForm);
 
             if (pidInBounds) //two options: old & new, need error
@@ -100,7 +106,7 @@ public interface PID_E : Tag
                 if (natureMismatch)
                     tags.Add(("Nature", oldnature, checkedNature));
                 if (shinyMismatch)
-                    tags.Add(("Shiny", oldshiny, pku.Shiny));
+                    tags.Add(("Shiny", oldshiny, checkedShiny));
                 alert = GetPIDAlert(AlertType.MISMATCH, tags); //RadioButtonAlert
                 pids = new BigInteger[] { pid, newPID }; //error: pid mismatched, choose old or new.
             }

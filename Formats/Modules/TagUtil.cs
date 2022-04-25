@@ -206,7 +206,7 @@ public static class TagUtil
     /// <param name="nature">The desired nature.</param>
     /// <param name="unownForm">The desired form, if the species is Unown.</param>
     /// <returns>A random PID satisfying all the given constraints.</returns>
-    public static uint GenerateRandomPID(bool shiny, uint tid, Gender? gender = null,
+    public static uint GenerateRandomPID(bool? shiny, uint tid, Gender? gender = null,
         GenderRatio? gr = null, Nature? nature = null, int? unownForm = null)
     {
         //Notice no option for ability slot.
@@ -249,8 +249,11 @@ public static class TagUtil
             }
 
             // Shiny Check
-            if ((pid / 65536 ^ pid % 65536 ^ tid / 65536 ^ tid % 65536) < 8 != shiny) //In gen 6+ that 8->16.
-                continue;                                                             //No harm keeping it 8 for backwards compat.
+            if (shiny is not null)
+            {
+                if ((pid / 65536 ^ pid % 65536 ^ tid / 65536 ^ tid % 65536) < 8 != shiny) //In gen 6+ that 8->16.
+                    continue;                                                             //No harm keeping it 8 for backwards compat.
+            }
 
             return pid; // everything checks out
         }
