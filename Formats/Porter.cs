@@ -172,8 +172,8 @@ public abstract class Porter
     private bool firstHalf = false;
 
     /// <summary>
-    /// The first half of the exporting process. Runs the <see cref="ProcessingPhase.FormatOverride"/>, 
-    /// <see cref="ProcessingPhase.PreProcessing"/> and <see cref="ProcessingPhase.FirstPass"/> phases.<br/>
+    /// The first half of the exporting process. Runs all phases from
+    /// <see cref="ProcessingPhase.FormatOverride"/>, to <see cref="ProcessingPhase.FirstPassStage2"/>.<br/>
     /// Should only be run if <see cref="CanPort"/> is true.
     /// </summary>
     public void FirstHalf()
@@ -186,6 +186,7 @@ public abstract class Porter
         RunMembers(PorterDirectiveMap[ProcessingPhase.FormatOverride]);
         RunMembers(PorterDirectiveMap[ProcessingPhase.PreProcessing]);
         RunMembers(PorterDirectiveMap[ProcessingPhase.FirstPass]);
+        RunMembers(PorterDirectiveMap[ProcessingPhase.FirstPassStage2]);
 
         firstHalf = true;
     }
@@ -252,6 +253,11 @@ public class PorterDirective : Attribute
         /// For generating the values and alerts that may need to be displayed to the user.
         /// </summary>
         FirstPass,
+
+        /// <summary>
+        /// For actions that need to be done after <see cref="FirstPass"/> but before <see cref="SecondPass"/>.
+        /// </summary>
+        FirstPassStage2,
 
         /// <summary>
         /// For deciding on which values to use in the final file, based on user input.

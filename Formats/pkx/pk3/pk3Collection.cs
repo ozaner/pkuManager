@@ -224,7 +224,7 @@ public class pk3Box : Box
         //get form
         int form = pk3.Species.GetAs<int>() switch
         {
-            210 => TagUtil.GetUnownFormIDFromPID(pk3.PID.GetAs<uint>()),
+            210 => TagUtil.GetPIDUnownFormID(pk3.PID.GetAs<uint>()),
             410 => pk3.Origin_Game.GetAs<int>() switch //deoxys
             {
                 3 => 3, //E -> speed

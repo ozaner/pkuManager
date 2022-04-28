@@ -10,21 +10,25 @@ namespace pkuManager.Formats.Modules.Tags;
 
 public interface OT_Gender_O
 {
-    public OneOf<IField<BigInteger>, IField<Gender>, IField<Gender?>> OT_Gender { get; }
+    public OneOf<IField<BigInteger>, IField<Gender>> OT_Gender { get; }
 }
 
 public interface OT_Gender_E : EnumTag_E
 {
     public OT_Gender_O OT_Gender_Field { get; }
 
-    public Gender? OT_Gender_Default => Gender.Male;
-    public bool OT_Gender_AlertIfUnspecified => true;
-
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportOT_Gender()
-        => ExportEnumTag("OT Gender", pku.Game_Info.Gender, OT_Gender_Default, OT_Gender_Field.OT_Gender,
-            OT_Gender_AlertIfUnspecified, GetOT_GenderAlert, x => x is Gender.Male or Gender.Female);
+    {
+        AlertType at = ExportEnumTag(pku.Game_Info.Gender, DEFAULT_GENDER, OT_Gender_Field.OT_Gender,
+            x => x is Gender.Male or Gender.Female);
+        if (at is not AlertType.UNSPECIFIED) //silent OT gender unspecified alert
+            Warnings.Add(GetOT_GenderAlert(at, pku.Game_Info.Gender.Value, DEFAULT_GENDER));
+    }
 
-    protected static Alert GetOT_GenderAlert(AlertType at, string val, string defaultVal)
+    public Alert GetOT_GenderAlert(AlertType at, string val, OneOf<Gender, string> defaultVal)
+        => GetOT_GenderAlertBase(at, val, defaultVal);
+
+    public Alert GetOT_GenderAlertBase(AlertType at, string val, OneOf<Gender, string> defaultVal)
         => GetEnumAlert("OT Gender", at, val, defaultVal);
 }

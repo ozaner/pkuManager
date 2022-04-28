@@ -9,6 +9,7 @@ using OneOf;
 using pkuManager.Formats.Fields.LambdaFields;
 using pkuManager.Formats.Modules.Tags;
 using pkuManager.Formats.Modules.MetaTags;
+using pkuManager.Formats.Modules;
 
 namespace pkuManager.Formats.pkx.pk3;
 
@@ -17,11 +18,11 @@ namespace pkuManager.Formats.pkx.pk3;
 /// Implementation details mostly referenced from
 /// <see href="https://bulbapedia.bulbagarden.net/wiki/Pokémon_data_structure_(Generation_III)">Bulbapedia</see>.
 /// </summary>
-public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Moves_O, PP_Ups_O,
-                         PP_O, Item_O, PID_O, TID_O, Friendship_O, IVs_O, EVs_O, Contest_Stats_O,
-                         Ball_O, OT_O, Origin_Game_O, Met_Location_O, Met_Level_O, OT_Gender_O,
-                         Language_O, Fateful_Encounter_O, Markings_O, Ribbons_O, Is_Egg_O, Pokerus_O,
-                         ByteOverride_O
+public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nature_O, Nickname_O,
+                         Experience_O, Moves_O, PP_Ups_O, PP_O, Item_O, PID_O, TID_O, Friendship_O,
+                         IVs_O, EVs_O, Contest_Stats_O, Ball_O, OT_O, Origin_Game_O, Met_Location_O,
+                         Met_Level_O, OT_Gender_O, Language_O, Fateful_Encounter_O, Markings_O,
+                         Ribbons_O, Is_Egg_O, Pokerus_O, ByteOverride_O
 {
     public override string FormatName => "pk3";
 
@@ -137,6 +138,19 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Move
         World_Ribbon = new(M, 8, 26);
         Unused_E = new(M, 8, 27, 4); //leftover from ribbon bytes
         Fateful_Encounter = new(M, 8, 31);
+
+        // Implicit fields
+        Form = new(() => Species.Value == 201 ? TagUtil.GetPIDUnownFormID(PID.GetAs<uint>()) : 0, _ => { });
+        Shiny = new(() => TagUtil.IsPIDShiny(PID.GetAs<uint>(), TID.GetAs<uint>(), false), _ => { });
+        Gender = new(() => {
+            //deoxys, castform, and unown forms keep same gender ratio, no need to check.
+            DexUtil.SFA sfa = DexUtil.GetSFAFromIndices(FormatName, Species.GetAs<int>(), (int?)null, false);
+            if (sfa.Species is null)
+                return TagEnums.Gender.Genderless; //this pk3 has an undefined species
+            else
+                return TagUtil.GetPIDGender(TagUtil.GetGenderRatio(sfa), PID.GetAs<uint>());
+        }, _ => { });
+        Nature = new(() => TagUtil.GetPIDNature(PID.GetAs<uint>()), _ => { });
     }
 
 
@@ -262,6 +276,16 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Move
 
 
     /* ------------------------------------
+     * Implicit Fields
+     * ------------------------------------
+    */
+    public LambdaField<BigInteger> Form { get; }
+    public LambdaField<bool> Shiny { get; }
+    public LambdaField<Gender> Gender { get; }
+    public LambdaField<Nature> Nature { get; }
+
+
+    /* ------------------------------------
      * SubData Encryption
      * ------------------------------------
     */
@@ -378,6 +402,10 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Move
      * ------------------------------------
     */
     OneOf<IField<BigInteger>, IField<string>> Species_O.Species => Species;
+    OneOf<IField<BigInteger>, IField<string>> Form_O.Form => Form;
+    IField<bool> Shiny_O.Shiny => Shiny;
+    OneOf<IField<BigInteger>, IField<Gender>, IField<Gender?>> Gender_O.Gender => Gender;
+    OneOf<IField<BigInteger>, IField<Nature>> Nature_O.Nature => Nature;
     OneOf<BAMStringField, IField<string>> Nickname_O.Nickname => Nickname;
     IField<BigInteger> Experience_O.Experience => Experience;
     OneOf<IField<BigInteger[]>, IField<string[]>> Moves_O.Moves => Moves;
@@ -395,7 +423,7 @@ public class pk3Object : FormatObject, Species_O, Nickname_O, Experience_O, Move
     IField<BigInteger> Origin_Game_O.Origin_Game => Origin_Game;
     IField<BigInteger> Met_Location_O.Met_Location => Met_Location;
     IField<BigInteger> Met_Level_O.Met_Level => Met_Level;
-    OneOf<IField<BigInteger>, IField<Gender>, IField<Gender?>> OT_Gender_O.OT_Gender => OT_Gender;
+    OneOf<IField<BigInteger>, IField<Gender>> OT_Gender_O.OT_Gender => OT_Gender;
     OneOf<IField<BigInteger>, IField<string>> Language_O.Language => Language;
     IField<bool> Fateful_Encounter_O.Fateful_Encounter => Fateful_Encounter;
     IField<bool> Is_Egg_O.Is_Egg => Is_Egg;

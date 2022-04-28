@@ -36,7 +36,7 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Shiny_O, Nickname
     public BackedBoundableArrayField<BigInteger> IVs { get; } = new(new BigInteger[6], 31, 0);
     public BackedBoundableArrayField<BigInteger> EVs { get; } = new(new BigInteger[6], 255, 0);
     public BackedField<Gender?> Gender { get; } = new();
-    public BackedField<Nature?> Nature { get; } = new();
+    public BackedField<Nature> Nature { get; } = new();
     public BackedField<bool> Shiny { get; } = new();
     public BackedField<bool> Gigantamax_Factor { get; } = new();
     // PP Ups not used in Showdown, by default always max PP
@@ -116,8 +116,7 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Shiny_O, Nickname
         }
 
         // Nature
-        if (!Nature.IsNull())
-            Lines.Add($"{Nature.Value} Nature");
+        Lines.Add($"{Nature.Value} Nature");
 
         // Gigantamax
         if (Gigantamax_Factor.Value)
@@ -154,7 +153,7 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Shiny_O, Nickname
     OneOf<IField<BigInteger>, IField<string>> Ability_O.Ability => Ability;
     OneOf<IField<BigInteger[]>, IField<string[]>> Moves_O.Moves => Moves;
     OneOf<IField<BigInteger>, IField<string>> Item_O.Item => Item;
-    OneOf<IField<BigInteger>, IField<Nature>, IField<Nature?>> Nature_O.Nature => Nature;
+    OneOf<IField<BigInteger>, IField<Nature>> Nature_O.Nature => Nature;
     IField<BigInteger> Friendship_O.Friendship => Friendship;
     IField<BigInteger[]> IVs_O.IVs => IVs;
     IField<BigInteger[]> EVs_O.EVs => EVs;

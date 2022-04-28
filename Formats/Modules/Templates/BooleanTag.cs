@@ -6,16 +6,15 @@ namespace pkuManager.Formats.Modules.Templates;
 
 public interface BooleanTag_E : Tag
 {
-    protected void ExportBooleanTag(string tagName, IField<bool?> pkuVal,
-        IField<bool> formatVal, bool defaultVal, bool alertIfUnspecified)
+    protected AlertType ExportBooleanTag(IField<bool?> pkuVal, IField<bool> formatVal, bool defaultVal)
     {
         (bool checkedVal, AlertType at) = pkuVal.Value switch
         {
-            null => (defaultVal, alertIfUnspecified ? AlertType.UNSPECIFIED : AlertType.NONE),
+            null => (defaultVal, AlertType.UNSPECIFIED),
             _ => (pkuVal.Value.Value, AlertType.NONE)
         };
         formatVal.Value = checkedVal;
-        Warnings.Add(GetBooleanAlert(tagName, at, defaultVal));
+        return at;
     }
 
     protected static Alert GetBooleanAlert(string name, AlertType at, bool defaultVal) => at switch

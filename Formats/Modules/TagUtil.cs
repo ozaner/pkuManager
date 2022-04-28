@@ -111,16 +111,11 @@ public static class TagUtil
 
 
     /* ------------------------------------
-     * Gender Methods
+     * PID Methods
      * ------------------------------------
     */
-    /// <summary>
-    /// Gets the gender ratio of the given official <paramref name="species"/>.
-    /// </summary>
-    /// <param name="species">An official species. Will throw an exception otherwise.</param>
-    /// <returns>The gender ratio of <paramref name="species"/>.</returns>
-    public static GenderRatio GetGenderRatio(DexUtil.SFA sfa)
-        => SPECIES_DEX.ReadSpeciesDex<string>(sfa, "Gender Ratio").ToEnum<GenderRatio>().Value;
+    public static bool IsPIDShiny(uint pid, uint tid, bool gen6Plus)
+    => (tid / 65536 ^ tid % 65536 ^ pid / 65536 ^ pid % 65536) < (gen6Plus ? 16 : 8);
 
     /// <summary>
     /// Returns the gender of a Pokémon with the given <paramref name="pid"/> as determined by Gens 3-5. 
@@ -138,17 +133,14 @@ public static class TagUtil
         _ => Gender.Male
     };
 
+    public static Nature GetPIDNature(uint pid) => (Nature)(pid % 25);
 
-    /* ------------------------------------
-     * Unown Form Methods
-     * ------------------------------------
-    */
     /// <summary>
     /// Gets the form ID of an Unown with the given PID in Gen 3.
     /// </summary>
     /// <param name="pid">The Unown's PID.</param>
     /// <returns>The Unown form ID determined by the PID.</returns>
-    public static int GetUnownFormIDFromPID(uint pid)
+    public static int GetPIDUnownFormID(uint pid)
     {
         uint formID = 0;
         formID.SetBits(pid.GetBits(0, 2), 0, 2); //first two bits of byte 0
@@ -158,6 +150,76 @@ public static class TagUtil
 
         return (int)formID % 28;
     }
+
+    /// <summary>
+    /// Generates a PID that satisfies the given constraints in all generations.<br/>
+    /// If a constraint is null, it will be ignored.
+    /// </summary>
+    /// <param name="shinyDigest">A tuple of the tid and desired shinyness.</param>
+    /// <param name="genderDigest">A tuple of the gender ratio and the desired gender.</param>
+    /// <param name="nature">The desired nature.</param>
+    /// <param name="unownForm">The desired form, if the species is Unown.</param>
+    /// <returns>A random PID satisfying all the given constraints.</returns>
+    public static uint GenerateRandomPID((bool shiny, uint tid)? shinyDigest, (Gender gender,
+        GenderRatio gr)? genderDigest, Nature? nature = null, int? unownForm = null)
+    {
+        //Notice no option for ability slot.
+        //Getting legality is the user's problem. Preserving legality is pku's problem.
+        while (true)
+        {
+            uint pid = DataUtil.GetRandomUInt(); //Generate new PID candidate
+
+            // Unown Form Check
+            if (unownForm is not null)
+            {
+                if (unownForm != GetPIDUnownFormID(pid))
+                    continue;
+            }
+
+            // Gender Check
+            if (genderDigest is not null)
+            {
+                if (genderDigest.Value.gr is not (GenderRatio.All_Male or GenderRatio.All_Female or GenderRatio.All_Genderless))
+                {
+                    Gender pidGender = GetPIDGender(genderDigest.Value.gr, pid);
+
+                    //Male but pid is Female OR Female but pid is Male
+                    if ((genderDigest.Value.gender, pidGender) is (Gender.Male, not Gender.Male)
+                                                               or (Gender.Female, not Gender.Female))
+                        continue;
+                }
+            }
+
+            // Nature Check
+            if (nature is not null)
+            {
+                if (nature != GetPIDNature(pid))
+                    continue;
+            }
+
+            // Shiny Check
+            if (shinyDigest is not null)
+            {
+                if (IsPIDShiny(pid, shinyDigest.Value.tid, false) != shinyDigest.Value.shiny) //No harm keeping it gen6- for backwards compat.
+                    continue;      
+            }
+
+            return pid; // everything checks out
+        }
+    }
+
+
+    /* ------------------------------------
+     * Misc. Methods
+     * ------------------------------------
+    */
+    /// <summary>
+    /// Gets the gender ratio of the given <paramref name="sfa"/>.
+    /// </summary>
+    /// <param name="sfa">A SFA to search the speciesDex.</param>
+    /// <returns>The gender ratio of <paramref name="sfa"/>.</returns>
+    public static GenderRatio GetGenderRatio(DexUtil.SFA sfa)
+        => DexUtil.ReadSpeciesDex<string>(sfa, "Gender Ratio").ToEnum<GenderRatio>().Value;
 
     /// <summary>
     /// Gets the Unown form name the given ID corresponds to.
@@ -189,78 +251,6 @@ public static class TagUtil
             _ => null
         };
     }
-
-
-    /* ------------------------------------
-     * Misc. Methods
-     * ------------------------------------
-    */
-    /// <summary>
-    /// Generates a PID that satisfies the given constraints in all generations.<br/>
-    /// If a constraint is null, it will be ignored.
-    /// </summary>
-    /// <param name="shiny">The desired shinyness.</param>
-    /// <param name="tid">The Pokémon's TID.</param>
-    /// <param name="gender">The desired gender.</param>
-    /// <param name="gr">The species' gender ratio.</param>
-    /// <param name="nature">The desired nature.</param>
-    /// <param name="unownForm">The desired form, if the species is Unown.</param>
-    /// <returns>A random PID satisfying all the given constraints.</returns>
-    public static uint GenerateRandomPID(bool? shiny, uint tid, Gender? gender = null,
-        GenderRatio? gr = null, Nature? nature = null, int? unownForm = null)
-    {
-        //Notice no option for ability slot.
-        //Getting legality is the user's problem. Preserving legality is pku's problem.
-        while (true)
-        {
-            uint pid = DataUtil.GetRandomUInt(); //Generate new PID candidate
-
-            // Unown Form Check
-            if (unownForm is not null)
-            {
-                if (unownForm != GetUnownFormIDFromPID(pid))
-                    continue;
-            }
-
-            // Gender Check
-            if (gender is not null && gr is null)
-                throw new ArgumentException($"If {nameof(gender)} is specified, a gender ratio must also be specified.", nameof(gr));
-            else if (gender is not null) //gr is not null
-            {
-                if (gr is not (GenderRatio.All_Male or GenderRatio.All_Female or GenderRatio.All_Genderless))
-                {
-                    Gender pidGender = GetPIDGender(gr.Value, pid);
-
-                    //Male but pid is Female
-                    if ((gender, pidGender) is (Gender.Male, not Gender.Male))
-                        continue;
-
-                    //Female but pid is Male
-                    if ((gender, pidGender) is (Gender.Female, not Gender.Female))
-                        continue;
-                }
-            }
-
-            // Nature Check
-            if (nature is not null)
-            {
-                if ((int)nature != pid % 25)
-                    continue;
-            }
-
-            // Shiny Check
-            if (shiny is not null)
-            {
-                if ((pid / 65536 ^ pid % 65536 ^ tid / 65536 ^ tid % 65536) < 8 != shiny) //In gen 6+ that 8->16.
-                    continue;                                                             //No harm keeping it 8 for backwards compat.
-            }
-
-            return pid; // everything checks out
-        }
-    }
-
-    public static bool IsPIDShiny(uint pid, uint tid, bool gen6Plus)
-        => (tid / 65536 ^ tid % 65536 ^ pid / 65536 ^ pid % 65536) < (gen6Plus ? 16 : 8);
 
     /// <summary>
     /// Calculates the PP of the given <paramref name="move"/> with the given number of

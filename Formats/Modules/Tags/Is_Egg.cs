@@ -1,5 +1,6 @@
 ﻿using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
+using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.Tags;
@@ -17,7 +18,11 @@ public interface Is_Egg_E : BooleanTag_E
     public void ExportIs_Egg() => ExportIs_EggBase();
 
     public void ExportIs_EggBase()
-        => ExportBooleanTag("Is Egg", pku.Egg_Info.Is_Egg, Is_Egg_Field.Is_Egg, false, false);
+    {
+        AlertType at = ExportBooleanTag(pku.Egg_Info.Is_Egg, Is_Egg_Field.Is_Egg, false);
+        if (at is not AlertType.UNSPECIFIED)
+            GetBooleanAlert("Is Egg", at, false);
+    }
 }
 
 public interface Is_Egg_I : BooleanTag_I

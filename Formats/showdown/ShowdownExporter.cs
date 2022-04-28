@@ -3,7 +3,6 @@ using pkuManager.Formats.Modules.MetaTags;
 using pkuManager.Formats.Modules.Tags;
 using pkuManager.Formats.pku;
 using pkuManager.Utilities;
-using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.showdown;
@@ -84,14 +83,6 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
         => new("PP Ups", "Note that, even though one or more moves does not have exactly 3 PP Ups," +
             "the Showdown format treats all moves as having 3 PP Ups.");
 
-    public Alert GetNatureAlert(AlertType at, string val, string defaultVal)
-    {
-        Alert a = (this as Nature_E).GetNatureAlertBase(at, val, defaultVal);
-        if (at.HasFlag(AlertType.UNSPECIFIED))
-            a.Message += " (Showdown treats a blank nature as Serious).";
-        return a;
-    }
-
 
     /* ------------------------------------
      * Module Parameters 
@@ -112,7 +103,9 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     public int[] Moves_Indices { get; set; }
 
     public Item_O Item_Field => Data;
+
     public Nature_O Nature_Field => Data;
+    public Nature Nature_Default => Nature.Serious;
 
     public Friendship_O Friendship_Field => Data;
     public int Friendship_Default => 255;

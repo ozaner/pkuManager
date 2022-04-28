@@ -2,6 +2,7 @@
 using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Utilities;
+using System.Collections.Generic;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
@@ -32,7 +33,11 @@ public interface Gender_E : Tag
     public bool Gender_DisallowImpossibleGenders => false;
     public bool Gender_PIDDependent => false;
 
-    [PorterDirective(ProcessingPhase.FirstPass)]
+    public ChoiceAlert PID_DependencyError { get => null; set { } }
+    public Dictionary<string, object> PID_DependencyDigest { get => null; set { } }
+
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(PID_E.ExportPID),
+                                                nameof(Species_E.ExportSpecies))] //need for gender field
     public void ExportGender()
     {
         AlertType at = AlertType.NONE;
@@ -45,11 +50,12 @@ public interface Gender_E : Tag
             GenderRatio.All_Male => Gender.Male,
             _ => null
         };
-        Gender? defaultGender = Gender_Field.Gender.IsT2 ? null : mandatoryGender ?? DEFAULT_GENDER;
+        Gender? defaultGender = Gender_PIDDependent || Gender_Field.Gender.IsT2 ? null : mandatoryGender ?? DEFAULT_GENDER;
+        Gender? exportedGender;
 
         if (pku.Gender.IsNull())
         {
-            Gender_Field.Value = defaultGender;
+            exportedGender = defaultGender;
             if (mandatoryGender is null)
                 at = AlertType.UNSPECIFIED;
         }
@@ -59,35 +65,61 @@ public interface Gender_E : Tag
                 mandatoryGender is not null &&
                 readGender is not null && mandatoryGender != readGender)
             {
-                Gender_Field.Value = mandatoryGender;
+                exportedGender = mandatoryGender;
                 at = AlertType.MISMATCH;
             }
             else
             {
-                Gender_Field.Value = readGender ?? defaultGender;
+                exportedGender = readGender ?? defaultGender;
                 if (readGender is null)
                     at = AlertType.INVALID;
             }
         }
-        Warnings.Add(GetGenderAlert(at, Gender_Field.Value, pku.Gender.Value));
+
+
+        if (Gender_PIDDependent)
+        {
+            if (at is not AlertType.UNSPECIFIED) //when unspecified, pidDep gender alert is silent
+                Warnings.Add(GetGenderPIDAlert(at, pku.Gender.Value));
+
+            PID_DependencyDigest["Gender"] = exportedGender.HasValue ? (exportedGender.Value, gr) : null;
+
+            //add to pid dep error if necessary
+            if (PID_DependencyError is not null && exportedGender.HasValue && Gender_Field.Value != exportedGender)
+            {
+                var x = PID_DependencyError.Choices;
+                x[0].Message = x[0].Message.AddNewLine($"Gender: {Gender_Field.Value.Value.ToFormattedString()}");
+                x[1].Message = x[1].Message.AddNewLine($"Gender: {exportedGender.Value.ToFormattedString()}");
+            }
+        }
+        else
+        {
+            Gender_Field.Value = exportedGender;
+            Warnings.Add(GetGenderAlert(at, pku.Gender.Value, defaultGender));
+        }
     }
 
-    protected Alert GetGenderAlert(AlertType at, Gender? defaultGender, string invalidGender)
+    public Alert GetGenderAlert(AlertType at, string val, OneOf<Gender?, string> defaultVal)
+        => GetGenderAlertBase(at, val, defaultVal);
+
+    public Alert GetGenderPIDAlert(AlertType at, string val)
+        => GetGenderAlertBase(at, val, "using the gender decided by the PID");
+
+    public Alert GetGenderAlertBase(AlertType at, string val, OneOf<Gender?, string> defaultVal)
     {
         if (at is AlertType.NONE)
             return null;
 
         string msg = at switch
         {
-            AlertType.MISMATCH => $"This species cannot be {invalidGender}.",
-            AlertType.INVALID => $"'{invalidGender}' is not a valid gender.",
-            AlertType.UNSPECIFIED => "No gender was specified.",
+            AlertType.MISMATCH => $"This species cannot be {val}, ",
+            AlertType.INVALID => $"'{val}' is not a valid gender, ",
+            AlertType.UNSPECIFIED => "No gender was specified, ",
             _ => throw InvalidAlertType(at)
         };
-        if (defaultGender is null && Gender_PIDDependent)
-            msg += " Using the gender decided by the PID.";
-        else
-            msg += $" Setting gender to {(defaultGender.HasValue ? defaultGender : "nothing")}.";
+        msg += defaultVal.Match(
+            x => $" using the default: {x?.ToFormattedString() ?? "none"}",
+            x => x) + ".";
         return new("Gender", msg);
     }
 }

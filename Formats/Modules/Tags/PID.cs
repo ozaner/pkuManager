@@ -1,7 +1,6 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
-using pkuManager.Utilities;
-using System;
+using pkuManager.Formats.Modules.Templates;
 using System.Collections.Generic;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
@@ -17,152 +16,105 @@ public interface PID_O
 public interface PID_E : Tag
 {
     public PID_O PID_Field { get; }
-    public TID_O TID_Field { get; } //deals with shiny
-    public Species_O Species_Field { get; }
-    public Form_O Form_Field { get; } //unown form
-    public Shiny_O Shiny_Field { get; }
-    public Gender_O Gender_Field { get; }
-    public Nature_O Nature_Field { get; }
+    public bool PID_HasDependencies => false;
+    public ChoiceAlert PID_DependencyError { get => null; set { } }
+    public Dictionary<string, object> PID_DependencyDigest { get => null; set { } }
 
-    public bool PID_ShinyDependent => false;
-    public bool PID_Gen6ShinyOdds => true;
-    public bool PID_GenderDependent => false;
-    public bool PID_UnownFormDependent => false;
-    public bool PID_NatureDependent => false;
-
-    // PID [Requires: Gender, Form, Nature, TID] [ErrorResolver]
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(TID_E.ExportTID), nameof(Shiny_E.ExportShiny),
-              nameof(Gender_E.ExportGender), nameof(Form_E.ExportForm), nameof(Nature_E.ExportNature))]
+    [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportPID()
     {
-        uint checkedTID = TID_Field.TID.GetAs<uint>();
-        bool? checkedShiny = PID_ShinyDependent ? Shiny_Field.Shiny.Value : null;
-        Gender? checkedGender = PID_GenderDependent ? Gender_Field.Value : null;
-        Nature? checkedNature = PID_NatureDependent ? Nature_Field.Value : null;
-        int? checkedUnownForm = null;
-        if (PID_UnownFormDependent)
+        //check if in-bounds
+        (BigInteger? max, BigInteger? min) = PID_Field.PID is IBoundable<BigInteger> boundable ?
+            (boundable.Max, boundable.Min) : (null, null);
+        (PID_Field.PID.Value, AlertType at) = pku.PID.Value switch
         {
-            bool isUnown = Species_Field.Species.Match(
-                x => x.Value == 201,
-                x => x.Value == "Unown");
-            checkedUnownForm = isUnown ? Form_Field.Form.Match(
-                x => x.GetAs<int>(),
-                x => TagUtil.GetUnownFormIDFromName(x.Value)) : null;
-        }
-
-        // Deal with null PID
-        (uint pid, bool pidInBounds, AlertType at) = pku.PID.Value switch
-        {
-            null => ((uint)0, false, AlertType.UNSPECIFIED),
-            var x when x > uint.MaxValue => (uint.MaxValue, false, AlertType.OVERFLOW),
-            var x when x < uint.MinValue => ((uint)0, false, AlertType.UNDERFLOW),
-            _ => ((uint)pku.PID.Value, true, AlertType.NONE)
+            null => (0, AlertType.UNSPECIFIED),
+            var x when x > max => (max.Value, AlertType.OVERFLOW),
+            var x when x < min => (min.Value, AlertType.UNDERFLOW),
+            _ => (pku.PID.Value.Value, AlertType.NONE)
         };
-        Alert alert = GetPIDAlert(at);
 
-        // Check if any value has a pid-mismatch
-        bool genderMismatch = false, natureMismatch = false, unownMismatch = false, shinyMismatch = false;
-        int oldunownform = 0;
-        bool oldshiny = false;
-        Gender oldgender = DEFAULT_GENDER;
-        Nature oldnature = DEFAULT_NATURE;
-
-        if (checkedGender is not null) //gender mismatch check
+        if (PID_HasDependencies)
         {
-            oldgender = TagUtil.GetPIDGender(TagUtil.GetGenderRatio(pku), pid);
-            genderMismatch = checkedGender != oldgender;
-        }
-        if (checkedNature is not null) //nature mismatch check
-        {
-            oldnature = (Nature)(pid % 25);
-            natureMismatch = checkedNature != oldnature;
-        }
-        if (checkedUnownForm is not null) //unown form mismatch check
-        {
-            oldunownform = TagUtil.GetUnownFormIDFromPID(pid);
-            unownMismatch = checkedUnownForm is not null && checkedUnownForm != oldunownform;
-        }
-        if (checkedShiny is not null)
-        {
-            oldshiny = TagUtil.IsPIDShiny(pid, checkedTID, PID_Gen6ShinyOdds);
-            shinyMismatch = checkedShiny != oldshiny;
-        }
-
-        // Deal with pid-mismatches
-        BigInteger[] pids;
-        if (unownMismatch || genderMismatch || natureMismatch || shinyMismatch)
-        {
-            uint newPID = TagUtil.GenerateRandomPID(checkedShiny, checkedTID, checkedGender,
-                TagUtil.GetGenderRatio(pku), checkedNature, checkedUnownForm);
-
-            if (pidInBounds) //two options: old & new, need error
+            PID_DependencyDigest = new();
+            PID_DependencyDigest.Add("PID", at);
+            if (at is AlertType.NONE) //create pid dep error, in case it's needed
             {
-                List<(string, object, object)> tags = new();
-                if (unownMismatch)
-                    tags.Add(("Unown Form", TagUtil.GetUnownFormName(oldunownform),
-                        TagUtil.GetUnownFormName(checkedUnownForm.Value)));
-                if (genderMismatch)
-                    tags.Add(("Gender", oldgender, checkedGender));
-                if (natureMismatch)
-                    tags.Add(("Nature", oldnature, checkedNature));
-                if (shinyMismatch)
-                    tags.Add(("Shiny", oldshiny, checkedShiny));
-                alert = GetPIDAlert(AlertType.MISMATCH, tags); //RadioButtonAlert
-                pids = new BigInteger[] { pid, newPID }; //error: pid mismatched, choose old or new.
+                ChoiceAlert alert = GetPIDDepAlert();
+                PID_DependencyError = alert;
+                Errors.Add(alert);
+                return;
             }
-            else
-                pids = new BigInteger[] { newPID }; //warning: pid out of bounds, generating new one that deals with mismatches.
         }
-        else
-            pids = new BigInteger[] { pid }; //either:
-                                             //   warning: pid unspecified or out of bounds, rounding it.
-                                             //no warning: pid is in bounds w/ no mismatches.
 
-        //set values
-        PID_Resolver = new(alert, PID_Field.PID, pids);
-        if (alert is ChoiceAlert)
-            Errors.Add(alert);
-        else
-            Warnings.Add(alert);
+        //not a potential mismatch
+        Warnings.Add(GetPIDAlert(at, max, min, 0, false, PID_HasDependencies));
+    }
+
+    [PorterDirective(ProcessingPhase.FirstPassStage2)]
+    public void CleanupPIDDepError()
+    {
+        if (PID_HasDependencies)
+        {
+            bool pidOutOfBounds = PID_DependencyDigest["PID"] is not AlertType.NONE;
+            bool pidMismatch = PID_DependencyError is not null
+                            && PID_DependencyError.Choices[0].Message != ""
+                            && PID_DependencyError.Choices[1].Message != "";
+
+            //generate new PID using digest
+            PID_DependencyDigest.TryGetValue("Shiny", out object tempA);
+            (bool, uint)? shinyDigest = ((bool, uint)?)tempA;
+            PID_DependencyDigest.TryGetValue("Gender", out object tempB);
+            (Gender, GenderRatio)? genderDigest = ((Gender, GenderRatio)?)tempB;
+            PID_DependencyDigest.TryGetValue("Nature", out object tempC);
+            Nature? nature = (Nature?)tempC;
+            PID_DependencyDigest.TryGetValue("Unown Form", out object tempD);
+            int? unownForm = (int?)tempD;
+
+            uint newPID = TagUtil.GenerateRandomPID(shinyDigest, genderDigest, nature, unownForm);
+
+            if (pidOutOfBounds) //pid was out of bounds
+                PID_Field.PID.Value = newPID;
+            else if (!pidMismatch) //pid matches
+                Errors.Remove(PID_DependencyError);
+            else //pid doesn't match
+                PID_Resolver = new(PID_DependencyError, PID_Field.PID, new[] { PID_Field.PID.Value, newPID });
+        }
     }
 
     [PorterDirective(ProcessingPhase.SecondPass)]
-    public ErrorResolver<BigInteger> PID_Resolver { get; set; }
+    public ErrorResolver<BigInteger> PID_Resolver { get => null; set { } }
 
-    protected static Alert GetPIDAlert(AlertType at, List<(string, object, object)> tags = null)
+    protected static ChoiceAlert GetPIDDepAlert()
     {
-        if (at is AlertType.NONE)
-            return null;
-
         // PID-Mismatch Alert
-        if (at is AlertType.MISMATCH)
+        ChoiceAlert.SingleChoice[] choices =
         {
-            if (tags?.Count is not > 0)
-                throw new ArgumentException($"If {nameof(at)} is MISMATCH, {nameof(tags)} must be non-empty.", nameof(tags));
-            string choice1msg = "";
-            string choice2msg = "";
-            foreach ((string name, object a, object b) in tags)
-            {
-                choice1msg = choice1msg.AddNewLine($"{name}: {a}");
-                choice2msg = choice2msg.AddNewLine($"{name}: {b}");
-            }
-            ChoiceAlert.SingleChoice[] choices =
-            {
-                new("Use original PID", choice1msg),
-                new("Generate new PID", choice2msg)
-            };
+            new("Use original PID", ""),
+            new("Generate new PID", "")
+        };
+        return new ChoiceAlert("PID-Mismatch", "This pku's PID is incompatible with some of its other " +
+            "tags (in this format). Choose whether to keep the PID or generate a compatible one.", choices, true, 1);
+    }
 
-            return new ChoiceAlert("PID-Mismatch", "This pku's PID is incompatible with some of its other " +
-                "tags (in this format). Choose whether to keep the PID or generate a compatible one.", choices, true);
-        }
-
+    protected static Alert GetPIDAlert(AlertType at, BigInteger? max, BigInteger? min,
+        BigInteger defaultVal, bool alertIfUnspecified, bool hasDeps = false)
+    {
         // PID Alert
-        return new("PID", at switch
+        if (at is not AlertType.NONE && !hasDeps)
+            return NumericTag_E.GetNumericalAlert("PID", at, max, min, defaultVal, alertIfUnspecified);
+        else
         {
-            AlertType.UNSPECIFIED => "PID not specified",
-            AlertType.OVERFLOW => "This pku's PID is higher than the maximum",
-            AlertType.UNDERFLOW => "This pku's PID is lower than the minimum",
-            _ => throw InvalidAlertType(at)
-        } + ", generating one that matches this pku's other tags.");
+            if (at is AlertType.UNSPECIFIED && !alertIfUnspecified || at is AlertType.NONE)
+                return null;
+            else
+                return new("PID", at switch
+                {
+                    AlertType.UNSPECIFIED => "PID not specified",
+                    AlertType.OVERFLOW => "This pku's PID is higher than the maximum",
+                    AlertType.UNDERFLOW => "This pku's PID is lower than the minimum",
+                    _ => throw InvalidAlertType(at)
+                } + ", generating one that matches this pku's other tags.");
+        }
     }
 }

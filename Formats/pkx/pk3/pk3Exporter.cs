@@ -1,7 +1,5 @@
-﻿using OneOf;
-using pkuManager.Alerts;
+﻿using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
-using pkuManager.Formats.Fields.BackedFields;
 using pkuManager.Formats.Modules;
 using pkuManager.Formats.Modules.Tags;
 using pkuManager.Formats.pku;
@@ -54,14 +52,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
      * ------------------------------------
     */
     protected bool legalGen3Egg;
-    protected ImplicitFields implicitFields = new();
-    protected partial class ImplicitFields
-    {
-        public BackedBoundableField<BigInteger> Form { get; } = new(); // Form [Implicit]
-        public BackedField<bool> Shiny = new(); // Shiny [Implicit]
-        public BackedField<Gender?> Gender { get; } = new(); //Gender [Implicit]
-        public BackedField<Nature?> Nature { get; } = new(); // Nature [Implicit]
-    }
 
 
     /* ------------------------------------
@@ -73,6 +63,30 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     {
         (this as Species_E).ExportSpeciesBase();
         Data.HasSpecies.ValueAsBool = true;
+    }
+
+    // Form
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(PID_E.ExportPID), nameof(ExportSpecies))]
+    public virtual void ExportForm()
+    {
+        (this as Form_E).ExportFormBase();
+        if (Species_Field.Species.AsT0.Value == 201) //Unown
+        {
+            string pkuForm = pku.Forms.Value.JoinLexical();
+            string pidForm = TagUtil.GetUnownFormName(Form_Field.Form.AsT0.GetAs<int>());
+
+            int? exportedID = TagUtil.GetUnownFormIDFromName(pkuForm);
+            PID_DependencyDigest["Unown Form"] = exportedID;
+
+            //add to pid dep error if necessary
+            //pkuForm should be valid at this point
+            if (PID_DependencyError is not null && pkuForm != pidForm)
+            {
+                var x = PID_DependencyError.Choices;
+                x[0].Message = x[0].Message.AddNewLine($"Unown Form: {pidForm}");
+                x[1].Message = x[1].Message.AddNewLine($"Unown Form: {pkuForm}");
+            }
+        }
     }
 
     // Egg
@@ -243,13 +257,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
             return null;
     }
 
-    public Alert GetNatureAlert(AlertType at, string val, string defaultVal) => at switch
-    {
-        AlertType.UNSPECIFIED => new Alert("Nature", "No nature specified, using the nature decided by the PID."),
-        AlertType.INVALID => new Alert("Nature", $"The nature \"{val}\" is not valid in this format. Using the nature decided by the PID."),
-        _ => (this as Nature_E).GetNatureAlertBase(at, val, defaultVal)
-    };
-
     public static Alert GetAbilitySlotAlert(AlertType at, string val, string defaultVal)
     {
         if (at.HasFlag(AlertType.MISMATCH))
@@ -283,11 +290,15 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
      * ------------------------------------
     */
     public Species_O Species_Field => Data;
-    public Form_O Form_Field => implicitFields;
-    public Shiny_O Shiny_Field => implicitFields;
+    public Form_O Form_Field => Data;
+
+    public Shiny_O Shiny_Field => Data;
+    public bool Shiny_Gen6Odds => false;
+    public bool Shiny_PIDDependent => true;
+
     public Experience_O Experience_Field => Data;
 
-    public Gender_O Gender_Field => implicitFields;
+    public Gender_O Gender_Field => Data;
     public bool Gender_DisallowImpossibleGenders => true;
     public bool Gender_PIDDependent => true;
 
@@ -300,15 +311,16 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public PP_Ups_O PP_Ups_Field => Data;
     public PP_O PP_Field => Data;
     public Item_O Item_Field => Data;
-    public Nature_O Nature_Field => implicitFields;
-    public Friendship_O Friendship_Field => Data;
 
+    public Nature_O Nature_Field => Data;
+    public bool Nature_PIDDependent => true;
+
+    public Friendship_O Friendship_Field => Data;
+    
     public PID_O PID_Field => Data;
-    public bool PID_GenderDependent => true;
-    public bool PID_UnownFormDependent => true;
-    public bool PID_NatureDependent => true;
-    public bool PID_ShinyDependent => true;
-    public bool PID_Gen6ShinyOdds => false;
+    public bool PID_HasDependencies => true;
+    public ChoiceAlert PID_DependencyError { get; set; }
+    public Dictionary<string, object> PID_DependencyDigest { get; set; }
 
     public TID_O TID_Field => Data;
     public IVs_O IVs_Field => Data;
@@ -333,17 +345,4 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     public Is_Egg_O Is_Egg_Field => Data;
     public Pokerus_O Pokerus_Field => Data;
     public ByteOverride_O ByteOverride_Field => Data;
-
-
-    /* ------------------------------------
-     * Duct Tape
-     * ------------------------------------
-    */
-    protected partial class ImplicitFields : Form_O, Gender_O, Nature_O, Shiny_O
-    {
-        OneOf<IField<BigInteger>, IField<string>> Form_O.Form => Form;
-        IField<bool> Shiny_O.Shiny => Shiny;
-        OneOf<IField<BigInteger>, IField<Gender>, IField<Gender?>> Gender_O.Gender => Gender;
-        OneOf<IField<BigInteger>, IField<Nature>, IField<Nature?>> Nature_O.Nature => Nature;
-    }
 }
