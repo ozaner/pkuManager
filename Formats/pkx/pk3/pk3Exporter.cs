@@ -52,6 +52,11 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
      * ------------------------------------
     */
     protected bool legalGen3Egg;
+    public int[] Moves_Indices { get; set; }
+    public ChoiceAlert PID_DependencyError { get; set; }
+    public Dictionary<string, object> PID_DependencyDigest { get; set; }
+    public string Origin_Game_Name { get; set; } // Game Name (string form of Origin Game)
+    public ChoiceAlert Language_DependencyError { get; set; }
 
 
     /* ------------------------------------
@@ -291,54 +296,28 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     */
     public Species_O Species_Field => Data;
     public Form_O Form_Field => Data;
-
     public Shiny_O Shiny_Field => Data;
-    public bool Shiny_Gen6Odds => false;
-    public bool Shiny_PIDDependent => true;
-
     public Experience_O Experience_Field => Data;
-
     public Gender_O Gender_Field => Data;
-    public bool Gender_DisallowImpossibleGenders => true;
-    public bool Gender_PIDDependent => true;
-
     public Nickname_O Nickname_Field => Data;
-    public bool Nickname_CapitalizeDefault => true;
-
     public Moves_O Moves_Field => Data;
-    public int[] Moves_Indices { get; set; } //indices of the chosen moves in the pku
-
     public PP_Ups_O PP_Ups_Field => Data;
     public PP_O PP_Field => Data;
     public Item_O Item_Field => Data;
-
     public Nature_O Nature_Field => Data;
-    public bool Nature_PIDDependent => true;
-
     public Friendship_O Friendship_Field => Data;
-    
     public PID_O PID_Field => Data;
-    public bool PID_HasDependencies => true;
-    public ChoiceAlert PID_DependencyError { get; set; }
-    public Dictionary<string, object> PID_DependencyDigest { get; set; }
-
     public TID_O TID_Field => Data;
     public IVs_O IVs_Field => Data;
     public EVs_O EVs_Field => Data;
     public Contest_Stats_O Contest_Stats_Field => Data;
     public Ball_O Ball_Field => Data;
-
     public Origin_Game_O Origin_Game_Field => Data;
-    public string Origin_Game_Name { get; set; } // Game Name (string form of Origin Game)
-
     public OT_O OT_Field => Data;
     public Met_Location_O Met_Location_Field => Data;
     public Met_Level_O Met_Level_Field => Data;
     public OT_Gender_O OT_Gender_Field => Data;
-
     public Language_O Language_Field => Data;
-    public ChoiceAlert Language_DependencyError { get; set; }
-
     public Fateful_Encounter_O Fateful_Encounter_Field => Data;
     public Markings_O Markings_Field => Data;
     public Ribbons_O Ribbons_Field => Data;

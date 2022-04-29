@@ -12,15 +12,15 @@ namespace pkuManager.Formats.Modules.Tags;
 public interface Shiny_O
 {
     public IField<bool> Shiny { get; }
+    public bool Shiny_Gen6Odds => false;
+    public bool Shiny_PIDDependent => false;
 }
 
 public interface Shiny_E : BooleanTag_E
 {
     public Shiny_O Shiny_Field { get; }
-    public bool Shiny_Gen6Odds => false;
-    public bool Shiny_PIDDependent => false;
-
     public TID_O TID_Field { get => null; set { } }
+
     public ChoiceAlert PID_DependencyError { get => null; set { } }
     public Dictionary<string, object> PID_DependencyDigest { get => null; set { } }
 
@@ -28,7 +28,7 @@ public interface Shiny_E : BooleanTag_E
     public void ExportShiny()
     {
         AlertType at;
-        if (Shiny_PIDDependent)
+        if (Shiny_Field.Shiny_PIDDependent)
         {
             BackedField<bool> dummyField = new();
             at = ExportBooleanTag(pku.Shiny, dummyField, false);

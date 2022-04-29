@@ -8,14 +8,14 @@ namespace pkuManager.Formats.Modules.Tags;
 public interface Friendship_O
 {
     public IField<BigInteger> Friendship { get; }
+    public int Friendship_Default => 0;
 }
 
 public interface Friendship_E : NumericTag_E
 {
     public Friendship_O Friendship_Field { get; }
-    public int Friendship_Default => 0;
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportFriendship()
-        => ExportNumericTag("Friendship", pku.Friendship, Friendship_Field.Friendship, Friendship_Default, false);
+        => ExportNumericTag("Friendship", pku.Friendship, Friendship_Field.Friendship, Friendship_Field.Friendship_Default, false);
 }

@@ -43,6 +43,20 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Shiny_O, Nickname
     // Found one thread regarding it but nothing seems to have come of it:
     // https://www.smogon.com/forums/threads/allow-moves-to-have-non-max-pp.3653621/
 
+
+    /* ------------------------------------
+     * Module Parameters
+     * ------------------------------------
+    */
+    public Nature Nature_Default => TagEnums.Nature.Serious;
+    public int Friendship_Default => 255;
+    public int IVs_Default => 31;
+
+
+    /* ------------------------------------
+     * File Conversion
+     * ------------------------------------
+    */
     /// <summary>
     /// A list of strings that will be added to the final .txt file upon calling <see cref="ToFile"/>.
     /// </summary>

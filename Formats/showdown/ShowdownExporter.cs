@@ -94,7 +94,21 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
 
 
     /* ------------------------------------
-     * Module Parameters 
+     * Working Variables
+     * ------------------------------------
+    */
+    public int[] Moves_Indices { get; set; }
+
+
+    /* ------------------------------------
+     * Exporting Parameters
+     * ------------------------------------
+    */
+    public bool IVs_AlertIfUnspecified => false;
+
+
+    /* ------------------------------------
+     * Module Fields
      * ------------------------------------
     */
     public Species_O Species_Field => Data;
@@ -104,22 +118,11 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     public Ability_O Ability_Field => Data;
     public Nickname_O Nickname_Field => Data;
     public Level_O Level_Field => Data;
-
     public Moves_O Moves_Field => Data;
-    public int[] Moves_Indices { get; set; }
-
     public Item_O Item_Field => Data;
-
     public Nature_O Nature_Field => Data;
-    public Nature Nature_Default => Nature.Serious;
-
     public Friendship_O Friendship_Field => Data;
-    public int Friendship_Default => 255;
-
     public IVs_O IVs_Field => Data;
-    public int IVs_Default => 31;
-    public bool IVs_AlertIfUnspecified => false;
-    
     public EVs_O EVs_Field => Data;
     public Gigantamax_Factor_O Gigantamax_Factor_Field => Data;
 }

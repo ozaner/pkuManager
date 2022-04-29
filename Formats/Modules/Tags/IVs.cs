@@ -8,15 +8,15 @@ namespace pkuManager.Formats.Modules.Tags;
 public interface IVs_O
 {
     public IField<BigInteger[]> IVs { get; }
+    public int IVs_Default => 0;
 }
 
 public interface IVs_E : MultiNumericTag_E
 {
     public IVs_O IVs_Field { get; }
-    public int IVs_Default => 0;
     public bool IVs_AlertIfUnspecified => true;
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportIVs()
-        => ExportMultiNumericTag("IVs", TagUtil.STAT_NAMES, pku.IVs_Array, IVs_Field.IVs, IVs_Default, IVs_AlertIfUnspecified);
+        => ExportMultiNumericTag("IVs", TagUtil.STAT_NAMES, pku.IVs_Array, IVs_Field.IVs, IVs_Field.IVs_Default, IVs_AlertIfUnspecified);
 }

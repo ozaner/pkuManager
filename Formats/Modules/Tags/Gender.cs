@@ -12,6 +12,8 @@ namespace pkuManager.Formats.Modules.Tags;
 public interface Gender_O
 {
     public OneOf<IField<BigInteger>, IField<Gender>, IField<Gender?>> Gender { get; }
+    public bool Gender_DisallowImpossibleGenders => false;
+    public bool Gender_PIDDependent => false;
 
     public sealed Gender? Value
     {
@@ -30,8 +32,6 @@ public interface Gender_O
 public interface Gender_E : Tag
 {
     public Gender_O Gender_Field { get; }
-    public bool Gender_DisallowImpossibleGenders => false;
-    public bool Gender_PIDDependent => false;
 
     public ChoiceAlert PID_DependencyError { get => null; set { } }
     public Dictionary<string, object> PID_DependencyDigest { get => null; set { } }
@@ -50,7 +50,7 @@ public interface Gender_E : Tag
             GenderRatio.All_Male => Gender.Male,
             _ => null
         };
-        Gender? defaultGender = Gender_PIDDependent || Gender_Field.Gender.IsT2 ? null : mandatoryGender ?? DEFAULT_GENDER;
+        Gender? defaultGender = Gender_Field.Gender_PIDDependent || Gender_Field.Gender.IsT2 ? null : mandatoryGender ?? DEFAULT_GENDER;
         Gender? exportedGender;
 
         if (pku.Gender.IsNull())
@@ -61,7 +61,7 @@ public interface Gender_E : Tag
         }
         else
         {
-            if (Gender_DisallowImpossibleGenders &&
+            if (Gender_Field.Gender_DisallowImpossibleGenders &&
                 mandatoryGender is not null &&
                 readGender is not null && mandatoryGender != readGender)
             {
@@ -77,7 +77,7 @@ public interface Gender_E : Tag
         }
 
 
-        if (Gender_PIDDependent)
+        if (Gender_Field.Gender_PIDDependent)
         {
             if (at is not AlertType.UNSPECIFIED) //when unspecified, pidDep gender alert is silent
                 Warnings.Add(GetGenderPIDAlert(at, pku.Gender.Value));

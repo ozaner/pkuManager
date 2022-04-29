@@ -12,13 +12,13 @@ namespace pkuManager.Formats.Modules.Tags;
 public interface Nickname_O
 {
     public OneOf<BAMStringField, IField<string>> Nickname { get; }
+    public bool Nickname_CapitalizeDefault => false;
 }
 
 public interface Nickname_E : StringTag_E
 {
     public Nickname_O Nickname_Field { get; }
     public Is_Egg_O Is_Egg_Field => null;
-    public bool Nickname_CapitalizeDefault => false;
 
     [PorterDirective(ProcessingPhase.FirstPass, nameof(Language_E.ExportLanguage),
                                                 nameof(Is_Egg_E.ExportIs_Egg))]
@@ -32,7 +32,7 @@ public interface Nickname_E : StringTag_E
             if (pku.Nickname.IsNull()) //invalid langs have no default name
             {
                 nickname = TagUtil.GetDefaultName(pku.Species.Value, Is_Egg_Field?.Is_Egg.Value is true, lang);
-                if (Nickname_CapitalizeDefault)
+                if (Nickname_Field.Nickname_CapitalizeDefault)
                     nickname = nickname?.ToUpperInvariant();
             }
             else
@@ -50,7 +50,6 @@ public interface Nickname_I : StringTag_I
 {
     public Nickname_O Nickname_Field { get; }
     public Is_Egg_O Is_Egg_Field => null;
-    public bool Nickname_CapitalizeDefault => false;
 
     [PorterDirective(ProcessingPhase.FirstPass, nameof(Language_I.ImportLanguage),
                                                 "ImportSpecies", "ImportIs_Egg")]
@@ -64,7 +63,7 @@ public interface Nickname_I : StringTag_I
         void dealWithDefault()
         {
             string checkName = TagUtil.GetDefaultName(pku.Species.Value, pku.IsEgg(), pku.Game_Info.Language.Value);
-            if (Nickname_CapitalizeDefault)
+            if (Nickname_Field.Nickname_CapitalizeDefault)
                 checkName = checkName?.ToUpperInvariant();
             if (pku.Nickname.Value == checkName)
                 pku.Nickname.Value = null;

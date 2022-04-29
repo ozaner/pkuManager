@@ -11,12 +11,12 @@ namespace pkuManager.Formats.Modules.Tags;
 public interface PID_O
 {
     public IField<BigInteger> PID { get; }
+    public bool PID_HasDependencies => false;
 }
 
 public interface PID_E : Tag
 {
     public PID_O PID_Field { get; }
-    public bool PID_HasDependencies => false;
     public ChoiceAlert PID_DependencyError { get => null; set { } }
     public Dictionary<string, object> PID_DependencyDigest { get => null; set { } }
 
@@ -34,7 +34,7 @@ public interface PID_E : Tag
             _ => (pku.PID.Value.Value, AlertType.NONE)
         };
 
-        if (PID_HasDependencies)
+        if (PID_Field.PID_HasDependencies)
         {
             PID_DependencyDigest = new();
             PID_DependencyDigest.Add("PID", at);
@@ -48,13 +48,13 @@ public interface PID_E : Tag
         }
 
         //not a potential mismatch
-        Warnings.Add(GetPIDAlert(at, max, min, 0, false, PID_HasDependencies));
+        Warnings.Add(GetPIDAlert(at, max, min, 0, false, PID_Field.PID_HasDependencies));
     }
 
     [PorterDirective(ProcessingPhase.FirstPassStage2)]
     public void CleanupPIDDepError()
     {
-        if (PID_HasDependencies)
+        if (PID_Field.PID_HasDependencies)
         {
             bool pidOutOfBounds = PID_DependencyDigest["PID"] is not AlertType.NONE;
             bool pidMismatch = PID_DependencyError is not null

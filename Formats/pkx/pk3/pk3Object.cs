@@ -141,7 +141,7 @@ public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nat
 
         // Implicit fields
         Form = new(() => Species.Value == 201 ? TagUtil.GetPIDUnownFormID(PID.GetAs<uint>()) : 0, _ => { });
-        Shiny = new(() => TagUtil.IsPIDShiny(PID.GetAs<uint>(), TID.GetAs<uint>(), false), _ => { });
+        Shiny = new(() => TagUtil.IsPIDShiny(PID.GetAs<uint>(), TID.GetAs<uint>(), Shiny_Gen6Odds), _ => { });
         Gender = new(() => {
             //deoxys, castform, and unown forms keep same gender ratio, no need to check.
             DexUtil.SFA sfa = DexUtil.GetSFAFromIndices(FormatName, Species.GetAs<int>(), (int?)null, false);
@@ -185,6 +185,19 @@ public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nat
         NonSubData.SetArray(0, file, NON_SUBDATA_SIZE);
         UnencryptSubData(new ByteArrayManipulator(file[NON_SUBDATA_SIZE..FILE_SIZE_PC], BIG_ENDIANESS));
     }
+
+
+    /* ------------------------------------
+     * Module Parameters
+     * ------------------------------------
+    */
+    public bool Nickname_CapitalizeDefault => true;
+    public bool Shiny_Gen6Odds => false;
+    public bool Shiny_PIDDependent => true;
+    public bool Gender_DisallowImpossibleGenders => true;
+    public bool Gender_PIDDependent => true;
+    public bool Nature_PIDDependent => true;
+    public bool PID_HasDependencies => true;
 
 
     /* ------------------------------------

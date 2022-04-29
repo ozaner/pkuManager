@@ -31,8 +31,13 @@ public class pk3Importer : Importer, Is_Egg_I, Language_I, Nickname_I, OT_I
         CanPort = Reason is null;
     }
 
-    //Working Variables
+
+    /* ------------------------------------
+     * Working Variables
+     * ------------------------------------
+    */
     protected bool legalGen3Egg;
+    public ChoiceAlert Language_DependencyError { get; set; }
 
 
     /* ------------------------------------
@@ -107,12 +112,7 @@ public class pk3Importer : Importer, Is_Egg_I, Language_I, Nickname_I, OT_I
      * ------------------------------------
     */
     public Is_Egg_O Is_Egg_Field => Data;
-
     public Language_O Language_Field => Data;
-    public ChoiceAlert Language_DependencyError { get; set; }
-
     public Nickname_O Nickname_Field => Data;
-    public bool Nickname_CapitalizeDefault => true;
-
     public OT_O OT_Field => Data;
 }
