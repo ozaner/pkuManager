@@ -1,7 +1,9 @@
 ﻿using OneOf;
+using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
 using System.Numerics;
+using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.Tags;
@@ -23,10 +25,17 @@ public interface Ability_O : IndexTag_O
 public interface Ability_E : IndexTag_E
 {
     public Ability_O Ability_Field { get; }
-    public string Ability_Default => "None";
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportAbility()
-        => ExportIndexTag("Ability", pku.Ability, Ability_Default, true,
-            Ability_Field.IsValid, x => Ability_Field.AsString = x);
+    {
+        AlertType at = ExportIndexTag(pku.Ability, "None", Ability_Field.IsValid, x => Ability_Field.AsString = x);
+        Warnings.Add(GetAbilityAlert(at));
+    }
+
+    public Alert GetAbilityAlert(AlertType at)
+        => GetAbilityAlertBase(at);
+
+    public Alert GetAbilityAlertBase(AlertType at)
+        => GetIndexAlert("Abilities", at, pku.Ability.Value, "None");
 }

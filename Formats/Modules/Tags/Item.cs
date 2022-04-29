@@ -2,6 +2,7 @@
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
 using System.Numerics;
+using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.Tags;
@@ -26,6 +27,9 @@ public interface Item_E : IndexTag_E
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportItem()
-        => ExportIndexTag("Item", pku.Item, "None", false,
-            Item_Field.IsValid, x => Item_Field.AsString = x);
+    {
+        AlertType at = ExportIndexTag(pku.Item, "None", Item_Field.IsValid, x => Item_Field.AsString = x);
+        if (at is not AlertType.UNSPECIFIED) //ignore unspecified
+            Warnings.Add(GetIndexAlert("Item", at, pku.Item.Value, "None"));
+    }
 }

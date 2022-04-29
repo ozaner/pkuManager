@@ -30,8 +30,7 @@ public interface IndexTag_O
 
 public interface IndexTag_E : Tag
 {
-    protected void ExportIndexTag(string tagName, IField<string> pkuTag, string defaultVal,
-        bool alertIfUnspecified, Predicate<string> isValid, Action<string> setIndexField)
+    protected AlertType ExportIndexTag(IField<string> pkuTag, string defaultVal, Predicate<string> isValid, Action<string> setIndexField)
     {
         AlertType at = AlertType.NONE;
         string finalVal = defaultVal;
@@ -41,10 +40,10 @@ public interface IndexTag_E : Tag
         else if (!pkuTag.IsNull()) //tag specified & DNE
             at = AlertType.INVALID;
         else //tag unspecified
-            at = alertIfUnspecified ? AlertType.UNSPECIFIED : AlertType.NONE;
+            at = AlertType.UNSPECIFIED;
 
         setIndexField(finalVal);
-        Warnings.Add(GetIndexAlert(tagName, at, pkuTag.Value, defaultVal));
+        return at;
     }
 
     protected static Alert GetIndexAlert(string tagName, AlertType at, string val, string defaultVal) => at switch

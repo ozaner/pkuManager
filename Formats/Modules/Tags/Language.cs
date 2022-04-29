@@ -45,8 +45,11 @@ public interface Language_E : Language_P, IndexTag_E
             Language_Resolver = new(Language_DependencyError, Language_Field.Language.AsT0, langsEnc);
         }
         else
-            ExportIndexTag("Language", pku.Game_Info.Language, "None", true,
-                Language_Field.IsValid, x => Language_Field.AsString = x);
+        {
+            AlertType at = ExportIndexTag(pku.Game_Info.Language, "None", Language_Field.IsValid, x => Language_Field.AsString = x);
+            if (at is not AlertType.UNSPECIFIED) //ignore unspecified
+                Warnings.Add(GetIndexAlert("Language", at, pku.Game_Info.Language.Value, "None"));
+        }
     }
 
     [PorterDirective(ProcessingPhase.SecondPass)]

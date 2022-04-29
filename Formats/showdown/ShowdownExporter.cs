@@ -3,6 +3,7 @@ using pkuManager.Formats.Modules.MetaTags;
 using pkuManager.Formats.Modules.Tags;
 using pkuManager.Formats.pku;
 using pkuManager.Utilities;
+using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.showdown;
@@ -83,6 +84,14 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
         => new("PP Ups", "Note that, even though one or more moves does not have exactly 3 PP Ups," +
             "the Showdown format treats all moves as having 3 PP Ups.");
 
+    public Alert GetAbilityAlert(AlertType at)
+    {
+        Alert a = (this as Ability_E).GetAbilityAlertBase(at);
+        if (a is not null)
+            a.Message += " (Showdown will pick a legal one).";
+        return a;
+    }
+
 
     /* ------------------------------------
      * Module Parameters 
@@ -92,10 +101,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     public Form_O Form_Field => Data;
     public Shiny_O Shiny_Field => Data;
     public Gender_O Gender_Field => Data;
-
     public Ability_O Ability_Field => Data;
-    public string Ability_Default => "None (Showdown will pick one)";
-
     public Nickname_O Nickname_Field => Data;
     public Level_O Level_Field => Data;
 

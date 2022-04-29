@@ -2,6 +2,7 @@
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
 using System.Numerics;
+using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.Tags;
@@ -26,6 +27,8 @@ public interface Ball_E : IndexTag_E
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportBall()
-        => ExportIndexTag("Ball", pku.Catch_Info.Ball, "Poké Ball", true,
-            Ball_Field.IsValid, x => Ball_Field.AsString = x);
+    {
+        AlertType at = ExportIndexTag(pku.Catch_Info.Ball, "Poké Ball", Ball_Field.IsValid, x => Ball_Field.AsString = x);
+        Warnings.Add(GetIndexAlert("Ball", at, pku.Catch_Info.Ball.Value, "Poké Ball"));
+    }
 }
