@@ -49,6 +49,7 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Shiny_O, Nickname
      * ------------------------------------
     */
     public Nature Nature_Default => TagEnums.Nature.Serious;
+    public int Level_Default => 100;
     public int Friendship_Default => 255;
     public int IVs_Default => 31;
 
