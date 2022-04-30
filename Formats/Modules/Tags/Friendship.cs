@@ -13,9 +13,10 @@ public interface Friendship_O
 
 public interface Friendship_E : NumericTag_E
 {
-    public Friendship_O Friendship_Field { get; }
-
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportFriendship()
-        => ExportNumericTag("Friendship", pku.Friendship, Friendship_Field.Friendship, Friendship_Field.Friendship_Default, false);
+    {
+        Friendship_O friendshipObj = Data as Friendship_O;
+        ExportNumericTag("Friendship", pku.Friendship, friendshipObj.Friendship, friendshipObj.Friendship_Default, false);
+    }
 }

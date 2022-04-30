@@ -31,8 +31,6 @@ public interface Gender_O
 
 public interface Gender_E : Tag
 {
-    public Gender_O Gender_Field { get; }
-
     public ChoiceAlert PID_DependencyError { get => null; set { } }
     public Dictionary<string, object> PID_DependencyDigest { get => null; set { } }
 
@@ -40,6 +38,8 @@ public interface Gender_E : Tag
                                                 nameof(Species_E.ExportSpecies))] //need for gender field
     public void ExportGender()
     {
+        Gender_O Gender_Field = Data as Gender_O;
+
         AlertType at = AlertType.NONE;
         Gender? readGender = pku.Gender.ToEnum<Gender>();
         GenderRatio gr = TagUtil.GetGenderRatio(pku);

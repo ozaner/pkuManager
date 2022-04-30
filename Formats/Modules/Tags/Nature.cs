@@ -20,35 +20,34 @@ public interface Nature_O
 
 public interface Nature_E : EnumTag_E
 {
-    public Nature_O Nature_Field { get; }
-
     public ChoiceAlert PID_DependencyError { get => null; set { } }
     public Dictionary<string, object> PID_DependencyDigest { get => null; set { } }
 
     [PorterDirective(ProcessingPhase.FirstPass, nameof(PID_E.ExportPID))]
     public void ExportNature()
     {
-        if (Nature_Field.Nature_PIDDependent)
+        Nature_O natureObj = Data as Nature_O;
+        if (natureObj.Nature_PIDDependent)
         {
             BackedField<Nature> dummyField = new();
-            AlertType at = ExportEnumTag(pku.Nature, Nature_Field.Nature_Default, dummyField);
+            AlertType at = ExportEnumTag(pku.Nature, natureObj.Nature_Default, dummyField);
             Nature? exportedNat = dummyField.Value;
 
             Warnings.Add(GetNaturePIDAlert(at, pku.Nature.Value));
             PID_DependencyDigest["Nature"] = exportedNat;
 
             //add to pid dep error if necessary
-            if (PID_DependencyError is not null && exportedNat.HasValue && Nature_Field.Nature.AsT1.Value != exportedNat)
+            if (PID_DependencyError is not null && exportedNat.HasValue && natureObj.Nature.AsT1.Value != exportedNat)
             {
                 var x = PID_DependencyError.Choices;
-                x[0].Message = x[0].Message.AddNewLine($"Nature: {Nature_Field.Nature.AsT1.Value.ToFormattedString()}");
+                x[0].Message = x[0].Message.AddNewLine($"Nature: {natureObj.Nature.AsT1.Value.ToFormattedString()}");
                 x[1].Message = x[1].Message.AddNewLine($"Nature: {exportedNat.ToFormattedString()}");
             }
         }
         else //pid independent
         {
-            AlertType at = ExportEnumTag(pku.Nature, Nature_Field.Nature_Default, Nature_Field.Nature);
-            Warnings.Add(GetNatureAlert(at, pku.Nature.Value, Nature_Field.Nature_Default));
+            AlertType at = ExportEnumTag(pku.Nature, natureObj.Nature_Default, natureObj.Nature);
+            Warnings.Add(GetNatureAlert(at, pku.Nature.Value, natureObj.Nature_Default));
         }
     }
 

@@ -12,9 +12,10 @@ public interface EVs_O
 
 public interface EVs_E : MultiNumericTag_E
 {
-    public EVs_O EVs_Field { get; }
-
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportEVs()
-        => ExportMultiNumericTag("EVs", TagUtil.STAT_NAMES, pku.EVs_Array, EVs_Field.EVs, 0, false);
+    {
+        EVs_O evsObj = Data as EVs_O;
+        ExportMultiNumericTag("EVs", TagUtil.STAT_NAMES, pku.EVs_Array, evsObj.EVs, 0, false);
+    }
 }

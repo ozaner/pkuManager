@@ -14,14 +14,12 @@ public interface Form_O
 
 public interface Form_E : Tag
 {
-    public Form_O Form_Field { get; }
-
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportForm() => ExportFormBase();
 
     public void ExportFormBase()
     {
-        Form_Field.Form.Switch(
+        (Data as Form_O).Form.Switch(
             x => x.SetAs(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, "Form Indices").Value), //int index
             x => x.Value = DexUtil.GetSpeciesIndexedValue<string>(pku, FormatName, "Form Indices") //string index
         );

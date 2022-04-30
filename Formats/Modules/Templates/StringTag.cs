@@ -13,7 +13,6 @@ namespace pkuManager.Formats.Modules.Templates;
 
 public interface StringTag_E : Tag
 {
-    public Language_O Language_Field => null;
     public ChoiceAlert Language_DependencyError => null;
 
     public ErrorResolver<BigInteger[]> ExportString(string tagName, string str,
@@ -25,7 +24,7 @@ public interface StringTag_E : Tag
         if (Language_DependencyError is null) //valid lang/not lang dep
         {
             bool langDep = DexUtil.CharEncoding.IsLangDependent(FormatName);
-            string lang = langDep ? Language_Field.AsString : null;
+            string lang = langDep ? (Data as Language_O).AsString : null;
             field.Switch(
                 x => {
                     int maxLength = x.Length;
@@ -86,7 +85,6 @@ public interface StringTag_E : Tag
 
 public interface StringTag_I : ByteOverride_I
 {
-    public Language_O Language_Field => null;
     public ChoiceAlert Language_DependencyError => null;
 
     public ErrorResolver<string> ImportString(string tagName, IField<string> pkuField, OneOf<BAMStringField, IField<string>> field)
@@ -94,7 +92,7 @@ public interface StringTag_I : ByteOverride_I
         if (Language_DependencyError is null) //valid lang/not lang dep
         {
             bool langDep = DexUtil.CharEncoding.IsLangDependent(FormatName);
-            string lang = langDep ? Language_Field.AsString : null;
+            string lang = langDep ? (Data as Language_O).AsString : null;
             field.Switch(
                 x => {
                     (pkuField.Value, bool invalid) = DexUtil.CharEncoding.Decode(x.Value, FormatName, lang);

@@ -29,7 +29,7 @@ public abstract class Porter
     /// <summary>
     /// A data structure representing the non-pku format.
     /// </summary>
-    protected abstract FormatObject Data { get; }
+    public abstract FormatObject Data { get; }
 
     /// <summary>
     /// A list of notes to be displayed on the porter window.<br/>

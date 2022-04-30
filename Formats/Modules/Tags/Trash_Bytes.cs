@@ -11,15 +11,12 @@ namespace pkuManager.Formats.Modules.Tags;
 
 public interface Trash_Bytes_E : Tag
 {
-    public Nickname_O Nickname_Field { get; }
-    public OT_O OT_Field { get; }
-
     [PorterDirective(ProcessingPhase.FirstPass, nameof(Nickname_E.ExportNickname),
                                                 nameof(OT_E.ExportOT))]
     public void ExportTrash_Bytes()
     {
-        BAMStringField encodedNickname = Nickname_Field.Nickname.AsT0;
-        BAMStringField encodedOT = OT_Field.OT.AsT0;
+        BAMStringField encodedNickname = (Data as Nickname_O).Nickname.AsT0;
+        BAMStringField encodedOT = (Data as OT_O).OT.AsT0;
 
         AlertType atName = ExportTrash_BytesSingle(encodedNickname, pku.Trash_Bytes.Nickname);
         AlertType atOT = ExportTrash_BytesSingle(encodedOT, pku.Trash_Bytes.OT);

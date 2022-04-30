@@ -14,12 +14,13 @@ public interface Origin_Game_O
 
 public interface Origin_Game_E : Tag
 {
-    public Origin_Game_O Origin_Game_Field { get; }
     public string Origin_Game_Name { set; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportOrigin_Game()
     {
+        Origin_Game_O originGameObj = Data as Origin_Game_O;
+        
         (int? id, string game) helper(string game)
         {
             if (GAME_DEX.ExistsIn(FormatName, game))
@@ -28,7 +29,7 @@ public interface Origin_Game_E : Tag
         }
 
         // Init
-        Origin_Game_Field.Origin_Game.Value = 0;
+        originGameObj.Origin_Game.Value = 0;
         Origin_Game_Name = null;
 
         // if both unspecified
@@ -45,7 +46,7 @@ public interface Origin_Game_E : Tag
                 Warnings.Add(GetOrigin_GameAlert(AlertType.INVALID, pku.Game_Info.Origin_Game.Value, pku.Game_Info.Official_Origin_Game.Value));
             else // success
             {
-                Origin_Game_Field.Origin_Game.Value = id.Value;
+                originGameObj.Origin_Game.Value = id.Value;
                 Origin_Game_Name = game;
             }
         }

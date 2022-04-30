@@ -15,12 +15,10 @@ public interface OT_Gender_O
 
 public interface OT_Gender_E : EnumTag_E
 {
-    public OT_Gender_O OT_Gender_Field { get; }
-
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportOT_Gender()
     {
-        AlertType at = ExportEnumTag(pku.Game_Info.Gender, DEFAULT_GENDER, OT_Gender_Field.OT_Gender,
+        AlertType at = ExportEnumTag(pku.Game_Info.Gender, DEFAULT_GENDER, (Data as OT_Gender_O).OT_Gender,
             x => x is Gender.Male or Gender.Female);
         if (at is not AlertType.UNSPECIFIED) //silent OT gender unspecified alert
             Warnings.Add(GetOT_GenderAlert(at, pku.Game_Info.Gender.Value, DEFAULT_GENDER));

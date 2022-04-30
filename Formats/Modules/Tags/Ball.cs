@@ -23,12 +23,11 @@ public interface Ball_O : IndexTag_O
 
 public interface Ball_E : IndexTag_E
 {
-    public Ball_O Ball_Field { get; }
-
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportBall()
     {
-        AlertType at = ExportIndexTag(pku.Catch_Info.Ball, "Poké Ball", Ball_Field.IsValid, x => Ball_Field.AsString = x);
+        Ball_O ballObj = Data as Ball_O;
+        AlertType at = ExportIndexTag(pku.Catch_Info.Ball, "Poké Ball", ballObj.IsValid, x => ballObj.AsString = x);
         Warnings.Add(GetIndexAlert("Ball", at, pku.Catch_Info.Ball.Value, "Poké Ball"));
     }
 }

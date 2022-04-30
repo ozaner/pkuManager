@@ -12,10 +12,8 @@ public interface Contest_Stats_O
 
 public interface Contest_Stats_E : MultiNumericTag_E
 {
-    public Contest_Stats_O Contest_Stats_Field { get; }
-
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportContest_Stats()
         => ExportMultiNumericTag("Contest Stats", TagUtil.STAT_NAMES, pku.Contest_Stats_Array,
-            Contest_Stats_Field.Contest_Stats, 0, false);
+            (Data as Contest_Stats_O).Contest_Stats, 0, false);
 }

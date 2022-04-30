@@ -13,10 +13,12 @@ public interface IVs_O
 
 public interface IVs_E : MultiNumericTag_E
 {
-    public IVs_O IVs_Field { get; }
     public bool IVs_AlertIfUnspecified => true;
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportIVs()
-        => ExportMultiNumericTag("IVs", TagUtil.STAT_NAMES, pku.IVs_Array, IVs_Field.IVs, IVs_Field.IVs_Default, IVs_AlertIfUnspecified);
+    {
+        IVs_O ivsObj = Data as IVs_O;
+        ExportMultiNumericTag("IVs", TagUtil.STAT_NAMES, pku.IVs_Array, ivsObj.IVs, ivsObj.IVs_Default, IVs_AlertIfUnspecified);
+    }
 }

@@ -23,12 +23,11 @@ public interface Item_O : IndexTag_O
 
 public interface Item_E : IndexTag_E
 {
-    public Item_O Item_Field { get; }
-
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportItem()
     {
-        AlertType at = ExportIndexTag(pku.Item, "None", Item_Field.IsValid, x => Item_Field.AsString = x);
+        Item_O itemObj = Data as Item_O;
+        AlertType at = ExportIndexTag(pku.Item, "None", itemObj.IsValid, x => itemObj.AsString = x);
         if (at is not AlertType.UNSPECIFIED) //ignore unspecified
             Warnings.Add(GetIndexAlert("Item", at, pku.Item.Value, "None"));
     }

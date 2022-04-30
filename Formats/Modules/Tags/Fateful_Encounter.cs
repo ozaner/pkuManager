@@ -12,15 +12,13 @@ public interface Fateful_Encounter_O
 
 public interface Fateful_Encounter_E : BooleanTag_E
 {
-    public Fateful_Encounter_O Fateful_Encounter_Field { get; }
-
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportFateful_Encounter() => ExportFateful_EncounterBase();
 
     public void ExportFateful_EncounterBase()
     {
         AlertType at = ExportBooleanTag(pku.Catch_Info.Fateful_Encounter,
-            Fateful_Encounter_Field.Fateful_Encounter, false);
+            (Data as Fateful_Encounter_O).Fateful_Encounter, false);
         if (at is not AlertType.UNSPECIFIED)
             GetBooleanAlert("Fateful Encounter", at, false);
     }

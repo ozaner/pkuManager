@@ -12,9 +12,7 @@ public interface Met_Level_O
 
 public interface Met_Level_E : NumericTag_E
 {
-    public Met_Level_O Met_Level_Field { get; }
-
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportMet_Level()
-        => ExportNumericTag("Met Level", pku.Catch_Info.Met_Level, Met_Level_Field.Met_Level, 0, false);
+        => ExportNumericTag("Met Level", pku.Catch_Info.Met_Level, (Data as Met_Level_O).Met_Level, 0, false);
 }

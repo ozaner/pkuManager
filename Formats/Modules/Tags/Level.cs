@@ -13,9 +13,10 @@ public interface Level_O
 
 public interface Level_E : NumericTag_E
 {
-    public Level_O Level_Field { get; }
-
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportLevel()
-        => ExportNumericTag("Level", pku.Level, Level_Field.Level, Level_Field.Level_Default, true);
+    {
+        Level_O levelObj = Data as Level_O;
+        ExportNumericTag("Level", pku.Level, levelObj.Level, levelObj.Level_Default, true);
+    }
 }

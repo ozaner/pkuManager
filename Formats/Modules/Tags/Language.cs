@@ -32,6 +32,8 @@ public interface Language_E : Language_P, IndexTag_E
 
     public void ExportLanguageBase()
     {
+        Language_O Language_Field = Data as Language_O;
+
         string lang = pku.Game_Info.Language.Value;
         bool langDep = DexUtil.CharEncoding.IsLangDependent(FormatName);
         if (langDep && !Language_Field.IsValid(lang)) //invalid lang w/ dependency
@@ -63,6 +65,8 @@ public interface Language_I : Language_P, IndexTag_I
     
     public void ImportLanguageBase()
     {
+        Language_O Language_Field = Data as Language_O;
+
         bool langDep = DexUtil.CharEncoding.IsLangDependent(FormatName);
         if (langDep && !Language_Field.IsValid(Language_Field.AsString)) //invalid lang w/ dependency
         {
@@ -80,7 +84,6 @@ public interface Language_I : Language_P, IndexTag_I
 
 public interface Language_P : Tag
 {
-    public Language_O Language_Field { get; }
     public ChoiceAlert Language_DependencyError { get => null; set { } }
 
     protected string[] InitLangDepError(AlertType at)

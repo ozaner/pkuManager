@@ -13,12 +13,10 @@ public interface Species_O
 
 public interface Species_E : Tag
 {
-    public Species_O Species_Field { get; }
-
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportSpecies() => ExportSpeciesBase();
 
-    public void ExportSpeciesBase() => Species_Field.Species.Switch(
+    public void ExportSpeciesBase() => (Data as Species_O).Species.Switch(
         x => x.SetAs(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, "Indices").Value), //int index
         x => x.Value = DexUtil.GetSpeciesIndexedValue<string>(pku, FormatName, "Indices") //string index
     );

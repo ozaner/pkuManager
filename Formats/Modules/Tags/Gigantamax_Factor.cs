@@ -12,13 +12,11 @@ public interface Gigantamax_Factor_O
 
 public interface Gigantamax_Factor_E : BooleanTag_E
 {
-    public Gigantamax_Factor_O Gigantamax_Factor_Field { get; }
-
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportGigantamax_Factor()
     {
         AlertType at = ExportBooleanTag(pku.Gigantamax_Factor,
-            Gigantamax_Factor_Field.Gigantamax_Factor, false);
+            (Data as Gigantamax_Factor_O).Gigantamax_Factor, false);
         if (at is not AlertType.UNSPECIFIED)
             GetBooleanAlert("Gigantamax Factor", at, false);
     }

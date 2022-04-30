@@ -44,14 +44,14 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
         CanPort = Reason is null;
     }
 
-    protected override pk3Object Data { get; } = new();
+    public override pk3Object Data { get; } = new();
 
 
     /* ------------------------------------
      * Working Variables
      * ------------------------------------
     */
-    protected bool legalGen3Egg;
+    public bool legalGen3Egg;
     public int[] Moves_Indices { get; set; }
     public ChoiceAlert PID_DependencyError { get; set; }
     public Dictionary<string, object> PID_DependencyDigest { get; set; }
@@ -64,7 +64,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
      * ------------------------------------
     */
     // Species
-    public virtual void ExportSpecies()
+    public void ExportSpecies()
     {
         (this as Species_E).ExportSpeciesBase();
         Data.HasSpecies.ValueAsBool = true;
@@ -72,13 +72,13 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     // Form
     [PorterDirective(ProcessingPhase.FirstPass, nameof(PID_E.ExportPID), nameof(ExportSpecies))]
-    public virtual void ExportForm()
+    public void ExportForm()
     {
         (this as Form_E).ExportFormBase();
-        if (Species_Field.Species.AsT0.Value == 201) //Unown
+        if (Data.Species.Value == 201) //Unown (index = 201)
         {
             string pkuForm = pku.Forms.Value.JoinLexical();
-            string pidForm = TagUtil.GetUnownFormName(Form_Field.Form.AsT0.GetAs<int>());
+            string pidForm = TagUtil.GetUnownFormName(Data.Form.GetAs<int>());
 
             int? exportedID = TagUtil.GetUnownFormIDFromName(pkuForm);
             PID_DependencyDigest["Unown Form"] = exportedID;
@@ -95,16 +95,18 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     }
 
     // Egg
-    public virtual void ExportIs_Egg()
+    public void ExportIs_Egg()
     {
         (this as Is_Egg_E).ExportIs_EggBase();
 
         //Deal with "Legal Gen 3 eggs"
         if (pku.IsEgg())
         {
+            Language_O languageObj = Data;
+
             //To be seen as legal must have no nickname or a defined language + matching "Egg" nickname.
-            Language_Field.AsString = pku.Game_Info.Language.Value;
-            if (pku.Nickname.IsNull() || Language_Field.IsValid() && TagUtil.EGG_NICKNAME[Language_Field.AsString] == pku.Nickname.Value)
+            languageObj.AsString = pku.Game_Info.Language.Value;
+            if (pku.Nickname.IsNull() || languageObj.IsValid() && TagUtil.EGG_NICKNAME[languageObj.AsString] == pku.Nickname.Value)
             {
                 Data.UseEggName.ValueAsBool = true;
                 legalGen3Egg = true;
@@ -114,16 +116,16 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     // Language
     [PorterDirective(ProcessingPhase.FirstPass, nameof(ExportIs_Egg))]
-    public virtual void ExportLanguage()
+    public void ExportLanguage()
     {
         (this as Language_E).ExportLanguageBase();
 
         if (legalGen3Egg)
-            Language_Field.AsString = "Japanese";
+            Data.Language.Value = 1; //set language to japanese (index = 1)
     }
 
     // Nickname
-    public virtual void ExportNickname()
+    public void ExportNickname()
     {
         if (legalGen3Egg)
             Data.Nickname.Value = DexUtil.CharEncoding.Encode(TagUtil.EGG_NICKNAME["Japanese"],
@@ -133,20 +135,20 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     }
 
     // OT
-    public virtual void ExportOT()
+    public void ExportOT()
     {
         if (legalGen3Egg) //encode legal egg OTs in their proper lang
-            Language_Field.AsString = pku.Game_Info.Language.Value;
+            (Data as Language_O).AsString = pku.Game_Info.Language.Value;
 
         (this as OT_E).ExportOTBase();
         
         if (legalGen3Egg) //return legal egg lang back to japanese
-            Language_Field.AsString = "Japanese";
+            Data.Language.Value = 1; //set language to japanese (index = 1)
     }
 
     // Ability Slot
     [PorterDirective(ProcessingPhase.FirstPass)]
-    public virtual void ExportAbilitySlot()
+    public void ExportAbilitySlot()
     {
         int getGen3AbilityID(string name)
             => ABILITY_DEX.GetIndexedValue<int?>(FormatName, name, "Indices").Value; //must have an ID
@@ -180,7 +182,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     }
 
     // Ribbons
-    public virtual void ExportRibbons()
+    public void ExportRibbons()
     {
         HashSet<Ribbon> ribbons = pku.Ribbons.ToEnumSet<Ribbon>(); //get ribbon list
 
@@ -217,7 +219,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
     // Fateful Encounter
     [PorterDirective(ProcessingPhase.FirstPass, nameof(ExportSpecies))]
-    public virtual void ExportFateful_Encounter()
+    public void ExportFateful_Encounter()
     {
         int speciesIndex = Data.Species.GetAs<int>();
 
@@ -238,7 +240,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
      * ------------------------------------
     */
     [PorterDirective(ProcessingPhase.SecondPass)]
-    protected virtual ErrorResolver<bool> Fateful_EncounterResolver { get; set; }
+    public ErrorResolver<bool> Fateful_EncounterResolver { get; set; }
 
     public ErrorResolver<BigInteger> Experience_Resolver { get; set; }
     public ErrorResolver<BigInteger> PID_Resolver { get; set; }
@@ -288,40 +290,4 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
 
         return new ChoiceAlert("Fateful Encounter", msg, choices, true);
     }
-
-
-    /* ------------------------------------
-     * Module Parameters
-     * ------------------------------------
-    */
-    public Species_O Species_Field => Data;
-    public Form_O Form_Field => Data;
-    public Shiny_O Shiny_Field => Data;
-    public Experience_O Experience_Field => Data;
-    public Gender_O Gender_Field => Data;
-    public Nickname_O Nickname_Field => Data;
-    public Moves_O Moves_Field => Data;
-    public PP_Ups_O PP_Ups_Field => Data;
-    public PP_O PP_Field => Data;
-    public Item_O Item_Field => Data;
-    public Nature_O Nature_Field => Data;
-    public Friendship_O Friendship_Field => Data;
-    public PID_O PID_Field => Data;
-    public TID_O TID_Field => Data;
-    public IVs_O IVs_Field => Data;
-    public EVs_O EVs_Field => Data;
-    public Contest_Stats_O Contest_Stats_Field => Data;
-    public Ball_O Ball_Field => Data;
-    public Origin_Game_O Origin_Game_Field => Data;
-    public OT_O OT_Field => Data;
-    public Met_Location_O Met_Location_Field => Data;
-    public Met_Level_O Met_Level_Field => Data;
-    public OT_Gender_O OT_Gender_Field => Data;
-    public Language_O Language_Field => Data;
-    public Fateful_Encounter_O Fateful_Encounter_Field => Data;
-    public Markings_O Markings_Field => Data;
-    public Ribbons_O Ribbons_Field => Data;
-    public Is_Egg_O Is_Egg_Field => Data;
-    public Pokerus_O Pokerus_Field => Data;
-    public ByteOverride_O ByteOverride_Field => Data;
 }

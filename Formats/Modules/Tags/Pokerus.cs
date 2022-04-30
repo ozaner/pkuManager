@@ -13,12 +13,14 @@ public interface Pokerus_O
 
 public interface Pokerus_E : RelatedNumericTag_E
 {
-    public Pokerus_O Pokerus_Field { get; }
 
     // Pokérus
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportPokerus()
-        => ExportRelatedNumericTag("Pokérus", new[] { "Pokérus strain", "Pokérus days" },
+    {
+        Pokerus_O pokerusObj = Data as Pokerus_O;
+        ExportRelatedNumericTag("Pokérus", new[] { "Pokérus strain", "Pokérus days" },
             new[] { pku.Pokerus.Strain, pku.Pokerus.Days },
-            new[] { Pokerus_Field.Pokerus_Strain, Pokerus_Field.Pokerus_Days }, new BigInteger[] { 0, 0 }, false);
+            new[] { pokerusObj.Pokerus_Strain, pokerusObj.Pokerus_Days }, new BigInteger[] { 0, 0 }, false);
+    }
 }

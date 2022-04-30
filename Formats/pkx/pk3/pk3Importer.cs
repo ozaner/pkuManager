@@ -14,7 +14,7 @@ public class pk3Importer : Importer, Is_Egg_I, Language_I, Nickname_I, OT_I
 {
     public override string FormatName => "pk3";
 
-    protected override pk3Object Data { get; } = new();
+    public override pk3Object Data { get; } = new();
 
     public pk3Importer(byte[] file, GlobalFlags globalFlags, bool checkInMode) : base(file, globalFlags, checkInMode)
     {
@@ -41,7 +41,7 @@ public class pk3Importer : Importer, Is_Egg_I, Language_I, Nickname_I, OT_I
 
 
     /* ------------------------------------
-     * Tag Import Methods
+     * Custom Import Methods
      * ------------------------------------
     */
     // Egg
@@ -54,7 +54,7 @@ public class pk3Importer : Importer, Is_Egg_I, Language_I, Nickname_I, OT_I
         {
             (string str, bool inv) = DexUtil.CharEncoding.Decode(Data.Nickname.Value, FormatName, "Japanese");
             legalGen3Egg = Data.UseEggName.ValueAsBool //egg name override set
-                && Language_Field.AsString == "Japanese" //language set to japanese
+                && Data.Language.Value == 1 //language set to japanese (index = 1)
                 && !inv && str == TagUtil.EGG_NICKNAME["Japanese"]; //nickname set to "タマゴ"
         }
 
@@ -68,12 +68,12 @@ public class pk3Importer : Importer, Is_Egg_I, Language_I, Nickname_I, OT_I
     public void ImportLanguage()
     {
         if (legalGen3Egg) //make language invalid to set off lang dep error
-            Language_Field.AsString = "None";
+            Data.Language.Value = 0; //set language to none (index = 0)
 
         (this as Language_I).ImportLanguageBase();
 
         if (legalGen3Egg) //return legal egg lang back to japanese
-            Language_Field.AsString = "Japanese";
+            Data.Language.Value = 1; //set language to japanese (index = 1)
     }
 
     // Nickname
@@ -105,14 +105,4 @@ public class pk3Importer : Importer, Is_Egg_I, Language_I, Nickname_I, OT_I
         a.Message = "Some text values in this format require a language, but Gen 3 eggs don't have a set language. Please choose one:";
         return a;
     }
-
-
-    /* ------------------------------------
-     * Module Parameters
-     * ------------------------------------
-    */
-    public Is_Egg_O Is_Egg_Field => Data;
-    public Language_O Language_Field => Data;
-    public Nickname_O Nickname_Field => Data;
-    public OT_O OT_Field => Data;
 }

@@ -16,17 +16,18 @@ public interface PID_O
 
 public interface PID_E : Tag
 {
-    public PID_O PID_Field { get; }
     public ChoiceAlert PID_DependencyError { get => null; set { } }
     public Dictionary<string, object> PID_DependencyDigest { get => null; set { } }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportPID()
     {
+        PID_O pidObj = Data as PID_O;
+
         //check if in-bounds
-        (BigInteger? max, BigInteger? min) = PID_Field.PID is IBoundable<BigInteger> boundable ?
+        (BigInteger? max, BigInteger? min) = pidObj.PID is IBoundable<BigInteger> boundable ?
             (boundable.Max, boundable.Min) : (null, null);
-        (PID_Field.PID.Value, AlertType at) = pku.PID.Value switch
+        (pidObj.PID.Value, AlertType at) = pku.PID.Value switch
         {
             null => (0, AlertType.UNSPECIFIED),
             var x when x > max => (max.Value, AlertType.OVERFLOW),
@@ -34,7 +35,7 @@ public interface PID_E : Tag
             _ => (pku.PID.Value.Value, AlertType.NONE)
         };
 
-        if (PID_Field.PID_HasDependencies)
+        if (pidObj.PID_HasDependencies)
         {
             PID_DependencyDigest = new();
             PID_DependencyDigest.Add("PID", at);
@@ -48,13 +49,15 @@ public interface PID_E : Tag
         }
 
         //not a potential mismatch
-        Warnings.Add(GetPIDAlert(at, max, min, 0, false, PID_Field.PID_HasDependencies));
+        Warnings.Add(GetPIDAlert(at, max, min, 0, false, pidObj.PID_HasDependencies));
     }
 
     [PorterDirective(ProcessingPhase.FirstPassStage2)]
     public void CleanupPIDDepError()
     {
-        if (PID_Field.PID_HasDependencies)
+        PID_O pidObj = Data as PID_O;
+
+        if (pidObj.PID_HasDependencies)
         {
             bool pidOutOfBounds = PID_DependencyDigest["PID"] is not AlertType.NONE;
             bool pidMismatch = PID_DependencyError is not null
@@ -74,11 +77,11 @@ public interface PID_E : Tag
             uint newPID = TagUtil.GenerateRandomPID(shinyDigest, genderDigest, nature, unownForm);
 
             if (pidOutOfBounds) //pid was out of bounds
-                PID_Field.PID.Value = newPID;
+                pidObj.PID.Value = newPID;
             else if (!pidMismatch) //pid matches
                 Errors.Remove(PID_DependencyError);
             else //pid doesn't match
-                PID_Resolver = new(PID_DependencyError, PID_Field.PID, new[] { PID_Field.PID.Value, newPID });
+                PID_Resolver = new(PID_DependencyError, pidObj.PID, new[] { pidObj.PID.Value, newPID });
         }
     }
 

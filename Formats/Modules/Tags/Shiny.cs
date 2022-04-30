@@ -18,32 +18,31 @@ public interface Shiny_O
 
 public interface Shiny_E : BooleanTag_E
 {
-    public Shiny_O Shiny_Field { get; }
-    public TID_O TID_Field { get => null; set { } }
-
     public ChoiceAlert PID_DependencyError { get => null; set { } }
     public Dictionary<string, object> PID_DependencyDigest { get => null; set { } }
 
     [PorterDirective(ProcessingPhase.FirstPass, nameof(PID_E.ExportPID), nameof(TID_E.ExportTID))]
     public void ExportShiny()
     {
+        Shiny_O shinyObj = Data as Shiny_O;
+
         AlertType at;
-        if (Shiny_Field.Shiny_PIDDependent)
+        if (shinyObj.Shiny_PIDDependent)
         {
             BackedField<bool> dummyField = new();
             at = ExportBooleanTag(pku.Shiny, dummyField, false);
-            PID_DependencyDigest["Shiny"] = (dummyField.Value, TID_Field.TID.GetAs<uint>());
+            PID_DependencyDigest["Shiny"] = (dummyField.Value, (Data as TID_O).TID.GetAs<uint>());
 
             //add to pid dep error if necessary
-            if (PID_DependencyError is not null && dummyField.Value != Shiny_Field.Shiny.Value)
+            if (PID_DependencyError is not null && dummyField.Value != shinyObj.Shiny.Value)
             {
                 var x = PID_DependencyError.Choices;
-                x[0].Message = x[0].Message.AddNewLine($"Shiny: {Shiny_Field.Shiny.Value}");
+                x[0].Message = x[0].Message.AddNewLine($"Shiny: {shinyObj.Shiny.Value}");
                 x[1].Message = x[1].Message.AddNewLine($"Shiny: {dummyField.Value}");
             }
         }
         else //pid independent
-            at = ExportBooleanTag(pku.Shiny, Shiny_Field.Shiny, false);
+            at = ExportBooleanTag(pku.Shiny, shinyObj.Shiny, false);
 
         //alerting
         if (at is not AlertType.UNSPECIFIED) //silent when unspecified

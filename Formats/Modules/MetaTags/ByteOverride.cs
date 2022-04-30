@@ -19,12 +19,12 @@ public interface ByteOverride_O
 
 public interface ByteOverride_E : Tag
 {
-    public ByteOverride_O ByteOverride_Field { get; }
-
     // Processing
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ApplyByteOverride()
     {
+        ByteOverride_O byteOverrideObj = Data as ByteOverride_O;
+
         List<Action> validCommands = new();
         List<int> invalidIndices = new();
         int index = -1;
@@ -59,8 +59,8 @@ public interface ByteOverride_E : Tag
 
             //process CMD
             var boCMD = ByteOverrideCMD.FromString(cmd, value);
-            if (boCMD?.IsValid(ByteOverride_Field.BAM) == true)
-                validCommands.Add(() => boCMD.Apply(ByteOverride_Field.BAM));
+            if (boCMD?.IsValid(byteOverrideObj.BAM) == true)
+                validCommands.Add(() => boCMD.Apply(byteOverrideObj.BAM));
             else
             {
                 invalidIndices.Add(index);

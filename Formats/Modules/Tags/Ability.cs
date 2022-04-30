@@ -24,12 +24,11 @@ public interface Ability_O : IndexTag_O
 
 public interface Ability_E : IndexTag_E
 {
-    public Ability_O Ability_Field { get; }
-
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportAbility()
     {
-        AlertType at = ExportIndexTag(pku.Ability, "None", Ability_Field.IsValid, x => Ability_Field.AsString = x);
+        Ability_O abilityObj = Data as Ability_O;
+        AlertType at = ExportIndexTag(pku.Ability, "None", abilityObj.IsValid, x => abilityObj.AsString = x);
         Warnings.Add(GetAbilityAlert(at));
     }
 

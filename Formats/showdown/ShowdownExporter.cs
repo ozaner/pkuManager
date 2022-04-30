@@ -16,7 +16,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
                                 Item_E, Nature_E, Friendship_E, IVs_E, EVs_E, Gigantamax_Factor_E
 {
     public override string FormatName => "Showdown";
-    protected override ShowdownObject Data { get; } = new();
+    public override ShowdownObject Data { get; } = new();
 
     /// <summary>
     /// Creates an exporter that will attempt to export <paramref name="pku"/>
@@ -39,6 +39,20 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
 
         CanPort = Reason is null;
     }
+
+
+    /* ------------------------------------
+     * Working Variables
+     * ------------------------------------
+    */
+    public int[] Moves_Indices { get; set; }
+
+
+    /* ------------------------------------
+     * Exporting Parameters
+     * ------------------------------------
+    */
+    public bool IVs_AlertIfUnspecified => false;
 
 
     /* ------------------------------------
@@ -91,38 +105,4 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
             a.Message += " (Showdown will pick a legal one).";
         return a;
     }
-
-
-    /* ------------------------------------
-     * Working Variables
-     * ------------------------------------
-    */
-    public int[] Moves_Indices { get; set; }
-
-
-    /* ------------------------------------
-     * Exporting Parameters
-     * ------------------------------------
-    */
-    public bool IVs_AlertIfUnspecified => false;
-
-
-    /* ------------------------------------
-     * Module Fields
-     * ------------------------------------
-    */
-    public Species_O Species_Field => Data;
-    public Form_O Form_Field => Data;
-    public Shiny_O Shiny_Field => Data;
-    public Gender_O Gender_Field => Data;
-    public Ability_O Ability_Field => Data;
-    public Nickname_O Nickname_Field => Data;
-    public Level_O Level_Field => Data;
-    public Moves_O Moves_Field => Data;
-    public Item_O Item_Field => Data;
-    public Nature_O Nature_Field => Data;
-    public Friendship_O Friendship_Field => Data;
-    public IVs_O IVs_Field => Data;
-    public EVs_O EVs_Field => Data;
-    public Gigantamax_Factor_O Gigantamax_Factor_Field => Data;
 }

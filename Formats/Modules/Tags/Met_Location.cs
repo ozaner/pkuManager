@@ -14,12 +14,13 @@ public interface Met_Location_O
 
 public interface Met_Location_E : Tag
 {
-    public Met_Location_O Met_Location_Field { get; }
     public string Origin_Game_Name { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass, nameof(Origin_Game_E.ExportOrigin_Game))]
     public void ExportMet_Location()
     {
+        Met_Location_O metLocationObj = Data as Met_Location_O;
+
         //override game for met location
         string checkedGameName = pku.Catch_Info.Met_Game_Override.Value ?? Origin_Game_Name;
 
@@ -29,7 +30,7 @@ public interface Met_Location_E : Tag
         //null check
         if (pku.Catch_Info.Met_Location.IsNull())
         {
-            Met_Location_Field.Met_Location.Value = 0;
+            metLocationObj.Met_Location.Value = 0;
             Warnings.Add(GetMetLocationAlert(AlertType.UNSPECIFIED, defaultLoc()));
             return;
         }
@@ -41,11 +42,11 @@ public interface Met_Location_E : Tag
         //location failure
         if (locID is null)
         {
-            Met_Location_Field.Met_Location.Value = 0;
+            metLocationObj.Met_Location.Value = 0;
             Warnings.Add(GetMetLocationAlert(AlertType.INVALID, defaultLoc(), pku.Catch_Info.Met_Location.Value));
         }
         else //location success
-            Met_Location_Field.Met_Location.Value = locID.Value;
+            metLocationObj.Met_Location.Value = locID.Value;
     }
 
     protected static Alert GetMetLocationAlert(AlertType at, string defaultLoc, string invalidLoc = null) => new("Met Location", at switch

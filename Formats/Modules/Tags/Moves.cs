@@ -17,12 +17,13 @@ public interface Moves_O
 
 public interface Moves_E : Tag
 {
-    public Moves_O Moves_Field { get; }
     public int[] Moves_Indices { set; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportMoves()
     {
+        Moves_O movesObj = Data as Moves_O;
+
         List<int> moveIndices = new(); //indices in pku
         int[] moveIDsInt = new int[4]; //index numbers for format
         string[] moveIDsStr = new string[4]; //index names for format
@@ -38,7 +39,7 @@ public interface Moves_E : Tag
                 {
                     if (confirmedMoves < 4)
                     {
-                        Moves_Field.Moves.Switch(
+                        movesObj.Moves.Switch(
                             _ => moveIDsInt[confirmedMoves] = MOVE_DEX.GetIndexedValue<int?>(FormatName, pku.Moves[i].Name.Value, "Indices") ?? 0,
                             _ => moveIDsStr[confirmedMoves] = MOVE_DEX.GetIndexedValue<string>(FormatName, pku.Moves[i].Name.Value, "Indices"));
                         moveIndices.Add(i);
@@ -55,7 +56,7 @@ public interface Moves_E : Tag
         else
             alert = GetMoveAlert(AlertType.UNSPECIFIED);
 
-        Moves_Field.Moves.Switch(
+        movesObj.Moves.Switch(
             x => x.SetAs(moveIDsInt),
             x => x.Value = moveIDsStr
         );

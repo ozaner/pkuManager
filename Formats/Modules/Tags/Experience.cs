@@ -16,8 +16,6 @@ public interface Experience_O
 
 public interface Experience_E : Tag
 {
-    public Experience_O Experience_Field { get; }
-
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportExperience()
     {
@@ -64,7 +62,7 @@ public interface Experience_E : Tag
 
         BigInteger[] options = expFromLevel is null ? new BigInteger[] { exp }
                                                     : new BigInteger[] { exp, expFromLevel.Value };
-        Experience_Resolver = new(alert, Experience_Field.Experience, options);
+        Experience_Resolver = new(alert, (Data as Experience_O).Experience, options);
         if (alert is ChoiceAlert)
             Errors.Add(alert);
         else
