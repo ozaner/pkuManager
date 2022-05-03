@@ -116,9 +116,6 @@ public class pkuObject : FormatObject
     [JsonProperty("Trash Bytes")]
     public Trash_Bytes_Class Trash_Bytes { get; set; } = new();
 
-    [JsonProperty("Byte Override")]
-    public Dictionary<string, JToken> Byte_Override { get; set; } = new();
-
     [JsonProperty("Format Overrides")]
     public Dictionary<string, pkuObject> Format_Overrides { get; set; } = new();
 
@@ -306,7 +303,11 @@ public class pkuObject : FormatObject
         public BackedField<BigInteger?> Heart_Gauge { get; set; } = new();
     }
 
-    public class Format_Dict : Base_Dict { }
+    public class Format_Dict : Base_Dict
+    {
+        [JsonProperty("Byte Override")]
+        public Dictionary<string, JToken> Byte_Override { get; set; } = new();
+    }
 
     public class Base_Dict
     {

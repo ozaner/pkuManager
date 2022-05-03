@@ -25,10 +25,14 @@ public interface ByteOverride_E : Tag
     {
         ByteOverride_O byteOverrideObj = Data as ByteOverride_O;
 
+        pku.Format_Specific.TryGetValue(FormatName, out pkuObject.Format_Dict forDict);
+        if (forDict?.Byte_Override == null) //byte override dict unspecified
+            return;
+
         List<Action> validCommands = new();
         List<int> invalidIndices = new();
         int index = -1;
-        foreach ((string cmd, JToken token) in pku.Byte_Override)
+        foreach ((string cmd, JToken token) in forDict.Byte_Override)
         {
             index++;
 
@@ -98,10 +102,10 @@ public interface ByteOverride_I : Tag
     //static method for anonymous calls
     public static Alert AddByteOverrideCMD(string tag, ByteOverrideCMD cmd, pkuObject pku, string formatName)
     {
-        if (!pku.Format_Overrides.ContainsKey(formatName) || pku.Format_Overrides[formatName] is null)
-            pku.Format_Overrides.Add(formatName, new pkuObject());
+        if (!pku.Format_Specific.ContainsKey(formatName) || pku.Format_Specific[formatName] is null)
+            pku.Format_Specific[formatName] = new();
 
-        pku.Format_Overrides[formatName].Byte_Override.Add(cmd.ToString(), JToken.FromObject(cmd.Value.Value));
+        pku.Format_Specific[formatName].Byte_Override.Add(cmd.ToString(), JToken.FromObject(cmd.Value.Value));
         return GetByteOverrideAlert(tag);
     }
 
