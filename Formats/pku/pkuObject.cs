@@ -116,9 +116,6 @@ public class pkuObject : FormatObject
     [JsonProperty("Trash Bytes")]
     public Trash_Bytes_Class Trash_Bytes { get; set; } = new();
 
-    [JsonProperty("Format Overrides")]
-    public Dictionary<string, pkuObject> Format_Overrides { get; set; } = new();
-
     [JsonProperty("Format Specific")]
     public Dictionary<string, Format_Dict> Format_Specific { get; set; } = new();
 
@@ -305,6 +302,9 @@ public class pkuObject : FormatObject
 
     public class Format_Dict : Base_Dict
     {
+        [JsonProperty("pku Override")]
+        public pkuObject pku_Override { get; set; }
+
         [JsonProperty("Byte Override")]
         public Dictionary<string, JToken> Byte_Override { get; set; } = new();
     }
@@ -367,8 +367,13 @@ public class pkuObject : FormatObject
     /// <returns>A pkuObject representing the merging of <paramref name="pku"/>
     ///          and and its <paramref name="format"/> override. Or just
     ///          <paramref name="pku"/> if that doesn't exist.</returns>
-    public static pkuObject MergeFormatOverride(pkuObject pku, string format)
-        => pku.Format_Overrides.TryGetValue(format, out pkuObject pkuOverride) is true ? Merge(pku, pkuOverride) : pku;
+    public static pkuObject MergePkuOverride(pkuObject pku, string format)
+    {
+        pku.Format_Specific.TryGetValue(format, out Format_Dict dict);
+        if (dict?.pku_Override != null)
+             return Merge(pku, dict.pku_Override);
+        return pku;
+    }
 
     /// <summary>
     /// Creates a deep copy of this <see cref="pkuObject"/>.

@@ -36,5 +36,5 @@ public abstract class Exporter : Porter
     // Format Override
     [PorterDirective(ProcessingPhase.FormatOverride)]
     protected virtual void ProcessFormatOverride()
-        => pku = pkuObject.MergeFormatOverride(pku, FormatName);
+        => pku = pkuObject.MergePkuOverride(pku, FormatName);
 }
