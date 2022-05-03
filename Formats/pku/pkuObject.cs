@@ -122,7 +122,10 @@ public class pkuObject : FormatObject
     [JsonProperty("Format Overrides")]
     public Dictionary<string, pkuObject> Format_Overrides { get; set; } = new();
 
-    public class Trash_Bytes_Class : pkuDictionaryTag
+    [JsonProperty("Format Specific")]
+    public Dictionary<string, Format_Dict> Format_Specific { get; set; } = new();
+
+    public class Trash_Bytes_Class : Base_Dict
     {
         [JsonProperty("Nickname")]
         public BackedField<BigInteger[]> Nickname { get; set; } = new();
@@ -131,7 +134,7 @@ public class pkuObject : FormatObject
         public BackedField<BigInteger[]> OT { get; set; } = new();
     }
 
-    public class Move : pkuDictionaryTag
+    public class Move : Base_Dict
     {
         [JsonProperty("Name")]
         public BackedField<string> Name { get; set; } = new();
@@ -140,7 +143,7 @@ public class pkuObject : FormatObject
         public BackedField<BigInteger?> PP_Ups { get; set; } = new();
     }
 
-    public class Game_Info_Class : pkuDictionaryTag
+    public class Game_Info_Class : Base_Dict
     {
         [JsonProperty("Origin Game")]
         public BackedField<string> Origin_Game { get; set; } = new();
@@ -163,7 +166,7 @@ public class pkuObject : FormatObject
     }
 
     //parent of Catch_Info and Egg_Info
-    public class Met_Info_Base : pkuDictionaryTag
+    public class Met_Info_Base : Base_Dict
     {
         [JsonProperty("Met Location")]
         public BackedField<string> Met_Location { get; set; } = new();
@@ -198,7 +201,7 @@ public class pkuObject : FormatObject
         //public bool? Hatched { get; set; }
     }
 
-    public class Hyper_Training_Class : pkuDictionaryTag
+    public class Hyper_Training_Class : Base_Dict
     {
         [JsonProperty("HP")]
         public BackedField<bool?> HP { get; set; } = new();
@@ -219,7 +222,7 @@ public class pkuObject : FormatObject
         public BackedField<bool?> Speed { get; set; } = new();
     }
 
-    public class IVs_Class : pkuDictionaryTag
+    public class IVs_Class : Base_Dict
     {
         [JsonProperty("HP")]
         public BackedField<BigInteger?> HP { get; set; } = new();
@@ -240,7 +243,7 @@ public class pkuObject : FormatObject
         public BackedField<BigInteger?> Speed { get; set; } = new();
     }
 
-    public class EVs_Class : pkuDictionaryTag
+    public class EVs_Class : Base_Dict
     {
         [JsonProperty("HP")]
         public BackedField<BigInteger?> HP { get; set; } = new();
@@ -261,7 +264,7 @@ public class pkuObject : FormatObject
         public BackedField<BigInteger?> Speed { get; set; } = new();
     }
 
-    public class Contest_Stats_Class : pkuDictionaryTag
+    public class Contest_Stats_Class : Base_Dict
     {
         [JsonProperty("Cool")]
         public BackedField<BigInteger?> Cool { get; set; } = new();
@@ -282,7 +285,7 @@ public class pkuObject : FormatObject
         public BackedField<BigInteger?> Sheen { get; set; } = new();
     }
 
-    public class Pokerus_Class : pkuDictionaryTag
+    public class Pokerus_Class : Base_Dict
     {
         [JsonProperty("Strain")]
         public BackedField<BigInteger?> Strain { get; set; } = new();
@@ -291,7 +294,7 @@ public class pkuObject : FormatObject
         public BackedField<BigInteger?> Days { get; set; } = new();
     }
 
-    public class Shadow_Info_Class : pkuDictionaryTag
+    public class Shadow_Info_Class : Base_Dict
     {
         [JsonProperty("Shadow")]
         public BackedField<bool?> Shadow { get; set; } = new();
@@ -301,6 +304,17 @@ public class pkuObject : FormatObject
 
         [JsonProperty("Heart Gauge")]
         public BackedField<BigInteger?> Heart_Gauge { get; set; } = new();
+    }
+
+    public class Format_Dict : Base_Dict { }
+
+    public class Base_Dict
+    {
+        /// <summary>
+        /// Where tags not used by pkuManager are stored.
+        /// </summary>
+        [JsonExtensionData]
+        public Dictionary<string, JToken> ExtraTags { get; set; } = new();
     }
 
 
@@ -529,7 +543,7 @@ public class pkuObject : FormatObject
                 return (value as ICollection).Count < 1;
 
             //pkuDictionaryTags tags won't be serialized if they are null or all their properties IsEmpty()
-            else if (valueType.IsSubclassOf(typeof(pkuDictionaryTag)))
+            else if (valueType.IsSubclassOf(typeof(Base_Dict)))
                 return value is null || valueType.GetProperties().All(propertyInfo => IsEmpty(propertyInfo.GetValue(value)));
 
             //if it's not null, and not an empty collection/pkuDict it must have some value
@@ -574,13 +588,4 @@ public class pkuObject : FormatObject
             writer.WriteEndObject();
         }
     }
-}
-
-public class pkuDictionaryTag
-{
-    /// <summary>
-    /// Where tags not used by pkuManager are stored.
-    /// </summary>
-    [JsonExtensionData]
-    public IDictionary<string, JToken> ExtraTags { get; set; }
 }
