@@ -6,11 +6,11 @@ namespace pkuManager.Formats.Modules.MetaTags;
 
 public static class FormatSpecificUtil
 {
-    public static T GetValue<T>(pkuObject pku, string formatName, params string[] keys)
+    public static (T value, bool invalid) GetValue<T>(pkuObject pku, string formatName, params string[] keys)
     {
         pku.Format_Specific.TryGetValue(formatName, out var formatDict);
         if (formatDict == null || keys.Length < 1)
-            return default; //no dict/no keys
+            return (default, false); //no dict/no keys
 
         //traverse sub-tags
         IDictionary<string, JToken> dict = formatDict.ExtraTags;
@@ -22,12 +22,15 @@ public static class FormatSpecificUtil
             else if (temp is IDictionary<string, JToken> newDict)
                 dict = newDict;
             else
-                return default;
+                return (default, true); //some sub-dict was not a dict (invalid).
         }
 
         // try get value
+        if (!dict.ContainsKey(keys[^1]))
+            return (default, false);
+
         dict.TryGetValue(keys[^1], out var value);
-        try { return value.ToObject<T>(); } //return whatever the value is
-        catch { return default; }//can't return the value, doesn't match the type
+        try { return (value.ToObject<T>(), false); } //return whatever the value is
+        catch { return (default, true); } //can't return the value, doesn't match the type (invalid)
     }
 }

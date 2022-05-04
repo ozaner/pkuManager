@@ -19,11 +19,11 @@ public interface Trash_Bytes_E : Tag
         BAMStringField encodedNickname = (Data as Nickname_O).Nickname.AsT0;
         BAMStringField encodedOT = (Data as OT_O).OT.AsT0;
 
-        BigInteger[] nicknameTrash = FormatSpecificUtil.GetValue<BigInteger[]>(pku, FormatName, "Trash Bytes", "Nickname");
-        BigInteger[] otTrash = FormatSpecificUtil.GetValue<BigInteger[]>(pku, FormatName, "Trash Bytes", "OT");
+        (BigInteger[] nicknameTrash, bool nickInvalid) = FormatSpecificUtil.GetValue<BigInteger[]>(pku, FormatName, "Trash Bytes", "Nickname");
+        (BigInteger[] otTrash, bool otInvalid) = FormatSpecificUtil.GetValue<BigInteger[]>(pku, FormatName, "Trash Bytes", "OT");
 
-        AlertType atName = ExportTrash_BytesSingle(encodedNickname, nicknameTrash);
-        AlertType atOT = ExportTrash_BytesSingle(encodedOT, otTrash);
+        AlertType atName = nickInvalid ? AlertType.INVALID : ExportTrash_BytesSingle(encodedNickname, nicknameTrash);
+        AlertType atOT = otInvalid ? AlertType.INVALID : ExportTrash_BytesSingle(encodedOT, otTrash);
 
         Alert alert = GetTrashAlert(atName, "Nickname") + GetTrashAlert(atOT, "OT");
         Warnings.Add(alert);
@@ -72,6 +72,8 @@ public interface Trash_Bytes_E : Tag
             return null;
 
         string msg = "";
+        if (at.HasFlag(AlertType.INVALID))
+            msg += $"The {stringName} trash bytes are invalid, ignoring them.";
         if (at.HasFlag(AlertType.OVERFLOW) || at.HasFlag(AlertType.UNDERFLOW))
             msg += $"One or more of the entries in {stringName} Trash Bytes are too high/low, rounding them up/down.";
         if (at.HasFlag(AlertType.TOO_LONG))
