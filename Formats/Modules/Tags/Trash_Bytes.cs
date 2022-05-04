@@ -1,6 +1,7 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Fields.BAMFields;
+using pkuManager.Formats.Modules.MetaTags;
 using pkuManager.Utilities;
 using System.Linq;
 using System.Numerics;
@@ -18,24 +19,27 @@ public interface Trash_Bytes_E : Tag
         BAMStringField encodedNickname = (Data as Nickname_O).Nickname.AsT0;
         BAMStringField encodedOT = (Data as OT_O).OT.AsT0;
 
-        AlertType atName = ExportTrash_BytesSingle(encodedNickname, pku.Trash_Bytes.Nickname);
-        AlertType atOT = ExportTrash_BytesSingle(encodedOT, pku.Trash_Bytes.OT);
+        BigInteger[] nicknameTrash = FormatSpecificUtil.GetValue<BigInteger[]>(pku, FormatName, "Trash Bytes", "Nickname");
+        BigInteger[] otTrash = FormatSpecificUtil.GetValue<BigInteger[]>(pku, FormatName, "Trash Bytes", "OT");
+
+        AlertType atName = ExportTrash_BytesSingle(encodedNickname, nicknameTrash);
+        AlertType atOT = ExportTrash_BytesSingle(encodedOT, otTrash);
 
         Alert alert = GetTrashAlert(atName, "Nickname") + GetTrashAlert(atOT, "OT");
         Warnings.Add(alert);
     }
 
-    protected AlertType ExportTrash_BytesSingle<T>(T encodedField, IField<BigInteger[]> trashField)
+    protected AlertType ExportTrash_BytesSingle<T>(T encodedField, BigInteger[] trashField)
         where T : IField<BigInteger[]>, IBoundable<BigInteger>
     {
-        if (!trashField.IsNull())
+        if (trashField is not null)
         {
             AlertType at = AlertType.NONE;
-            if (trashField.Value.Any(x => x > encodedField.Max) == true) //some entries too large
+            if (trashField.Any(x => x > encodedField.Max) == true) //some entries too large
                 at |= AlertType.OVERFLOW;
-            if (trashField.Value.Any(x => x < encodedField.Min) == true) //some entries too small
+            if (trashField.Any(x => x < encodedField.Min) == true) //some entries too small
                 at |= AlertType.UNDERFLOW;
-            if (trashField.Value.Length != encodedField.Value.Length)
+            if (trashField.Length != encodedField.Value.Length)
                 at |= AlertType.TOO_LONG;
 
             BigInteger[] trashedStr = new BigInteger[encodedField.Value.Length];
@@ -43,14 +47,14 @@ public interface Trash_Bytes_E : Tag
             bool terminatorFound = false;
             for (int i = 0; i < encodedField.Value.Length; i++)
             {
-                if (terminatorFound && trashField.Value.Length > i)
+                if (terminatorFound && trashField.Length > i)
                 {
-                    if (trashField.Value[i] > encodedField.Max)
+                    if (trashField[i] > encodedField.Max)
                         trashedStr[i] = encodedField.Max.Value;
-                    else if (trashField.Value[i] > encodedField.Max)
+                    else if (trashField[i] > encodedField.Max)
                         trashedStr[i] = encodedField.Min.Value;
                     else
-                        trashedStr[i] = trashField.Value[i];
+                        trashedStr[i] = trashField[i];
                 }
                 else
                     trashedStr[i] = encodedField.Value[i];

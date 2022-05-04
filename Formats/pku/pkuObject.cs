@@ -113,20 +113,8 @@ public class pkuObject : FormatObject
     [JsonProperty("Shiny Leaf")]
     public BackedField<string[]> Shiny_Leaf { get; set; } = new();
 
-    [JsonProperty("Trash Bytes")]
-    public Trash_Bytes_Class Trash_Bytes { get; set; } = new();
-
     [JsonProperty("Format Specific")]
     public Dictionary<string, Format_Dict> Format_Specific { get; set; } = new();
-
-    public class Trash_Bytes_Class : Base_Dict
-    {
-        [JsonProperty("Nickname")]
-        public BackedField<BigInteger[]> Nickname { get; set; } = new();
-
-        [JsonProperty("OT")]
-        public BackedField<BigInteger[]> OT { get; set; } = new();
-    }
 
     public class Move : Base_Dict
     {
