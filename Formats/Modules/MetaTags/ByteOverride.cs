@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Text.RegularExpressions;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.MetaTags;
@@ -25,87 +24,42 @@ public interface ByteOverride_E : Tag
     {
         ByteOverride_O byteOverrideObj = Data as ByteOverride_O;
 
-        pku.Format_Specific.TryGetValue(FormatName, out pkuObject.Format_Dict forDict);
-        if (forDict?.Byte_Override == null) //byte override dict unspecified
+        pkuObject.Format_Dict forDict = FormatSpecificUtil.GetFormatDict(pku, FormatName);
+        if (forDict?.Byte_Override.Count is not > 0) //byte override null/empty
             return;
 
-        List<Action> validCommands = new();
-        List<int> invalidIndices = new();
-        int index = -1;
-        foreach ((string cmd, JToken token) in forDict.Byte_Override)
+        ByteOverride_Action = () => { };
+        List<string> invalidCmds = new();
+        foreach ((string comment, JToken token) in forDict.Byte_Override)
         {
-            index++;
-
-            //process value (JToken -> bigint)
-            OneOf<BigInteger, BigInteger[]> value;
-            if (token is JValue jval && jval.Type is JTokenType.Integer)
-                value = jval.ToBigInteger();
-            else if (token is JArray jarr)
-            {
-                BigInteger[] array = new BigInteger[jarr.Count];
-                for (int i = 0; i < array.Length; i++)
-                {
-                    if (jarr[i].Type is JTokenType.Integer)
-                        array[i] = jarr[i].ToBigInteger();
-                    else
-                    {
-                        invalidIndices.Add(index);
-                        continue;
-                    }
-                }
-                value = array;
-            }
-            else
-            {
-                invalidIndices.Add(index);
-                continue;
-            }
-
-            //process CMD
-            var boCMD = ByteOverrideCMD.FromString(cmd, value);
-            if (boCMD?.IsValid(byteOverrideObj.BAM) == true)
-                validCommands.Add(() => boCMD.Apply(byteOverrideObj.BAM));
-            else
-            {
-                invalidIndices.Add(index);
-                continue;
-            }
-            boCMD.ToString();
+            ByteOverrideCMD cmd = ByteOverrideCMD.FromJToken(token);
+            if (cmd is null) //cmd invalid
+                invalidCmds.Add(comment);
+            else //cmd valid
+                ByteOverride_Action += () => cmd.Apply(byteOverrideObj.BAM);
         }
-
-        void action()
-        {
-            foreach (Action a in validCommands)
-                a.Invoke();
-        }
-        ByteOverride_Action = action;
-        Warnings.Add(GetByteOverrideAlert(invalidIndices));
+        Warnings.Add(GetByteOverrideAlert(invalidCmds));
     }
 
     // Action
     [PorterDirective(ProcessingPhase.PostProcessing)]
     public Action ByteOverride_Action { get; set; }
 
-    protected static Alert GetByteOverrideAlert(List<int> invalidIndices)
+    protected static Alert GetByteOverrideAlert(List<string> invalidCmds)
     {
-        if (invalidIndices?.Count > 0)
-            return new("Byte Override", $"Byte Override command(s) {string.Join(", ", invalidIndices)} are invalid. Ignoring them.");
+        if (invalidCmds?.Count > 0)
+            return new("Byte Override", $"The '{string.Join(", ", invalidCmds)}' byte override command(s) are invalid. Ignoring them.");
         return null;
     }
 }
 
-public interface ByteOverride_I : Tag
+public static class ByteOverrideUtil
 {
-    public Alert AddByteOverrideCMD(string tag, ByteOverrideCMD cmd)
-        => AddByteOverrideCMD(tag, cmd, pku, FormatName);
-
-    //static method for anonymous calls
-    public static Alert AddByteOverrideCMD(string tag, ByteOverrideCMD cmd, pkuObject pku, string formatName)
+    public static Alert AddByteOverrideCMD(string tag, ByteOverrideCMD cmd, pkuObject pku, string FormatName)
     {
-        if (!pku.Format_Specific.ContainsKey(formatName) || pku.Format_Specific[formatName] is null)
-            pku.Format_Specific[formatName] = new();
+        FormatSpecificUtil.EnsureFormatDictExists(pku, FormatName);
 
-        pku.Format_Specific[formatName].Byte_Override.Add(cmd.ToString(), JToken.FromObject(cmd.Value.Value));
+        pku.Format_Specific[FormatName].Byte_Override.Add(tag, cmd.ToJToken());
         return GetByteOverrideAlert(tag);
     }
 
@@ -148,81 +102,83 @@ public class ByteOverrideCMD
     public ByteOverrideCMD(BigInteger[] value, int byteAddr, int bitAddr, int length, (int, int)[] virtualIndices = null)
         : this(value, true, byteAddr, bitAddr, length, virtualIndices) { }
 
-
-    private const string BYTE_TYPE_REGEX = @"^(.*) ([0-9]+):([0-9]+)(?:\|((?:\([0-9]+,[0-9]+\))+))*$";
-    private const string BIT_TYPE_REGEX = @"^(.*) ([0-9]+):([0-9]+):([0-9]+)(?:\|((?:\([0-9]+,[0-9]+\))+))*$";
-    private const string VIRTUAL_INDEX_REGEX = @"\(([0-9]+),([0-9]+)\)";
-
-    public static ByteOverrideCMD FromString(string cmd, OneOf<BigInteger, BigInteger[]> value)
+    public static ByteOverrideCMD FromJToken(JToken token)
     {
-        bool isBitType = false;
-        int startByte = -1, startBit = -1, length = -1;
+        OneOf<BigInteger, BigInteger[]> value;
+        bool bitType;
+        int startByte;
+        int startBit = -1;
+        int length;
         (int, int)[] virtualIndices = null;
 
-        bool cmdTypeValid(Match match)
+        //array & valid size
+        if (token is not JArray tokenArr || tokenArr.Count is not (3 or 4))
+                return null; //not array of size 3/4
+
+        //value
+        if (tokenArr[0] is JArray) //array
         {
-            string cmdtype = match.Groups[1].Value.ToLowerInvariant();
-            return cmdtype is "set" && value.IsT0 || cmdtype is "set array" && value.IsT1;
+            try { value = tokenArr[0].ToObject<BigInteger[]>(); }
+            catch { return null; }
+        }
+        else //single
+        {
+            try { value = tokenArr[0].ToObject<BigInteger>(); }
+            catch { return null; }
         }
 
-        (int, int)[] processVirtualIndices(string group)
+        //start byte/bit
+        if (tokenArr[1] is JArray startToken) //array
         {
-            (int, int)[] virtualIndices = null;
-            MatchCollection matches = Regex.Matches(group, VIRTUAL_INDEX_REGEX);
-            if (matches.Count > 0)
-            {
-                virtualIndices = new (int, int)[matches.Count];
-                for (int i = 0; i < virtualIndices.Length; i++)
-                {
-                    if (!int.TryParse(matches[i].Groups[1].Value, out int a) ||
-                        !int.TryParse(matches[i].Groups[2].Value, out int b))
-                        return null;
-                    virtualIndices[i] = (a, b);
-                }
+            if (startToken.Count is not 2) //must be [byte, bit]
+                return null;
+            try {
+                startByte = startToken[0].ToObject<int>();
+                startBit = startToken[1].ToObject<int>();
             }
-            return virtualIndices;
+            catch { return null; }
+            bitType = true;
+        }
+        else //single
+        {
+            try { startByte = tokenArr[1].ToObject<int>(); }
+            catch { return null; }
+            bitType = false;
         }
 
-        //try byte type
-        Match match = Regex.Match(cmd, BYTE_TYPE_REGEX);
-        if (match.Success)
-        {
-            if (!cmdTypeValid(match))
-                return null;
-            isBitType = false;
-            if (!int.TryParse(match.Groups[2].Value, out startByte) ||
-                !int.TryParse(match.Groups[3].Value, out length))
-                return null;
-            if (match.Groups[4].Success)
-                virtualIndices = processVirtualIndices(match.Groups[4].Value);
-        }
+        //length
+        try { length = tokenArr[2].ToObject<int>(); }
+        catch { return null; }
 
-        //try bit type
-        match = Regex.Match(cmd, BIT_TYPE_REGEX);
-        if (match.Success)
+        //virtual indices
+        if (tokenArr.Count > 3) //has 4th element
         {
-            if (!cmdTypeValid(match))
-                return null;
-            isBitType = true;
-            if (int.TryParse(match.Groups[2].Value, out startByte) ||
-                int.TryParse(match.Groups[3].Value, out startBit) ||
-                int.TryParse(match.Groups[4].Value, out length))
-                return null;
-            if (match.Groups[5].Success)
-                virtualIndices = processVirtualIndices(match.Groups[5].Value);
+            if (tokenArr[3] is not JArray indicesToken)
+                return null; //must be an array
+
+            virtualIndices = new (int, int)[indicesToken.Count];
+
+            for (int i = 0; i < virtualIndices.Length; i++)
+            {
+                if (indicesToken[i] is not JArray indexToken || indexToken.Count != 2)
+                    return null; //all elements must be 2 long arrays
+
+                try { virtualIndices[i] = (indexToken[0].ToObject<int>(), indexToken[1].ToObject<int>()); }
+                catch { return null; }
+            }
         }
 
         return value.Match(
             x =>
             {
-                if (isBitType)
+                if (bitType)
                     return new ByteOverrideCMD(x, startByte, startBit, length, virtualIndices);
                 else
                     return new ByteOverrideCMD(x, startByte, length, virtualIndices);
             },
             x =>
             {
-                if (isBitType)
+                if (bitType)
                     return new ByteOverrideCMD(x, startByte, startBit, length, virtualIndices);
                 else
                     return new ByteOverrideCMD(x, startByte, length, virtualIndices);
@@ -230,22 +186,34 @@ public class ByteOverrideCMD
         );
     }
 
-    public override string ToString()
+    public JToken ToJToken()
     {
-        string cmd = "Set ";
-        if (Value.IsT1)
-            cmd += "Array ";
-        cmd += $"{StartByte}:";
+        JArray tok = new();
+
+        //Value
+        tok.Add(Value.Match(
+            x => JToken.FromObject(x),
+            x => JArray.FromObject(x)));
+
+        //start
         if (IsBitType)
-            cmd += $"{StartBit}:";
-        cmd += $"{ByteOrBitLength}";
-        if (VirtualIndices?.Length > 0)
+            tok.Add(JArray.FromObject(new[] { StartByte, StartBit }));
+        else
+            tok.Add(StartByte);
+
+        //length
+        tok.Add(ByteOrBitLength);
+
+        //virtual indices
+        if (VirtualIndices != null)
         {
-            cmd += "|";
-            foreach ((int offset, int size) in VirtualIndices)
-                cmd += $"({offset},{size})";
+            JArray indicesToken = new();
+            foreach ((int a, int b) in VirtualIndices)
+                indicesToken.Add(JArray.FromObject(new[] { a, b }));
+            tok.Add(indicesToken);
         }
-        return cmd;
+
+        return tok;
     }
 
     public bool IsValid(ByteArrayManipulator bam)

@@ -55,14 +55,14 @@ public interface IndexTag_E : Tag
     };
 }
 
-public interface IndexTag_I : ByteOverride_I
+public interface IndexTag_I : Tag
 {
     protected void ImportIndexTag(string tagName, IField<string> pkuTag, bool isValid, string asString, IField<BigInteger> encodedField)
     {
         if (isValid) //valid
             pkuTag.Value = asString;
         else if (encodedField is IByteOverridable bf) //invalid encoded language, add to byte override
-            Warnings.Add((this as ByteOverride_I).AddByteOverrideCMD(tagName, bf.GetOverride()));
+            Warnings.Add(ByteOverrideUtil.AddByteOverrideCMD(tagName, bf.GetOverride(), pku, FormatName));
         //first two cases didn't work. invalid string value? no string override yet...
     }
 }

@@ -60,7 +60,7 @@ public class pk3Importer : Importer, Is_Egg_I, Language_I, Nickname_I, OT_I
 
         //byte override use egg name, if not handled by 'legalGen3Egg' thing
         if (!legalGen3Egg && Data.UseEggName.ValueAsBool)
-            Warnings.Add(ByteOverride_I.AddByteOverrideCMD("Egg Name Flag", Data.UseEggName.GetOverride(), pku, FormatName));
+            Warnings.Add(ByteOverrideUtil.AddByteOverrideCMD("Egg Name Flag", Data.UseEggName.GetOverride(), pku, FormatName));
     }
 
     // Language

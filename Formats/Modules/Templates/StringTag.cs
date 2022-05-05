@@ -83,7 +83,7 @@ public interface StringTag_E : Tag
     }
 }
 
-public interface StringTag_I : ByteOverride_I
+public interface StringTag_I : Tag
 {
     public ChoiceAlert Language_DependencyError => null;
 
@@ -98,7 +98,7 @@ public interface StringTag_I : ByteOverride_I
                     (pkuField.Value, bool invalid) = DexUtil.CharEncoding.Decode(x.Value, FormatName, lang);
                     if (invalid)
                         Warnings.Add(GetStringAlert(tagName, AlertType.INVALID) //string invalid
-                                   + AddByteOverrideCMD(tagName, x.GetOverride())); //adding byte override
+                                   + ByteOverrideUtil.AddByteOverrideCMD(tagName, x.GetOverride(), pku, FormatName)); //adding byte override
                 },
                 x => pkuField.Value = x.Value);
         }
