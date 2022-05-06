@@ -22,6 +22,9 @@ public static class NumericTagUtil
         return at;
     }
 
+    public static void ImportNumericTag(IField<BigInteger?> pkuVal, IField<BigInteger> formatVal)
+        => pkuVal.Value = formatVal.Value; //can't be invalid, all ints fit in pku fields
+
     public static Alert GetNumericAlert(string name, AlertType at, BigInteger defaultVal, BigInteger? max, BigInteger? min) => at switch
     {
         AlertType.OVERFLOW => new(name, $"This pku's {name} is higher than the maximum. Rounding down to {max}."),

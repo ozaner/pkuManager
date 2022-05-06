@@ -22,3 +22,10 @@ public interface TID_E : Tag
             Warnings.Add(NumericTagUtil.GetNumericAlert("TID", at, 0, tidObj.TID as IBoundable<BigInteger>));
     }
 }
+
+public interface TID_I : Tag
+{
+    [PorterDirective(ProcessingPhase.FirstPass)]
+    public void ImportTID()
+        => NumericTagUtil.ImportNumericTag(pku.Game_Info.TID, (Data as TID_O).TID);
+}

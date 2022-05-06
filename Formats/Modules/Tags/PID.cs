@@ -116,3 +116,10 @@ public interface PID_E : Tag
         }
     }
 }
+
+public interface PID_I : Tag
+{
+    [PorterDirective(ProcessingPhase.FirstPass)]
+    public void ImportPID()
+        => NumericTagUtil.ImportNumericTag(pku.PID, (Data as PID_O).PID);
+}
