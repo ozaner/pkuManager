@@ -1,6 +1,8 @@
 ﻿using OneOf;
 using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
+using pkuManager.Formats.Fields.LambdaFields;
+using pkuManager.Formats.Modules.Templates;
 using pkuManager.Utilities;
 using System.Collections.Generic;
 using System.Numerics;
@@ -121,5 +123,21 @@ public interface Gender_E : Tag
             x => $" using the default: {x?.ToFormattedString() ?? "none"}",
             x => x) + ".";
         return new("Gender", msg);
+    }
+}
+
+public interface Gender_I : EnumTag_I
+{
+    [PorterDirective(ProcessingPhase.FirstPass)]
+    public void ImportGender()
+    {
+        if((Data as Gender_O).Gender.TryPickT2(out var nullableField, out var usableGenderField))
+        {
+            if (nullableField.IsNull())
+                return;
+            else
+                usableGenderField = new LambdaField<Gender>(() => nullableField.Value.Value, x => nullableField.Value = x);
+        }
+        ImportEnumTag("Gender", pku.Gender, usableGenderField);
     }
 }

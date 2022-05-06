@@ -400,7 +400,7 @@ public static class DataUtil
     /// <param name="e">An enum.</param>
     /// <returns>The string form of <paramref name="e"/>.</returns>
     public static string ToFormattedString(this Enum e)
-        => e.ToString().Replace('_', ' '); //Underscores are spaces
+        => e?.ToString().Replace('_', ' '); //Underscores are spaces
 
     /// <summary>
     /// Attempts to convert the input to an enum of type <typeparamref name="T"/>. Returns null if not possible.
