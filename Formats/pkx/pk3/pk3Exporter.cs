@@ -17,9 +17,9 @@ namespace pkuManager.Formats.pkx.pk3;
 /// <summary>
 /// Exports a <see cref="pkuObject"/> to a <see cref="pk3Object"/>.
 /// </summary>
-public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E, Form_E,
-                           Shiny_E, Gender_E, Nickname_E, Experience_E, Moves_E, PP_Ups_E, PP_E,
-                           Item_E, Nature_E, Friendship_E, PID_E, TID_E, IVs_E, EVs_E, Contest_Stats_E,
+public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E, Shiny_E,
+                           Gender_E, Nickname_E, Experience_E, Moves_E, PP_Ups_E, PP_E, Item_E,
+                           Nature_E, Friendship_E, PID_E, TID_E, IVs_E, EVs_E, Contest_Stats_E,
                            Ball_E, OT_E, Origin_Game_E, Met_Location_E, Met_Level_E, OT_Gender_E,
                            Language_E, Fateful_Encounter_E, Markings_E, Ribbons_E, Is_Egg_E,
                            Pokerus_E, Trash_Bytes_E, ByteOverride_E
@@ -63,19 +63,15 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
      * Custom Processing Methods
      * ------------------------------------
     */
-    // Species
-    public void ExportSpecies()
+    // SFA
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(PID_E.ExportPID))]
+    public void ExportSFA()
     {
-        (this as Species_E).ExportSpeciesBase();
+        (this as SFA_E).ExportSFABase();
         Data.HasSpecies.ValueAsBool = true;
-    }
 
-    // Form
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(PID_E.ExportPID), nameof(ExportSpecies))]
-    public void ExportForm()
-    {
-        (this as Form_E).ExportFormBase();
-        if (Data.Species.Value == 201) //Unown (index = 201)
+        //deal with Unown form pid dependence
+        if (pku.Species.Value is "Unown")
         {
             string pkuForm = pku.Forms.Value.JoinLexical();
             string pidForm = TagUtil.GetUnownFormName(Data.Form.GetAs<int>());
@@ -218,15 +214,13 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
     }
 
     // Fateful Encounter
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(ExportSpecies))]
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(SFA_E.ExportSFA))]
     public void ExportFateful_Encounter()
     {
-        int speciesIndex = Data.Species.GetAs<int>();
-
         //Mew or Deoxys w/ no fateful encounter
-        if (speciesIndex is 151 or 410 && pku.Catch_Info.Fateful_Encounter.Value is not true)
+        if (pku.Species.Value is "Mew" or "Deoxys" && pku.Catch_Info.Fateful_Encounter.Value is not true)
         {
-            Alert alert = GetObedienceAlert(speciesIndex is 151);
+            Alert alert = GetObedienceAlert(pku.Species.Value is "Mew");
             Fateful_EncounterResolver = new(alert, Data.Fateful_Encounter, new[] { false, true });
             Errors.Add(alert);
         }
@@ -254,7 +248,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, Specie
      * Custom Alerts
      * ------------------------------------
     */
-    public Alert GetFormAlert(DexUtil.SFA sfa)
+    public Alert GetSFAAlert(DexUtil.SFA sfa)
     {
         if (sfa.Species == "Deoxys" && sfa.Form != "Normal") //must be another valid deoxys form to get here
             return new("Form", "Note that in generation 3, Deoxys' form depends on what game it is currently in.");

@@ -11,9 +11,9 @@ namespace pkuManager.Formats.showdown;
 /// <summary>
 /// Exports a <see cref="pkuObject"/> to a <see cref="ShowdownObject"/>.
 /// </summary>
-public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, Species_E,
-                                Form_E, Shiny_E, Nickname_E, Level_E, Gender_E, Ability_E, Moves_E,
-                                Item_E, Nature_E, Friendship_E, IVs_E, EVs_E, Gigantamax_Factor_E
+public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E, Shiny_E,
+                                Nickname_E, Level_E, Gender_E, Ability_E, Moves_E, Item_E,
+                                Nature_E, Friendship_E, IVs_E, EVs_E, Gigantamax_Factor_E
 {
     public override string FormatName => "Showdown";
     public override ShowdownObject Data { get; } = new();

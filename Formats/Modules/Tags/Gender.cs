@@ -37,7 +37,7 @@ public interface Gender_E : Tag
     public Dictionary<string, object> PID_DependencyDigest { get => null; set { } }
 
     [PorterDirective(ProcessingPhase.FirstPass, nameof(PID_E.ExportPID),
-                                                nameof(Species_E.ExportSpecies))] //need for gender field
+                                                nameof(SFA_E.ExportSFA))] //need for gender field
     public void ExportGender()
     {
         Gender_O Gender_Field = Data as Gender_O;
