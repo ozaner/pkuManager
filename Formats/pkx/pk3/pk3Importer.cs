@@ -10,7 +10,7 @@ using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.pkx.pk3;
 
-public class pk3Importer : Importer, Gender_I, Shiny_I, Is_Egg_I, Language_I, Nickname_I, OT_I
+public class pk3Importer : Importer, Gender_I, Shiny_I, Nature_I, Is_Egg_I, Language_I, Nickname_I, OT_I
 {
     public override string FormatName => "pk3";
 

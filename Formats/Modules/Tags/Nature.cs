@@ -60,3 +60,10 @@ public interface Nature_E : EnumTag_E
     public Alert GetNatureAlertBase(AlertType at, string val, OneOf<Nature, string> defaultVal)
         => GetEnumAlert("Nature", at, val, defaultVal);
 }
+
+public interface Nature_I : EnumTag_I
+{
+    [PorterDirective(ProcessingPhase.FirstPass)]
+    public void ImportNature()
+        => ImportEnumTag("Nature", pku.Nature, (Data as Nature_O).Nature);
+}
