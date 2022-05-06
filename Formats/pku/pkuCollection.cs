@@ -530,7 +530,7 @@ public class pkuBox : Box
 
     public override bool SetSlot(FormatObject pkmn, int slotID)
     {
-        //doesnt delete the file that occupied this slot, if any.
+        UpdatePKUFilename(pkmn as pkuObject); //make sure filename doesn't coincide with another pku
         if (TryWritePKU(pkmn as pkuObject))
         {
             Data[slotID] = pkmn as pkuObject;
@@ -596,11 +596,20 @@ public class pkuBox : Box
      * pku Specific Box Methods
      * ------------------------------------
     */
+    //returns whether the filename was changed
+    public bool UpdatePKUFilename(pkuObject pku)
+    {
+        string oldName = pku.SourceFilename;
+        string newName = DataUtil.GetNextFilePath($"{Path}/{Name}/{oldName}");
+        pku.SourceFilename = System.IO.Path.GetFileName(newName);
+        return oldName != newName;
+    }
+
     public bool TryWritePKU(pkuObject pku)
     {
         try
         {
-            File.WriteAllBytes(DataUtil.GetNextFilePath($"{Path}/{Name}/{pku.SourceFilename}"), pku.ToFile());
+            File.WriteAllBytes($"{Path}/{Name}/{pku.SourceFilename}", pku.ToFile());
             return true;
         }
         catch
