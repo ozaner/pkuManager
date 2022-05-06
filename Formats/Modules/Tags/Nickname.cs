@@ -46,8 +46,9 @@ public interface Nickname_E : StringTag_E
 
 public interface Nickname_I : StringTag_I
 {
-    [PorterDirective(ProcessingPhase.FirstPass, nameof(Language_I.ImportLanguage),
-                                                "ImportSpecies", nameof(Is_Egg_I.ImportIs_Egg))]
+    [PorterDirective(ProcessingPhase.FirstPass, nameof(SFA_I.ImportSFA),
+                                                nameof(Language_I.ImportLanguage),
+                                                nameof(Is_Egg_I.ImportIs_Egg))]
     public void ImportNickname() => ImportNicknameBase();
 
     public void ImportNicknameBase()
