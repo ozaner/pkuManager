@@ -49,3 +49,10 @@ public interface Shiny_E : BooleanTag_E
             GetBooleanAlert("Shiny", at, false);
     }
 }
+
+public interface Shiny_I : BooleanTag_I
+{
+    [PorterDirective(ProcessingPhase.FirstPass)]
+    public void ImportShiny() //PID and TID should be settled for pid dep
+        => ImportBooleanTag("Shiny", pku.Shiny, (Data as Shiny_O).Shiny, false);
+}
