@@ -294,6 +294,7 @@ public class pkuObject : FormatObject
         public pkuObject pku_Override { get; set; }
 
         [JsonProperty("Byte Override")]
+        [JsonConverter(typeof(NoFormattingConverter))]
         public Dictionary<string, JToken> Byte_Override { get; set; } = new();
     }
 
@@ -553,7 +554,7 @@ public class pkuObject : FormatObject
         }
     }
 
-    private class ByteOverrideConverter : JsonConverter
+    private class NoFormattingConverter : JsonConverter
     {
         public override bool CanWrite => true;
 
@@ -571,13 +572,7 @@ public class pkuObject : FormatObject
             foreach (var x in values)
             {
                 writer.WritePropertyName(x.Key);
-                object val = x.Value.Type switch
-                {
-                    JTokenType.Integer => x.Value.ToObject<BigInteger>(),
-                    JTokenType.Array => x.Value.ToObject<BigInteger[]>(),
-                    _ => throw new NotImplementedException()
-                };
-                writer.WriteRawValue(JsonConvert.SerializeObject(val, Formatting.None));
+                writer.WriteRawValue(JsonConvert.SerializeObject(x.Value, Formatting.None));
             }
             writer.WriteEndObject();
         }
