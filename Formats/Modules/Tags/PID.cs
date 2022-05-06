@@ -49,7 +49,7 @@ public interface PID_E : Tag
         }
 
         //not a potential mismatch
-        Warnings.Add(GetPIDAlert(at, max, min, 0, false, pidObj.PID_HasDependencies));
+        Warnings.Add(GetPIDAlert(at, 0, max, min, pidObj.PID_HasDependencies));
     }
 
     [PorterDirective(ProcessingPhase.FirstPassStage2)]
@@ -100,24 +100,19 @@ public interface PID_E : Tag
             "tags (in this format). Choose whether to keep the PID or generate a compatible one.", choices, true, 1);
     }
 
-    protected static Alert GetPIDAlert(AlertType at, BigInteger? max, BigInteger? min,
-        BigInteger defaultVal, bool alertIfUnspecified, bool hasDeps = false)
+    protected static Alert GetPIDAlert(AlertType at, BigInteger defaultVal, BigInteger? max, BigInteger? min, bool hasDeps = false)
     {
-        // PID Alert
-        if (at is not AlertType.NONE && !hasDeps)
-            return NumericTag_E.GetNumericalAlert("PID", at, max, min, defaultVal, alertIfUnspecified);
-        else
+        if (!hasDeps) //independent pid (silent unspecified)
+            return at is AlertType.UNSPECIFIED ? null : NumericTagUtil.GetNumericAlert("PID", at, defaultVal, max, min);
+        else //dependent pid
         {
-            if (at is AlertType.UNSPECIFIED && !alertIfUnspecified || at is AlertType.NONE)
-                return null;
-            else
-                return new("PID", at switch
-                {
-                    AlertType.UNSPECIFIED => "PID not specified",
-                    AlertType.OVERFLOW => "This pku's PID is higher than the maximum",
-                    AlertType.UNDERFLOW => "This pku's PID is lower than the minimum",
-                    _ => throw InvalidAlertType(at)
-                } + ", generating one that matches this pku's other tags.");
+            return at is AlertType.NONE ? null : new("PID", at switch
+            {
+                AlertType.UNSPECIFIED => "PID not specified",
+                AlertType.OVERFLOW => "This pku's PID is higher than the maximum",
+                AlertType.UNDERFLOW => "This pku's PID is lower than the minimum",
+                _ => throw InvalidAlertType(at)
+            } + ", generating one that matches this pku's other tags.");
         }
     }
 }

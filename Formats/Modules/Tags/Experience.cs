@@ -74,14 +74,14 @@ public interface Experience_E : Tag
 
 
     public static Alert GetLevelAlert(AlertType at)
-        => NumericTag_E.GetNumericalAlert("Level", at, 100, 1, 1, true);
+        => NumericTagUtil.GetNumericAlert("Level", at, 1, 100, 1);
 
     public static Alert GetExperienceAlert(AlertType at, int? level100exp = null)
     {
         if (at is AlertType.OVERFLOW && level100exp is null)
             throw new ArgumentNullException(nameof(level100exp), "The level 100 exp must be given for OVERFLOW alerts.");
 
-        Alert a = NumericTag_E.GetNumericalAlert("Exp", at, level100exp, 0, 0, true);
+        Alert a = NumericTagUtil.GetNumericAlert("Exp", at, 0, level100exp, 0);
         if (at is not AlertType.NONE)
         {
             a.Message = a.Message[..^1] + " (i.e. Level " + at switch

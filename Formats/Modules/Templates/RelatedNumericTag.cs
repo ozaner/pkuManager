@@ -23,7 +23,8 @@ public interface RelatedNumericTag_E : Tag
                 _ => (pkuVals[i].Value.Value, AlertType.NONE)
             };
             formatVals[i].Value = checkedVal;
-            a += NumericTag_E.GetNumericalAlert(subTagNames[i], at, max, min, defaultVals[i], alertIfUnspecified);
+            if (alertIfUnspecified || at is not AlertType.UNSPECIFIED)
+                a += NumericTagUtil.GetNumericAlert(subTagNames[i], at, defaultVals[i], max, min);
         }
         if (a is not null)
             a.Title = tagName;

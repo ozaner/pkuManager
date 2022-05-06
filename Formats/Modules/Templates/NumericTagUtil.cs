@@ -5,10 +5,9 @@ using static pkuManager.Alerts.Alert;
 
 namespace pkuManager.Formats.Modules.Templates;
 
-public interface NumericTag_E : Tag
+public static class NumericTagUtil
 {
-    protected void ExportNumericTag(string tagName, IField<BigInteger?> pkuVal,
-        IField<BigInteger> formatVal, BigInteger defaultVal, bool alertIfUnspecified)
+    public static AlertType ExportNumericTag(IField<BigInteger?> pkuVal, IField<BigInteger> formatVal, BigInteger defaultVal)
     {
         (BigInteger? max, BigInteger? min) = formatVal is IBoundable<BigInteger> boundable ?
             (boundable.Max, boundable.Min) : (null, null);
@@ -20,16 +19,18 @@ public interface NumericTag_E : Tag
             _ => (pkuVal.Value.Value, AlertType.NONE)
         };
         formatVal.Value = checkedVal;
-        Warnings.Add(GetNumericalAlert(tagName, at, max, min, defaultVal, alertIfUnspecified));
+        return at;
     }
 
-    public static Alert GetNumericalAlert(string name, AlertType at, BigInteger? max, BigInteger? min,
-        BigInteger defaultVal, bool alertIfUnspecified) => at switch
+    public static Alert GetNumericAlert(string name, AlertType at, BigInteger defaultVal, BigInteger? max, BigInteger? min) => at switch
     {
         AlertType.OVERFLOW => new(name, $"This pku's {name} is higher than the maximum. Rounding down to {max}."),
         AlertType.UNDERFLOW => new(name, $"This pku's {name} is lower than the minimum. Rounding up to {min}."),
-        AlertType.UNSPECIFIED => alertIfUnspecified ? new(name, $"{name} tag not specified, using the default of {defaultVal}.") : null,
+        AlertType.UNSPECIFIED => new(name, $"{name} tag not specified, using the default of {defaultVal}."),
         AlertType.NONE => null,
         _ => throw InvalidAlertType(at)
     };
+
+    public static Alert GetNumericAlert(string name, AlertType at, BigInteger defaultVal, IBoundable<BigInteger> boundable = null)
+        => GetNumericAlert(name, at, defaultVal, boundable?.Max, boundable?.Min);
 }
