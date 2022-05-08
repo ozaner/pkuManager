@@ -29,7 +29,7 @@ public interface Nickname_E : StringTag_E
             string nickname;
             if (pku.Nickname.IsNull()) //invalid langs have no default name
             {
-                nickname = TagUtil.GetDefaultName(pku.Species.Value, (Data as Is_Egg_O)?.Is_Egg.Value is true, lang);
+                nickname = TagUtil.GetDefaultName(pku, (Data as Is_Egg_O)?.Is_Egg.Value is true, lang);
                 if (nicknameObj.Nickname_CapitalizeDefault)
                     nickname = nickname?.ToUpperInvariant();
             }
@@ -58,7 +58,7 @@ public interface Nickname_I : StringTag_I
         //deal with default names (invalid langs have no default name)
         void dealWithDefault()
         {
-            string checkName = TagUtil.GetDefaultName(pku.Species.Value, pku.IsEgg(), pku.Game_Info.Language.Value);
+            string checkName = TagUtil.GetDefaultName(pku, pku.IsEgg(), pku.Game_Info.Language.Value);
             if ((Data as Nickname_O).Nickname_CapitalizeDefault)
                 checkName = checkName?.ToUpperInvariant();
             if (pku.Nickname.Value == checkName)

@@ -12,34 +12,6 @@ public static class PokeAPIUtil
      * Wrapped Info Methods
      * ------------------------------------
     */
-    public static string GetSpeciesNameTranslated(int dex, string lang)
-    {
-        string langID = lang switch
-        {
-            "Japanese" => "ja-Hrkt",
-            "English" => "en",
-            "French" => "fr",
-            "Italian" => "it",
-            "German" => "de",
-            "Spanish" => "es",
-            "Korean" => "ko",
-            "Chinese Simplified" => "zh-Hans",
-            "Chinese Traditional" => "zh-Hant",
-            _ => null //invalid lang
-        };
-
-        if (langID is null)
-            return null;
-        try
-        {
-            return Task.Run(() => getPokemonSpeciesAsync(dex)).Result.Names.Find(x => x.Language.Name == langID).Name;
-        }
-        catch
-        {
-            return null; //dex # invalid/name doesn't exist in this language...
-        }
-    }
-
     /// <summary>
     /// Gets the minimum EXP the given Pokemon species must have at the given level.
     /// </summary>
@@ -75,9 +47,6 @@ public static class PokeAPIUtil
      * API Call Methods
      * ------------------------------------
     */
-    private static async Task<PokemonSpecies> getPokemonSpeciesAsync(int dex)
-        => await paClient.GetResourceAsync<PokemonSpecies>(dex);
-
     private static async Task<PokeApiNet.GrowthRate> getGrowthRateAsync(int dex)
     {
         PokemonSpecies species = await paClient.GetResourceAsync<PokemonSpecies>(dex); // assume dex is valid

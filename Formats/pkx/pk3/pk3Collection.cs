@@ -251,7 +251,7 @@ public class pk3Box : Box
 
         //get lang
         Language_O langObj = pk3;
-        string lang = langObj.IsValid() ? langObj.AsString : TagUtil.DEFAULT_SEMANTIC_LANGUAGE;
+        string lang = langObj.IsValid() ? langObj.AsString : (IsJapanese ? "Japanese" : "English");
 
         //get nickname
         string nick;

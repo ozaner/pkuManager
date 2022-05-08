@@ -97,16 +97,14 @@ public static class TagUtil
     public static string GetSpeciesName(int dex)
         => SPECIES_DEX.SearchDataDex<int?>(dex, "$x", "Indices", "main-series");
 
-    public static string GetDefaultName(string species, bool isEgg, string lang)
+    public static string GetDefaultName(DexUtil.SFA sfa, bool isEgg, string lang)
     {
-        int? dex = GetNationalDex(species);
-        EGG_NICKNAME.TryGetValue(lang ?? "", out string eggName);
         if (isEgg)
+        {
+            EGG_NICKNAME.TryGetValue(lang ?? "", out string eggName);
             return eggName;
-        else if (dex.HasValue)
-            return PokeAPIUtil.GetSpeciesNameTranslated(dex.Value, lang);
-        else
-            return null;
+        }
+        return DexUtil.ReadSpeciesDex<string>(sfa, "Names", lang);
     }
 
 

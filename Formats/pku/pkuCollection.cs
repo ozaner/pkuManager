@@ -490,9 +490,7 @@ public class pkuBox : Box
     public override Slot CreateSlotInfo(FormatObject pkmn)
     {
         pkuObject pku = pkmn as pkuObject;
-        string defaultName = TagUtil.GetDefaultName(pku.Species.Value, pku.IsEgg(), pku.Game_Info.Language.Value)
-            ?? TagUtil.GetDefaultName(pku.Species.Value, pku.IsEgg(), TagUtil.DEFAULT_SEMANTIC_LANGUAGE)
-            ?? pku.Species.Value;
+        string defaultName = TagUtil.GetDefaultName(pku, pku.IsEgg(), pku.Game_Info.Language.Value);
         var sprites = ImageUtil.GetSprites(pku);
         Slot s = new(
             pku,
