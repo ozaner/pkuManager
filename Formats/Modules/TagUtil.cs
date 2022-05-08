@@ -3,6 +3,7 @@
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace pkuManager.Formats.Modules;
 
@@ -74,19 +75,6 @@ public static class TagUtil
     ///          or <see langword="null"/> if it doesn't have one.</returns>
     public static int? GetNationalDex(string species)
         => SPECIES_DEX.ReadDataDex<int?>(species, "Indices", "main-series");
-
-    /// <summary>
-    /// Does the same as <see cref="GetNationalDex(string)"/> but with the<br/>
-    /// assumption that, <paramref name="species"/> is an official species.
-    /// </summary>
-    /// <param name="species">An official Pokémon species, will throw an exception otherwise.</param>
-    /// <returns>The national dex # of the given <paramref name="species"/></returns>
-    public static int GetNationalDexChecked(string species)
-    {
-        int? dex = GetNationalDex(species);
-        return dex is null ? throw new ArgumentException
-            ("Must be an official Pokémon species.", nameof(species)) : dex.Value;
-    }
 
     /// <summary>
     /// Gets the English name of the species with the given <paramref name="dex"/> #.
@@ -204,6 +192,67 @@ public static class TagUtil
 
             return pid; // everything checks out
         }
+    }
+
+
+    /* ------------------------------------
+     * Exp Methods
+     * ------------------------------------
+    */
+    public static GrowthRate GetGrowthRate(DexUtil.SFA sfa)
+        => DexUtil.ReadSpeciesDex<string>(sfa, "Growth Rate").ToEnum<GrowthRate>().Value;
+
+    public static BigInteger GetMinExpFromLevel(BigInteger level, GrowthRate gr)
+    {
+        if (level < 2)
+            return 0; //only positive levels, & level 1 is always 0 exp
+
+        BigInteger levelCubed = BigInteger.Pow(level, 3);
+        return gr switch
+        {
+            GrowthRate.Fast => 4 * levelCubed / 5,
+            GrowthRate.Medium_Fast => levelCubed,
+            GrowthRate.Medium_Slow => 6 * levelCubed / 5 - 15 * level * level + 100 * level - 140,
+            GrowthRate.Slow => 5 * levelCubed / 4,
+            GrowthRate.Erratic => level switch
+            {
+                var x when x < 50 => levelCubed * (100 - level) / 50,
+                var x when x < 68 => levelCubed * (150 - level) / 100,
+                var x when x < 98 => levelCubed * ((1911 - 10 * level) / 3) / 500,
+                _ => levelCubed * (160 - level) / 100, //100 and beyond
+            },
+            GrowthRate.Fluctuating => level switch
+            {
+                var x when x < 15 => levelCubed * ((level + 1) / 3 + 24) / 50,
+                var x when x < 36 => levelCubed * (level + 14) / 50,
+                _ => levelCubed * ((level / 2) + 32) / 50, //100 and beyond
+            },
+            _ => throw new NotImplementedException()
+        };
+    }
+
+    public static BigInteger GetLevelFromExp(BigInteger exp, GrowthRate gr)
+    {
+        //bound level
+        BigInteger testLevel = 0;
+        BigInteger testExp;
+        do
+        {
+            testLevel += 100;
+            testExp = GetMinExpFromLevel(testLevel, gr);
+        }
+        while (testExp < exp);
+
+        do
+        {
+            testExp = GetMinExpFromLevel(testLevel, gr);
+            if (testExp <= exp)
+                return testLevel;
+            testLevel--;
+        }
+        while (testLevel > 0);
+
+        return 0; //failure
     }
 
 
@@ -540,9 +589,9 @@ public static class TagEnums
     /// </summary>
     public enum GrowthRate
     {
-        Medium_Fast,
-        Erratic,
+        Erratic = 0,
         Fluctuating,
+        Medium_Fast,
         Medium_Slow,
         Fast,
         Slow

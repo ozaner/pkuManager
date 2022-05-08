@@ -1,7 +1,6 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
-using pkuManager.Utilities;
 using System;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
@@ -19,8 +18,8 @@ public interface Experience_E : Tag
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportExperience()
     {
-        int dex = TagUtil.GetNationalDexChecked(pku.Species.Value); //must be valid at this point
-        int level100EXP = PokeAPIUtil.GetEXPFromLevel(dex, 100);
+        GrowthRate gr = TagUtil.GetGrowthRate(pku);
+        BigInteger level100EXP = TagUtil.GetMinExpFromLevel(100, gr);
 
         //data collection - Level
         (BigInteger? levelChecked, BigInteger levelAsEXP, AlertType atLevel) = pku.Level.Value switch
@@ -28,7 +27,7 @@ public interface Experience_E : Tag
             null => (null, -1, AlertType.NONE), //no level specified
             var x when x.Value > 100 => (100, level100EXP, AlertType.OVERFLOW), //level overflow
             var x when x.Value < 1 => (1, 0, AlertType.UNDERFLOW), //level underflow
-            _ => ((int?)pku.Level.Value, PokeAPIUtil.GetEXPFromLevel(dex, (int)pku.Level.Value), AlertType.NONE) //valid level
+            _ => (pku.Level.Value, TagUtil.GetMinExpFromLevel(pku.Level.Value.Value, gr), AlertType.NONE) //valid level
         };
 
         //data collection - EXP
@@ -37,7 +36,7 @@ public interface Experience_E : Tag
             null => (null, -1, AlertType.NONE), //no exp specified
             var x when x > level100EXP => (level100EXP, 100, AlertType.OVERFLOW), //exp overflow
             var x when x < 0 => (0, 1, AlertType.UNDERFLOW), //exp underflow
-            _ => (pku.Experience.Value, PokeAPIUtil.GetLevelFromEXP(dex, (int)pku.Experience.Value.Value), AlertType.NONE) //valid exp
+            _ => (pku.Experience.Value, TagUtil.GetLevelFromExp(pku.Experience.Value.Value, gr), AlertType.NONE) //valid exp
         };
 
         //Finalize values + alerts
@@ -76,7 +75,7 @@ public interface Experience_E : Tag
     public static Alert GetLevelAlert(AlertType at)
         => NumericTagUtil.GetNumericAlert("Level", at, 1, 100, 1);
 
-    public static Alert GetExperienceAlert(AlertType at, int? level100exp = null)
+    public static Alert GetExperienceAlert(AlertType at, BigInteger? level100exp = null)
     {
         if (at is AlertType.OVERFLOW && level100exp is null)
             throw new ArgumentNullException(nameof(level100exp), "The level 100 exp must be given for OVERFLOW alerts.");
@@ -95,7 +94,7 @@ public interface Experience_E : Tag
     }
 
     public static Alert GetLevelExperienceAlert(AlertType at, (AlertType atLevel, AlertType atEXP,
-        BigInteger level, BigInteger exp, BigInteger levelToExp, BigInteger expToLevel, int level100Exp)? mismatchData = null)
+        BigInteger level, BigInteger exp, BigInteger levelToExp, BigInteger expToLevel, BigInteger level100Exp)? mismatchData = null)
     {
         //mismatch alert
         if (at is AlertType.MISMATCH)

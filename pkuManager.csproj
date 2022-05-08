@@ -91,7 +91,6 @@
     <PackageReference Include="FluentDragDrop" Version="1.1.0" />
     <PackageReference Include="JsonSchema.Net" Version="2.1.1" />
     <PackageReference Include="OneOf" Version="3.0.205" />
-    <PackageReference Include="PokeApiNet" Version="3.0.3" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Class1.cs" />
