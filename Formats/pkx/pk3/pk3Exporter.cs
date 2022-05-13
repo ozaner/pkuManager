@@ -150,7 +150,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E,
             => ABILITY_DEX.GetIndexedValue<int?>(FormatName, name, "Indices").Value; //must have an ID
 
         Alert alert = null;
-        string[] abilitySlots = SPECIES_DEX.ReadDataDex<string[]>(pku.Species.Value, "Gen 3 Ability Slots"); //must exist
+        string[] abilitySlots = DexUtil.GetSpeciesIndexedValue<string[]>(pku, FormatName, "Ability Slots"); //must exist
         if (pku.Ability.IsNull()) //ability unspecified
         {
             Data.Ability_Slot.ValueAsBool = false;
