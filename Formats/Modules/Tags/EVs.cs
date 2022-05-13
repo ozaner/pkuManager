@@ -1,6 +1,8 @@
-﻿using pkuManager.Formats.Fields;
+﻿using pkuManager.Alerts;
+using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
 using System.Numerics;
+using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.Tags;
@@ -10,12 +12,14 @@ public interface EVs_O
     public IField<BigInteger[]> EVs { get; }
 }
 
-public interface EVs_E : MultiNumericTag_E
+public interface EVs_E : Tag
 {
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportEVs()
     {
-        EVs_O evsObj = Data as EVs_O;
-        ExportMultiNumericTag("EVs", TagUtil.STAT_NAMES, pku.EVs_Array, evsObj.EVs, 0, false);
+        var evs = (Data as EVs_O).EVs;
+        AlertType[] ats = NumericTagUtil.ExportNumericArrayTag(pku.EVs_Array, evs, 0);
+        Alert a = NumericTagUtil.GetNumericArrayAlert("EVs", TagUtil.STAT_NAMES, ats, evs as IBoundable<BigInteger>, 0, true);
+        Warnings.Add(a);
     }
 }

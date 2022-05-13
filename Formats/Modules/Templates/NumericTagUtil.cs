@@ -1,5 +1,7 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
+using pkuManager.Utilities;
+using System.Linq;
 using System.Numerics;
 using static pkuManager.Alerts.Alert;
 
@@ -47,6 +49,17 @@ public static class NumericTagUtil
         return ats;
     }
 
+    public static AlertType[] ExportNumericArrayTag(IField<BigInteger?>[] pkuVals, IField<BigInteger[]> formatVals, BigInteger defaultVal)
+    {
+        AlertType[] ats = new AlertType[pkuVals.Length];
+        for (int i = 0; i < pkuVals.Length; i++)
+        {
+            (BigInteger checkedVal, ats[i]) = CheckNumericField(pkuVals[i], formatVals as IBoundable<BigInteger>, defaultVal);
+            formatVals.SetAs(checkedVal, i);
+        }
+        return ats;
+    }
+
 
     /* ------------------------------------
      * Importing
@@ -91,11 +104,36 @@ public static class NumericTagUtil
     {
         BigInteger?[] maxes = new BigInteger?[boundables.Length];
         BigInteger?[] mins = new BigInteger?[boundables.Length];
-        for (int i =0; i < boundables.Length; i++)
+        for (int i = 0; i < boundables.Length; i++)
         {
             maxes[i] = boundables[i]?.Max;
             mins[i] = boundables[i]?.Min;
         }
         return GetMultiNumericAlert(tagName, subTagNames, ats, defaultVals, maxes, mins, ignoreUnspecified);
     }
+
+    public static Alert GetNumericArrayAlert(string tagName, string[] subtags, AlertType[] ats,
+        BigInteger? max, BigInteger? min, BigInteger defaultVal, bool ignoreUnspecified)
+    {
+        if (ats.All(x => x is AlertType.UNSPECIFIED))
+            return !ignoreUnspecified ? new(tagName, $"No {tagName} were specified, setting them all to {defaultVal}.") : null;
+
+        string msgOverflow = subtags.Where((_, id) => ats[id].HasFlag(AlertType.OVERFLOW)).ToArray().JoinGrammatical();
+        string msgUnderflow = subtags.Where((_, id) => ats[id].HasFlag(AlertType.UNDERFLOW)).ToArray().JoinGrammatical();
+        string msgUnspecifed = subtags.Where((_, id) => ats[id].HasFlag(AlertType.UNSPECIFIED)).ToArray().JoinGrammatical();
+
+        Alert a = new(tagName, null);
+        if (!msgOverflow.IsEmpty())
+            a += new Alert(tagName, $"The {msgOverflow} {tagName} are too high. Rounding them down to {max}.");
+        if (!msgUnderflow.IsEmpty())
+            a += new Alert(tagName, $"The {msgUnderflow} {tagName} are too low. Rounding them up to {min}.");
+        if (!msgUnspecifed.IsEmpty() && !ignoreUnspecified)
+            a += new Alert(tagName, $"The {msgUnspecifed} {tagName} are unspecified. Setting them to {defaultVal}.");
+
+        return a.Message?.Length > 0 ? a : null;
+    }
+
+    public static Alert GetNumericArrayAlert(string tagName, string[] subtags, AlertType[] ats,
+        IBoundable<BigInteger> boundable, BigInteger defaultVal, bool ignoreUnspecified)
+        => GetNumericArrayAlert(tagName, subtags, ats, boundable?.Max, boundable?.Min, defaultVal, ignoreUnspecified);
 }
