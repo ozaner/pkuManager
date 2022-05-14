@@ -111,13 +111,13 @@ public interface Ribbons_O
     public IField<bool> Master_Rank_Ribbon => null;
 }
 
-public interface Ribbons_E : MultiEnumTag_E
+public interface Ribbons_E : Tag
 {
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportRibbons() => ExportRibbonsBase();
 
     public void ExportRibbonsBase()
-        => ExportMultiEnumTag(GetMapping(), pku.Ribbons.ToEnumSet<Ribbon>());
+        => EnumTagUtil<Ribbon>.ExportMultiEnumTag(GetMapping(), pku.Ribbons.ToEnumSet<Ribbon>());
 
     private Dictionary<Ribbon, IField<bool>> GetMapping()
     {

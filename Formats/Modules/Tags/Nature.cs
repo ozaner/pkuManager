@@ -2,6 +2,8 @@
 using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Fields.BackedFields;
+using pkuManager.Formats.Fields.BAMFields;
+using pkuManager.Formats.Modules.MetaTags;
 using pkuManager.Formats.Modules.Templates;
 using pkuManager.Utilities;
 using System.Collections.Generic;
@@ -18,7 +20,7 @@ public interface Nature_O
     public bool Nature_PIDDependent => false;
 }
 
-public interface Nature_E : EnumTag_E
+public interface Nature_E : Tag
 {
     public ChoiceAlert PID_DependencyError { get => null; set { } }
     public Dictionary<string, object> PID_DependencyDigest { get => null; set { } }
@@ -30,7 +32,7 @@ public interface Nature_E : EnumTag_E
         if (natureObj.Nature_PIDDependent)
         {
             BackedField<Nature> dummyField = new();
-            AlertType at = ExportEnumTag(pku.Nature, natureObj.Nature_Default, dummyField);
+            AlertType at = EnumTagUtil<Nature>.ExportEnumTag(pku.Nature, dummyField, natureObj.Nature_Default);
             Nature? exportedNat = dummyField.Value;
 
             Warnings.Add(GetNaturePIDAlert(at, pku.Nature.Value));
@@ -46,7 +48,7 @@ public interface Nature_E : EnumTag_E
         }
         else //pid independent
         {
-            AlertType at = ExportEnumTag(pku.Nature, natureObj.Nature_Default, natureObj.Nature);
+            AlertType at = EnumTagUtil<Nature>.ExportEnumTag(pku.Nature, natureObj.Nature, natureObj.Nature_Default);
             Warnings.Add(GetNatureAlert(at, pku.Nature.Value, natureObj.Nature_Default));
         }
     }
@@ -58,12 +60,17 @@ public interface Nature_E : EnumTag_E
         => GetNatureAlertBase(at, val, "using the nature decided by the PID.");
 
     public Alert GetNatureAlertBase(AlertType at, string val, OneOf<Nature, string> defaultVal)
-        => GetEnumAlert("Nature", at, val, defaultVal);
+        => EnumTagUtil<Nature>.GetEnumAlert("Nature", at, val, defaultVal);
 }
 
-public interface Nature_I : EnumTag_I
+public interface Nature_I : Tag
 {
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ImportNature()
-        => ImportEnumTag("Nature", pku.Nature, (Data as Nature_O).Nature);
+    {
+        var natureField = (Data as Nature_O).Nature;
+        AlertType at = EnumTagUtil<Nature>.ImportEnumTag(pku.Nature, natureField);
+        if (at is AlertType.INVALID)
+            ByteOverrideUtil.TryAddByteOverrideCMD("Nature", natureField.Value as IByteOverridable, pku, FormatName);
+    }
 }

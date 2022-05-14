@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using OneOf;
 using pkuManager.Alerts;
+using pkuManager.Formats.Fields.BAMFields;
 using pkuManager.Formats.pku;
 using pkuManager.Utilities;
 using System;
@@ -55,6 +56,13 @@ public interface ByteOverride_E : Tag
 
 public static class ByteOverrideUtil
 {
+    public static Alert TryAddByteOverrideCMD(string tag, IByteOverridable field, pkuObject pku, string FormatName)
+    {
+        if (field != null)
+            return AddByteOverrideCMD(tag, field.GetOverride(), pku, FormatName);
+        return null;
+    }
+
     public static Alert AddByteOverrideCMD(string tag, ByteOverrideCMD cmd, pkuObject pku, string FormatName)
     {
         FormatSpecificUtil.EnsureFormatDictExists(pku, FormatName);

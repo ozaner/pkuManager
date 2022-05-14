@@ -1,7 +1,9 @@
 ﻿using OneOf;
 using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
+using pkuManager.Formats.Fields.BAMFields;
 using pkuManager.Formats.Fields.LambdaFields;
+using pkuManager.Formats.Modules.MetaTags;
 using pkuManager.Formats.Modules.Templates;
 using pkuManager.Utilities;
 using System.Collections.Generic;
@@ -126,7 +128,7 @@ public interface Gender_E : Tag
     }
 }
 
-public interface Gender_I : EnumTag_I
+public interface Gender_I : Tag
 {
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ImportGender()
@@ -138,6 +140,8 @@ public interface Gender_I : EnumTag_I
             else
                 usableGenderField = new LambdaField<Gender>(() => nullableField.Value.Value, x => nullableField.Value = x);
         }
-        ImportEnumTag("Gender", pku.Gender, usableGenderField);
+        AlertType at = EnumTagUtil<Gender>.ImportEnumTag(pku.Gender, usableGenderField);
+        if (at is AlertType.INVALID)
+            ByteOverrideUtil.TryAddByteOverrideCMD("Gender", usableGenderField.Value as IByteOverridable, pku, FormatName);
     }
 }

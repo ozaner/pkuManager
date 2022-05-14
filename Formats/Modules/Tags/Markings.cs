@@ -25,11 +25,11 @@ public interface Markings_O
     public IField<bool> Marking_Favorite => null;
 }
 
-public interface Markings_E : MultiEnumTag_E
+public interface Markings_E : Tag
 {
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportMarkings()
-        => ExportMultiEnumTag(GetMapping(), pku.Markings.ToEnumSet<Marking>());
+        => EnumTagUtil<Marking>.ExportMultiEnumTag(GetMapping(), pku.Markings.ToEnumSet<Marking>());
 
     private Dictionary<Marking, IField<bool>> GetMapping()
     {
