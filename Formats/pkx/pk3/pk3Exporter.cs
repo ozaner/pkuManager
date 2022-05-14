@@ -113,9 +113,9 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E,
     public void ExportLanguage()
     {
         (this as Language_E).ExportLanguageBase();
-
-        if (legalGen3Egg)
-            Data.Language.Value = 1; //set language to japanese (index = 1)
+        
+        if (legalGen3Egg) // Sets language to JPN if legal egg
+            Language_Resolver = new(null, Data.Language, 1); //JPN = 1
     }
 
     // Nickname
@@ -126,18 +126,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E,
                 pk3Object.MAX_NICKNAME_CHARS, FormatName, "Japanese").encodedStr;
         else
             (this as Nickname_E).ExportNicknameBase();
-    }
-
-    // OT
-    public void ExportOT()
-    {
-        if (legalGen3Egg) //encode legal egg OTs in their proper lang
-            IndexTagUtil.EncodeFormatField(pku.Game_Info.Language.Value, Data.Language, LANGUAGE_DEX, FormatName);
-
-        (this as OT_E).ExportOTBase();
-        
-        if (legalGen3Egg) //return legal egg lang back to japanese
-            Data.Language.Value = 1; //set language to japanese (index = 1)
     }
 
     // Ability Slot
