@@ -24,7 +24,7 @@ public interface StringTag_E : Tag
         if (Language_DependencyError is null) //valid lang/not lang dep
         {
             bool langDep = DexUtil.CharEncoding.IsLangDependent(FormatName);
-            string lang = langDep ? (Data as Language_O).AsString : null;
+            string lang = langDep ? IndexTagUtil.DecodeFormatField((Data as Language_O).Language, LANGUAGE_DEX, FormatName) : null;
             field.Switch(
                 x => {
                     int maxLength = x.Length;
@@ -92,7 +92,7 @@ public interface StringTag_I : Tag
         if (Language_DependencyError is null) //valid lang/not lang dep
         {
             bool langDep = DexUtil.CharEncoding.IsLangDependent(FormatName);
-            string lang = langDep ? (Data as Language_O).AsString : null;
+            string lang = langDep ? IndexTagUtil.DecodeFormatField((Data as Language_O).Language, LANGUAGE_DEX, FormatName) : null;
             field.Switch(
                 x => {
                     (pkuField.Value, bool invalid) = DexUtil.CharEncoding.Decode(x.Value, FormatName, lang);

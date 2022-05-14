@@ -8,27 +8,17 @@ using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.Tags;
 
-public interface Ability_O : IndexTag_O
+public interface Ability_O
 {
     public OneOf<IField<BigInteger>, IField<string>> Ability { get; }
-
-    public bool IsValid(string abil) => IsValid(ABILITY_DEX, abil);
-    public bool IsValid() => IsValid(AsString);
-
-    public string AsString
-    {
-        get => AsStringGet(ABILITY_DEX, Ability);
-        set => AsStringSet(ABILITY_DEX, Ability, value);
-    }
 }
 
-public interface Ability_E : IndexTag_E
+public interface Ability_E : Tag
 {
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportAbility()
     {
-        Ability_O abilityObj = Data as Ability_O;
-        AlertType at = ExportIndexTag(pku.Ability, "None", abilityObj.IsValid, x => abilityObj.AsString = x);
+        AlertType at = IndexTagUtil.ExportIndexTag(pku.Ability, (Data as Ability_O).Ability, "None", ABILITY_DEX, FormatName);
         Warnings.Add(GetAbilityAlert(at));
     }
 
@@ -36,5 +26,5 @@ public interface Ability_E : IndexTag_E
         => GetAbilityAlertBase(at);
 
     public Alert GetAbilityAlertBase(AlertType at)
-        => GetIndexAlert("Abilities", at, pku.Ability.Value, "None");
+        => IndexTagUtil.GetIndexAlert("Abilities", at, pku.Ability.Value, "None");
 }

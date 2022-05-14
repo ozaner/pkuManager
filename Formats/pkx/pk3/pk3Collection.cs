@@ -1,7 +1,7 @@
 ﻿using pkuManager.Formats.Fields;
 using pkuManager.Formats.Fields.BAMFields;
 using pkuManager.Formats.Modules;
-using pkuManager.Formats.Modules.Tags;
+using pkuManager.Formats.Modules.Templates;
 using pkuManager.Utilities;
 using System.Collections.Generic;
 using System.Linq;
@@ -175,6 +175,7 @@ public class pk3Box : Box
     protected const int PC_BOX_SIZE = pk3Object.FILE_SIZE_PC * 30;
 
     // Box vars
+    public override string FormatName => "pk3";
     public override int Width => 6;
     public override int Height => 5;
 
@@ -250,8 +251,9 @@ public class pk3Box : Box
         }
 
         //get lang
-        Language_O langObj = pk3;
-        string lang = langObj.IsValid() ? langObj.AsString : (IsJapanese ? "Japanese" : "English");
+        string decodedLang = IndexTagUtil.DecodeFormatField(pk3.Language, LANGUAGE_DEX, FormatName);
+        bool langIsValid = LANGUAGE_DEX.ExistsIn(FormatName, decodedLang);
+        string lang = langIsValid ? decodedLang : (IsJapanese ? "Japanese" : "English"); //fall back on jpn/eng
 
         //get nickname
         string nick;

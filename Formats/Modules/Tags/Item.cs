@@ -7,28 +7,17 @@ using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.Tags;
 
-public interface Item_O : IndexTag_O
+public interface Item_O
 {
     public OneOf<IField<BigInteger>, IField<string>> Item { get; }
-
-    public bool IsValid(string item) => IsValid(ITEM_DEX, item);
-    public bool IsValid() => IsValid(AsString);
-
-    public string AsString
-    {
-        get => AsStringGet(ITEM_DEX, Item);
-        set => AsStringSet(ITEM_DEX, Item, value);
-    }
 }
 
-public interface Item_E : IndexTag_E
+public interface Item_E : Tag
 {
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportItem()
     {
-        Item_O itemObj = Data as Item_O;
-        AlertType at = ExportIndexTag(pku.Item, "None", itemObj.IsValid, x => itemObj.AsString = x);
-        if (at is not AlertType.UNSPECIFIED) //ignore unspecified
-            Warnings.Add(GetIndexAlert("Item", at, pku.Item.Value, "None"));
+        AlertType at = IndexTagUtil.ExportIndexTag(pku.Item, (Data as Item_O).Item, "None", ITEM_DEX, FormatName);
+        Warnings.Add(IndexTagUtil.GetIndexAlert("Item", at, pku.Item.Value, "None", true));
     }
 }

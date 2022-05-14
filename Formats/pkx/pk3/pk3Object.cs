@@ -77,13 +77,13 @@ public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nat
         // Non-Subdata
         PID = new(NonSubData, 0, 4);
         TID = new(NonSubData, 4, 4);
-        Nickname = new(NonSubData, 8, 1, 10, this);
+        Nickname = new(NonSubData, 8, 1, 10, this, FormatName);
         Language = new(NonSubData, 18, 1);
         Is_Bad_Egg = new(NonSubData, 19, 0);
         HasSpecies = new(NonSubData, 19, 1);
         UseEggName = new(NonSubData, 19, 2);
         Unused_A = new(NonSubData, 19, 3, 5); //leftover from egg name byte
-        OT = new(NonSubData, 20, 1, 7, this);
+        OT = new(NonSubData, 20, 1, 7, this, FormatName);
         Marking_Blue_Circle = new(NonSubData, 27, 0);
         Marking_Blue_Square = new(NonSubData, 27, 1);
         Marking_Blue_Triangle = new(NonSubData, 27, 2);

@@ -73,6 +73,8 @@ public abstract class FileCollection : Collection
 
 public abstract class Box
 {
+    public abstract string FormatName { get; }
+
     public Image Background { get; protected set; }
     public abstract int Width { get; }
     public abstract int Height { get; }

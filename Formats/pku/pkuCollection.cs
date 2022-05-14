@@ -226,6 +226,7 @@ public class pkuCollection : Collection
 public class pkuBox : Box
 {
     // Box vars
+    public override string FormatName => "pku";
     public override int Width => GetDims(BoxType).width;
     public override int Height => GetDims(BoxType).height;
 

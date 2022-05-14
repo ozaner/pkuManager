@@ -1,6 +1,8 @@
 ﻿using OneOf;
 using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
+using pkuManager.Formats.Fields.BAMFields;
+using pkuManager.Formats.Modules.MetaTags;
 using pkuManager.Formats.Modules.Templates;
 using pkuManager.Utilities;
 using System;
@@ -11,54 +13,41 @@ using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.Tags;
 
-public interface Language_O : IndexTag_O
+public interface Language_O
 {
     public OneOf<IField<BigInteger>, IField<string>> Language { get; }
-
-    public bool IsValid(string lang) => IsValid(LANGUAGE_DEX, lang);
-    public bool IsValid() => IsValid(AsString);
-
-    public string AsString
-    {
-        get => AsStringGet(LANGUAGE_DEX, Language);
-        set => AsStringSet(LANGUAGE_DEX, Language, value);
-    }
 }
 
-public interface Language_E : Language_P, IndexTag_E
+public interface Language_E : Language_P
 {
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportLanguage() => ExportLanguageBase();
 
     public void ExportLanguageBase()
     {
-        Language_O Language_Field = Data as Language_O;
-
-        string lang = pku.Game_Info.Language.Value;
+        var languageObj = (Data as Language_O).Language;
         bool langDep = DexUtil.CharEncoding.IsLangDependent(FormatName);
-        if (langDep && !Language_Field.IsValid(lang)) //invalid lang w/ dependency
+        AlertType at = IndexTagUtil.ExportIndexTag(pku.Game_Info.Language, languageObj, "None", LANGUAGE_DEX, FormatName);
+
+        if (langDep && at is not AlertType.NONE) //lang dep & invalid/unspecified
         {
-            string[] langs = InitLangDepError(lang is null ? AlertType.UNSPECIFIED : AlertType.INVALID);
+            string[] langs = InitLangDepError(at);
             BigInteger[] langsEnc = new BigInteger[langs.Length];
             for (int i = 0; i < langs.Length; i++)
                 langsEnc[i] = LANGUAGE_DEX.GetIndexedValue<int?>(FormatName, langs[i], "Indices") ?? 0;
 
             //Assume all lang dep formats are encoded.
-            Language_Resolver = new(Language_DependencyError, Language_Field.Language.AsT0, langsEnc);
+            Language_Resolver = new(Language_DependencyError, languageObj.AsT0, langsEnc);
         }
-        else
-        {
-            AlertType at = ExportIndexTag(pku.Game_Info.Language, "None", Language_Field.IsValid, x => Language_Field.AsString = x);
-            if (at is not AlertType.UNSPECIFIED) //ignore unspecified
-                Warnings.Add(GetIndexAlert("Language", at, pku.Game_Info.Language.Value, "None"));
-        }
+        else //lang indepdendent
+            Warnings.Add(IndexTagUtil.GetIndexAlert("Language", at, pku.Game_Info.Language.Value, "None", true));
     }
 
     [PorterDirective(ProcessingPhase.SecondPass)]
     public ErrorResolver<BigInteger> Language_Resolver { get => null; set { } }
 }
 
-public interface Language_I : Language_P, IndexTag_I
+public interface Language_I : Language_P
 {
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ImportLanguage() => ImportLanguageBase();
@@ -66,16 +55,19 @@ public interface Language_I : Language_P, IndexTag_I
     public void ImportLanguageBase()
     {
         Language_O Language_Field = Data as Language_O;
-
         bool langDep = DexUtil.CharEncoding.IsLangDependent(FormatName);
-        if (langDep && !Language_Field.IsValid(Language_Field.AsString)) //invalid lang w/ dependency
+        AlertType at = IndexTagUtil.ImportIndexTag(pku.Game_Info.Language, Language_Field.Language, LANGUAGE_DEX, FormatName);
+
+        if (at is AlertType.INVALID)
         {
-            string[] langs = InitLangDepError(AlertType.INVALID);
-            Language_Resolver = new(Language_DependencyError, pku.Game_Info.Language, langs);
+            if (langDep) //invalid lang w/ dependency
+            {
+                string[] langs = InitLangDepError(AlertType.INVALID);
+                Language_Resolver = new(Language_DependencyError, pku.Game_Info.Language, langs);
+            }
+            else //invalid lang
+                ByteOverrideUtil.TryAddByteOverrideCMD("Language", Language_Field.Language.Value as IByteOverridable, pku, FormatName);
         }
-        else
-            ImportIndexTag("Language", pku.Game_Info.Language, Language_Field.IsValid(),
-                Language_Field.AsString, Language_Field.Language.AsT0);
     }
 
     [PorterDirective(ProcessingPhase.SecondPass)]

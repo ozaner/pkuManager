@@ -98,11 +98,9 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E,
         //Deal with "Legal Gen 3 eggs"
         if (pku.IsEgg())
         {
-            Language_O languageObj = Data;
-
             //To be seen as legal must have no nickname or a defined language + matching "Egg" nickname.
-            languageObj.AsString = pku.Game_Info.Language.Value;
-            if (pku.Nickname.IsNull() || languageObj.IsValid() && TagUtil.EGG_NICKNAME[languageObj.AsString] == pku.Nickname.Value)
+            bool isValid = LANGUAGE_DEX.ExistsIn(FormatName, pku.Game_Info.Language.Value);
+            if (pku.Nickname.IsNull() || isValid && TagUtil.EGG_NICKNAME[pku.Game_Info.Language.Value] == pku.Nickname.Value)
             {
                 Data.UseEggName.ValueAsBool = true;
                 legalGen3Egg = true;
@@ -134,7 +132,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E,
     public void ExportOT()
     {
         if (legalGen3Egg) //encode legal egg OTs in their proper lang
-            (Data as Language_O).AsString = pku.Game_Info.Language.Value;
+            IndexTagUtil.EncodeFormatField(pku.Game_Info.Language.Value, Data.Language, LANGUAGE_DEX, FormatName);
 
         (this as OT_E).ExportOTBase();
         
@@ -263,7 +261,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E,
         if (at.HasFlag(AlertType.MISMATCH))
             return new("Ability", $"This species cannot have the ability '{val}' in this format. Using the default ability: '{defaultVal}'.");
         else
-            return IndexTag_E.GetIndexAlert("Ability", at, val, defaultVal);
+            return IndexTagUtil.GetIndexAlert("Ability", at, val, defaultVal);
     }
 
     public static Alert GetContestRibbonAlert()
