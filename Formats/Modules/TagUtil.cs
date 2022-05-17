@@ -596,4 +596,15 @@ public static class TagEnums
         Fast,
         Slow
     }
+
+    /// <summary>
+    /// An ability slot a Pokémon can have.
+    /// </summary>
+    public enum AbilitySlot
+    {
+        Slot_1,
+        Slot_2,
+        Slot_H,
+        Slot_H2,
+    }
 }

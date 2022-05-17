@@ -16,7 +16,7 @@ public static class EnumTagUtil<T> where T : struct, Enum
      * ------------------------------------
     */
     public static AlertType ExportEnumTag(IField<string> pkuTag, OneOf<IField<BigInteger>, IField<T>> formatVal,
-        T defaultVal, Predicate<T> isValid = null)
+    T defaultVal, Dictionary<T, int> customMapping = null)
     {
         AlertType at = AlertType.UNSPECIFIED;
         T finalVal = defaultVal;
@@ -24,7 +24,7 @@ public static class EnumTagUtil<T> where T : struct, Enum
         if (!pkuTag.IsNull()) //specified
         {
             T? tagEnum = pkuTag.ToEnum<T>();
-            if (tagEnum.HasValue && (isValid is null || isValid(tagEnum.Value))) //valid
+            if (tagEnum.HasValue && (customMapping is null || customMapping.ContainsKey(tagEnum.Value))) //valid
             {
                 finalVal = tagEnum.Value;
                 at = AlertType.NONE;
@@ -33,7 +33,7 @@ public static class EnumTagUtil<T> where T : struct, Enum
                 at = AlertType.INVALID;
         }
 
-        formatVal.Switch(x => x.Value = Convert.ToInt32(finalVal),
+        formatVal.Switch(x => x.Value = customMapping is null ? Convert.ToInt32(finalVal) : customMapping[finalVal],
                          x => x.Value = finalVal);
         return at;
     }

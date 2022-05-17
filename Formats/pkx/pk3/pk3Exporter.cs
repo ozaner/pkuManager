@@ -7,10 +7,8 @@ using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 using pkuManager.Formats.Modules.MetaTags;
-using pkuManager.Formats.Modules.Templates;
 
 namespace pkuManager.Formats.pkx.pk3;
 
@@ -19,10 +17,10 @@ namespace pkuManager.Formats.pkx.pk3;
 /// </summary>
 public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E, Shiny_E,
                            Gender_E, Nickname_E, Experience_E, Moves_E, PP_Ups_E, PP_E, Item_E,
-                           Nature_E, Friendship_E, PID_E, TID_E, IVs_E, EVs_E, Contest_Stats_E,
-                           Ball_E, OT_E, Origin_Game_E, Met_Location_E, Met_Level_E, OT_Gender_E,
-                           Language_E, Fateful_Encounter_E, Markings_E, Ribbons_E, Is_Egg_E,
-                           Pokerus_E, Trash_Bytes_E, ByteOverride_E
+                           Nature_E, Ability_Slot_E, Friendship_E, PID_E, TID_E, IVs_E, EVs_E,
+                           Contest_Stats_E, Ball_E, OT_E, Origin_Game_E, Met_Location_E,
+                           Met_Level_E, OT_Gender_E, Language_E, Fateful_Encounter_E, Markings_E,
+                           Ribbons_E, Is_Egg_E, Pokerus_E, Trash_Bytes_E, ByteOverride_E
 {
     public override string FormatName => "pk3";
 
@@ -128,41 +126,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E,
             (this as Nickname_E).ExportNicknameBase();
     }
 
-    // Ability Slot
-    [PorterDirective(ProcessingPhase.FirstPass)]
-    public void ExportAbilitySlot()
-    {
-        int getGen3AbilityID(string name)
-            => ABILITY_DEX.GetIndexedValue<int?>(FormatName, name, "Indices").Value; //must have an ID
-
-        Alert alert = null;
-        string[] abilitySlots = DexUtil.GetSpeciesIndexedValue<string[]>(pku, FormatName, "Ability Slots"); //must exist
-        if (pku.Ability.IsNull()) //ability unspecified
-        {
-            Data.Ability_Slot.ValueAsBool = false;
-            alert = GetAbilitySlotAlert(AlertType.UNSPECIFIED, null, abilitySlots[0]);
-        }
-        else //ability specified
-        {
-            if (ABILITY_DEX.ExistsIn(FormatName, pku.Ability.Value)) //gen 3 ability
-            {
-                int abilityID = getGen3AbilityID(pku.Ability.Value);
-                bool isSlot1 = abilityID == getGen3AbilityID(abilitySlots[0]);
-                bool isSlot2 = abilitySlots.Length > 1 && abilityID == getGen3AbilityID(abilitySlots[1]);
-                Data.Ability_Slot.ValueAsBool = isSlot2; //else false (i.e. slot 1, or invalid)
-
-                if (!isSlot1 && !isSlot2) //ability is impossible on this species, alert
-                    alert = GetAbilitySlotAlert(AlertType.MISMATCH, pku.Ability.Value, abilitySlots[0]);
-            }
-            else //unofficial ability/gen 4+ ability
-            {
-                Data.Ability_Slot.ValueAsBool = false;
-                alert = GetAbilitySlotAlert(AlertType.INVALID, pku.Ability.Value, abilitySlots[0]);
-            }
-        }
-        Warnings.Add(alert);
-    }
-
     // Ribbons
     public void ExportRibbons()
     {
@@ -242,14 +205,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E,
             return new("Form", "Note that in generation 3, Castform can only be in its 'Normal' form out of battle.");
         else
             return null;
-    }
-
-    public static Alert GetAbilitySlotAlert(AlertType at, string val, string defaultVal)
-    {
-        if (at.HasFlag(AlertType.MISMATCH))
-            return new("Ability", $"This species cannot have the ability '{val}' in this format. Using the default ability: '{defaultVal}'.");
-        else
-            return IndexTagUtil.GetIndexAlert("Ability", at, val, defaultVal);
     }
 
     public static Alert GetContestRibbonAlert()

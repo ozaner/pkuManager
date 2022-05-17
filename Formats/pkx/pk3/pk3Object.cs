@@ -19,10 +19,10 @@ namespace pkuManager.Formats.pkx.pk3;
 /// <see href="https://bulbapedia.bulbagarden.net/wiki/Pokémon_data_structure_(Generation_III)">Bulbapedia</see>.
 /// </summary>
 public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nature_O, Nickname_O,
-                         Experience_O, Moves_O, PP_Ups_O, PP_O, Item_O, PID_O, TID_O, Friendship_O,
-                         IVs_O, EVs_O, Contest_Stats_O, Ball_O, OT_O, Origin_Game_O, Met_Location_O,
-                         Met_Level_O, OT_Gender_O, Language_O, Fateful_Encounter_O, Markings_O,
-                         Ribbons_O, Is_Egg_O, Pokerus_O, ByteOverride_O
+                         Experience_O, Moves_O, PP_Ups_O, PP_O, Item_O, Ability_Slot_O, PID_O, TID_O,
+                         Friendship_O, IVs_O, EVs_O, Contest_Stats_O, Ball_O, OT_O, Origin_Game_O,
+                         Met_Location_O, Met_Level_O, OT_Gender_O, Language_O, Fateful_Encounter_O,
+                         Markings_O, Ribbons_O, Is_Egg_O, Pokerus_O, ByteOverride_O
 {
     public override string FormatName => "pk3";
 
@@ -198,6 +198,11 @@ public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nat
     public bool Gender_PIDDependent => true;
     public bool Nature_PIDDependent => true;
     public bool PID_HasDependencies => true;
+    public Dictionary<AbilitySlot, int> Slot_Mapping => new()
+    {
+        { AbilitySlot.Slot_1, 0 },
+        { AbilitySlot.Slot_2, 1 },
+    };
 
 
     /* ------------------------------------
@@ -425,6 +430,7 @@ public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nat
     IField<BigInteger[]> PP_Ups_O.PP_Ups => PP_Ups;
     IField<BigInteger[]> PP_O.PP => PP;
     OneOf<IField<BigInteger>, IField<string>> Item_O.Item => Item;
+    IField<BigInteger> Ability_Slot_O.Ability_Slot => Ability_Slot;
     IField<BigInteger> Friendship_O.Friendship => Friendship;
     IField<BigInteger> PID_O.PID => PID;
     IField<BigInteger> TID_O.TID => TID;

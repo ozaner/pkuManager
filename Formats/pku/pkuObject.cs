@@ -68,6 +68,9 @@ public class pkuObject : FormatObject
     [JsonProperty("Ability")]
     public BackedField<string> Ability { get; set; } = new();
 
+    [JsonProperty("Ability Slot")]
+    public BackedField<string> Ability_Slot { get; set; } = new();
+
     [JsonProperty("Gigantamax Factor")]
     public BackedField<bool?> Gigantamax_Factor { get; set; } = new();
 
