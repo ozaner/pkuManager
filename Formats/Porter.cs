@@ -173,7 +173,7 @@ public abstract class Porter
 
     /// <summary>
     /// The first half of the exporting process. Runs all phases from
-    /// <see cref="ProcessingPhase.FormatOverride"/>, to <see cref="ProcessingPhase.FirstPassStage2"/>.<br/>
+    /// <see cref="ProcessingPhase.PreProcessing"/>, to <see cref="ProcessingPhase.FirstPassStage2"/>.<br/>
     /// Should only be run if <see cref="CanPort"/> is true.
     /// </summary>
     public void FirstHalf()
@@ -183,7 +183,6 @@ public abstract class Porter
 
         InitPorterDirectiveMap(); //get all PorterDirectives
 
-        RunMembers(PorterDirectiveMap[ProcessingPhase.FormatOverride]);
         RunMembers(PorterDirectiveMap[ProcessingPhase.PreProcessing]);
         RunMembers(PorterDirectiveMap[ProcessingPhase.FirstPass]);
         RunMembers(PorterDirectiveMap[ProcessingPhase.FirstPassStage2]);
@@ -239,11 +238,6 @@ public class PorterDirective : Attribute
     /// </summary>
     public enum ProcessingPhase
     {
-        /// <summary>
-        /// Reserved for applying the format override, if it exists. Should occur before all other stages.
-        /// </summary>
-        FormatOverride,
-
         /// <summary>
         /// Usually for dealing with <see cref="GlobalFlags"/> before porting.
         /// </summary>

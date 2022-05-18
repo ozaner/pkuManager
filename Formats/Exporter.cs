@@ -1,5 +1,4 @@
 ﻿using pkuManager.Formats.pku;
-using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats;
 
@@ -15,7 +14,8 @@ public abstract class Exporter : Porter
     /// <param name="data">A data structure representing the non-pku format.<br/>
     ///                    This parameter should be hidden by any implementation of a porter.</param>
     /// <inheritdoc cref="Porter(pkuObject, GlobalFlags, FormatObject)"/>
-    public Exporter(pkuObject pku, GlobalFlags globalFlags) : base(pku, globalFlags) { }
+    public Exporter(pkuObject pku, GlobalFlags globalFlags) : base(pku, globalFlags)
+        => this.pku = pkuObject.MergePkuOverride(this.pku, FormatName); //apply format override
 
     /// <summary>
     /// Returns the exported file generated from the given <see cref="pku"/>.<br/>
@@ -27,14 +27,4 @@ public abstract class Exporter : Porter
         SecondHalf();
         return Data.ToFile();
     }
-
-
-    /* ------------------------------------
-     * Universal Export Methods
-     * ------------------------------------
-    */
-    // Format Override
-    [PorterDirective(ProcessingPhase.FormatOverride)]
-    protected virtual void ProcessFormatOverride()
-        => pku = pkuObject.MergePkuOverride(pku, FormatName);
 }

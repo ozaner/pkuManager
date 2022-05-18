@@ -32,11 +32,11 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E,
     public pk3Exporter(pkuObject pku, GlobalFlags globalFlags) : base(pku, globalFlags)
     {
         // Screen Species & Form
-        if (DexUtil.FirstFormInFormat(pku, FormatName, true, GlobalFlags.Default_Form_Override) is null)
+        if (DexUtil.FirstFormInFormat(this.pku, FormatName, true, GlobalFlags.Default_Form_Override) is null)
             Reason = "Must be a species & form that exists in Gen 3.";
         
         // Screen Shadow Pokemon
-        else if (pku.IsShadow())
+        else if (this.pku.IsShadow())
             Reason = "This format doesn't support Shadow Pokémon.";
 
         CanPort = Reason is null;
