@@ -164,8 +164,20 @@ public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nat
         return BAM.ByteArray;
     }
 
-    public override void FromFile(byte[] file)
-        => BAM.ByteArray = file;
+    public override string TryFromFile(byte[] file)
+    {
+        //Must be correct size
+        if (file.Length is not (FILE_SIZE_PC or FILE_SIZE_PARTY))
+            return $"A .pk3 file must be {FILE_SIZE_PC} or {FILE_SIZE_PARTY} bytes long.";
+
+        BAM.ByteArray = file;
+
+        //No Bad Eggs
+        if (IsBadEggOrInvalidChecksum)
+            return "This Pokémon is a Bad Egg, and can't be imported.";
+
+        return null; //All clear
+    }
 
     public byte[] ToEncryptedFile()
     {

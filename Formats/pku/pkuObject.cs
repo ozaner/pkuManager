@@ -318,7 +318,7 @@ public class pkuObject : FormatObject
     public override byte[] ToFile()
         => Encoding.UTF8.GetBytes(Serialize(true));
 
-    public override void FromFile(byte[] file)
+    public override string TryFromFile(byte[] file)
     {
         throw new NotImplementedException();
     }

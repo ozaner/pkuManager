@@ -18,9 +18,10 @@ public abstract class FormatObject
     public abstract byte[] ToFile();
 
     /// <summary>
-    /// Fills in the details using a file version of this format,
-    /// overwriting any data that was there previously.
+    /// Tries to initalize this object using a file version of this format,
+    /// overwriting any data that was there previously.<br/>
+    /// If this fails (i.e. the file is invalid), a reason is returned. Otherwise null is returned.
     /// </summary>
     /// <param name="file">A file that satisfies <see cref="IsFile(byte[])"/>.</param>
-    public abstract void FromFile(byte[] file);
+    public abstract string TryFromFile(byte[] file);
 }

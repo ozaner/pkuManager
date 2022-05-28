@@ -149,7 +149,7 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Shiny_O, Nickname
         return Encoding.UTF8.GetBytes(txt);
     }
 
-    public override void FromFile(byte[] file)
+    public override string TryFromFile(byte[] file)
     {
         throw new NotImplementedException();
     }
