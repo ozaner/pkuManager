@@ -50,12 +50,12 @@ public abstract class Porter
     public List<Alert> Errors { get; } = new();
 
     /// <summary>
-    /// Whether this porter is clear to use FirstHalf. Should be set on construction.
+    /// Whether this porter is clear to use FirstHalf. True if <see cref="Reason"/> is null.
     /// </summary>
-    public bool CanPort { get; protected set; }
+    public bool CanPort => Reason is null;
 
     /// <summary>
-    /// Why this porter cannot be run, or null if <see cref="CanPort"/> is true. Should be set on construction.
+    /// Why this porter cannot be run, or null if it can. Should be set on construction.
     /// </summary>
     public string Reason { get; protected set; }
 

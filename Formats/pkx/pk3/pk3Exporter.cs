@@ -38,8 +38,6 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E,
         // Screen Shadow Pokemon
         else if (this.pku.IsShadow())
             Reason = "This format doesn't support Shadow Pokémon.";
-
-        CanPort = Reason is null;
     }
 
     public override pk3Object Data { get; } = new();

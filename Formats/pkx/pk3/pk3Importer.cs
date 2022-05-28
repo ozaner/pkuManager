@@ -20,7 +20,6 @@ public class pk3Importer : Importer, SFA_I, Gender_I, Shiny_I, Nature_I,
     public pk3Importer(byte[] file, GlobalFlags globalFlags, bool checkInMode) : base(file, globalFlags, checkInMode)
     {
         Reason = Data.TryFromFile(file);
-        CanPort = Reason is null;
     }
 
 

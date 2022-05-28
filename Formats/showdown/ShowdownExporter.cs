@@ -36,8 +36,6 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
         //Showdown doesn't support eggs (they can't exactly battle...)
         else if (pku.IsEgg())
             Reason = "Cannot be an Egg.";
-
-        CanPort = Reason is null;
     }
 
 
