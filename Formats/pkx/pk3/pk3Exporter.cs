@@ -20,7 +20,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E,
                            Nature_E, Ability_Slot_E, Friendship_E, PID_E, TID_E, IVs_E, EVs_E,
                            Contest_Stats_E, Ball_E, OT_E, Origin_Game_E, Met_Location_E,
                            Met_Level_E, OT_Gender_E, Language_E, Fateful_Encounter_E, Markings_E,
-                           Ribbons_E, Is_Egg_E, Pokerus_E, Trash_Bytes_E, ByteOverride_E
+                           Ribbons_E, Is_Egg_E, Egg_Steps_E, Pokerus_E, Trash_Bytes_E, ByteOverride_E
 {
     public override string FormatName => "pk3";
 

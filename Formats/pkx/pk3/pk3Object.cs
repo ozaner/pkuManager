@@ -22,7 +22,7 @@ public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nat
                          Experience_O, Moves_O, PP_Ups_O, PP_O, Item_O, Ability_Slot_O, PID_O, TID_O,
                          Friendship_O, IVs_O, EVs_O, Contest_Stats_O, Ball_O, OT_O, Origin_Game_O,
                          Met_Location_O, Met_Level_O, OT_Gender_O, Language_O, Fateful_Encounter_O,
-                         Markings_O, Ribbons_O, Is_Egg_O, Pokerus_O, ByteOverride_O
+                         Markings_O, Ribbons_O, Is_Egg_O, Egg_Steps_O, Pokerus_O, ByteOverride_O
 {
     public override string FormatName => "pk3";
 
@@ -215,6 +215,7 @@ public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nat
         { AbilitySlot.Slot_1, 0 },
         { AbilitySlot.Slot_2, 1 },
     };
+    public bool Egg_Steps_StoredInFriendship => true;
 
 
     /* ------------------------------------
@@ -458,6 +459,7 @@ public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nat
     OneOf<IField<BigInteger>, IField<string>> Language_O.Language => Language;
     IField<bool> Fateful_Encounter_O.Fateful_Encounter => Fateful_Encounter;
     IField<bool> Is_Egg_O.Is_Egg => Is_Egg;
+    public IField<BigInteger> Egg_Steps => Friendship;
 
     IField<bool> Markings_O.Marking_Blue_Circle => Marking_Blue_Circle;
     IField<bool> Markings_O.Marking_Blue_Square => Marking_Blue_Square;

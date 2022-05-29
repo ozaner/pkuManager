@@ -180,6 +180,9 @@ public class pkuObject : FormatObject
         [JsonProperty("Is Egg")]
         public BackedField<bool?> Is_Egg { get; set; } = new();
 
+        [JsonProperty("Steps to Hatch")]
+        public BackedField<BigInteger?> Steps_to_Hatch { get; set; } = new();
+
         // Games dont use this, instead it's implicit from the met location in the egg section not being empty...
         // If you knew it was an egg but not when/where it was hatched, you couldn't represent that in-game...
         //[JsonProperty("Hatched")]
