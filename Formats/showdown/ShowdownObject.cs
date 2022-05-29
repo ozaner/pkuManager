@@ -8,14 +8,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 
 namespace pkuManager.Formats.showdown;
 
 /// <summary>
 /// An implementation of the .txt (Showdown!) format used by Pokémon Showdown!.
 /// </summary>
-public class ShowdownObject : FormatObject, Species_O, Form_O, Shiny_O, Nickname_O,
+public class ShowdownObject : StringFormatObject, Species_O, Form_O, Shiny_O, Nickname_O,
                               Level_O, Gender_O, Ability_O, Moves_O, Item_O, Nature_O,
                               Friendship_O, IVs_O, EVs_O, Gigantamax_Factor_O
 {
@@ -59,15 +58,12 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Shiny_O, Nickname
      * ------------------------------------
     */
     /// <summary>
-    /// A list of strings that will be added to the final .txt file upon calling <see cref="ToFile"/>.
-    /// </summary>
-    protected List<string> Lines = new();
-        
-    /// <summary>
     /// Compiles each of the object's attributes to strings which are added to <see cref="Lines"/>.
     /// </summary>
-    protected virtual void CompileLines()
+    protected override List<string> CompileLines()
     {
+        List<string> Lines = new();
+
         //Full Showdown Name
         string showdownName = Species.Value;
         if (!Form.IsNull())
@@ -140,16 +136,11 @@ public class ShowdownObject : FormatObject, Species_O, Form_O, Shiny_O, Nickname
         // Moves
         foreach (string move in Moves.Value)
             Lines.Add($"- {move}");
+
+        return Lines;
     }
 
-    public override byte[] ToFile()
-    {
-        CompileLines();
-        string txt = string.Join("\n", Lines);
-        return Encoding.UTF8.GetBytes(txt);
-    }
-
-    public override string TryFromFile(byte[] file)
+    protected override string DecompileLines(List<string> lines)
     {
         throw new NotImplementedException();
     }
