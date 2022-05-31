@@ -421,20 +421,15 @@ public class pkuObject : FormatObject
         Contest_Stats.Clever, Contest_Stats.Tough, Contest_Stats.Sheen
     };
 
-    public BackedField<BigInteger?>[] PP_Up_ArrayFromIndices(int[] indices, int length = -1)
+    public BackedField<BigInteger?>[] PP_Up_ArrayFromIndices(int[] indices)
     {
-        if (length < 0)
-            length = indices.Length;
-
-        if (indices == null)
+        if (indices is null)
             return null;
-        else
-        {
-            BackedField<BigInteger?>[] ppUpFields = new BackedField<BigInteger?>[length];
-            for (int i = 0; i < Math.Min(ppUpFields.Length, length); i++)
-                ppUpFields[i] = Moves[indices[i]].PP_Ups;
-            return ppUpFields;
-        }
+
+        BackedField<BigInteger?>[] ppUpFields = new BackedField<BigInteger?>[indices.Length];
+        for (int i = 0; i < ppUpFields.Length; i++)
+            ppUpFields[i] = Moves[indices[i]].PP_Ups;
+        return ppUpFields;
     }
 
 

@@ -51,11 +51,19 @@ public static class NumericTagUtil
 
     public static AlertType[] ExportNumericArrayTag(IField<BigInteger?>[] pkuVals, IField<BigInteger[]> formatVals, BigInteger defaultVal)
     {
-        AlertType[] ats = new AlertType[pkuVals.Length];
-        for (int i = 0; i < pkuVals.Length; i++)
+        AlertType[] ats = new AlertType[formatVals.Value.Length];
+        for (int i = 0; i < ats.Length; i++)
         {
-            (BigInteger checkedVal, ats[i]) = CheckNumericField(pkuVals[i], formatVals as IBoundable<BigInteger>, defaultVal);
-            formatVals.SetAs(checkedVal, i);
+            if (i < pkuVals.Length)
+            {
+                (BigInteger checkedVal, ats[i]) = CheckNumericField(pkuVals[i], formatVals as IBoundable<BigInteger>, defaultVal);
+                formatVals.SetAs(checkedVal, i);
+            }
+            else
+            {
+                ats[i] = AlertType.UNSPECIFIED; //no pku field given
+                formatVals.SetAs(defaultVal, i);
+            }
         }
         return ats;
     }
