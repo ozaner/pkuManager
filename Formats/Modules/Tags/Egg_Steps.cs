@@ -45,7 +45,7 @@ public interface Egg_Steps_E : Tag
         //normal case
         AlertType at = NumericTagUtil.ExportNumericTag(pku.Egg_Info.Steps_to_Hatch, eggStepsObj.Egg_Steps, 0);
         if (at is not AlertType.UNSPECIFIED) //ignore unspecified
-            Warnings.Add(NumericTagUtil.GetNumericAlert("Steps to Hatch", at, 0, eggStepsObj.Egg_Steps as IBoundable<BigInteger>));
+            Warnings.Add(NumericTagUtil.GetNumericAlert("Steps to Hatch", at, 0, eggStepsObj.Egg_Steps as IBoundable));
     }
 
     public Alert GetEgg_StepMismatchAlert(bool isEgg)

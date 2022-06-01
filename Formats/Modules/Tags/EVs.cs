@@ -19,7 +19,7 @@ public interface EVs_E : Tag
     {
         var evs = (Data as EVs_O).EVs;
         AlertType[] ats = NumericTagUtil.ExportNumericArrayTag(pku.EVs_Array, evs, 0);
-        Alert a = NumericTagUtil.GetNumericArrayAlert("EVs", TagUtil.STAT_NAMES, ats, evs as IBoundable<BigInteger>, 0, true);
+        Alert a = NumericTagUtil.GetNumericArrayAlert("EVs", TagUtil.STAT_NAMES, ats, evs as IBoundable, 0, true);
         Warnings.Add(a);
     }
 }

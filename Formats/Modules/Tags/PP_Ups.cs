@@ -26,7 +26,7 @@ public interface PP_Ups_E : Tag
             tagNames[i] = $"move {i}";
         
         AlertType[] ats = NumericTagUtil.ExportNumericArrayTag(pku.PP_Up_ArrayFromIndices(Moves_Indices), ppUps, 0);
-        Alert a = NumericTagUtil.GetNumericArrayAlert("PP Ups", tagNames, ats, ppUps as IBoundable<BigInteger>, 0, true);
+        Alert a = NumericTagUtil.GetNumericArrayAlert("PP Ups", tagNames, ats, ppUps as IBoundable, 0, true);
         Warnings.Add(a);
     }
 }

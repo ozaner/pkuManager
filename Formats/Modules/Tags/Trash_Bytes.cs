@@ -30,7 +30,7 @@ public interface Trash_Bytes_E : Tag
     }
 
     protected AlertType ExportTrash_BytesSingle<T>(T encodedField, BigInteger[] trashField)
-        where T : IField<BigInteger[]>, IBoundable<BigInteger>
+        where T : IField<BigInteger[]>, IBoundable
     {
         if (trashField is not null)
         {

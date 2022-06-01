@@ -25,7 +25,7 @@ public interface PID_E : Tag
         PID_O pidObj = Data as PID_O;
 
         //check if in-bounds
-        (BigInteger? max, BigInteger? min) = pidObj.PID is IBoundable<BigInteger> boundable ?
+        (BigInteger? max, BigInteger? min) = pidObj.PID is IBoundable boundable ?
             (boundable.Max, boundable.Min) : (null, null);
         (pidObj.PID.Value, AlertType at) = pku.PID.Value switch
         {

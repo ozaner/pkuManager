@@ -25,6 +25,6 @@ public interface Friendship_E : Tag
         AlertType at = NumericTagUtil.ExportNumericTag(pku.Friendship, friendshipObj.Friendship, friendshipObj.Friendship_Default);
         if (at is not AlertType.UNSPECIFIED) //ignore unspecified
             Warnings.Add(NumericTagUtil.GetNumericAlert("Friendship", at, friendshipObj.Friendship_Default,
-                friendshipObj.Friendship as IBoundable<BigInteger>));
+                friendshipObj.Friendship as IBoundable));
     }
 }

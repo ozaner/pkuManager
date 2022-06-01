@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace pkuManager.Formats.Fields.BAMFields;
 
-public abstract class BAMField : IBoundable<BigInteger>, IByteOverridable
+public abstract class BAMField : IBoundable, IByteOverridable
 {
     protected ByteArrayManipulator BAM { get; }
     protected bool BitType { get; }

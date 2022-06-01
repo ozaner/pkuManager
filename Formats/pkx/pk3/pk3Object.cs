@@ -264,7 +264,7 @@ public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nat
      * E: EVs & Condition Block
      * ------------------------------------
     */
-    public LambdaBoundableArrayField<BigInteger> EVs { get; }
+    public LambdaIntArrayField EVs { get; }
     public BAMArrayField Contest_Stats { get; }
 
 
@@ -281,7 +281,7 @@ public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nat
     public BAMIntegralField Ball { get; }
     public BAMBoolField OT_Gender { get; }
 
-    public LambdaBoundableArrayField<BigInteger> IVs { get; }
+    public LambdaIntArrayField IVs { get; }
     public BAMBoolField Is_Egg { get; }
     public BAMBoolField Ability_Slot { get; }
 

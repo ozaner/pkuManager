@@ -1,9 +1,9 @@
-﻿using System;
+﻿using System.Numerics;
 
 namespace pkuManager.Formats.Fields;
 
-public interface IBoundable<T> where T: struct, IComparable
+public interface IBoundable
 {
-    public T? Max { get; }
-    public T? Min { get; }
+    public BigInteger? Max { get; }
+    public BigInteger? Min { get; }
 }

@@ -36,7 +36,7 @@ public class pkuCollection : Collection
 
     protected override void Init()
     {
-        CurrentBoxID = new LambdaBoundableField<BigInteger>(
+        CurrentBoxID = new LambdaIntField(
             () => config.CurrentBoxID,
             x => {
                 config.CurrentBoxID = (int)x;

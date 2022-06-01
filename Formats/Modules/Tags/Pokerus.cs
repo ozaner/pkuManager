@@ -25,7 +25,7 @@ public interface Pokerus_E : Tag
 
         AlertType[] ats = NumericTagUtil.ExportMultiNumericTag(new[] { pku.Pokerus.Strain, pku.Pokerus.Days }, dataFields, defVals);
         Alert a = NumericTagUtil.GetMultiNumericAlert("Pokérus", new[] { "Pokérus strain", "Pokérus days" }, ats, defVals,
-            Array.ConvertAll(dataFields, x => x as IBoundable<BigInteger>), true);
+            Array.ConvertAll(dataFields, x => x as IBoundable), true);
         Warnings.Add(a);
     }
 }

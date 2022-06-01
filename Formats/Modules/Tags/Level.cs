@@ -19,6 +19,6 @@ public interface Level_E : Tag
     {
         Level_O levelObj = Data as Level_O;
         AlertType at = NumericTagUtil.ExportNumericTag(pku.Level, levelObj.Level, levelObj.Level_Default);
-        Warnings.Add(NumericTagUtil.GetNumericAlert("Level", at, levelObj.Level_Default, levelObj.Level as IBoundable<BigInteger>));
+        Warnings.Add(NumericTagUtil.GetNumericAlert("Level", at, levelObj.Level_Default, levelObj.Level as IBoundable));
     }
 }

@@ -23,7 +23,7 @@ public interface IVs_E : Tag
         IVs_O ivsObj = (Data as IVs_O);
         var ivs = ivsObj.IVs;
         AlertType[] ats = NumericTagUtil.ExportNumericArrayTag(pku.IVs_Array, ivs, ivsObj.IVs_Default);
-        Alert a = NumericTagUtil.GetNumericArrayAlert("IVs", TagUtil.STAT_NAMES, ats, ivs as IBoundable<BigInteger>, ivsObj.IVs_Default, IVs_AlertIfUnspecified);
+        Alert a = NumericTagUtil.GetNumericArrayAlert("IVs", TagUtil.STAT_NAMES, ats, ivs as IBoundable, ivsObj.IVs_Default, IVs_AlertIfUnspecified);
         Warnings.Add(a);
     }
 }

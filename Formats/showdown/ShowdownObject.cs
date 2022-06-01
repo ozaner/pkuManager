@@ -30,10 +30,10 @@ public class ShowdownObject : StringFormatObject, Species_O, Form_O, Shiny_O, Ni
     public BackedField<string> Item { get; } = new();
     public BackedField<string> Ability { get; } = new();
     public BackedField<string[]> Moves { get; } = new();
-    public BackedBoundableField<BigInteger> Level { get; } = new(100, 1);
-    public BackedBoundableField<BigInteger> Friendship { get; } = new(255, 0);
-    public BackedBoundableArrayField<BigInteger> IVs { get; } = new(new BigInteger[6], 31, 0);
-    public BackedBoundableArrayField<BigInteger> EVs { get; } = new(new BigInteger[6], 255, 0);
+    public BackedIntField Level { get; } = new(100, 1);
+    public BackedIntField Friendship { get; } = new(255, 0);
+    public BackedIntArrayField IVs { get; } = new(new BigInteger[6], 31, 0);
+    public BackedIntArrayField EVs { get; } = new(new BigInteger[6], 255, 0);
     public BackedField<Gender?> Gender { get; } = new();
     public BackedField<Nature> Nature { get; } = new();
     public BackedField<bool> Shiny { get; } = new();

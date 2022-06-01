@@ -19,7 +19,7 @@ public interface Contest_Stats_E : Tag
     {
         var contestStats = (Data as Contest_Stats_O).Contest_Stats;
         AlertType[] ats = NumericTagUtil.ExportNumericArrayTag(pku.Contest_Stats_Array, contestStats, 0);
-        Alert a = NumericTagUtil.GetNumericArrayAlert("Contest Stats", TagUtil.CONTEST_STAT_NAMES, ats, contestStats as IBoundable<BigInteger>, 0, true);
+        Alert a = NumericTagUtil.GetNumericArrayAlert("Contest Stats", TagUtil.CONTEST_STAT_NAMES, ats, contestStats as IBoundable, 0, true);
         Warnings.Add(a);
     }
 }
