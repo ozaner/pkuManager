@@ -29,7 +29,7 @@ public class ShowdownObject : StringFormatObject, Species_O, Form_O, Shiny_O, Ni
     public BackedField<string> Nickname { get; } = new();
     public BackedField<string> Item { get; } = new();
     public BackedField<string> Ability { get; } = new();
-    public BackedField<string[]> Moves { get; } = new();
+    public BackedField<string[]> Moves { get; } = new(new string[4]);
     public BackedIntField Level { get; } = new(100, 1);
     public BackedIntField Friendship { get; } = new(255, 0);
     public BackedIntArrayField IVs { get; } = new(new BigInteger[6], 31, 0);
@@ -135,7 +135,8 @@ public class ShowdownObject : StringFormatObject, Species_O, Form_O, Shiny_O, Ni
 
         // Moves
         foreach (string move in Moves.Value)
-            Lines.Add($"- {move}");
+            if (move is not null)
+                Lines.Add($"- {move}");
 
         return Lines;
     }
