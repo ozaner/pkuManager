@@ -15,7 +15,7 @@ namespace pkuManager.Formats.Modules.Tags;
 
 public interface Language_O
 {
-    public OneOf<IField<BigInteger>, IField<string>> Language { get; }
+    public OneOf<IIntField, IField<string>> Language { get; }
 }
 
 public interface Language_E : Language_P

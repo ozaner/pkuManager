@@ -29,8 +29,7 @@ public interface Trash_Bytes_E : Tag
         Warnings.Add(alert);
     }
 
-    protected AlertType ExportTrash_BytesSingle<T>(T encodedField, BigInteger[] trashField)
-        where T : IField<BigInteger[]>, IBoundable
+    protected AlertType ExportTrash_BytesSingle(IIntArrayField encodedField, BigInteger[] trashField)
     {
         if (trashField is not null)
         {

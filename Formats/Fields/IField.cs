@@ -16,34 +16,6 @@ public static class FieldExtensions
 {
     public static bool IsNull<T>(this IField<T> field)
         => field.Value is null;
-
-    public static void SetAs(this IField<BigInteger[]> field, BigInteger val, int i)
-    {
-        BigInteger[] vals = field.Value;
-        vals[i] = val;
-        field.Value = vals;
-    }
-
-    // Integral Cast Accessors
-    public static T GetAs<T>(this IField<BigInteger> field) where T : struct
-        => field.Value.BigIntegerTo<T>();
-
-    public static void SetAs<T>(this IField<BigInteger> field, T val) where T : struct
-        => field.Value = val.ToBigInteger();
-
-    // IntegralArray Cast Accessors
-    public static T[] GetAs<T>(this IField<BigInteger[]> field) where T : struct
-        => Array.ConvertAll(field.Value, x => x.BigIntegerTo<T>());
-
-    public static void SetAs<T>(this IField<BigInteger[]> field, T[] vals) where T : struct
-        => field.Value = Array.ConvertAll(vals, x => x.ToBigInteger());
-
-    // Integral Cast Accessors
-    public static T GetAs<T>(this IField<BigInteger[]> field, int i) where T : struct
-        => field.Value[i].BigIntegerTo<T>();
-
-    public static void SetAs<T>(this IField<BigInteger[]> field, T val, int i) where T : struct
-        => field.SetAs(val.ToBigInteger(), i);
 }
 
 public class IFieldJsonConverter : JsonConverter
@@ -120,7 +92,7 @@ public class IFieldJsonConverter : JsonConverter
 
         // decides which kinds of values get indented or one-lined.
         bool dontIndent = typeof(IField<BigInteger?[]>).IsAssignableFrom(type) || //all integer arrays
-                          typeof(IField<BigInteger[]>).IsAssignableFrom(type) ||
+                          typeof(IIntArrayField).IsAssignableFrom(type) ||
                           typeof(IField<string[]>).IsAssignableFrom(type) && (backedValue as Array)?.Length < 4; //string arrays under 4
 
         // writes the value with the proper indenting.

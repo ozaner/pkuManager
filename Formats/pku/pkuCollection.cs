@@ -11,7 +11,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Windows.Forms;
 using static pkuManager.Formats.pku.pkuBox.pkuBoxConfig;
 
@@ -24,7 +23,7 @@ public class pkuCollection : Collection
 
     public override string Name => Path.GetFileName(Location);
     public override int BoxCount => config.Boxes.Count;
-    public override IField<BigInteger> CurrentBoxID { get; protected set; }
+    public override IIntField CurrentBoxID { get; protected set; }
 
     private PKUCollectionConfig config;
     public pkuBox CurrentPKUBox => CurrentBox as pkuBox;

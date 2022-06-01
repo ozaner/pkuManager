@@ -3,7 +3,6 @@ using pkuManager.Utilities;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Numerics;
 
 namespace pkuManager.Formats;
 
@@ -15,7 +14,7 @@ public abstract class Collection
     public bool IsCollectionValid { get; }
     public abstract string Name { get; }
     public abstract int BoxCount { get; }
-    public abstract IField<BigInteger> CurrentBoxID { get; protected set; }
+    public abstract IIntField CurrentBoxID { get; protected set; }
     public Box CurrentBox { get; protected set; }
 
     protected virtual void PreInit() { }

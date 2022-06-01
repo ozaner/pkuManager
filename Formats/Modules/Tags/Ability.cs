@@ -2,7 +2,6 @@
 using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
-using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
@@ -10,7 +9,7 @@ namespace pkuManager.Formats.Modules.Tags;
 
 public interface Ability_O
 {
-    public OneOf<IField<BigInteger>, IField<string>> Ability { get; }
+    public OneOf<IIntField, IField<string>> Ability { get; }
 }
 
 public interface Ability_E : Tag

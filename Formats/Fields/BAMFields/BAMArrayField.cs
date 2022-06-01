@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace pkuManager.Formats.Fields.BAMFields;
 
-public class BAMArrayField : BAMField, IField<BigInteger[]>
+public class BAMArrayField : BAMField, IIntArrayField
 {
     public int Length { get; set; }
 

@@ -7,7 +7,6 @@ using pkuManager.Formats.Modules.MetaTags;
 using pkuManager.Formats.Modules.Templates;
 using pkuManager.Utilities;
 using System.Collections.Generic;
-using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
@@ -15,7 +14,7 @@ namespace pkuManager.Formats.Modules.Tags;
 
 public interface Gender_O
 {
-    public OneOf<IField<BigInteger>, IField<Gender>, IField<Gender?>> Gender { get; }
+    public OneOf<IIntField, IField<Gender>, IField<Gender?>> Gender { get; }
     public bool Gender_DisallowImpossibleGenders => false;
     public bool Gender_PIDDependent => false;
 

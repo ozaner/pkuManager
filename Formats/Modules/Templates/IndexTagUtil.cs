@@ -3,7 +3,6 @@ using OneOf;
 using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Utilities;
-using System.Numerics;
 using static pkuManager.Alerts.Alert;
 
 namespace pkuManager.Formats.Modules.Templates;
@@ -14,14 +13,14 @@ public static class IndexTagUtil
      * Helper Methods
      * ------------------------------------
     */
-    public static void EncodeFormatField(string value, OneOf<IField<BigInteger>, IField<string>> encodedField, JObject dex, string formatName)
+    public static void EncodeFormatField(string value, OneOf<IIntField, IField<string>> encodedField, JObject dex, string formatName)
     {
         encodedField.Switch(
             x => x.Value = dex.GetIndexedValue<int?>(formatName, value, "Indices") ?? 0,
             x => x.Value = dex.GetIndexedValue<string>(formatName, value, "Indices"));
     }
 
-    public static string DecodeFormatField(OneOf<IField<BigInteger>, IField<string>> encodedField, JObject dex, string formatName)
+    public static string DecodeFormatField(OneOf<IIntField, IField<string>> encodedField, JObject dex, string formatName)
         => encodedField.Match(
             x => dex.SearchIndexedValue<int?>(x.GetAs<int>(), formatName, "Indices", "$x"),
             x => dex.SearchIndexedValue(x.Value, formatName, "Indices", "$x"));
@@ -31,7 +30,7 @@ public static class IndexTagUtil
      * Porting
      * ------------------------------------
     */
-    public static AlertType ExportIndexTag(IField<string> pkuTag, OneOf<IField<BigInteger>, IField<string>> formatVal,
+    public static AlertType ExportIndexTag(IField<string> pkuTag, OneOf<IIntField, IField<string>> formatVal,
         string defaultVal, JObject dex, string formatName)
     {
         AlertType at = AlertType.UNSPECIFIED;
@@ -53,7 +52,7 @@ public static class IndexTagUtil
     }
 
     public static AlertType ImportIndexTag(IField<string> pkuTag,
-        OneOf<IField<BigInteger>, IField<string>> encodedField, JObject dex, string formatName)
+        OneOf<IIntField, IField<string>> encodedField, JObject dex, string formatName)
     {
         AlertType at = AlertType.NONE;
         string decodedVal = DecodeFormatField(encodedField, dex, formatName);

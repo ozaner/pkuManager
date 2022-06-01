@@ -4,7 +4,6 @@ using pkuManager.Formats.Fields;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
@@ -12,7 +11,7 @@ namespace pkuManager.Formats.Modules.Tags;
 
 public interface Moves_O
 {
-    public OneOf<IField<BigInteger[]>, IField<string[]>> Moves { get; }
+    public OneOf<IIntArrayField, IField<string[]>> Moves { get; }
 }
 
 public interface Moves_E : Tag

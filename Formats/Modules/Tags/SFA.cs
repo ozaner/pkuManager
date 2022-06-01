@@ -2,19 +2,18 @@
 using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Utilities;
-using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.Tags;
 
 public interface Species_O
 {
-    public OneOf<IField<BigInteger>, IField<string>> Species { get; }
+    public OneOf<IIntField, IField<string>> Species { get; }
 }
 
 public interface Form_O
 {
-    public OneOf<IField<BigInteger>, IField<string>> Form { get; }
+    public OneOf<IIntField, IField<string>> Form { get; }
 }
 
 public interface SFA_E : Tag

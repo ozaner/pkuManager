@@ -1,7 +1,6 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Utilities;
-using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
@@ -9,7 +8,7 @@ namespace pkuManager.Formats.Modules.Tags;
 
 public interface Origin_Game_O
 {
-    public IField<BigInteger> Origin_Game { get; }
+    public IIntField Origin_Game { get; }
 }
 
 public interface Origin_Game_E : Tag

@@ -10,7 +10,7 @@ namespace pkuManager.Formats.Modules.Tags;
 
 public interface Experience_O
 {
-    public IField<BigInteger> Experience { get; }
+    public IIntField Experience { get; }
 }
 
 public interface Experience_E : Tag

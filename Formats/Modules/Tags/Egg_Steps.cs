@@ -1,7 +1,6 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
-using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
@@ -9,7 +8,7 @@ namespace pkuManager.Formats.Modules.Tags;
 
 public interface Egg_Steps_O
 {
-    public IField<BigInteger> Egg_Steps { get; }
+    public IIntField Egg_Steps { get; }
     public bool Egg_Steps_StoredInFriendship => false;
     public bool Egg_Steps_ImplicitIs_Egg => false;
 }
@@ -45,7 +44,7 @@ public interface Egg_Steps_E : Tag
         //normal case
         AlertType at = NumericTagUtil.ExportNumericTag(pku.Egg_Info.Steps_to_Hatch, eggStepsObj.Egg_Steps, 0);
         if (at is not AlertType.UNSPECIFIED) //ignore unspecified
-            Warnings.Add(NumericTagUtil.GetNumericAlert("Steps to Hatch", at, 0, eggStepsObj.Egg_Steps as IBoundable));
+            Warnings.Add(NumericTagUtil.GetNumericAlert("Steps to Hatch", at, 0, eggStepsObj.Egg_Steps));
     }
 
     public Alert GetEgg_StepMismatchAlert(bool isEgg)

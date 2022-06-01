@@ -5,7 +5,6 @@ using pkuManager.Formats.Modules.Templates;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
@@ -13,7 +12,7 @@ namespace pkuManager.Formats.Modules.Tags;
 
 public interface Ability_Slot_O
 {
-    public IField<BigInteger> Ability_Slot { get; }
+    public IIntField Ability_Slot { get; }
 
     //using official (gen 6+) indices by default
     public Dictionary<AbilitySlot, int> Slot_Mapping => new()

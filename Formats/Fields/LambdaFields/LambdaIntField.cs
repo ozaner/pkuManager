@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace pkuManager.Formats.Fields.LambdaFields;
 
-public class LambdaIntField : LambdaField<BigInteger>, IBoundable
+public class LambdaIntField : LambdaField<BigInteger>, IIntField
 {
     public BigInteger? Max { get; }
     public BigInteger? Min { get; }
@@ -15,18 +15,15 @@ public class LambdaIntField : LambdaField<BigInteger>, IBoundable
         Min = min;
     }
 
-    public LambdaIntField(IField<BigInteger> wrappedField, Func<BigInteger, BigInteger> getModifier,
+    public LambdaIntField(IIntField wrappedField, Func<BigInteger, BigInteger> getModifier,
         Func<BigInteger, BigInteger> setModifier) : base(wrappedField, getModifier, setModifier)
     {
-        if (wrappedField is IBoundable boundedField)
-        {
-            Max = boundedField.Max;
-            Min = boundedField.Min;
-        }
+        Max = wrappedField.Max;
+        Min = wrappedField.Min;
     }
 }
 
-public class LambdaIntArrayField : LambdaField<BigInteger[]>, IBoundable
+public class LambdaIntArrayField : LambdaField<BigInteger[]>, IIntArrayField
 {
     public BigInteger? Max { get; }
     public BigInteger? Min { get; }
@@ -38,13 +35,10 @@ public class LambdaIntArrayField : LambdaField<BigInteger[]>, IBoundable
         Min = min;
     }
 
-    public LambdaIntArrayField(IField<BigInteger[]> wrappedField, Func<BigInteger[], BigInteger[]> getModifier,
+    public LambdaIntArrayField(IIntArrayField wrappedField, Func<BigInteger[], BigInteger[]> getModifier,
         Func<BigInteger[], BigInteger[]> setModifier) : base(wrappedField, getModifier, setModifier)
     {
-        if (wrappedField is IBoundable boundedField)
-        {
-            Max = boundedField.Max;
-            Min = boundedField.Min;
-        }
+        Max = wrappedField.Max;
+        Min = wrappedField.Min;
     }
 }

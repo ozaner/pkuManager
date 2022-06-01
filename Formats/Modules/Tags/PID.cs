@@ -10,7 +10,7 @@ namespace pkuManager.Formats.Modules.Tags;
 
 public interface PID_O
 {
-    public IField<BigInteger> PID { get; }
+    public IIntField PID { get; }
     public bool PID_HasDependencies => false;
 }
 
@@ -23,15 +23,11 @@ public interface PID_E : Tag
     public void ExportPID()
     {
         PID_O pidObj = Data as PID_O;
-
-        //check if in-bounds
-        (BigInteger? max, BigInteger? min) = pidObj.PID is IBoundable boundable ?
-            (boundable.Max, boundable.Min) : (null, null);
         (pidObj.PID.Value, AlertType at) = pku.PID.Value switch
         {
             null => (0, AlertType.UNSPECIFIED),
-            var x when x > max => (max.Value, AlertType.OVERFLOW),
-            var x when x < min => (min.Value, AlertType.UNDERFLOW),
+            var x when x > pidObj.PID.Max => (pidObj.PID.Max.Value, AlertType.OVERFLOW),
+            var x when x < pidObj.PID.Min => (pidObj.PID.Min.Value, AlertType.UNDERFLOW),
             _ => (pku.PID.Value.Value, AlertType.NONE)
         };
 
@@ -49,7 +45,7 @@ public interface PID_E : Tag
         }
 
         //not a potential mismatch
-        Warnings.Add(GetPIDAlert(at, 0, max, min, pidObj.PID_HasDependencies));
+        Warnings.Add(GetPIDAlert(at, 0, pidObj.PID, pidObj.PID_HasDependencies));
     }
 
     [PorterDirective(ProcessingPhase.FirstPassStage2)]
@@ -100,10 +96,10 @@ public interface PID_E : Tag
             "tags (in this format). Choose whether to keep the PID or generate a compatible one.", choices, true, 1);
     }
 
-    protected static Alert GetPIDAlert(AlertType at, BigInteger defaultVal, BigInteger? max, BigInteger? min, bool hasDeps = false)
+    protected static Alert GetPIDAlert(AlertType at, BigInteger defaultVal, IBoundable boundable, bool hasDeps = false)
     {
         if (!hasDeps) //independent pid (silent unspecified)
-            return at is AlertType.UNSPECIFIED ? null : NumericTagUtil.GetNumericAlert("PID", at, defaultVal, max, min);
+            return at is AlertType.UNSPECIFIED ? null : NumericTagUtil.GetNumericAlert("PID", at, defaultVal, boundable);
         else //dependent pid
         {
             return at is AlertType.NONE ? null : new("PID", at switch

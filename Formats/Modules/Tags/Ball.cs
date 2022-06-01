@@ -1,7 +1,6 @@
 ﻿using OneOf;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
-using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
@@ -9,7 +8,7 @@ namespace pkuManager.Formats.Modules.Tags;
 
 public interface Ball_O
 {
-    public OneOf<IField<BigInteger>, IField<string>> Ball { get; }
+    public OneOf<IIntField, IField<string>> Ball { get; }
 }
 
 public interface Ball_E : Tag

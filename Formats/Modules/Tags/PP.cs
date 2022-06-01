@@ -1,12 +1,11 @@
 ﻿using pkuManager.Formats.Fields;
-using System.Numerics;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.Tags;
 
 public interface PP_O
 {
-    public IField<BigInteger[]> PP { get; }
+    public IIntArrayField PP { get; }
 }
 
 public interface PP_E : Tag

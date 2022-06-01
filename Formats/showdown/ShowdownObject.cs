@@ -150,18 +150,18 @@ public class ShowdownObject : StringFormatObject, Species_O, Form_O, Shiny_O, Ni
      * Duct Tape
      * ------------------------------------
     */
-    OneOf<IField<BigInteger>, IField<string>> Species_O.Species => Species;
-    OneOf<IField<BigInteger>, IField<string>> Form_O.Form => Form;
+    OneOf<IIntField, IField<string>> Species_O.Species => Species;
+    OneOf<IIntField, IField<string>> Form_O.Form => Form;
     IField<bool> Shiny_O.Shiny => Shiny;
     OneOf<BAMStringField, IField<string>> Nickname_O.Nickname => Nickname;
-    IField<BigInteger> Level_O.Level => Level;
-    OneOf<IField<BigInteger>, IField<Gender>, IField<Gender?>> Gender_O.Gender => Gender;
-    OneOf<IField<BigInteger>, IField<string>> Ability_O.Ability => Ability;
-    OneOf<IField<BigInteger[]>, IField<string[]>> Moves_O.Moves => Moves;
-    OneOf<IField<BigInteger>, IField<string>> Item_O.Item => Item;
-    OneOf<IField<BigInteger>, IField<Nature>> Nature_O.Nature => Nature;
-    IField<BigInteger> Friendship_O.Friendship => Friendship;
-    IField<BigInteger[]> IVs_O.IVs => IVs;
-    IField<BigInteger[]> EVs_O.EVs => EVs;
+    IIntField Level_O.Level => Level;
+    OneOf<IIntField, IField<Gender>, IField<Gender?>> Gender_O.Gender => Gender;
+    OneOf<IIntField, IField<string>> Ability_O.Ability => Ability;
+    OneOf<IIntArrayField, IField<string[]>> Moves_O.Moves => Moves;
+    OneOf<IIntField, IField<string>> Item_O.Item => Item;
+    OneOf<IIntField, IField<Nature>> Nature_O.Nature => Nature;
+    IIntField Friendship_O.Friendship => Friendship;
+    IIntArrayField IVs_O.IVs => IVs;
+    IIntArrayField EVs_O.EVs => EVs;
     IField<bool> Gigantamax_Factor_O.Gigantamax_Factor => Gigantamax_Factor;
 }

@@ -1,7 +1,6 @@
 ﻿using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Utilities;
-using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
@@ -9,7 +8,7 @@ namespace pkuManager.Formats.Modules.Tags;
 
 public interface Met_Location_O
 {
-    public IField<BigInteger> Met_Location { get; }
+    public IIntField Met_Location { get; }
 }
 
 public interface Met_Location_E : Tag

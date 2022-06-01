@@ -7,7 +7,6 @@ using pkuManager.Formats.Modules.MetaTags;
 using pkuManager.Formats.Modules.Templates;
 using pkuManager.Utilities;
 using System.Collections.Generic;
-using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
@@ -15,7 +14,7 @@ namespace pkuManager.Formats.Modules.Tags;
 
 public interface Nature_O
 {
-    public OneOf<IField<BigInteger>, IField<Nature>> Nature { get; }
+    public OneOf<IIntField, IField<Nature>> Nature { get; }
     public Nature Nature_Default => DEFAULT_NATURE;
     public bool Nature_PIDDependent => false;
 }

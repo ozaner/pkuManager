@@ -3,7 +3,6 @@ using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
 using System.Collections.Generic;
-using System.Numerics;
 using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
@@ -11,7 +10,7 @@ namespace pkuManager.Formats.Modules.Tags;
 
 public interface OT_Gender_O
 {
-    public OneOf<IField<BigInteger>, IField<Gender>> OT_Gender { get; }
+    public OneOf<IIntField, IField<Gender>> OT_Gender { get; }
 }
 
 public interface OT_Gender_E : Tag

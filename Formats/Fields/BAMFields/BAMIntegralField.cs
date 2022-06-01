@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace pkuManager.Formats.Fields.BAMFields;
 
-public class BAMIntegralField : BAMField, IField<BigInteger>
+public class BAMIntegralField : BAMField, IIntField
 {
     public BigInteger Value
     {

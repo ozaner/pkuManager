@@ -5,7 +5,6 @@ using pkuManager.Formats.Modules.Templates;
 using pkuManager.Utilities;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 
 namespace pkuManager.Formats.pkx.pk3;
 
@@ -17,7 +16,7 @@ public class pk3Collection : FileCollection
     */
     public BAMStringField OT { get; protected set; }
     public ByteArrayManipulator UnshuffledPCBAM { get; protected set; }
-    public override IField<BigInteger> CurrentBoxID { get; protected set; }
+    public override IIntField CurrentBoxID { get; protected set; }
     public BAMStringField[] BoxNames { get; protected set; }
 
 

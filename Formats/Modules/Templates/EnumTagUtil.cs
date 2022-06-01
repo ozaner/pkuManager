@@ -4,7 +4,6 @@ using pkuManager.Formats.Fields;
 using pkuManager.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using static pkuManager.Alerts.Alert;
 
 namespace pkuManager.Formats.Modules.Templates;
@@ -15,7 +14,7 @@ public static class EnumTagUtil<T> where T : struct, Enum
      * Exporting
      * ------------------------------------
     */
-    public static AlertType ExportEnumTag(IField<string> pkuTag, OneOf<IField<BigInteger>, IField<T>> formatVal,
+    public static AlertType ExportEnumTag(IField<string> pkuTag, OneOf<IIntField, IField<T>> formatVal,
     T defaultVal, Dictionary<T, int> customMapping = null)
     {
         AlertType at = AlertType.UNSPECIFIED;
@@ -51,7 +50,7 @@ public static class EnumTagUtil<T> where T : struct, Enum
      * Importing
      * ------------------------------------
     */
-    public static AlertType ImportEnumTag(IField<string> pkuTag, OneOf<IField<BigInteger>, IField<T>> encodedField)
+    public static AlertType ImportEnumTag(IField<string> pkuTag, OneOf<IIntField, IField<T>> encodedField)
     {
         AlertType at = AlertType.NONE;
         pkuTag.Value = encodedField.Match(

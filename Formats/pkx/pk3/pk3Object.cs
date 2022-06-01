@@ -310,7 +310,7 @@ public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nat
      * Implicit Fields
      * ------------------------------------
     */
-    public LambdaField<BigInteger> Form { get; }
+    public LambdaIntField Form { get; }
     public LambdaField<bool> Shiny { get; }
     public LambdaField<Gender> Gender { get; }
     public LambdaField<Nature> Nature { get; }
@@ -432,34 +432,34 @@ public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nat
      * Duct Tape
      * ------------------------------------
     */
-    OneOf<IField<BigInteger>, IField<string>> Species_O.Species => Species;
-    OneOf<IField<BigInteger>, IField<string>> Form_O.Form => Form;
+    OneOf<IIntField, IField<string>> Species_O.Species => Species;
+    OneOf<IIntField, IField<string>> Form_O.Form => Form;
     IField<bool> Shiny_O.Shiny => Shiny;
-    OneOf<IField<BigInteger>, IField<Gender>, IField<Gender?>> Gender_O.Gender => Gender;
-    OneOf<IField<BigInteger>, IField<Nature>> Nature_O.Nature => Nature;
+    OneOf<IIntField, IField<Gender>, IField<Gender?>> Gender_O.Gender => Gender;
+    OneOf<IIntField, IField<Nature>> Nature_O.Nature => Nature;
     OneOf<BAMStringField, IField<string>> Nickname_O.Nickname => Nickname;
-    IField<BigInteger> Experience_O.Experience => Experience;
-    OneOf<IField<BigInteger[]>, IField<string[]>> Moves_O.Moves => Moves;
-    IField<BigInteger[]> PP_Ups_O.PP_Ups => PP_Ups;
-    IField<BigInteger[]> PP_O.PP => PP;
-    OneOf<IField<BigInteger>, IField<string>> Item_O.Item => Item;
-    IField<BigInteger> Ability_Slot_O.Ability_Slot => Ability_Slot;
-    IField<BigInteger> Friendship_O.Friendship => Friendship;
-    IField<BigInteger> PID_O.PID => PID;
-    IField<BigInteger> TID_O.TID => TID;
-    IField<BigInteger[]> IVs_O.IVs => IVs;
-    IField<BigInteger[]> EVs_O.EVs => EVs;
-    IField<BigInteger[]> Contest_Stats_O.Contest_Stats => Contest_Stats;
-    OneOf<IField<BigInteger>, IField<string>> Ball_O.Ball => Ball;
+    IIntField Experience_O.Experience => Experience;
+    OneOf<IIntArrayField, IField<string[]>> Moves_O.Moves => Moves;
+    IIntArrayField PP_Ups_O.PP_Ups => PP_Ups;
+    IIntArrayField PP_O.PP => PP;
+    OneOf<IIntField, IField<string>> Item_O.Item => Item;
+    IIntField Ability_Slot_O.Ability_Slot => Ability_Slot;
+    IIntField Friendship_O.Friendship => Friendship;
+    IIntField PID_O.PID => PID;
+    IIntField TID_O.TID => TID;
+    IIntArrayField IVs_O.IVs => IVs;
+    IIntArrayField EVs_O.EVs => EVs;
+    IIntArrayField Contest_Stats_O.Contest_Stats => Contest_Stats;
+    OneOf<IIntField, IField<string>> Ball_O.Ball => Ball;
     OneOf<BAMStringField, IField<string>> OT_O.OT => OT;
-    IField<BigInteger> Origin_Game_O.Origin_Game => Origin_Game;
-    IField<BigInteger> Met_Location_O.Met_Location => Met_Location;
-    IField<BigInteger> Met_Level_O.Met_Level => Met_Level;
-    OneOf<IField<BigInteger>, IField<Gender>> OT_Gender_O.OT_Gender => OT_Gender;
-    OneOf<IField<BigInteger>, IField<string>> Language_O.Language => Language;
+    IIntField Origin_Game_O.Origin_Game => Origin_Game;
+    IIntField Met_Location_O.Met_Location => Met_Location;
+    IIntField Met_Level_O.Met_Level => Met_Level;
+    OneOf<IIntField, IField<Gender>> OT_Gender_O.OT_Gender => OT_Gender;
+    OneOf<IIntField, IField<string>> Language_O.Language => Language;
     IField<bool> Fateful_Encounter_O.Fateful_Encounter => Fateful_Encounter;
     IField<bool> Is_Egg_O.Is_Egg => Is_Egg;
-    public IField<BigInteger> Egg_Steps => Friendship;
+    public IIntField Egg_Steps => Friendship;
 
     IField<bool> Markings_O.Marking_Blue_Circle => Marking_Blue_Circle;
     IField<bool> Markings_O.Marking_Blue_Square => Marking_Blue_Square;
@@ -479,6 +479,7 @@ public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nat
     IField<bool> Ribbons_O.Earth_Ribbon => Earth_Ribbon;
     IField<bool> Ribbons_O.World_Ribbon => World_Ribbon;
 
-    IField<BigInteger> Pokerus_O.Pokerus_Strain => Pokerus_Strain;
-    IField<BigInteger> Pokerus_O.Pokerus_Days => Pokerus_Days;
+    IIntField Pokerus_O.Pokerus_Strain => Pokerus_Strain;
+    IIntField Pokerus_O.Pokerus_Days => Pokerus_Days;
+
 }

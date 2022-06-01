@@ -2,7 +2,7 @@
 
 namespace pkuManager.Formats.Fields.BackedFields;
 
-public class BackedIntField : BackedField<BigInteger>, IBoundable
+public class BackedIntField : BackedField<BigInteger>, IIntField
 {
     public BigInteger? Max { get; }
     public BigInteger? Min { get; }
@@ -14,7 +14,7 @@ public class BackedIntField : BackedField<BigInteger>, IBoundable
     }
 }
 
-public class BackedIntArrayField : BackedField<BigInteger[]>, IBoundable
+public class BackedIntArrayField : BackedField<BigInteger[]>, IIntArrayField
 {
     public BigInteger? Max { get; }
     public BigInteger? Min { get; }
