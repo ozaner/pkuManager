@@ -7,7 +7,6 @@ using pkuManager.Formats.Modules.Tags;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 
 namespace pkuManager.Formats.showdown;
 
@@ -29,11 +28,11 @@ public class ShowdownObject : StringFormatObject, Species_O, Form_O, Shiny_O, Ni
     public BackedField<string> Nickname { get; } = new();
     public BackedField<string> Item { get; } = new();
     public BackedField<string> Ability { get; } = new();
-    public BackedField<string[]> Moves { get; } = new(new string[4]);
+    public BackedArrayField<string> Moves { get; } = new(4);
     public BackedIntField Level { get; } = new(100, 1);
     public BackedIntField Friendship { get; } = new(255, 0);
-    public BackedIntArrayField IVs { get; } = new(new BigInteger[6], 31, 0);
-    public BackedIntArrayField EVs { get; } = new(new BigInteger[6], 255, 0);
+    public BackedIntArrayField IVs { get; } = new(6, 31, 0);
+    public BackedIntArrayField EVs { get; } = new(6, 255, 0);
     public BackedField<Gender?> Gender { get; } = new();
     public BackedField<Nature> Nature { get; } = new();
     public BackedField<bool> Shiny { get; } = new();
