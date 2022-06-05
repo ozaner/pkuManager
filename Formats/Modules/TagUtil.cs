@@ -397,16 +397,16 @@ public static class TagEnums
     {
         // Blue markings (also refer to the black markings present in Gens 3-5)
         Blue_Circle,
-        Blue_Triangle,
         Blue_Square,
+        Blue_Triangle,
         Blue_Heart,
         Blue_Star,
         Blue_Diamond,
 
         // Pink markings
         Pink_Circle,
-        Pink_Triangle,
         Pink_Square,
+        Pink_Triangle,
         Pink_Heart,
         Pink_Star,
         Pink_Diamond,
