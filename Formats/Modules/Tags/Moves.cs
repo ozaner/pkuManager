@@ -16,7 +16,13 @@ public interface Moves_O
 
 public interface Moves_E : Tag
 {
-    public int[] Moves_Indices { set; }
+    public string[] Moves_Indices { set; }
+
+    public static string GetTrueMove(string move)
+    {
+        int dupLoc = move.IndexOf('$');
+        return dupLoc > -1 ? move[0..dupLoc] : move;
+    }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportMoves()
@@ -24,7 +30,7 @@ public interface Moves_E : Tag
         Moves_O movesObj = Data as Moves_O;
         int? moveCount = movesObj.Moves.Match(x => x.Value?.Length, x => x.Value?.Length);
 
-        List<int> moveIndices = new(); //indices in pku
+        List<string> moveIndices = new(); //canonical move names
         IList moveIDs = movesObj.Moves.IsT0 ? new List<int>() : new List<string>();
         AlertType at = AlertType.NONE;
 
@@ -32,16 +38,17 @@ public interface Moves_E : Tag
         if (pku.Moves is not null)
         {
             bool invalid = false; //at least one move is invalid
-            for (int i = 0; i < pku.Moves.Length; i++)
+            foreach (string move in pku.Moves.Keys)
             {
-                if (MOVE_DEX.ExistsIn(FormatName, pku.Moves[i].Name.Value)) //move exists in format
+                string trueMove = GetTrueMove(move);
+                if (MOVE_DEX.ExistsIn(FormatName, trueMove)) //move exists in format
                 {
                     if (confirmedMoves < moveCount || moveCount is null)
                     {
                         movesObj.Moves.Switch(
-                            _ => moveIDs.Add(MOVE_DEX.GetIndexedValue<int?>(FormatName, pku.Moves[i].Name.Value, "Indices") ?? 0),
-                            _ => moveIDs.Add(MOVE_DEX.GetIndexedValue<string>(FormatName, pku.Moves[i].Name.Value, "Indices")));
-                        moveIndices.Add(i);
+                            _ => moveIDs.Add(MOVE_DEX.GetIndexedValue<int?>(FormatName, trueMove, "Indices") ?? 0),
+                            _ => moveIDs.Add(MOVE_DEX.GetIndexedValue<string>(FormatName, trueMove, "Indices")));
+                        moveIndices.Add(move);
                         confirmedMoves++;
                     }
                 }
@@ -51,7 +58,7 @@ public interface Moves_E : Tag
 
             if (invalid)
                 at = AlertType.INVALID;
-            else if (moveCount.HasValue && confirmedMoves != pku.Moves.Length)
+            else if (moveCount.HasValue && confirmedMoves != pku.Moves.Count)
                 at = AlertType.TOO_LONG;
         }
         else

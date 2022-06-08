@@ -48,7 +48,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E,
      * ------------------------------------
     */
     public bool legalGen3Egg;
-    public int[] Moves_Indices { get; set; }
+    public string[] Moves_Indices { get; set; }
     public ChoiceAlert PID_DependencyError { get; set; }
     public Dictionary<string, object> PID_DependencyDigest { get; set; }
     public string Origin_Game_Name { get; set; } // Game Name (string form of Origin Game)

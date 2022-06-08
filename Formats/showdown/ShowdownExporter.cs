@@ -43,7 +43,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
      * Working Variables
      * ------------------------------------
     */
-    public int[] Moves_Indices { get; set; }
+    public string[] Moves_Indices { get; set; }
 
 
     /* ------------------------------------

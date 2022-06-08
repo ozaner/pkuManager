@@ -10,7 +10,7 @@ public interface PP_O
 
 public interface PP_E : Tag
 {
-    public int[] Moves_Indices { get; }
+    public string[] Moves_Indices { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass, nameof(Moves_E.ExportMoves),
                                                 nameof(PP_Ups_E.ExportPP_Ups))]
@@ -23,7 +23,10 @@ public interface PP_E : Tag
         for (int i = 0; i < calculatedpp.Length; i++)
         {
             if (i < Moves_Indices.Length)
-                calculatedpp[i] = TagUtil.CalculatePP(pku.Moves[Moves_Indices[i]].Name.Value, ppups.GetAs<byte>(i), FormatName);
+            {
+                string trueMove = Moves_E.GetTrueMove(Moves_Indices[i]);
+                calculatedpp[i] = TagUtil.CalculatePP(trueMove, ppups.GetAs<byte>(i), FormatName);
+            }
         }
         pp.SetAs(calculatedpp);
     }

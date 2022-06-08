@@ -51,7 +51,7 @@ public class pkuObject : FormatObject
     public BackedField<string> Item { get; set; } = new();
 
     [JsonProperty("Moves")]
-    public Move[] Moves { get; set; }
+    public Dictionary<string, Move> Moves { get; set; } = new();
 
     [JsonProperty("PID")]
     public BackedField<BigInteger?> PID { get; set; } = new();
@@ -121,9 +121,6 @@ public class pkuObject : FormatObject
 
     public class Move : Base_Dict
     {
-        [JsonProperty("Name")]
-        public BackedField<string> Name { get; set; } = new();
-
         [JsonProperty("PP Ups")]
         public BackedField<BigInteger?> PP_Ups { get; set; } = new();
     }
@@ -421,7 +418,7 @@ public class pkuObject : FormatObject
         Contest_Stats.Clever, Contest_Stats.Tough, Contest_Stats.Sheen
     };
 
-    public BackedField<BigInteger?>[] PP_Up_ArrayFromIndices(int[] indices)
+    public BackedField<BigInteger?>[] PP_Up_ArrayFromIndices(string[] indices)
     {
         if (indices is null)
             return null;

@@ -13,7 +13,7 @@ public interface PP_Ups_O
 
 public interface PP_Ups_E : Tag
 {
-    public int[] Moves_Indices { get; }
+    public string[] Moves_Indices { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass, nameof(Moves_E.ExportMoves))]
     public void ExportPP_Ups()
