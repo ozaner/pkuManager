@@ -116,6 +116,9 @@ public class pkuObject : FormatObject
     [JsonProperty("Shiny Leaf")]
     public BackedField<string[]> Shiny_Leaf { get; set; } = new();
 
+    [JsonProperty("Movepool")]
+    public Dictionary<string, Learned_Move> Movepool { get; set; } = new();
+
     [JsonProperty("Format Specific")]
     public Dictionary<string, Format_Dict> Format_Specific { get; set; } = new();
 
@@ -123,6 +126,12 @@ public class pkuObject : FormatObject
     {
         [JsonProperty("PP Ups")]
         public BackedField<BigInteger?> PP_Ups { get; set; } = new();
+    }
+
+    public class Learned_Move : Base_Dict
+    {
+        [JsonProperty("Relearn")]
+        public BackedField<bool?> Relearn { get; set; } = new();
     }
 
     public class Game_Info_Class : Base_Dict

@@ -1,4 +1,5 @@
 ﻿using pkuManager.Formats.Fields;
+using pkuManager.Formats.Modules.Templates;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.Tags;
@@ -24,7 +25,7 @@ public interface PP_E : Tag
         {
             if (i < Moves_Indices.Length)
             {
-                string trueMove = Moves_E.GetTrueMove(Moves_Indices[i]);
+                string trueMove = MoveTagUtil.GetTrueMove(Moves_Indices[i]);
                 calculatedpp[i] = TagUtil.CalculatePP(trueMove, ppups.GetAs<byte>(i), FormatName);
             }
         }
