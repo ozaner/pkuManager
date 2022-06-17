@@ -162,9 +162,6 @@ public class pkuObject : FormatObject
         [JsonProperty("Met Location")]
         public BackedField<string> Met_Location { get; set; } = new();
 
-        [JsonProperty("Met Game Override")]
-        public BackedField<string> Met_Game_Override { get; set; } = new();
-
         [JsonProperty("Met Date")]
         public DateTime? Met_Date { get; set; }
     }

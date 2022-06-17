@@ -20,11 +20,8 @@ public interface Met_Location_E : Tag
     {
         Met_Location_O metLocationObj = Data as Met_Location_O;
 
-        //override game for met location
-        string checkedGameName = pku.Catch_Info.Met_Game_Override.Value ?? Origin_Game_Name;
-
         //get default location
-        string defaultLoc() => GAME_DEX.ReadDataDex<string>(checkedGameName, "Locations", "0") ?? "None";
+        string defaultLoc() => GAME_DEX.ReadDataDex<string>(Origin_Game_Name, "Locations", "0") ?? "None";
 
         //null check
         if (pku.Catch_Info.Met_Location.IsNull())
@@ -35,7 +32,7 @@ public interface Met_Location_E : Tag
         }
 
         //try get location id
-        bool succ = int.TryParse(GAME_DEX.SearchDataDex(pku.Catch_Info.Met_Location.Value, checkedGameName, "Locations", "$x"), out int temp);
+        bool succ = int.TryParse(GAME_DEX.SearchDataDex(pku.Catch_Info.Met_Location.Value, Origin_Game_Name, "Locations", "$x"), out int temp);
         int? locID = succ ? temp : null;
 
         //location failure
