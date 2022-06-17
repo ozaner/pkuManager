@@ -22,13 +22,14 @@ public interface Origin_Game_E : Tag
         
         (int? id, string game) helper(string game)
         {
-            if (GAME_DEX.ExistsIn(FormatName, game))
-                return (GAME_DEX.GetIndexedValue<int?>(FormatName, game, "Indices"), game);
-            return (null, game);
+            string gameRet = GAME_DEX.ExistsIn(FormatName, game) ? game : null; //exists
+            int? idRet = GAME_DEX.GetIndexedValue<int?>(FormatName, game, "Indices"); //has index
+            return (idRet, gameRet);
         }
 
         // Init
-        originGameObj.Origin_Game.Value = 0;
+        if (originGameObj is not null)
+            originGameObj.Origin_Game.Value = 0;
         Origin_Game_Name = null;
 
         // if both unspecified
@@ -38,14 +39,15 @@ public interface Origin_Game_E : Tag
         {
             (int? id, string game) = helper(pku.Game_Info.Origin_Game.Value);
 
-            if (id is null) //origin game failed, try official origin game
+            if (game is null) //origin game failed, try official origin game
                 (id, game) = helper(pku.Game_Info.Official_Origin_Game.Value);
 
-            if (id is null) // if neither have an id in this format
+            if (game is null) // if neither have an id in this format
                 Warnings.Add(GetOrigin_GameAlert(AlertType.INVALID, pku.Game_Info.Origin_Game.Value, pku.Game_Info.Official_Origin_Game.Value));
             else // success
             {
-                originGameObj.Origin_Game.Value = id.Value;
+                if (originGameObj is not null) //has an origin game field
+                    originGameObj.Origin_Game.Value = id.Value; //if game exists and format has a field, indices must exist
                 Origin_Game_Name = game;
             }
         }
