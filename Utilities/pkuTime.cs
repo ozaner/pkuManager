@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace pkuManager.Utilities;
@@ -6,8 +7,7 @@ namespace pkuManager.Utilities;
 public struct pkuTime
 {
     public DateOnly? Date { get; private set; } //D
-    public TimeOnly? Time { get; private set; } //T - Leapseconds not suported
-    public TimeSpan? Offset { get; private set; } //Z
+    public TimeOnly? Time { get; private set; } //T - Leapseconds not supported
     public string Duration { get; private set; } //P - Can't use TimeSpan as it removes Year/Month info
 
     public int LastDateComp { get; private set; }
@@ -58,16 +58,6 @@ public struct pkuTime
         }
         groupNum += 1 + TIME_GROUPS;
 
-        //Z - Offset
-        if (m.Groups[groupNum].Success)
-        {
-            if (!TimeSpan.TryParse(m.Groups[groupNum].Value.Replace("+", ""), out var o))
-                return null; //Failed to parse, idk how.
-            pt.Offset = o;
-        }
-        groupNum += 1 + OFFSET_GROUPS;
-
-
         //P - Duration
         if (m.Groups[groupNum].Success)
             pt.Duration = m.Groups[groupNum].Value;
@@ -79,17 +69,46 @@ public struct pkuTime
     /// Returns this <see cref="pkuTime"/> as Unix Time.<br/>
     /// If there is no <see cref="Date"/>, assumes 1970-01-01.<br/>
     /// If there is no <see cref="Time"/>, assumes T00:00:00.000.<br/>
-    /// If there is no <see cref="Offset"/>, assumes +00:00 (UTC).<br/>
+    /// If <paramref name="timezone"/> is invalid, assumes the local time zone or, failing that, UTC.<br/>
     /// </summary>
+    /// <param name="timezone">An IANA time zone to express this pkuTime in.</param>
     /// <returns>This <see cref="pkuTime"/> as a <see cref="long"/> valued Unix time.</returns>
-    public long ToUnixTime()
+    public long ToUnixTime(string timezone)
     {
+        //Get DateTime (ambiguous)
         DateOnly date = Date ?? new DateOnly(1970, 1, 1); //unix epoch, i.e. t = 0 unix time
         TimeOnly time = Time ?? new TimeOnly(0, 0); //12am, i.e. t = 0 in day
-        TimeSpan offset = Offset ?? new TimeSpan(0, 0, 0);//UTC, i.e. no offset
+        DateTime dt = date.ToDateTime(time);
+        
+        //Get Timezone
+        timezone ??= LOCAL_TIMEZONE; //falback on local
+        TimeZoneInfo tz;
+        try { tz = TimeZoneInfo.FindSystemTimeZoneById(timezone); }
+        catch { tz = TimeZoneInfo.Utc; } //fallback on UTC
 
-        DateTimeOffset dto = new(date.ToDateTime(time), offset);
+        //Get DateTimeOffset (unambiguous moment in time)
+        DateTimeOffset dto = new(dt, tz.GetUtcOffset(dt));
         return dto.ToUnixTimeSeconds();
+    }
+
+
+    /* ------------------------------------
+     * Determine Local TimeZone
+     * ------------------------------------
+    */
+    /// <summary>
+    /// This computer's current time zone expressed as an
+    /// <see href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones">IANA time zone</see>.<br/>
+    /// <i>Note that this is calculated only once, upon the launch of the application.</i>
+    /// </summary>
+    public static readonly string LOCAL_TIMEZONE; //can be null if no local IANA TZ is found
+    static pkuTime()
+    {
+        if (TimeZoneInfo.Local.HasIanaId)
+            LOCAL_TIMEZONE = TimeZoneInfo.Local.Id;
+        else
+            TimeZoneInfo.TryConvertWindowsIdToIanaId(TimeZoneInfo.Local.Id,
+                RegionInfo.CurrentRegion.TwoLetterISORegionName, out LOCAL_TIMEZONE);
     }
 
 
@@ -102,7 +121,6 @@ public struct pkuTime
         string str = "";
         str += DateToString(); //D - Date
         str += TimeToString(); //T - Time
-        str += OffsetToString(); //Z - Offset
         str += Duration; //P - Duration
 
         return str;
@@ -133,27 +151,17 @@ public struct pkuTime
         else return null;
     }
 
-    public string OffsetToString()
-    {
-        if (Offset.HasValue)
-        {
-            var temp = Offset.Value.Duration();
-            return $"{(Offset.Value < TimeSpan.Zero ? "-" : "+")}{temp.Hours:D2}:{temp.Minutes:D2}";
-        }
-        else return null;
-    }
-
 
     /* ------------------------------------
      * Regex
      * ------------------------------------
     */
-    //pkuTime: (DATE)?(TIME)?(OFFSET)?(DURATION)?
+    //pkuTime: (DATE)?(TIME)?(DURATION)?
     //The extra regex asserts that:
     //  a) Must have at least one of {DATE, SET}
     //  b) If DATE and TIME were both matched, DATE must have a DAYS match.
-    //Note that pkuTime allows DATE w/o TIME to have an OFFSET, unlike pure ISO 8601.
-    private static readonly Regex PKUTIME_REGEX = new($@"^({DATE_REGEX})?(^|(?(3)|(?:$^)){TIME_REGEX})?(?!^)({OFFSET_REGEX})?({DURATION_REGEX})?$");
+    //pkuTime is almost a subset of ISO 8601 (the difference is that a time with duration (and no date) is possible)
+    private static readonly Regex PKUTIME_REGEX = new($@"^({DATE_REGEX})?(^|(?(3)|(?:$^)){TIME_REGEX})?(?!^)({DURATION_REGEX})?$");
 
     //D - Date: YYYY(-MM(-DD)?)?
     private const string DATE_REGEX = @"(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?";
@@ -162,10 +170,6 @@ public struct pkuTime
     //T - Time: Thh(:mm(:ss(.fff)?)?)?
     private const string TIME_REGEX = @"T(\d{2})(?::(\d{2})(?::(\d{2})(?:\.(\d{3}))?)?)?";
     private const int TIME_GROUPS = 4;
-
-    //Z - Offset: ±hh:mm
-    private const string OFFSET_REGEX = @"([+-])(\d{2}):(\d{2})";
-    private const int OFFSET_GROUPS = 3;
 
     //P - Duration: P(nY)?(nM)?(nD)?(T(nH)?(nM)?(n.fffS)?)?
     private const string DURATION_REGEX = @"\/P(?!$)(?:(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?)?(?:T(?!$)(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)(\.\d{3})?S)?)?";
