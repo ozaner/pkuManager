@@ -2,7 +2,6 @@
 using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Utilities;
-using System;
 using static pkuManager.Alerts.Alert;
 
 namespace pkuManager.Formats.Modules.Templates;
@@ -15,7 +14,7 @@ public static class DateTagUtil
     */
     private const string defaultDate = "2000-01-01";
 
-    public static (pkuTime, AlertType) ProcessPkuTime(IField<string> pkuVal)
+    private static (pkuTime, AlertType) ProcessPkuTime(IField<string> pkuVal)
     {
         AlertType at = AlertType.NONE;
         pkuTime timeToEncode;
@@ -30,7 +29,7 @@ public static class DateTagUtil
             if (!dtzp.HasValue) //invalid
                 at = AlertType.INVALID;
             else if (!dtzp.Value.Date.HasValue) //time only
-                at = AlertType.UNDERSPECIFIED;
+                at = AlertType.UNDERSPECIFIED | AlertType.MODIFIER_A;
         }
 
         //calculate processed pkuTime
@@ -39,7 +38,7 @@ public static class DateTagUtil
         else //unspecified, invalid, time only
         {
             string temp = defaultDate;
-            if (at is AlertType.UNDERSPECIFIED)
+            if (at.HasFlag(AlertType.UNDERSPECIFIED | AlertType.MODIFIER_A))
                 temp += dtzp.Value.TimeToString();
             timeToEncode = pkuTime.Parse(temp).Value; //should always work
         }
@@ -47,54 +46,9 @@ public static class DateTagUtil
         return (timeToEncode, at);
     }
 
-    public static (string, AlertType) ProcessTimeZone(IField<string> timezone)
+    private static AlertType ExportUnixTime(pkuTime pkuTime, IIntField formatField)
     {
-        if (timezone.IsNull()) //unspecified
-            return (null, AlertType.UNSPECIFIED);
-        else
-        {
-            try //valid
-            {
-                var tz = TimeZoneInfo.FindSystemTimeZoneById(timezone.Value);
-                if (tz.HasIanaId)
-                    return (tz.Id, AlertType.NONE);
-                else
-                    throw new Exception();
-            }
-            catch //invalid
-            {
-                return (null, AlertType.INVALID);
-            }
-        }
-    }
-
-
-    /* ------------------------------------
-     * Exporting
-     * ------------------------------------
-    */
-    public static Alert ExportAnyDate(string tagName, IField<string> pkuTimeField, IField<string> pkuTZField,
-        OneOf<(IIntField Y, IIntField M, IIntField D), IIntField> formatVal)
-    {
-        (pkuTime preparedTime, AlertType atD) = ProcessPkuTime(pkuTimeField);
-        AlertType atTZ = AlertType.NONE;
-
-        formatVal.Switch(
-            dateField => atD |= ExportDate(preparedTime, dateField.Y, dateField.M, dateField.D), //Y-M-D formats
-            unixField => { //Unix formats
-                (string timezone, atTZ) = ProcessTimeZone(pkuTZField);
-                atD |= ExportUnixTime(preparedTime, timezone, unixField);
-            }
-        );
-
-        Alert a = GetDateAlert(tagName, atD);
-        a += GetTimeZoneAlert(tagName, atTZ);
-        return a;
-    }
-
-    public static AlertType ExportUnixTime(pkuTime pkuTime, string timezone, IIntField formatField)
-    {
-        long val = pkuTime.ToUnixTime(timezone);
+        long val = pkuTime.ToUnixTime();
         AlertType at = AlertType.NONE;
         if (val < formatField.Min) //underflow
         {
@@ -112,7 +66,7 @@ public static class DateTagUtil
         return at;
     }
 
-    public static AlertType ExportDate(pkuTime pkuTime, IIntField formatY, IIntField formatM, IIntField formatD)
+    private static AlertType ExportDateOnly(pkuTime pkuTime, IIntField formatY, IIntField formatM, IIntField formatD)
     {
         //Assuming formatM can hold 1-12 and formatD can hold 0-31
         AlertType at = AlertType.NONE;
@@ -141,6 +95,23 @@ public static class DateTagUtil
 
 
     /* ------------------------------------
+     * Exporting
+     * ------------------------------------
+    */
+    public static Alert ExportDate(string tagName, IField<string> pkuTimeField,
+        OneOf<(IIntField Y, IIntField M, IIntField D), IIntField> formatVal)
+    {
+        (pkuTime preparedTime, AlertType at) = ProcessPkuTime(pkuTimeField);
+        formatVal.Switch(
+            dateField => at |= ExportDateOnly(preparedTime, dateField.Y, dateField.M, dateField.D),
+            unixField => at |= ExportUnixTime(preparedTime, unixField)
+        );
+
+        return GetDateAlert(tagName, at);
+    }
+
+
+    /* ------------------------------------
      * Alerting
      * ------------------------------------
     */
@@ -154,8 +125,13 @@ public static class DateTagUtil
             msg += $"unspecified, setting to {defaultDate}.";
         else if (at.HasFlag(AlertType.INVALID))
             msg += $"invalid, setting to {defaultDate}.";
-        else if (at.HasFlag(AlertType.TOO_SHORT))
-            msg += $"only specifies a time, setting the date to {defaultDate}.";
+        else if (at.HasFlag(AlertType.UNDERSPECIFIED))
+        {
+            if (at.HasFlag(AlertType.MODIFIER_A)) //TimeOnly (doesn't mention no offset)
+                msg += $"only specifies a time, setting the date to {defaultDate}.";
+            else if(at.HasFlag(AlertType.MODIFIER_B)) //No Offset
+                msg += $"does not specify an offset, assuming UTC (+00:00).";
+        }
         else if (at.HasFlag(AlertType.OVERFLOW))
             msg += $"too far in the future, setting date to highest possible.";
         else if (at.HasFlag(AlertType.UNDERFLOW))
@@ -163,22 +139,6 @@ public static class DateTagUtil
         else
             throw InvalidAlertType(at);
         
-        return new(tagName, msg);
-    }
-
-    public static Alert GetTimeZoneAlert(string tagName, AlertType at)
-    {
-        if (at is AlertType.NONE)
-            return null;
-
-        string defaultVal = pkuTime.LOCAL_TIMEZONE is null ? "UTC" : $"the local timezone: {pkuTime.LOCAL_TIMEZONE}";
-        string msg = at switch
-        {
-            AlertType.UNSPECIFIED => $"No timezone specified for {tagName}",
-            AlertType.INVALID => $"The timezone for {tagName} was invalid",
-            _ => throw InvalidAlertType(at)
-        } + $", using {defaultVal}";
-
         return new(tagName, msg);
     }
 }

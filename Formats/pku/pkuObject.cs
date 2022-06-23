@@ -164,9 +164,6 @@ public class pkuObject : FormatObject
 
         [JsonProperty("Met Date")]
         public BackedField<string> Met_Date { get; set; } = new();
-
-        [JsonProperty("Time Zone")]
-        public BackedField<string> Timezone { get; set; } = new();
     }
 
     public class Catch_Info_Class : Met_Info_Base

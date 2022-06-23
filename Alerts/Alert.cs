@@ -103,7 +103,15 @@ public class Alert
         /// <summary>
         /// For when a value does not have enough information.
         /// </summary>
-        UNDERSPECIFIED = 128
+        UNDERSPECIFIED = 128,
+
+        /// <summary>
+        /// For encoding an <see cref="AlertType"/> with some other information.
+        /// </summary>
+        MODIFIER_A = 256,
+
+        /// <inheritdoc cref="AlertType.MODIFIER_A"/>
+        MODIFIER_B = 256
     }
 
     /// <summary>
