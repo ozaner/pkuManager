@@ -25,6 +25,8 @@ public class IFieldJsonConverter : JsonConverter
 
     public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
     {
+        reader.DateParseHandling = DateParseHandling.None; //let pkuTime handle dates
+
         //Get the value the field is encapsulating
         object value;
 

@@ -81,8 +81,7 @@ public class Alert
         UNSPECIFIED = 4,
 
         /// <summary>
-        /// When a value is invalid in the given context.<br/>
-        /// More general than <see cref="OVERFLOW"/> or <see cref="UNDERFLOW"/>.
+        /// When a value is invalid in the given context.
         /// </summary>
         INVALID = 8,
 
@@ -99,7 +98,12 @@ public class Alert
         /// <summary>
         /// For when an array/string is too short.
         /// </summary>
-        TOO_SHORT = 64
+        TOO_SHORT = 64,
+
+        /// <summary>
+        /// For when a value does not have enough information.
+        /// </summary>
+        UNDERSPECIFIED = 128
     }
 
     /// <summary>
