@@ -4,14 +4,14 @@ using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.Tags;
 
-public interface Met_Location_O
+public interface Egg_Location_O
 {
-    public IIntField Met_Location { get; }
+    public IIntField Egg_Location { get; }
 }
 
-public interface Met_Location_E : LocationTag_E
+public interface Egg_Location_E : LocationTag_E
 {
     [PorterDirective(ProcessingPhase.FirstPass, nameof(Origin_Game_E.ExportOrigin_Game))]
-    public void ExportMet_Location()
-        => ExportLocation("Met Location", pku.Catch_Info.Met_Location, (Data as Met_Location_O).Met_Location);
+    public void ExportEgg_Location()
+        => ExportLocation("Egg Location", pku.Egg_Info.Met_Location, (Data as Egg_Location_O).Egg_Location);
 }
