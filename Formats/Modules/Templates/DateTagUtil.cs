@@ -98,7 +98,7 @@ public static class DateTagUtil
      * Exporting
      * ------------------------------------
     */
-    public static Alert ExportDate(string tagName, IField<string> pkuTimeField,
+    public static AlertType ExportDate(IField<string> pkuTimeField,
         OneOf<(IIntField Y, IIntField M, IIntField D), IIntField> formatVal)
     {
         (pkuTime preparedTime, AlertType at) = ProcessPkuTime(pkuTimeField);
@@ -107,7 +107,7 @@ public static class DateTagUtil
             unixField => at |= ExportUnixTime(preparedTime, unixField)
         );
 
-        return GetDateAlert(tagName, at);
+        return at;
     }
 
 
