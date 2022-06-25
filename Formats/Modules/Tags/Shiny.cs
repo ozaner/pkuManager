@@ -4,7 +4,6 @@ using pkuManager.Formats.Fields.BackedFields;
 using pkuManager.Formats.Modules.Templates;
 using pkuManager.Utilities;
 using System.Collections.Generic;
-using static pkuManager.Alerts.Alert;
 using static pkuManager.Formats.PorterDirective;
 
 namespace pkuManager.Formats.Modules.Tags;
@@ -16,7 +15,7 @@ public interface Shiny_O
     public bool Shiny_PIDDependent => false;
 }
 
-public interface Shiny_E : BooleanTag_E
+public interface Shiny_E : Tag
 {
     public ChoiceAlert PID_DependencyError { get => null; set { } }
     public Dictionary<string, object> PID_DependencyDigest { get => null; set { } }
@@ -26,11 +25,10 @@ public interface Shiny_E : BooleanTag_E
     {
         Shiny_O shinyObj = Data as Shiny_O;
 
-        AlertType at;
         if (shinyObj.Shiny_PIDDependent)
         {
             BackedField<bool> dummyField = new();
-            at = ExportBooleanTag(pku.Shiny, dummyField, false);
+            BooleanTagUtil.ExportBooleanTag(pku.Shiny, dummyField, false);
             PID_DependencyDigest["Shiny"] = (dummyField.Value, (Data as TID_O).TID.GetAs<uint>());
 
             //add to pid dep error if necessary
@@ -42,17 +40,15 @@ public interface Shiny_E : BooleanTag_E
             }
         }
         else //pid independent
-            at = ExportBooleanTag(pku.Shiny, shinyObj.Shiny, false);
+            BooleanTagUtil.ExportBooleanTag(pku.Shiny, shinyObj.Shiny, false);
 
-        //alerting
-        if (at is not AlertType.UNSPECIFIED) //silent when unspecified
-            GetBooleanAlert("Shiny", at, false);
+        //no alerting needed
     }
 }
 
-public interface Shiny_I : BooleanTag_I
+public interface Shiny_I : Tag
 {
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ImportShiny() //PID and TID should be settled for pid dep
-        => ImportBooleanTag("Shiny", pku.Shiny, (Data as Shiny_O).Shiny, false);
+        => BooleanTagUtil.ImportBooleanTag(pku.Shiny, (Data as Shiny_O).Shiny, false);
 }
