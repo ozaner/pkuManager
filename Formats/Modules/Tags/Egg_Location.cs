@@ -18,7 +18,7 @@ public interface Egg_Location_E : Tag
     public void ExportEgg_Location()
     {
         (AlertType at, string defaultLoc) = LocationTagUtil.ExportLocation(Origin_Game_Name,
-            pku.Egg_Info.Met_Location, (Data as Egg_Location_O).Egg_Location);
-        Warnings.Add(LocationTagUtil.GetLocationAlert("Egg Received Location", at, defaultLoc, pku.Egg_Info.Met_Location.Value));
+            pku.Egg_Info.Received_Location, (Data as Egg_Location_O).Egg_Location);
+        Warnings.Add(LocationTagUtil.GetLocationAlert("Egg Received Location", at, defaultLoc, pku.Egg_Info.Received_Location.Value));
     }
 }

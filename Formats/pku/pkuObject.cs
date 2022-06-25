@@ -156,18 +156,14 @@ public class pkuObject : FormatObject
         public BackedField<string> Language { get; set; } = new();
     }
 
-    //parent of Catch_Info and Egg_Info
-    public class Met_Info_Base : Base_Dict
+    public class Catch_Info_Class
     {
         [JsonProperty("Met Location")]
         public BackedField<string> Met_Location { get; set; } = new();
 
         [JsonProperty("Met Date")]
         public BackedField<string> Met_Date { get; set; } = new();
-    }
 
-    public class Catch_Info_Class : Met_Info_Base
-    {
         [JsonProperty("Ball")]
         public BackedField<string> Ball { get; set; } = new();
 
@@ -178,8 +174,14 @@ public class pkuObject : FormatObject
         public BackedField<bool?> Fateful_Encounter { get; set; } = new();
     }
 
-    public class Egg_Info_Class : Met_Info_Base
+    public class Egg_Info_Class
     {
+        [JsonProperty("Received Location")]
+        public BackedField<string> Received_Location { get; set; } = new();
+
+        [JsonProperty("Received Date")]
+        public BackedField<string> Received_Date { get; set; } = new();
+
         [JsonProperty("Is Egg")]
         public BackedField<bool?> Is_Egg { get; set; } = new();
 
