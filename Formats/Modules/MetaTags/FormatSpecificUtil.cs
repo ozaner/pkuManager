@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using pkuManager.Formats.pku;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace pkuManager.Formats.Modules.MetaTags;
 
@@ -30,7 +31,19 @@ public static class FormatSpecificUtil
             return (default, false);
 
         dict.TryGetValue(keys[^1], out var value);
-        try { return (value.ToObject<T>(), false); } //return whatever the value is
+        try {
+            object obj = value;
+            if (value.Type is JTokenType.Integer)
+                obj = value.ToObject<BigInteger?>();
+            else if (value.Type is JTokenType.Boolean)
+                obj = value.ToObject<bool?>();
+            else if (value.Type is JTokenType.String)
+                obj = value.ToObject<string>();
+            else
+                return (value.ToObject<T>(), false);
+            return ((T)obj, false);
+
+        } //return whatever the value is
         catch { return (default, true); } //can't return the value, doesn't match the type (invalid)
     }
 
