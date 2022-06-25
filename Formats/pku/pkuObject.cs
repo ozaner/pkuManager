@@ -119,6 +119,9 @@ public class pkuObject : FormatObject
     [JsonProperty("Movepool")]
     public Dictionary<string, Learned_Move> Movepool { get; set; } = new();
 
+    [JsonProperty("Feral Nuclear")]
+    public BackedField<bool?> Feral_Nuclear { get; set; } = new();
+
     [JsonProperty("Format Specific")]
     public Dictionary<string, Format_Dict> Format_Specific { get; set; } = new();
 
