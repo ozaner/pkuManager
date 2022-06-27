@@ -1,5 +1,4 @@
 ﻿using OneOf;
-using pkuManager.Alerts;
 using pkuManager.Formats.Fields;
 using pkuManager.Formats.Modules.Templates;
 using System.Collections.Generic;
@@ -16,19 +15,23 @@ public interface Relearn_Moves_O
 
 public interface Relearn_Moves_E : Tag
 {
+    public bool Relearn_Moves_ExportWholeMovepool => false;
+
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportRelearn_Moves()
     {
         //Exporting
         var relearnMovesField = (Data as Relearn_Moves_O).Relearn_Moves;
-        List<string> pkuRelearnMoves = pku.Movepool.Keys.Where(move => pku.Movepool[move].Relearn.Value == true).ToList();
-        (AlertType at, var chosen) = MoveTagUtil.ExportMoveSet(FormatName, pkuRelearnMoves, relearnMovesField);
+        IEnumerable<string> pkuRelearnMoves = pku.Movepool.Keys;
+        if (!Relearn_Moves_ExportWholeMovepool)
+            pkuRelearnMoves = pkuRelearnMoves.Where(move => pku.Movepool[move].Relearn.Value == true);
+        (AlertType at, var chosen) = MoveTagUtil.ExportMoveSet(FormatName, pkuRelearnMoves.ToList(), relearnMovesField);
 
         //Alerting
         if (at is AlertType.UNSPECIFIED)
             return; //ignore unspecified
+
         int? maxMoves = relearnMovesField.Match(x => x.Value?.Length, x => x.Value?.Length);
-        Alert alert = MoveTagUtil.GetMoveSetAlert("Moves", at, maxMoves, chosen.Length);
-        Warnings.Add(alert);
+        Warnings.Add(MoveTagUtil.GetMoveSetAlert(Relearn_Moves_ExportWholeMovepool ? "Movepool Moves" : "Relearn Moves", at, maxMoves, chosen.Length));
     }
 }

@@ -89,6 +89,6 @@ public class MoveTagUtil
         else if (at.HasFlag(AlertType.TOO_LONG))
             msg = $"This pku has more than {moveCount} valid {tagNameL}, using the first {movesUsed} valid moves.";
 
-        return new(tagName, msg);
+        return new($"{tagName}", msg);
     }
 }
