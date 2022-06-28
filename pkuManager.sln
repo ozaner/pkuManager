@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30225.117
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32516.85
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pkuManager", "pkuManager.csproj", "{27A2420F-DF0D-4D92-AD3A-9D4C22954D3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "pkuManager.WinForms", "pkuManager.WinForms\pkuManager.WinForms.csproj", "{087EE951-C5E1-4FC3-AD65-4C9C8B32566F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{27A2420F-DF0D-4D92-AD3A-9D4C22954D3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{27A2420F-DF0D-4D92-AD3A-9D4C22954D3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{27A2420F-DF0D-4D92-AD3A-9D4C22954D3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{27A2420F-DF0D-4D92-AD3A-9D4C22954D3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{087EE951-C5E1-4FC3-AD65-4C9C8B32566F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{087EE951-C5E1-4FC3-AD65-4C9C8B32566F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{087EE951-C5E1-4FC3-AD65-4C9C8B32566F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{087EE951-C5E1-4FC3-AD65-4C9C8B32566F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
