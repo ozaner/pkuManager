@@ -1,11 +1,17 @@
 ﻿using DiscordRPC;
+using DiscordRPC.Helper;
 using System;
 using System.Linq;
+using System.Text;
 
 namespace pkuManager;
 
 public class DiscordPresence
 {
+    /* ------------------------------------
+     * Constants
+     * ------------------------------------
+    */
     private const string DISCORD_APP_ID = "810636398016069653";
     private static readonly string[] VALID_BALLS = new[]
     {
@@ -36,22 +42,65 @@ public class DiscordPresence
         "safari",
         "sport",
         "timer",
-        "ultra"
+        "ultra",
+        "nuclear",
+        "atom"
     };
 
-    private readonly DiscordRpcClient client;
-    
-    public string Box, Nickname, Collection;
-    private string _ball;
+    private const int TEXT_BYTE_SIZE = 128;
+    private const int IMAGE_KEY_BYTE_SIZE = 256; //- 12; //-12 accounts for "mp:external/"
+
+
+    /* ------------------------------------
+     * State
+     * ------------------------------------
+    */
+    private string _collection, _box, _nickname, _spriteurl, _ball;
+
+    private static string ValidateString(string str, int bytes)
+    {
+        if (str is null)
+            return null;
+        if (str.WithinLength(bytes, Encoding.UTF8))
+            return str;
+        return null;
+    }
+
+    public void ClearState()
+        => _collection = _box = _nickname = _spriteurl = _ball = null;
+
+    public string Box
+    {
+        get => _box;
+        set => _box = ValidateString(value, TEXT_BYTE_SIZE);
+    }
+
+    public string Nickname
+    {
+        get => _nickname;
+        set => _nickname = ValidateString(value, TEXT_BYTE_SIZE);
+    }
+
+    public string Collection
+    {
+        get => _collection;
+        set => _collection = ValidateString(value, TEXT_BYTE_SIZE);
+    }
+
+    public string SpriteURL
+    {
+        get => _spriteurl;
+        set => _spriteurl = ValidateString(value, IMAGE_KEY_BYTE_SIZE);
+    }
+
+    //Legacy - still using preuploaded images
     public string Ball
     {
         set
         {
-            if (value is "pc") //pc icon
-                _ball = "pc";
-            else if (value?.ToLowerInvariant().EndsWith(" ball") is true)
+            if (value?.ToLowerInvariant().EndsWith(" ball") is true)
             {
-                string temp = value[0..^5].ToLowerInvariant(); //strip " ball" from value
+                string temp = value[0..^5].ToLowerInvariant().Replace('é', 'e'); //strip " ball" from value
                 _ball = VALID_BALLS.Contains(temp) ? temp : "poke";
             }
             else //all other strings
@@ -59,6 +108,13 @@ public class DiscordPresence
         }
         get => _ball;
     }
+
+
+    /* ------------------------------------
+     * Init + Set
+     * ------------------------------------
+    */
+    private readonly DiscordRpcClient client;
 
     public DiscordPresence()
     {
@@ -79,9 +135,9 @@ public class DiscordPresence
                 State = Box is not null ? "Box: " + Box : null,
                 Assets = new Assets()
                 {
-                    LargeImageKey = Ball,
+                    LargeImageKey = SpriteURL,
                     LargeImageText = Nickname,
-                    //SmallImageKey = "poke"
+                    SmallImageKey = SpriteURL == "pc" ? null : Ball
                 }
             });
         }

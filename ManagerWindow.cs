@@ -64,16 +64,18 @@ public partial class ManagerWindow : Form
     */
     private void OpenPKUCollection(string path)
     {
+        discord.ClearState();
+
         // Initialize collectionManager and related GUI components.
         pkuCollectionManager = new pkuCollectionManager(new pkuCollection(path));
         currentpkuCollectionPath = path;
 
+        ResetPKUBoxSelector(pkuCollectionManager.CurrentBoxID); //update box selector
+        UpdateGlobalFlagUI(); //update global flag ui
+
         OnPKUBoxDisplayRefreshed(null, null); //initialize boxdisplaydock
         pkuCollectionManager.BoxDisplayRefreshed += OnPKUBoxDisplayRefreshed;
         pkuCollectionManager.SlotCountChanged += OnPKUSlotCountChanged;
-
-        ResetPKUBoxSelector(pkuCollectionManager.CurrentBoxID); //update box selector
-        UpdateGlobalFlagUI(); //update global flag ui
 
         // Code for updating SummaryTab and ExporterButtonVisibility when a slotDisplay is selected.
         pkuCollectionManager.SlotSelected += (s, e) =>
@@ -328,6 +330,7 @@ public partial class ManagerWindow : Form
             //Icon = Icon.FromHandle(((Bitmap)pkuSlot.BackgroundImage).GetHicon());
 
             // Discord RPC
+            discord.SpriteURL = slot.FrontSprite.url;
             discord.Nickname = nicknameTextBox.Text;
             discord.Ball = slot.Ball;
             discord.UpdatePresence();
@@ -361,8 +364,9 @@ public partial class ManagerWindow : Form
         //this.Icon = Properties.Resources.pc
 
         //update discord RPC
+        discord.SpriteURL = "pc";
         discord.Nickname = null;
-        discord.Ball = "pc";
+        discord.Ball = null;
         discord.UpdatePresence();
     }
 
