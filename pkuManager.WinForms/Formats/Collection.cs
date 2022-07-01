@@ -115,7 +115,6 @@ public class Slot
     public bool IsShadow { get; }
 
     //pku stuff
-    public bool IsTrueOT { get; protected set; } // most-likely only used for formats supporting pku
     public bool CheckedOut { get; set; } // always false for non pku collections...
     public string Filename { get; protected set; }
 
@@ -139,10 +138,9 @@ public class Slot
         IsShadow = isShadow;
     }
 
-    public void AddPKUData(bool checkedOut, bool isTrueOT, string filename)
+    public void AddPKUData(bool checkedOut, string filename)
     {
         CheckedOut = checkedOut;
-        IsTrueOT = isTrueOT;
         Filename = filename;
     }
 }

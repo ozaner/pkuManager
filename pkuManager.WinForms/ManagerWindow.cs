@@ -312,7 +312,6 @@ public partial class ManagerWindow : Form
             //pku specific slot
             if (slot?.pkmnObj is pkuObject)
             {
-                otLabel.Text = slot.IsTrueOT ? "True OT:" : "OT:";
                 locationLabel.Visible = true;
                 locationTextBox.Visible = true;
                 locationTextBox.Text = slot.Filename;
@@ -323,7 +322,6 @@ public partial class ManagerWindow : Form
                 locationLabel.Visible = false;
                 locationTextBox.Visible = false;
                 checkedOutLabel.Visible = false;
-                otLabel.Text = "OT";
             }
 
             //windows legacy design makes this unfeasible
@@ -346,7 +344,6 @@ public partial class ManagerWindow : Form
         // summary text box display
         //nicknameLabel.Text = "Nickname";
         nicknameTextBox.Text = "";
-        otLabel.Text = "True OT:";
         otTextBox.Text = "";
         speciesTextBox.Text = "";
         formsTextBox.Text = "";

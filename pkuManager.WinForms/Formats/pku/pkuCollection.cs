@@ -500,13 +500,13 @@ public class pkuBox : Box
             pku.Nickname.Value ?? defaultName,
             pku.Species.Value,
             pku.Game_Info.Origin_Game.Value ?? pku.Game_Info.Official_Origin_Game.Value,
-            pku.True_OT.Value ?? pku.Game_Info.OT.Value,
+            pku.Game_Info.OT.Value,
             pku.Forms.Value.JoinLexical() ?? DexUtil.GetDefaultForm(pku.Species.Value),
             pku.Appearance.Value?.Take(10).ToArray().JoinLexical(),
             pku.Catch_Info.Ball.Value,
             pku.IsShadow()
         );
-        s.AddPKUData(ContainsExportedName(pku.SourceFilename), !pku.True_OT.IsNull(), pku.SourceFilename);
+        s.AddPKUData(ContainsExportedName(pku.SourceFilename), pku.SourceFilename);
         return s;
     }
 

@@ -29,9 +29,6 @@ public class pkuObject : FormatObject
     [JsonProperty("Nickname Flag")]
     public BackedField<bool?> Nickname_Flag { get; set; } = new();
 
-    [JsonProperty("True OT")]
-    public BackedField<string> True_OT { get; set; } = new();
-
     [JsonProperty("Forms")]
     public BackedField<string[]> Forms { get; set; } = new();
 
@@ -142,12 +139,14 @@ public class pkuObject : FormatObject
         [JsonProperty("Origin Game")]
         public BackedField<string> Origin_Game { get; set; } = new();
 
-        // Only if exporting to official format and above fails
         [JsonProperty("Official Origin Game")]
         public BackedField<string> Official_Origin_Game { get; set; } = new();
 
         [JsonProperty("OT")]
         public BackedField<string> OT { get; set; } = new();
+
+        [JsonProperty("Official OT")]
+        public BackedField<string> Official_OT { get; set; } = new();
 
         [JsonProperty("Gender")]
         public BackedField<string> Gender { get; set; } = new();

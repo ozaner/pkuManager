@@ -48,20 +48,28 @@ public abstract class Importer : Porter
      * Universal Import Questions
      * ------------------------------------
     */
-    // TrueOT
+    // OT Override
     [PorterDirective(ProcessingPhase.FirstPass)]
-    protected virtual void AskTrueOT()
+    protected virtual void AskOT_Override()
     {
-        ChoiceAlert rba = new("True OT", "Do you want to include a True OT on this pku?", new ChoiceAlert.SingleChoice[]
+        ChoiceAlert rba = new("OT Override", "Do you want to include a different OT on this pku? " +
+            "The original (official) OT will only be used on official formats.", new ChoiceAlert.SingleChoice[]
         {
-            new("Include True OT:", null, true),
-            new("Don't Include", null)
+            new("Add OT Override:", null, true),
+            new("Don't Add", null)
         }, true);
-        TrueOTResolver = new(rba, pku.True_OT, (Func<string>)(() => rba.Choices[0].TextEntry), (string)null);
+        OT_Override_Resolver = () =>
+        {
+            if (rba.SelectedIndex is 0) //use override
+            {
+                pku.Game_Info.Official_OT.Value = pku.Game_Info.OT.Value;
+                pku.Game_Info.OT.Value = rba.Choices[0].TextEntry;
+            }
+        };
         Errors.Add(rba);
     }
 
-    // TrueOT ErrorResolver
+    // OT Override ErrorResolver
     [PorterDirective(ProcessingPhase.SecondPass)]
-    protected virtual ErrorResolver<string> TrueOTResolver { get; set; }
+    protected virtual Action OT_Override_Resolver { get; set; }
 }

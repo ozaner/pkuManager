@@ -567,9 +567,9 @@
             this.otLabel.Location = new System.Drawing.Point(12, 35);
             this.otLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.otLabel.Name = "otLabel";
-            this.otLabel.Size = new System.Drawing.Size(49, 15);
+            this.otLabel.Size = new System.Drawing.Size(24, 15);
             this.otLabel.TabIndex = 1;
-            this.otLabel.Text = "True OT:";
+            this.otLabel.Text = "OT:";
             // 
             // speciesLabel
             // 
