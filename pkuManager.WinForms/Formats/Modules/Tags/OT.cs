@@ -15,11 +15,13 @@ public interface OT_O
 
 public interface OT_E : StringTag_E
 {
+    public bool UseOfficialValues => false;
+
     [PorterDirective(ProcessingPhase.FirstPass, nameof(Language_E.ExportLanguage))]
     public void ExportOT() => ExportOTBase();
 
     public void ExportOTBase()
-        => OT_Resolver = ExportString("OT", pku.Game_Info.OT.Value, (Data as OT_O).OT);
+        => OT_Resolver = ExportString("OT", pku.OTField(UseOfficialValues).Value, (Data as OT_O).OT);
 
     [PorterDirective(ProcessingPhase.SecondPass)]
     public ErrorResolver<BigInteger[]> OT_Resolver { get => null; set { } }

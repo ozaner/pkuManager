@@ -389,6 +389,23 @@ public class pkuObject : FormatObject
      * Field Utility Methods
      * ------------------------------------
     */
+    private BackedField<T> OfficialHelper<T>(bool useOfficial, BackedField<T> regular, BackedField<T> official)
+    {
+        if (useOfficial && !official.IsNull())
+            return official;
+        else
+            return regular;
+    }
+
+    /// <summary>
+    /// Returns the proper OT field for this pku, depending on
+    /// whether the format in question is '<paramref name="official"/>'.
+    /// </summary>
+    /// <param name="official">Whether the exporting format uses the official OT.</param>
+    /// <returns></returns>
+    public BackedField<string> OTField(bool official)
+        => OfficialHelper(official, Game_Info.OT, Game_Info.Official_OT);
+
     /// <summary>
     /// Returns the proper origin game field for this pku, depending on
     /// whether the format in question is '<paramref name="official"/>'.
@@ -396,12 +413,7 @@ public class pkuObject : FormatObject
     /// <param name="official">Whether the exporting format uses the official origin game.</param>
     /// <returns></returns>
     public BackedField<string> GameField(bool official)
-    {
-        if (official && !Game_Info.Official_Origin_Game.IsNull())
-            return Game_Info.Official_Origin_Game;
-        else
-            return Game_Info.Origin_Game;
-    }
+        => OfficialHelper(official, Game_Info.Origin_Game, Game_Info.Official_Origin_Game);
 
     /// <summary>
     /// Whether this pku has been explictly marked as an egg.
