@@ -13,56 +13,42 @@ public interface Origin_Game_O
 
 public interface Origin_Game_E : Tag
 {
-    public string Origin_Game_Name { set; }
+    public bool UseOfficialValues => false;
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportOrigin_Game()
     {
         Origin_Game_O originGameObj = Data as Origin_Game_O;
-        
-        (int? id, string game) helper(string game)
+
+        AlertType at = AlertType.NONE;
+        string game = pku.GameField(UseOfficialValues).Value;
+
+        if (game is null) //unspecified
+            at = AlertType.UNSPECIFIED;
+        else //specified
         {
-            string gameRet = GAME_DEX.ExistsIn(FormatName, game) ? game : null; //exists
-            int? idRet = GAME_DEX.GetIndexedValue<int?>(FormatName, game, "Indices"); //has index
-            return (idRet, gameRet);
-        }
-
-        // Init
-        if (originGameObj is not null)
-            originGameObj.Origin_Game.Value = 0;
-        Origin_Game_Name = null;
-
-        // if both unspecified
-        if (pku.Game_Info.Origin_Game.IsNull() && pku.Game_Info.Official_Origin_Game.IsNull())
-            Warnings.Add(GetOrigin_GameAlert(AlertType.UNSPECIFIED));
-        else // at least one specified
-        {
-            (int? id, string game) = helper(pku.Game_Info.Origin_Game.Value);
-
-            if (game is null) //origin game failed, try official origin game
-                (id, game) = helper(pku.Game_Info.Official_Origin_Game.Value);
-
-            if (game is null) // if neither have an id in this format
-                Warnings.Add(GetOrigin_GameAlert(AlertType.INVALID, pku.Game_Info.Origin_Game.Value, pku.Game_Info.Official_Origin_Game.Value));
+            if (!GAME_DEX.ExistsIn(FormatName, game)) //invalid
+                at = AlertType.INVALID;
             else // success
-            {
-                if (originGameObj is not null) //has an origin game field
-                    originGameObj.Origin_Game.Value = id.Value; //if game exists and format has a field, indices must exist
-                Origin_Game_Name = game;
-            }
+                //if game exists and format has a field, indices must exist
+                originGameObj.Origin_Game.Value = GAME_DEX.GetIndexedValue<int?>(FormatName, game, "Indices").Value;
         }
+        Warnings.Add(GetOrigin_GameAlert(at, game));
     }
 
-    protected static Alert GetOrigin_GameAlert(AlertType at, string originGame = null, string officialOriginGame = null) => new("Origin Game", at switch
+    protected static Alert GetOrigin_GameAlert(AlertType at, string game)
     {
-        AlertType.UNSPECIFIED => "The origin game was unspecified. Using the default of None.",
-        AlertType.INVALID => (originGame, officialOriginGame) switch
-        {
-            (not null, not null) => $"Neither the specified origin game '{originGame}' nor the official origin game '{officialOriginGame}'",
-            (not null, null) => $"The specified origin game '{originGame}' doesn't",
-            (null, not null) => $"The specified official origin game '{officialOriginGame}' doesn't",
-            _ => throw InvalidAlertType(at) //should be unspecified
-        } + " exist in this format. Using the default of None.",
-        _ => throw InvalidAlertType(at)
-    });
+        if (at is AlertType.NONE)
+            return null;
+
+        string msg;
+        if (at.HasFlag(AlertType.UNSPECIFIED))
+            msg = "The origin game was unspecified.";
+        else if (at.HasFlag(AlertType.INVALID))
+            msg = $"The origin game '{game}' does not exist in this format.";
+        else
+            throw InvalidAlertType(at);
+
+        return new("Origin Game", msg + "Using the default of None.");
+    }
 }

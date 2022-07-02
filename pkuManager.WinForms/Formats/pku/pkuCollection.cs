@@ -499,7 +499,7 @@ public class pkuBox : Box
             sprites[2],
             pku.Nickname.Value ?? defaultName,
             pku.Species.Value,
-            pku.Game_Info.Origin_Game.Value ?? pku.Game_Info.Official_Origin_Game.Value,
+            pku.Game_Info.Origin_Game.Value,
             pku.Game_Info.OT.Value,
             pku.Forms.Value.JoinLexical() ?? DexUtil.GetDefaultForm(pku.Species.Value),
             pku.Appearance.Value?.Take(10).ToArray().JoinLexical(),

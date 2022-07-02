@@ -7,19 +7,19 @@ namespace pkuManager.WinForms.Formats.Modules.Templates;
 
 public static class LocationTagUtil
 {
-    //public string Origin_Game_Name { get; }
-
-    public static (AlertType, string defaultLoc) ExportLocation(string originGameName, IField<string> pkuField, IIntField formatField)
+    public static (AlertType, string defaultLoc) ExportLocation(IField<string> pkuGameField,
+        IField<string> pkuLocationField, IIntField formatField)
     {
+        string game = pkuGameField.Value;
+        string defaultLoc = GAME_DEX.ReadDataDex<string>(game, "Locations", "0") ?? "None";
         AlertType at = AlertType.NONE;
-        string defaultLoc = GAME_DEX.ReadDataDex<string>(originGameName, "Locations", "0") ?? "None";
 
-        if (pkuField.IsNull()) //unspecified
+        if (pkuLocationField.IsNull()) //unspecified
             (at, formatField.Value) = (AlertType.UNSPECIFIED, 0);
         else //specified
         {
             //try get location id
-            bool succ = int.TryParse(GAME_DEX.SearchDataDex(pkuField.Value, originGameName, "Locations", "$x"), out int temp);
+            bool succ = int.TryParse(GAME_DEX.SearchDataDex(pkuLocationField.Value, game, "Locations", "$x"), out int temp);
             int? locID = succ ? temp : null;
 
             if (locID is null) //invalid

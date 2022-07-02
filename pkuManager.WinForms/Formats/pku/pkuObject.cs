@@ -390,6 +390,20 @@ public class pkuObject : FormatObject
      * ------------------------------------
     */
     /// <summary>
+    /// Returns the proper origin game field for this pku, depending on
+    /// whether the format in question is '<paramref name="official"/>'.
+    /// </summary>
+    /// <param name="official">Whether the exporting format uses the official origin game.</param>
+    /// <returns></returns>
+    public BackedField<string> GameField(bool official)
+    {
+        if (official && !Game_Info.Official_Origin_Game.IsNull())
+            return Game_Info.Official_Origin_Game;
+        else
+            return Game_Info.Origin_Game;
+    }
+
+    /// <summary>
     /// Whether this pku has been explictly marked as an egg.
     /// </summary>
     /// <returns>Whether <see cref="Egg_Info_Class.Is_Egg"/> is true.</returns>
