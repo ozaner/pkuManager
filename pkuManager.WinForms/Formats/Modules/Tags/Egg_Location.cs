@@ -17,8 +17,8 @@ public interface Egg_Location_E : Tag
     [PorterDirective(ProcessingPhase.FirstPass, nameof(Origin_Game_E.ExportOrigin_Game))]
     public void ExportEgg_Location()
     {
-        (AlertType at, string defaultLoc) = LocationTagUtil.ExportLocation(pku.GameField(UseOfficialValues),
-            pku.Egg_Info.Received_Location, (Data as Egg_Location_O).Egg_Location);
+        (AlertType at, string defaultLoc) = LocationTagUtil.ExportLocation(pku.Origin_GameField(UseOfficialValues),
+            pku.Received_LocationField(UseOfficialValues), (Data as Egg_Location_O).Egg_Location);
         Warnings.Add(LocationTagUtil.GetLocationAlert("Egg Received Location", at, defaultLoc, pku.Egg_Info.Received_Location.Value));
     }
 }

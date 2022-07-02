@@ -21,7 +21,7 @@ public interface Origin_Game_E : Tag
         Origin_Game_O originGameObj = Data as Origin_Game_O;
 
         AlertType at = AlertType.NONE;
-        string game = pku.GameField(UseOfficialValues).Value;
+        string game = pku.Origin_GameField(UseOfficialValues).Value;
 
         if (game is null) //unspecified
             at = AlertType.UNSPECIFIED;

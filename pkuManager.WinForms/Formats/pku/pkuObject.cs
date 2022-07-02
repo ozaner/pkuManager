@@ -163,6 +163,9 @@ public class pkuObject : FormatObject
         [JsonProperty("Met Location")]
         public BackedField<string> Met_Location { get; set; } = new();
 
+        [JsonProperty("Official Met Location")]
+        public BackedField<string> Official_Met_Location { get; set; } = new();
+
         [JsonProperty("Met Date")]
         public BackedField<string> Met_Date { get; set; } = new();
 
@@ -180,6 +183,9 @@ public class pkuObject : FormatObject
     {
         [JsonProperty("Received Location")]
         public BackedField<string> Received_Location { get; set; } = new();
+
+        [JsonProperty("Official Received Location")]
+        public BackedField<string> Official_Received_Location { get; set; } = new();
 
         [JsonProperty("Received Date")]
         public BackedField<string> Received_Date { get; set; } = new();
@@ -398,22 +404,26 @@ public class pkuObject : FormatObject
     }
 
     /// <summary>
-    /// Returns the proper OT field for this pku, depending on
+    /// Returns the proper field for this pku, depending on
     /// whether the format in question is '<paramref name="official"/>'.
     /// </summary>
-    /// <param name="official">Whether the exporting format uses the official OT.</param>
-    /// <returns></returns>
+    /// <param name="official">Whether the exporting format uses the official values.</param>
+    /// <returns>The regular or official field.</returns>
     public BackedField<string> OTField(bool official)
         => OfficialHelper(official, Game_Info.OT, Game_Info.Official_OT);
 
-    /// <summary>
-    /// Returns the proper origin game field for this pku, depending on
-    /// whether the format in question is '<paramref name="official"/>'.
-    /// </summary>
-    /// <param name="official">Whether the exporting format uses the official origin game.</param>
-    /// <returns></returns>
-    public BackedField<string> GameField(bool official)
+    /// <inheritdoc cref="OTField(bool)"/>
+    public BackedField<string> Origin_GameField(bool official)
         => OfficialHelper(official, Game_Info.Origin_Game, Game_Info.Official_Origin_Game);
+
+    /// <inheritdoc cref="OTField(bool)"/>
+    public BackedField<string> Met_LocationField(bool official)
+        => OfficialHelper(official, Catch_Info.Met_Location, Catch_Info.Official_Met_Location);
+
+
+    /// <inheritdoc cref="OTField(bool)"/>
+    public BackedField<string> Received_LocationField(bool official)
+        => OfficialHelper(official, Egg_Info.Received_Location, Egg_Info.Official_Received_Location);
 
     /// <summary>
     /// Whether this pku has been explictly marked as an egg.
