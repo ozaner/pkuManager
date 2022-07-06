@@ -17,6 +17,7 @@ public interface Egg_Date_E : Tag
     public void ExportEgg_Date()
     {
         AlertType at = DateTagUtil.ExportDate(pku.Egg_Info.Received_Date, (Data as Egg_Date_O).Egg_Date);
-        Warnings.Add(DateTagUtil.GetDateAlert("Egg Received Date", at));
+        if (at is not AlertType.UNSPECIFIED) //silent unspecified
+            Warnings.Add(DateTagUtil.GetDateAlert("Egg Received Date", at));
     }
 }

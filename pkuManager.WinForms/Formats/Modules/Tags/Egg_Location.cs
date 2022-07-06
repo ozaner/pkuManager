@@ -12,13 +12,14 @@ public interface Egg_Location_O
 
 public interface Egg_Location_E : Tag
 {
-    public bool UseOfficialValues => false;
+    public string Origin_Game_Name { get; }
 
     [PorterDirective(ProcessingPhase.FirstPass, nameof(Origin_Game_E.ExportOrigin_Game))]
     public void ExportEgg_Location()
     {
-        (AlertType at, string defaultLoc) = LocationTagUtil.ExportLocation(pku.Origin_GameField(UseOfficialValues),
-            pku.Received_LocationField(UseOfficialValues), (Data as Egg_Location_O).Egg_Location);
-        Warnings.Add(LocationTagUtil.GetLocationAlert("Egg Received Location", at, defaultLoc, pku.Egg_Info.Received_Location.Value));
+        (AlertType at, string defaultLoc, string invalidLoc) = LocationTagUtil.ExportIntLocation(pku.Egg_Info.Received_Location,
+            pku.Egg_Info.Official_Received_Location, Origin_Game_Name, (Data as Egg_Location_O).Egg_Location);
+        if (at is not AlertType.UNSPECIFIED) //silent unspecified
+            Warnings.Add(LocationTagUtil.GetLocationAlert("Egg Received Location", at, defaultLoc, invalidLoc));
     }
 }

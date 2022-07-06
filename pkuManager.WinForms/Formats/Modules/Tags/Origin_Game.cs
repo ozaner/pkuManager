@@ -1,5 +1,6 @@
 ﻿using pkuManager.WinForms.Alerts;
 using pkuManager.WinForms.Formats.Fields;
+using pkuManager.WinForms.Formats.pku;
 using pkuManager.WinForms.Utilities;
 using static pkuManager.WinForms.Alerts.Alert;
 using static pkuManager.WinForms.Formats.PorterDirective;
@@ -13,7 +14,7 @@ public interface Origin_Game_O
 
 public interface Origin_Game_E : Tag
 {
-    public bool UseOfficialValues => false;
+    public string Origin_Game_Name { set; }
 
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportOrigin_Game()
@@ -21,7 +22,7 @@ public interface Origin_Game_E : Tag
         Origin_Game_O originGameObj = Data as Origin_Game_O;
 
         AlertType at = AlertType.NONE;
-        string game = pku.Origin_GameField(UseOfficialValues).Value;
+        string game = pkuObject.ChooseField(true, pku.Game_Info.Origin_Game, pku.Game_Info.Official_Origin_Game).Value;
 
         if (game is null) //unspecified
             at = AlertType.UNSPECIFIED;
@@ -30,9 +31,14 @@ public interface Origin_Game_E : Tag
             if (!GAME_DEX.ExistsIn(FormatName, game)) //invalid
                 at = AlertType.INVALID;
             else // success
-                //if game exists and format has a field, indices must exist
+                //if game exists and format has a game field, indices must exist
                 originGameObj.Origin_Game.Value = GAME_DEX.GetIndexedValue<int?>(FormatName, game, "Indices").Value;
         }
+
+        //set origin game name
+        if (at is AlertType.NONE)
+            Origin_Game_Name = game;
+
         Warnings.Add(GetOrigin_GameAlert(at, game));
     }
 

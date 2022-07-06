@@ -195,11 +195,6 @@ public class pkuObject : FormatObject
 
         [JsonProperty("Steps to Hatch")]
         public BackedField<BigInteger?> Steps_to_Hatch { get; set; } = new();
-
-        // Games dont use this, instead it's implicit from the met location in the egg section not being empty...
-        // If you knew it was an egg but not when/where it was hatched, you couldn't represent that in-game...
-        //[JsonProperty("Hatched")]
-        //public bool? Hatched { get; set; }
     }
 
     public class Hyper_Training_Class : Base_Dict
@@ -395,35 +390,8 @@ public class pkuObject : FormatObject
      * Field Utility Methods
      * ------------------------------------
     */
-    private BackedField<T> OfficialHelper<T>(bool useOfficial, BackedField<T> regular, BackedField<T> official)
-    {
-        if (useOfficial && !official.IsNull())
-            return official;
-        else
-            return regular;
-    }
-
-    /// <summary>
-    /// Returns the proper field for this pku, depending on
-    /// whether the format in question is '<paramref name="official"/>'.
-    /// </summary>
-    /// <param name="official">Whether the exporting format uses the official values.</param>
-    /// <returns>The regular or official field.</returns>
-    public BackedField<string> OTField(bool official)
-        => OfficialHelper(official, Game_Info.OT, Game_Info.Official_OT);
-
-    /// <inheritdoc cref="OTField(bool)"/>
-    public BackedField<string> Origin_GameField(bool official)
-        => OfficialHelper(official, Game_Info.Origin_Game, Game_Info.Official_Origin_Game);
-
-    /// <inheritdoc cref="OTField(bool)"/>
-    public BackedField<string> Met_LocationField(bool official)
-        => OfficialHelper(official, Catch_Info.Met_Location, Catch_Info.Official_Met_Location);
-
-
-    /// <inheritdoc cref="OTField(bool)"/>
-    public BackedField<string> Received_LocationField(bool official)
-        => OfficialHelper(official, Egg_Info.Received_Location, Egg_Info.Official_Received_Location);
+    public static IField<T> ChooseField<T>(bool useOfficial, IField<T> regular, IField<T> official)
+        => useOfficial && !official.IsNull() ? official : regular;
 
     /// <summary>
     /// Whether this pku has been explictly marked as an egg.
