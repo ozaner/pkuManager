@@ -1,4 +1,5 @@
 ﻿using pkuManager.WinForms.Alerts;
+using pkuManager.WinForms.Formats.Modules.MetaTags;
 using pkuManager.WinForms.Formats.pku;
 using System;
 using static pkuManager.WinForms.Formats.PorterDirective;
@@ -63,4 +64,12 @@ public abstract class Importer : Porter
     // OT Override ErrorResolver
     [PorterDirective(ProcessingPhase.SecondPass)]
     protected virtual Action OT_Override_Resolver { get; set; }
+
+    // Temp Porter Flag cleanup
+    [PorterDirective(ProcessingPhase.PostProcessing)]
+    protected void ClearTempFlags()
+    {
+        if (CheckMode)
+            PorterFlagsUtil.ClearTempFlags(pku);
+    }
 }

@@ -117,6 +117,41 @@ public static class DataUtil
         }
     }
 
+    public static (T value, bool invalid) TraverseJSONDict<T>(IDictionary<string, JToken> dict, params string[] keys)
+    {
+        foreach (var key in keys[..^1])
+        {
+            dict.TryGetValue(key, out var temp);
+            if (temp is null)
+                return (default, false);
+            else if (temp is IDictionary<string, JToken> newDict)
+                dict = newDict;
+            else
+                return (default, true); //some sub-dict was not a dict (invalid).
+        }
+
+        // try get value
+        if (!dict.ContainsKey(keys[^1]))
+            return (default, false);
+
+        dict.TryGetValue(keys[^1], out var value);
+        try
+        {
+            object obj = value;
+            if (value.Type is JTokenType.Integer)
+                obj = value.ToObject<BigInteger?>();
+            else if (value.Type is JTokenType.Boolean)
+                obj = value.ToObject<bool?>();
+            else if (value.Type is JTokenType.String)
+                obj = value.ToObject<string>();
+            else
+                return (value.ToObject<T>(), false);
+            return ((T)obj, false);
+
+        } //return whatever the value is
+        catch { return (default, true); } //can't return the value, doesn't match the type (invalid)
+    }
+
 
     /* ------------------------------------
      * File/Directory Methods

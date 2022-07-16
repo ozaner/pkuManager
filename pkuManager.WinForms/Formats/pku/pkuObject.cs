@@ -122,6 +122,9 @@ public class pkuObject : FormatObject
     [JsonProperty("Format Specific")]
     public Dictionary<string, Format_Dict> Format_Specific { get; set; } = new();
 
+    [JsonProperty("Porter Flags")]
+    public Porter_Flags_Class Porter_Flags { get; set; } = new();
+
     public class Move : Base_Dict
     {
         [JsonProperty("PP Ups")]
@@ -310,6 +313,12 @@ public class pkuObject : FormatObject
         [JsonProperty("Byte Override")]
         [JsonConverter(typeof(NoFormattingConverter))]
         public Dictionary<string, JToken> Byte_Override { get; set; } = new();
+    }
+
+    public class Porter_Flags_Class : Base_Dict
+    {
+        [JsonProperty("temp")]
+        public Dictionary<string, JToken> Temp_Flags { get; set; } = new();
     }
 
     public class Base_Dict

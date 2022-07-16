@@ -1,7 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
-using pkuManager.WinForms.Formats.pku;
-using System.Collections.Generic;
-using System.Numerics;
+﻿using pkuManager.WinForms.Formats.pku;
+using pkuManager.WinForms.Utilities;
 
 namespace pkuManager.WinForms.Formats.Modules.MetaTags;
 
@@ -13,38 +11,7 @@ public static class FormatSpecificUtil
         if (formatDict == null || keys.Length < 1)
             return (default, false); //no dict/no keys
 
-        //traverse sub-tags
-        IDictionary<string, JToken> dict = formatDict.ExtraTags;
-        foreach (var key in keys[..^1])
-        {
-            dict.TryGetValue(key, out var temp);
-            if (temp is null)
-                return (default, false);
-            else if (temp is IDictionary<string, JToken> newDict)
-                dict = newDict;
-            else
-                return (default, true); //some sub-dict was not a dict (invalid).
-        }
-
-        // try get value
-        if (!dict.ContainsKey(keys[^1]))
-            return (default, false);
-
-        dict.TryGetValue(keys[^1], out var value);
-        try {
-            object obj = value;
-            if (value.Type is JTokenType.Integer)
-                obj = value.ToObject<BigInteger?>();
-            else if (value.Type is JTokenType.Boolean)
-                obj = value.ToObject<bool?>();
-            else if (value.Type is JTokenType.String)
-                obj = value.ToObject<string>();
-            else
-                return (value.ToObject<T>(), false);
-            return ((T)obj, false);
-
-        } //return whatever the value is
-        catch { return (default, true); } //can't return the value, doesn't match the type (invalid)
+        return DataUtil.TraverseJSONDict<T>(formatDict.ExtraTags, keys);
     }
 
     public static pkuObject.Format_Dict GetFormatDict(pkuObject pku, string formatName)
