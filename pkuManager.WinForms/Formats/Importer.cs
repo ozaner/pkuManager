@@ -12,12 +12,6 @@ namespace pkuManager.WinForms.Formats;
 public abstract class Importer : Porter
 {
     /// <summary>
-    /// <see langword="true"/> importer instance is meant to check-in the given file.<br/>
-    /// <see langword="false"/> if it is meant to just import it.
-    /// </summary>
-    public bool CheckInMode { get; }
-
-    /// <summary>
     /// Reference to the passed file.
     /// </summary>
     protected byte[] File { get; }
@@ -26,11 +20,8 @@ public abstract class Importer : Porter
     /// The base importer constructor.
     /// </summary>
     /// <inheritdoc cref="Porter(pkuObject, GlobalFlags, FormatObject)"/>
-    public Importer(byte[] file, GlobalFlags globalFlags, bool checkInMode) : base(new(), globalFlags)
-    {
-        File = file;
-        CheckInMode = checkInMode;
-    }
+    public Importer(byte[] file, GlobalFlags globalFlags, bool checkInMode) : base(new(), globalFlags, checkInMode)
+        => File = file;
 
     /// <summary>
     /// Returns the imported <see cref="pkuObject"/> generated from the given file.<br/>

@@ -27,6 +27,11 @@ public abstract class Porter
     public GlobalFlags GlobalFlags { get; }
 
     /// <summary>
+    /// If this porter is Checking-In/Out a pku or just Importing/Exporting one.
+    /// </summary>
+    public bool CheckMode { get; protected set; }
+
+    /// <summary>
     /// A data structure representing the non-pku format.
     /// </summary>
     public abstract FormatObject Data { get; }
@@ -70,10 +75,12 @@ public abstract class Porter
     /// </summary>
     /// <param name="pku">The pku to be ported.</param>
     /// <param name="globalFlags">The current collection's flag settings.</param>
-    public Porter(pkuObject pku, GlobalFlags globalFlags)
+    /// <param name="checkMode">Whether this porter is checking-in/out a pku.</param>
+    public Porter(pkuObject pku, GlobalFlags globalFlags, bool checkMode)
     {
         this.pku = pku ?? throw new ArgumentException("Can't initialize an exporter with a null .pku!");
         GlobalFlags = globalFlags;
+        CheckMode = checkMode;
     }
 
     /// <summary>

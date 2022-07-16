@@ -11,10 +11,8 @@ public abstract class Exporter : Porter
     /// <summary>
     /// The base exporter constructor.
     /// </summary>
-    /// <param name="data">A data structure representing the non-pku format.<br/>
-    ///                    This parameter should be hidden by any implementation of a porter.</param>
     /// <inheritdoc cref="Porter(pkuObject, GlobalFlags, FormatObject)"/>
-    public Exporter(pkuObject pku, GlobalFlags globalFlags) : base(pku, globalFlags)
+    public Exporter(pkuObject pku, GlobalFlags globalFlags, bool checkMode) : base(pku, globalFlags, checkMode)
         => this.pku = pkuObject.MergePkuOverride(this.pku, FormatName); //apply format override
 
     /// <summary>

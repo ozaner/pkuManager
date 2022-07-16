@@ -29,7 +29,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E,
     /// to a .pk3 file with the given <paramref name="globalFlags"/>.
     /// </summary>
     /// <inheritdoc cref="Exporter(pkuObject, GlobalFlags, FormatObject)"/>
-    public pk3Exporter(pkuObject pku, GlobalFlags globalFlags) : base(pku, globalFlags)
+    public pk3Exporter(pkuObject pku, GlobalFlags globalFlags, bool checkMode) : base(pku, globalFlags, checkMode)
     {
         // Screen Species & Form
         if (DexUtil.FirstFormInFormat(this.pku, FormatName, true, GlobalFlags.Default_Form_Override) is null)

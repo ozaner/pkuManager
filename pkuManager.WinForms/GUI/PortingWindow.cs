@@ -163,19 +163,19 @@ public partial class PortingWindow : Form
         Failed
     }
 
-    public static bool CanExport(Registry.FormatInfo fi, pkuObject pku, GlobalFlags flags)
+    public static bool CanExport(Registry.FormatInfo fi, pkuObject pku, GlobalFlags flags, bool isCheckOut)
     {
-        Exporter exporter = (Exporter)Activator.CreateInstance(fi.Exporter, new object[] { pku.DeepCopy(), flags });
+        Exporter exporter = (Exporter)Activator.CreateInstance(fi.Exporter, new object[] { pku.DeepCopy(), flags, isCheckOut });
         return exporter.CanPort;
     }
 
     // Sets up and opens the warning window, or just auto accepts if there are no warnings, errors, or notes
-    public static ExportStatus RunExportWindow(string format, Registry.FormatInfo fi, pkuObject pku, GlobalFlags flags)
+    public static ExportStatus RunExportWindow(string format, Registry.FormatInfo fi, pkuObject pku, GlobalFlags flags, bool isCheckOut)
     {
         Debug.WriteLine($"Attempting to export .pku to {format} (.{fi.Ext})");
 
         PortingWindow exporterWindow = new(false, format, fi.Ext);
-        Exporter exporter = (Exporter)Activator.CreateInstance(fi.Exporter, new object[] { pku.DeepCopy(), flags });
+        Exporter exporter = (Exporter)Activator.CreateInstance(fi.Exporter, new object[] { pku.DeepCopy(), flags, isCheckOut });
 
         if (!exporter.CanPort) //pku is invalid for this format
         {

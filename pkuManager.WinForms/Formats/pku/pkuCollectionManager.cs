@@ -93,7 +93,7 @@ public class pkuCollectionManager : CollectionManager
         if (format is null)
             return;
         Registry.FormatInfo fi = Registry.FORMATS[format];
-        PortingWindow.RunExportWindow(format, fi, pku, GetGlobalFlags());
+        PortingWindow.RunExportWindow(format, fi, pku, GetGlobalFlags(), false);
     }
 
     protected void CompleteCheckOutRequest(object s, EventArgs e)
@@ -104,7 +104,7 @@ public class pkuCollectionManager : CollectionManager
         if (format is null)
             return;
         Registry.FormatInfo fi = Registry.FORMATS[format];
-        PortingWindow.ExportStatus status = PortingWindow.RunExportWindow(format, fi, pku, GetGlobalFlags());
+        PortingWindow.ExportStatus status = PortingWindow.RunExportWindow(format, fi, pku, GetGlobalFlags(), true);
         if (status is PortingWindow.ExportStatus.Success)
         {
             pkuCollection.CurrentPKUBox.CheckOut(sd.Slot); //Data side

@@ -87,7 +87,7 @@ public partial class FormatChooser : Form
                 continue;
 
             //can export pku to formats w/ an exporter & pass CanExport
-            if (kvp.Value.Exporter is not null && PortingWindow.CanExport(kvp.Value, pku, flags))
+            if (kvp.Value.Exporter is not null && PortingWindow.CanExport(kvp.Value, pku, flags, check))
                 formats.Add(kvp.Key);
         }
         return ChoosePortFormat(formats, FormatComponent.Exporter, check);

@@ -23,7 +23,7 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     /// to a .txt (Showdown!) file, encoded in UTF-8, with the given <paramref name="globalFlags"/>.
     /// </summary>
     /// <inheritdoc cref="Exporter(pkuObject, GlobalFlags, FormatObject)"/>
-    public ShowdownExporter(pkuObject pku, GlobalFlags globalFlags) : base(pku, globalFlags)
+    public ShowdownExporter(pkuObject pku, GlobalFlags globalFlags, bool checkMode) : base(pku, globalFlags, checkMode)
     {
         // Screen Species & Form
         if (DexUtil.FirstFormInFormat(pku, FormatName, true, GlobalFlags.Default_Form_Override) is null)
