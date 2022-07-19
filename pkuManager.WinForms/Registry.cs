@@ -1,4 +1,5 @@
 ﻿global using static pkuManager.WinForms.Registry.DataDexes; //DataDexes are global constants
+global using pkuManager.Data;
 
 using Newtonsoft.Json.Linq;
 using pkuManager.WinForms.Formats.pku;
@@ -7,6 +8,7 @@ using pkuManager.WinForms.Formats.showdown;
 using pkuManager.WinForms.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace pkuManager.WinForms;
 
@@ -37,6 +39,17 @@ public static class Registry
 
     public static class DataDexes
     {
+        private static readonly Task<DataDexManager> _ddm = DataDexManager.CreateOnlineManager();
+        public static DataDexManager DDM
+        {
+            get
+            {
+                if (!_ddm.IsCompletedSuccessfully)
+                    _ddm.Wait(); //DDM is awaited if it has still not finished downloading
+                return _ddm.Result;
+            }
+        }
+
         private const string MASTERDEX_URL = "https://raw.githubusercontent.com/project-pku/pkuData/main/masterdexes/";
 
         private static JObject GetMasterDex(string type)

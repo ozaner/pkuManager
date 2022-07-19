@@ -97,6 +97,9 @@
     <Compile Remove="Formats\pku\Global Flags.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\pkuManager.Data\pkuManager.Data.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="DiscordRPC">
       <HintPath>libs\DiscordRPC.dll</HintPath>
     </Reference>
