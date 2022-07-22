@@ -1,11 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
-using pkuManager.WinForms.Formats.Modules;
 using pkuManager.WinForms.Formats.pku;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-using System.Text;
 
 namespace pkuManager.WinForms.Utilities;
 
@@ -133,12 +130,7 @@ public static class DexUtil
     // Common GetIndex code, that allows inner looping of keys (e.g. species combos) and outer looping of formats (e.g. pk3 -> main-series)
     private static T GetIndexedValue<T>(this JObject dex, string format, IEnumerable<List<string>> other_keys)
     {
-        //get chain of indices to be searched.
-        List<string> indexChain = new() { format };
-        string[] indexParents = FORMAT_DEX.ReadDataDex<string[]>(format, "Parent Indices");
-        if (indexParents is not null)
-            indexChain.AddRange(indexParents);
-
+        List<string> indexChain = DDM.FormatDex.GetIndexChain(format);
         foreach (string link in indexChain)
         {
             foreach (var keys in other_keys)
@@ -165,12 +157,7 @@ public static class DexUtil
 
     public static string SearchIndexedValue<T>(this JObject dex, T value, string format, string indexName, params string[] keys)
     {
-        //get chain of indices to be searched.
-        List<string> indexChain = new() { format };
-        string[] indexParents = FORMAT_DEX.ReadDataDex<string[]>(format, "Parent Indices");
-        if (indexParents is not null)
-            indexChain.AddRange(indexParents);
-
+        List<string> indexChain = DDM.FormatDex.GetIndexChain(format);
         int xLoc = Array.IndexOf(keys, "$x");
         foreach (string link in indexChain)
         {
@@ -450,125 +437,5 @@ public static class DexUtil
             }
         }
         return new();
-    }
-
-
-    /* ------------------------------------
-     * Character Encoding Methods
-     * ------------------------------------
-    */
-    public static class CharEncoding
-    {
-        public static bool IsLangDependent(string format)
-            => FORMAT_DEX.ReadDataDex<bool?>(format, "Character Encoding", "Language Dependent") is true;
-
-        public static BigInteger GetTerminator(string format)
-            //what lang dependent format doesn't have english?
-            => GetCodepoint('\u0000', format, TagUtil.DEFAULT_SEMANTIC_LANGUAGE).Value;
-
-        /// <summary>
-        /// Searches for the codepoint associated with the given char.
-        /// </summary>
-        /// <param name="c">The character to search.</param>
-        /// <param name="format">The format being encoded to.</param>
-        /// <param name="language">The language to search. Assumed to exist in this <paramref name="format"/>.</param>
-        /// <returns>The codepoint that <paramref name="c"/> maps to, or null if none is found.</returns>
-        private static BigInteger? GetCodepoint(char c, string format, string language = null)
-        {
-            string langKey = IsLangDependent(format) ? language : "All";
-
-            //should be byte/ushort before conversion
-            var temp = FORMAT_DEX.SearchDataDex(c, format, "Character Encoding", langKey, "$x");
-            if (temp is null)
-                return null;
-            return BigInteger.Parse(temp);
-        }
-
-        /// <summary>
-        /// Searches for the <see langword="char"/> associated with the given <paramref name="codepoint"/>.
-        /// </summary>
-        /// <param name="codepoint">The codepoint to search.</param>
-        /// <param name="format">The format being encoded to.</param>
-        /// <param name="language">The language to search. Assumed to exist in this <paramref name="format"/>.</param>
-        /// <returns>The <see langword="char"/> that <paramref name="codepoint"/> maps to,
-        ///          or null if none is found.</returns>
-        private static char? GetChar(BigInteger codepoint, string format, string language = null)
-        {
-            string langKey = IsLangDependent(format) ? language : "All";
-            return FORMAT_DEX.ReadDataDex<char?>(format, "Character Encoding", langKey, codepoint.ToString());
-        }
-
-        /// <summary>
-        /// Encodes a given string, ending with the terminator
-        /// if the maximum length is not reached. Padded with 0s.<br/>
-        /// </summary>
-        /// <param name="str">The string to be encoded.</param>
-        /// <param name="maxLength">The desired length of the encoded string.</param>
-        /// <param name="format">The format being encoded to.</param>
-        /// <param name="language">The language to encode <paramref name="str"/>, if <paramref name="format"/>
-        ///                        is language dependent. Null otherwise.</param>
-        /// <returns>The encoded form of <paramref name="str"/>.</returns>
-        public static (BigInteger[] encodedStr, bool truncated, bool hasInvalidChars)
-            Encode(string str, int maxLength, string format, string language = null)
-        {
-            bool truncated = false, hasInvalidChars = false;
-            BigInteger[] encodedStr = new BigInteger[maxLength];
-
-            //Encode string
-            int successfulChars = 0;
-            while (str?.Length > 0 && successfulChars < maxLength)
-            {
-                BigInteger? encodedChar = GetCodepoint(str[0], format, language); //get next character
-                str = str[1..]; //chop off current character
-
-                //if character invalid
-                if (encodedChar is null)
-                {
-                    hasInvalidChars = true;
-                    continue;
-                }
-
-                //else character not invalid
-                encodedStr[successfulChars] = encodedChar.Value;
-                successfulChars++;
-
-                //stop encoding when limit reached
-                if (successfulChars >= maxLength)
-                    break;
-            }
-
-            //Deal with terminator
-            if (successfulChars < maxLength)
-                encodedStr[successfulChars] = GetTerminator(format); //terminator
-            return (encodedStr, truncated, hasInvalidChars);
-        }
-
-        /// <summary>
-        /// Decodes a given encoded string, stopping at the first instance of the terminator.<br/>
-        /// If an invalid language is passed, an exception will be thrown.
-        /// </summary>
-        /// <param name="encodedStr">A string encoded with this character encoding.</param>
-        /// <param name="format">The format being decoded from.</param>
-        /// <param name="language">The language <paramref name="encodedStr"/> was encoded with, if <paramref name="format"/>
-        ///                        is language dependent. Null otherwise.</param>
-        /// <returns>A tuple of 1) the string decoded from <paramref name="encodedStr"/> and<br/>
-        ///                     2) whether any characters were skipped due to being invalid.</returns>
-        public static (string decodedStr, bool hasInvalidChars)
-            Decode(BigInteger[] encodedStr, string format, string language = null)
-        {
-            StringBuilder sb = new();
-            bool hasInvalidChars = false;
-            foreach (BigInteger e in encodedStr)
-            {
-                if (e.Equals(GetTerminator(format)))
-                    break;
-                char? c = GetChar(e, format, language);
-                if (c is not null)
-                    sb.Append(c.Value);
-                else
-                    hasInvalidChars = true;
-            }
-            return (sb.ToString(), hasInvalidChars);
-        }
     }
 }

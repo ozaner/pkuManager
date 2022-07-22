@@ -2,8 +2,8 @@ using pkuManager.WinForms.Alerts;
 using pkuManager.WinForms.Formats.Modules;
 using pkuManager.WinForms.Formats.Modules.MetaTags;
 using pkuManager.WinForms.Formats.Modules.Tags;
+using pkuManager.WinForms.Formats.Modules.Templates;
 using pkuManager.WinForms.Formats.pku;
-using pkuManager.WinForms.Utilities;
 using System;
 using static pkuManager.WinForms.Alerts.Alert;
 using static pkuManager.WinForms.Formats.PorterDirective;
@@ -43,7 +43,7 @@ public class pk3Importer : Importer, SFA_I, Gender_I, Shiny_I, Nature_I,
         //deal with legal gen 3 egg
         if (Data.Is_Egg.ValueAsBool)
         {
-            (string str, bool inv) = DexUtil.CharEncoding.Decode(Data.Nickname.Value, FormatName, "Japanese");
+            (string str, bool inv) = StringTagUtil.Decode(Data.Nickname.Value, FormatName, "Japanese");
             legalGen3Egg = Data.UseEggName.ValueAsBool //egg name override set
                 && Data.Language.Value == 1 //language set to japanese (index = 1)
                 && !inv && str == TagUtil.EGG_NICKNAME["Japanese"]; //nickname set to "タマゴ"

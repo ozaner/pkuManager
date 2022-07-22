@@ -256,7 +256,7 @@ public class pk3Box : Box
 
         //get nickname
         string nick;
-        nick = DexUtil.CharEncoding.Decode(pk3.Nickname.Value, "pk3", lang).decodedStr;
+        nick = StringTagUtil.Decode(pk3.Nickname.Value, "pk3", lang).decodedStr;
         if (pk3.IsBadEggOrInvalidChecksum) //bad eggs
         {
             TagUtil.BAD_EGG_NICKNAME.TryGetValue(lang, out string badEggName);
@@ -281,7 +281,7 @@ public class pk3Box : Box
             nick,
             sfa.Species,
             GAME_DEX.SearchIndexedValue<int?>(pk3.Origin_Game.GetAs<int>(), "pk3", "Indices", "$x"),
-            DexUtil.CharEncoding.Decode(pk3.OT.Value, "pk3", lang).decodedStr,
+            StringTagUtil.Decode(pk3.OT.Value, "pk3", lang).decodedStr,
             sfa.Form, //forms
             null, //appearance
             BALL_DEX.SearchIndexedValue<int?>(pk3.Ball.GetAs<int>(), "pk3", "Indices", "$x"),

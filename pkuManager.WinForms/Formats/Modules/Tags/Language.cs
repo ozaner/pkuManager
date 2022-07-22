@@ -26,7 +26,7 @@ public interface Language_E : Language_P
     public void ExportLanguageBase()
     {
         var languageObj = (Data as Language_O).Language;
-        bool langDep = DexUtil.CharEncoding.IsLangDependent(FormatName);
+        bool langDep = DDM.FormatDex.IsLangDependent(FormatName);
         AlertType at = IndexTagUtil.ExportIndexTag(pku.Game_Info.Language, languageObj, "None", LANGUAGE_DEX, FormatName);
 
         if (langDep && at is not AlertType.NONE) //lang dep & invalid/unspecified
@@ -55,7 +55,7 @@ public interface Language_I : Language_P
     public void ImportLanguageBase()
     {
         Language_O Language_Field = Data as Language_O;
-        bool langDep = DexUtil.CharEncoding.IsLangDependent(FormatName);
+        bool langDep = DDM.FormatDex.IsLangDependent(FormatName);
         AlertType at = IndexTagUtil.ImportIndexTag(pku.Game_Info.Language, Language_Field.Language, LANGUAGE_DEX, FormatName);
 
         if (at is AlertType.INVALID)

@@ -42,7 +42,7 @@ public interface Trash_Bytes_E : Tag
                 at |= AlertType.TOO_LONG;
 
             BigInteger[] trashedStr = new BigInteger[encodedField.Value.Length];
-            BigInteger terminator = DexUtil.CharEncoding.GetTerminator(FormatName);
+            BigInteger terminator = DDM.FormatDex.GetTerminator(FormatName);
             bool terminatorFound = false;
             for (int i = 0; i < encodedField.Value.Length; i++)
             {

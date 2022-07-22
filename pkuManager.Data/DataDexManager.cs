@@ -41,6 +41,14 @@ public class DataDexManager
 
 
     /* ------------------------------------
+     * DataDex Fields
+     * ------------------------------------
+    */
+    public FormatDex FormatDex => _formatDex!.Result;
+    private Task<FormatDex>? _formatDex;
+
+
+    /* ------------------------------------
      * Initialization
      * ------------------------------------
     */
@@ -88,7 +96,8 @@ public class DataDexManager
     /// <inheritdoc cref="GetDex(string)" path="/exception"/>
     private Task DataDexLoader()
     {
-        return Task.WhenAll();
+        _formatDex = Task.Run(async () => new FormatDex(await GetDex("Format")));
+        return Task.WhenAll(_formatDex);
     }
 
 

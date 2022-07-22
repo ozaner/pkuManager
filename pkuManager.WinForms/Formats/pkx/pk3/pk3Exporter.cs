@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using static pkuManager.WinForms.Formats.PorterDirective;
 using pkuManager.WinForms.Formats.Modules.MetaTags;
+using pkuManager.WinForms.Formats.Modules.Templates;
 
 namespace pkuManager.WinForms.Formats.pkx.pk3;
 
@@ -118,7 +119,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E,
     public void ExportNickname()
     {
         if (legalGen3Egg)
-            Data.Nickname.Value = DexUtil.CharEncoding.Encode(TagUtil.EGG_NICKNAME["Japanese"],
+            Data.Nickname.Value = StringTagUtil.Encode(TagUtil.EGG_NICKNAME["Japanese"],
                 pk3Object.MAX_NICKNAME_CHARS, FormatName, "Japanese").encodedStr;
         else
             (this as Nickname_E).ExportNicknameBase();
