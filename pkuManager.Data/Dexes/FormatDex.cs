@@ -25,7 +25,7 @@ public class FormatDex : DataDex
     public List<string> GetIndexChain(string format)
     {
         List<string> indexChain = new() { format };
-        if (TryGetValue(out string[]? indexParents, format, "Parent Indices") && indexParents is not null)
+        if (TryGetValue(out string[] indexParents, format, "Parent Indices"))
             indexChain.AddRange(indexParents);
         return indexChain;
     }
@@ -42,7 +42,7 @@ public class FormatDex : DataDex
     /// <param name="format">The format of the encoding.</param>
     /// <returns>Whether or not the given format is language dependent.</returns>
     public bool IsLangDependent(string format)
-        => TryGetValue(out bool? langDep, format, "Character Encoding", "Language Dependent") && langDep is true;
+        => TryGetValue(out bool langDep, format, "Character Encoding", "Language Dependent") && langDep;
 
     /// <summary>
     /// Gets the null terminator character in the given <paramref name="format"/>'s encoding.
@@ -74,17 +74,7 @@ public class FormatDex : DataDex
     public bool TryGetChar(out char c, int codepoint, string format, string? language = null)
     {
         string langKey = IsLangDependent(format) ? language! : "All";
-        bool success = TryGetValue(out char? temp, format, "Character Encoding", langKey, codepoint.ToString());
-        if (success && temp.HasValue) //if character is explictly null, still a failure
-        {
-            c = temp.Value;
-            return true;
-        }
-        else
-        {
-            c = default;
-            return false;
-        }
+        return TryGetValue(out c, format, "Character Encoding", langKey, codepoint.ToString());
     }
 
     /// <summary>

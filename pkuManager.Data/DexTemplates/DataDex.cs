@@ -18,101 +18,89 @@ public abstract class DataDex
     /// <param name="jsonDoc">The DataDex as a JSON document.</param>
     public DataDex(JsonDocument jsonDoc) => Root = jsonDoc.RootElement;
 
-    ///<inheritdoc cref="TryGetValueBase{T}(out T, string[])"/>
-    protected bool TryGetValue<T>(out T? value, params string[] keys) where T: struct
-        => TryGetValueBase(out value, keys);
-
-    ///<inheritdoc cref="TryGetValueBase{T}(out T, string[])"/>
-    protected bool TryGetValue<T>(out T? value, params string[] keys) where T : class
-        => TryGetValueBase(out value, keys);
-
     /// <summary>
-    /// Reads a value by starting at <see cref="Root"/> and traversing the JSON tree using the
+    /// Reads a value by starting at <paramref name="root"/> and traversing the JSON tree using the
     /// <paramref name="keys"/> in sequential order.<br/> Fails if any of the <paramref name="keys"/>
-    /// are invalid, or the value cannot be casted to <typeparamref name="T"/>?
+    /// are invalid, the value is <see langword="null"/>, or the value cannot be casted to <typeparamref name="T"/>.
     /// </summary>
-    /// <typeparam name="T">The A non-nullable form of the type value will be casted to.</typeparam>
+    /// <typeparam name="T">The A non-nullable type that value will be casted to.</typeparam>
+    /// <param name="root">The node to start traversing <paramref name="keys"/> from.</param>
     /// <param name="value">If the search was a success, the value being searched for.
-    /// <br/>Otherwise, <see langword="default"/>.</param>
+    ///     <br/>Otherwise, <see langword="default"/>. Cannot be <see langword="null"/>
+    ///     if <see langword="true"/> is returned.</param>
     /// <param name="keys">The keys of the parent objects of the desired element.
     ///     <br/>Note that null keys always fail.</param>
     /// <returns>Whether the <paramref name="value"/> was found.</returns>
-    private bool TryGetValueBase<T>(out T? value, params string[] keys)
+    protected static bool TryGetValue<T>(JsonElement root, out T value, params string[] keys) where T : notnull
     {
-        value = default;
+        value = default!; //shouldn't use this value if false returned anyway...
 
-        var currentNode = Root;
+        var currentNode = root;
         foreach (string key in keys)
             if (!currentNode.TryGetProperty(key, out currentNode))
                 return false; //invalid keys
 
-        try {
-            value = currentNode.Deserialize<T>();
+        if (currentNode.ValueKind is JsonValueKind.Null)
+            return false;
+
+        try
+        {
+            value = currentNode.Deserialize<T>()!; //cannot be null because of previous check
             return true;
         }
         catch { return false; } //type mismatch, return false
     }
 
+    /// <inheritdoc cref="TryGetValue{T}(JsonElement, out T, string[])"/>
+    protected bool TryGetValue<T>(out T value, params string[] keys) where T: notnull
+        => TryGetValue<T>(Root, out value, keys);
+
     /// <summary>
     /// Searches for the key that, when substituted in for the "$<paramref name="x"/>"
-    /// element in <paramref name="keys"/>, points to <paramref name="value"/> in the DataDex.
+    /// element in <paramref name="keys"/>, points to <paramref name="value"/> in <paramref name="root"/>.
     /// </summary>
     /// <typeparam name="T">The type of <paramref name="value"/>.</typeparam>
+    /// <param name="root">The node to start traversing <paramref name="keys"/> from.</param>
     /// <param name="x"></param>
     /// <param name="value">The value to search for.</param>
-    /// <param name="keys">The list of keys to traverse starting at the <see cref="Root"/>.<br/>
-    ///     Must contain <b>exactly one</b> "$x" element.</param>
+    /// <param name="keys">The list of keys to traverse starting at the <paramref name="root"/>.
+    ///     <br/>Must contain <b>exactly one</b> "$x" element.</param>
     /// <returns>Whether the key, i.e. $<paramref name="x"/>, was successfully found.</returns>
     /// <exception cref="ArgumentException">Thrown if <paramref name="keys"/>
     ///     does not contain exactly one "$x" element.</exception>
-    protected bool TryGetKey<T>(out string x, T value, params string[] keys)
+    protected static bool TryGetKey<T>(JsonElement root, out string x, T value, params string[] keys) where T : notnull
     {
         x = null!; //forcing a null here, but you shouldn't use x if false was returned...
-        
+
         //Check that there is exactly one $x
-        if (keys.Count(y => y == "$x") is not 1)
+        if (keys.Count(key => key is "$x") is not 1)
             throw new ArgumentException($"{nameof(keys)} must contain exactly one \"$x\" element.");
 
         //Partition keys on $x
         int splitIndex = Array.IndexOf(keys, "$x");
         string[] firstHalf = keys.Take(splitIndex).ToArray();
-        string[] secondHalf = keys.Skip(splitIndex+1).ToArray();
+        string[] secondHalf = keys.Skip(splitIndex + 1).Prepend("").ToArray();
 
-        //traverse first half
-        JsonElement fhNode = Root;
-        foreach (string key in firstHalf)
-            if (!fhNode.TryGetProperty(key, out fhNode))
-                return false; //invalids keys
+        //traverse first half, and make sure it is an object
+        if (!TryGetValue(root, out JsonElement fhNode, firstHalf)
+            || fhNode.ValueKind is not JsonValueKind.Object)
+            return false; //invalid keys/not an object
 
-        //Make sure first half valid
-        if (fhNode.ValueKind is not JsonValueKind.Object)
-            return false; //must be an object
-
+        //traverse second half for each possible $x until a match is found
         foreach (var property in fhNode.EnumerateObject())
         {
-            //traverse second half w/ $x = property.Name
-            JsonElement shNode = fhNode.GetProperty(property.Name); //no exceptions
-            foreach (string key in secondHalf)
-                if (!shNode.TryGetProperty(key, out shNode))
-                    continue; //invalid branch
-
-            //check for match
-            bool match = false;
-            if (value is null && shNode.ValueKind is JsonValueKind.Null) //null case
-                match = true;
-            else
-            {
-                try { match = value!.Equals(shNode.Deserialize<T>()); }
-                catch { } //shNode/value type mismatch
-            }
-
-            //$x found
-            if (match)
+            secondHalf[^1] = property.Name;
+            if (TryGetValue(fhNode, out T valueToMatch, secondHalf) //value found
+                && valueToMatch.Equals(value)) //values match
             {
                 x = property.Name;
-                return true;
+                return true; //match found
             }
         }
         return false; //no match found
     }
+
+    /// <inheritdoc cref="TryGetKey{T}(JsonElement, out string, T, string[])"/>
+    protected bool TryGetKey<T>(out string x, T value, params string[] keys) where T : notnull
+        => TryGetKey<T>(Root, out x, value, keys);
 }
