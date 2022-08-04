@@ -7,6 +7,13 @@ namespace pkuManager.Data;
 /// </summary>
 public static class DownloadUtil
 {
+    private static readonly JsonDocumentOptions JDO = new()
+    {
+        AllowTrailingCommas = true,
+        //PropertyNameCaseSensitive = true, //by default
+        //MaxDepth = 64, //by default
+    };
+
     /// <summary>
     /// Asynchronously downloads the UTF-8 encoded JSON file at <paramref name="url"/>.
     /// </summary>
@@ -21,6 +28,6 @@ public static class DownloadUtil
         using var client = new HttpClient();
         client.Timeout = TimeSpan.FromSeconds(30); //30 second timeout
         using var stream = await client.GetStreamAsync(url);
-        return await JsonDocument.ParseAsync(stream); //ArgumentException cannot occur
+        return await JsonDocument.ParseAsync(stream, JDO); //ArgumentException cannot occur
     }
 }
