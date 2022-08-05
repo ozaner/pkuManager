@@ -105,9 +105,8 @@ public class DataDexManager
      * DataDex Retrieval Methods
      * ------------------------------------
     */
-    //URL of the masterdexes folder in the https://github.com/project-pku/pkuData repo
-    private static string ONLINE_BASE_URL(string root)
-        => $"https://raw.githubusercontent.com/project-pku/pkuData/{root}/masterdexes/";
+    //Base URL of the https://github.com/project-pku/pkuData repo
+    private const string ONLINE_BASE_URL = "https://raw.githubusercontent.com/project-pku/pkuData";
 
     /// <summary>
     /// Gets a datadex using the appropriate method depending on the state of <see cref="DataSource"/>.
@@ -133,7 +132,7 @@ public class DataDexManager
     /// <inheritdoc cref="GetDex(string)" path="/not(exception)"/>
     /// <inheritdoc cref="DownloadUtil.DownloadJSON(string)" path="/exception"/>
     private static async Task<JsonDocument> GetLatestDex(string name)
-        => await DownloadUtil.DownloadJSON($"{ONLINE_BASE_URL("main")}master{name}Dex.json");
+        => await DownloadUtil.DownloadJSON($"{ONLINE_BASE_URL}/build/{name}");
 
     /// <summary>
     /// Gets a datadex from the commit specified by the <see cref="CommitHash"/> on the
@@ -142,7 +141,7 @@ public class DataDexManager
     /// </summary>
     /// <inheritdoc cref="GetLatestDex(string)"/>
     private async Task<JsonDocument> GetHashDex(string name)
-        => await DownloadUtil.DownloadJSON($"{ONLINE_BASE_URL($"tree/{CommitHash}")}master{name}Dex.json");
+        => await DownloadUtil.DownloadJSON($"{ONLINE_BASE_URL}/{CommitHash}/{name}");
 
     /// <summary>
     /// Gets a datadex from <see cref="LocalDirectory"/>.<br/>
@@ -157,7 +156,7 @@ public class DataDexManager
     private async Task<JsonDocument> GetLocalDex(string name)
     {
         //only called when DataSource = local
-        FileInfo[] files = LocalDirectory!.GetFiles($"master{name}Dex.json");
+        FileInfo[] files = LocalDirectory!.GetFiles(name);
         string rawJson = await File.ReadAllTextAsync(files[0].FullName);
         return JsonDocument.Parse(rawJson);
     }

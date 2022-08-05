@@ -50,10 +50,10 @@ public static class Registry
             }
         }
 
-        private const string MASTERDEX_URL = "https://raw.githubusercontent.com/project-pku/pkuData/main/masterdexes/";
+        private const string MASTERDEX_URL = "https://raw.githubusercontent.com/project-pku/pkuData/build/";
 
         private static JObject GetMasterDex(string type)
-            => DataUtil.DownloadJson($"{MASTERDEX_URL}master{type}Dex.json", $"{type}Dex");
+            => DataUtil.DownloadJson($"{MASTERDEX_URL}{type}Dex.json", $"{type}Dex");
 
         public static readonly JObject SPECIES_DEX = GetMasterDex("Species");
         public static readonly JObject ABILITY_DEX = GetMasterDex("Ability");

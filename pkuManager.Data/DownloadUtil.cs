@@ -26,7 +26,7 @@ public static class DownloadUtil
     public static async Task<JsonDocument> DownloadJSON(string url)
     {
         using var client = new HttpClient();
-        client.Timeout = TimeSpan.FromSeconds(30); //30 second timeout
+        client.Timeout = TimeSpan.FromSeconds(10); //10 second timeout
         using var stream = await client.GetStreamAsync(url);
         return await JsonDocument.ParseAsync(stream, JDO); //ArgumentException cannot occur
     }
