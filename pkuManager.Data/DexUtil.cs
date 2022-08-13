@@ -1,23 +1,10 @@
-﻿using System.Text.Json;
+﻿using pkuManager.Data.Dexes;
+using System.Text.Json;
 
-namespace pkuManager.Data.DexTemplates;
+namespace pkuManager.Data;
 
-/// <summary>
-/// Represents an abstract DataDex.
-/// </summary>
-public abstract class DataDex
+internal static class DexUtil
 {
-    /// <summary>
-    /// The root of the DataDex, i.e. the entire JSON object.
-    /// </summary>
-    protected JsonElement Root { get; }
-
-    /// <summary>
-    /// Constructs a <see cref="DataDex"/> from the given <paramref name="jsonDoc"/>.
-    /// </summary>
-    /// <param name="jsonDoc">The DataDex as a JSON document.</param>
-    public DataDex(JsonDocument jsonDoc) => Root = jsonDoc.RootElement;
-
     /// <summary>
     /// Reads a value by starting at <paramref name="root"/> and traversing the JSON tree using the
     /// <paramref name="keys"/> in sequential order.<br/> Fails if any of the <paramref name="keys"/>
@@ -31,7 +18,7 @@ public abstract class DataDex
     /// <param name="keys">The keys of the parent objects of the desired element.
     ///     <br/>Note that null keys always fail.</param>
     /// <returns>Whether the <paramref name="value"/> was found.</returns>
-    protected static bool TryGetValue<T>(JsonElement root, out T value, params string[] keys) where T : notnull
+    internal static bool TryGetValue<T>(this JsonElement root, out T value, params string[] keys) where T : notnull
     {
         value = default!; //shouldn't use this value if false returned anyway...
 
@@ -51,24 +38,20 @@ public abstract class DataDex
         catch { return false; } //type mismatch, return false
     }
 
-    /// <inheritdoc cref="TryGetValue{T}(JsonElement, out T, string[])"/>
-    protected bool TryGetValue<T>(out T value, params string[] keys) where T: notnull
-        => TryGetValue<T>(Root, out value, keys);
-
     /// <summary>
     /// Searches for the key that, when substituted in for the "$<paramref name="x"/>"
     /// element in <paramref name="keys"/>, points to <paramref name="value"/> in <paramref name="root"/>.
     /// </summary>
     /// <typeparam name="T">The type of <paramref name="value"/>.</typeparam>
     /// <param name="root">The node to start traversing <paramref name="keys"/> from.</param>
-    /// <param name="x"></param>
+    /// <param name="x">A string that will be set to the key being searched for, if successful.</param>
     /// <param name="value">The value to search for.</param>
     /// <param name="keys">The list of keys to traverse starting at the <paramref name="root"/>.
     ///     <br/>Must contain <b>exactly one</b> "$x" element.</param>
     /// <returns>Whether the key, i.e. $<paramref name="x"/>, was successfully found.</returns>
     /// <exception cref="ArgumentException">Thrown if <paramref name="keys"/>
     ///     does not contain exactly one "$x" element.</exception>
-    protected static bool TryGetKey<T>(JsonElement root, out string x, T value, params string[] keys) where T : notnull
+    internal static bool TryGetKey<T>(this JsonElement root, out string x, T value, params string[] keys) where T : notnull
     {
         x = null!; //forcing a null here, but you shouldn't use x if false was returned...
 
@@ -100,7 +83,43 @@ public abstract class DataDex
         return false; //no match found
     }
 
-    /// <inheritdoc cref="TryGetKey{T}(JsonElement, out string, T, string[])"/>
-    protected bool TryGetKey<T>(out string x, T value, params string[] keys) where T : notnull
-        => TryGetKey<T>(Root, out x, value, keys);
+    internal static bool ExistsIn(this JsonElement root, string value, string format)
+        => root.TryGetValue(out string[] formats, value, "Exists in") //has exists in array
+            && formats.Contains(format); //format is in that array
+
+    //assumes indexed property is last key
+    internal static bool TryGetIndexedValue<T>(this JsonElement root, DataDexManager ddm, string format, out T index, string value, params string[] keys) where T : notnull
+    {
+        index = default!;
+
+        //Check if value even exists in format
+        if (!root.ExistsIn(value, format))
+            return false;
+
+        var indexChain = ddm.GetIndexChain(format);
+        string[] keysWithLink = keys.Append("").ToArray();
+        foreach (var link in indexChain)
+        {
+            keysWithLink[^1] = link;
+            if (root.TryGetValue(out index, keysWithLink))
+                return true; //index found
+        }
+        return false; //no index found
+    }
+
+    //assumes indexed property is last key
+    internal static bool TryGetIndexedKey<T>(this JsonElement root, DataDexManager ddm, string format, out string x, T value, params string[] keys) where T : notnull
+    {
+        x = null!; //forcing a null here, but you shouldn't use x if false was returned...
+
+        var indexChain = ddm.GetIndexChain(format);
+        string[] keysWithLink = keys.Append("").ToArray();
+        foreach (var link in indexChain)
+        {
+            keysWithLink[^1] = link;
+            if (root.TryGetKey(out x, value, keysWithLink))
+                return true; //index found
+        }
+        return false; //no index found
+    }
 }

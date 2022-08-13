@@ -1,4 +1,5 @@
 ﻿using OneOf;
+using pkuManager.Data.Dexes;
 using pkuManager.WinForms.Alerts;
 using pkuManager.WinForms.Formats.Fields;
 using pkuManager.WinForms.Formats.Fields.BAMFields;
@@ -24,7 +25,7 @@ public interface StringTag_E : Tag
     {
         if (Language_DependencyError is null) //valid lang/not lang dep
         {
-            bool langDep = DDM.FormatDex.IsLangDependent(FormatName);
+            bool langDep = DDM.IsLangDependent(FormatName);
             string lang = langDep ? IndexTagUtil.DecodeFormatField((Data as Language_O).Language, LANGUAGE_DEX, FormatName) : null;
             field.Switch(
                 x => {
@@ -92,7 +93,7 @@ public interface StringTag_I : Tag
     {
         if (Language_DependencyError is null) //valid lang/not lang dep
         {
-            bool langDep = DDM.FormatDex.IsLangDependent(FormatName);
+            bool langDep = DDM.IsLangDependent(FormatName);
             string lang = langDep ? IndexTagUtil.DecodeFormatField((Data as Language_O).Language, LANGUAGE_DEX, FormatName) : null;
             field.Switch(
                 x => {
@@ -161,7 +162,7 @@ public static class StringTagUtil
                 break;
 
             //invalid character -> skip
-            if (!DDM.FormatDex.TryGetCodepoint(out int codepoint, c, format, language))
+            if (!DDM.TryGetCodepoint(out int codepoint, c, format, language))
             {
                 hasInvalidChars = true;
                 continue;
@@ -174,7 +175,7 @@ public static class StringTagUtil
 
         //add terminator if space available
         if (successfulChars < maxLength)
-            encodedStr[successfulChars] = DDM.FormatDex.GetTerminator(format);
+            encodedStr[successfulChars] = DDM.GetTerminator(format);
 
         return (Array.ConvertAll(encodedStr, x => (BigInteger)x), truncated, hasInvalidChars);
     }
@@ -196,10 +197,10 @@ public static class StringTagUtil
         bool hasInvalidChars = false;
         foreach (int codepoint in encodedStr)
         {
-            if (codepoint == DDM.FormatDex.GetTerminator(format))
+            if (codepoint == DDM.GetTerminator(format))
                 break; //stop at terminator
 
-            if (DDM.FormatDex.TryGetChar(out char c, codepoint, format, language)) //char valid
+            if (DDM.TryGetChar(out char c, codepoint, format, language)) //char valid
                 sb.Append(c);
             else //char invalid
                 hasInvalidChars = true;

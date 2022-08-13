@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using pkuManager.Data.Dexes;
 using pkuManager.WinForms.Formats.pku;
 using System;
 using System.Collections.Generic;
@@ -130,7 +131,7 @@ public static class DexUtil
     // Common GetIndex code, that allows inner looping of keys (e.g. species combos) and outer looping of formats (e.g. pk3 -> main-series)
     private static T GetIndexedValue<T>(this JObject dex, string format, IEnumerable<List<string>> other_keys)
     {
-        List<string> indexChain = DDM.FormatDex.GetIndexChain(format);
+        List<string> indexChain = DDM.GetIndexChain(format);
         foreach (string link in indexChain)
         {
             foreach (var keys in other_keys)
@@ -157,7 +158,7 @@ public static class DexUtil
 
     public static string SearchIndexedValue<T>(this JObject dex, T value, string format, string indexName, params string[] keys)
     {
-        List<string> indexChain = DDM.FormatDex.GetIndexChain(format);
+        List<string> indexChain = DDM.GetIndexChain(format);
         int xLoc = Array.IndexOf(keys, "$x");
         foreach (string link in indexChain)
         {

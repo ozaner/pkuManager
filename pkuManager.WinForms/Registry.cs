@@ -8,7 +8,6 @@ using pkuManager.WinForms.Formats.showdown;
 using pkuManager.WinForms.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace pkuManager.WinForms;
 
@@ -39,16 +38,7 @@ public static class Registry
 
     public static class DataDexes
     {
-        private static readonly Task<DataDexManager> _ddm = DataDexManager.CreateOnlineManager();
-        public static DataDexManager DDM
-        {
-            get
-            {
-                if (!_ddm.IsCompletedSuccessfully)
-                    _ddm.Wait(); //DDM is awaited if it has still not finished downloading
-                return _ddm.Result;
-            }
-        }
+        public static readonly DataDexManager DDM = new();
 
         private const string MASTERDEX_URL = "https://raw.githubusercontent.com/project-pku/pkuData/build/";
 
