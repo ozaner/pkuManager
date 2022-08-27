@@ -1,5 +1,5 @@
 ﻿global using static pkuManager.WinForms.Formats.Modules.TagEnums; //TagEnums are global constants
-
+using pkuManager.Data.Dexes;
 using pkuManager.WinForms.Utilities;
 using System;
 using System.Collections.Generic;
@@ -308,7 +308,12 @@ public static class TagUtil
     /// <param name="format">The format the move is being considered under.</param>
     /// <returns>The PP <paramref name="move"/> would have with <paramref name="ppups"/> PP Ups.</returns>
     public static int CalculatePP(string move, int ppups, string format)
-        => (5 + ppups) * MOVE_DEX.GetIndexedValue<int?>(format, move, "Base PP").Value / 5;
+    {
+        if (!DDM.TryGetMovePP(format, move, out int basePP))
+            return 0; //move not found in this format
+
+        return (5 + ppups) * basePP / 5;
+    }
 }
 
 public static class TagEnums

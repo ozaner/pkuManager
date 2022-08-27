@@ -1,7 +1,7 @@
 ﻿using OneOf;
+using pkuManager.Data.Dexes;
 using pkuManager.WinForms.Alerts;
 using pkuManager.WinForms.Formats.Fields;
-using pkuManager.WinForms.Utilities;
 using System.Collections;
 using System.Collections.Generic;
 using static pkuManager.WinForms.Alerts.Alert;
@@ -19,8 +19,23 @@ public class MoveTagUtil
     public static (AlertType, string[]) ExportMoveSet(string format, List<string> pkuMoves,
         OneOf<IIntArrayField, IField<string[]>> moveField)
     {
-        int? maxMoves = moveField.Match(x => x.Value?.Length, x => x.Value?.Length);
+        bool getMoveID(string move, out OneOf<int, string> id)
+        {
+            bool exists;
+            if (moveField.IsT0)
+            {
+                exists = DDM.TryGetMoveID(format, move, out int idN);
+                id = idN;
+            }
+            else
+            {
+                exists = DDM.TryGetMoveID(format, move, out string idN);
+                id = idN;
+            }
+            return exists;
+        }
 
+        int? maxMoves = moveField.Match(x => x.Value?.Length, x => x.Value?.Length);
         List<string> moveIndices = new(); //(canonical) names of all chosen moves
         IList moveIDs = moveField.IsT0 ? new List<int>() : new List<string>();
         AlertType at = AlertType.NONE;
@@ -32,13 +47,11 @@ public class MoveTagUtil
             foreach (string move in pkuMoves)
             {
                 string trueMove = GetTrueMove(move);
-                if (MOVE_DEX.ExistsIn(format, trueMove)) //move exists in format
+                if (getMoveID(trueMove, out OneOf<int, string> ID)) //move exists in format
                 {
                     if (confirmedMoves < maxMoves || maxMoves is null)
                     {
-                        moveField.Switch(
-                            _ => moveIDs.Add(MOVE_DEX.GetIndexedValue<int?>(format, trueMove, "Indices") ?? 0),
-                            _ => moveIDs.Add(MOVE_DEX.GetIndexedValue<string>(format, trueMove, "Indices")));
+                        moveIDs.Add(ID.Value);
                         moveIndices.Add(move);
                         confirmedMoves++;
                     }
@@ -56,10 +69,12 @@ public class MoveTagUtil
             at = AlertType.UNSPECIFIED;
 
         while (moveIDs.Count < maxMoves) //fill up empty slots with None
-            moveField.Switch(
-                _ => moveIDs.Add(MOVE_DEX.GetIndexedValue<int?>(format, "None", "Indices") ?? 0),
-                _ => moveIDs.Add(MOVE_DEX.GetIndexedValue<string>(format, "None", "Indices")));
-
+        {
+            if (getMoveID("None", out OneOf<int, string> noneID))
+                moveIDs.Add(noneID.Value);
+            else
+                moveIDs.Add(moveField.IsT0 ? 0 : null);
+        }
         moveField.Switch(
             x => x.SetAs((moveIDs as List<int>).ToArray()),
             x => x.Value = (moveIDs as List<string>).ToArray()
