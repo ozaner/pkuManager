@@ -1,4 +1,5 @@
-﻿using pkuManager.WinForms.Alerts;
+﻿using pkuManager.Data.Dexes;
+using pkuManager.WinForms.Alerts;
 using pkuManager.WinForms.Formats.Fields;
 using pkuManager.WinForms.Formats.Fields.BackedFields;
 using pkuManager.WinForms.Formats.Modules.Templates;
@@ -58,7 +59,7 @@ public interface Ability_Slot_E : Tag
                 atAbil = AlertType.UNSPECIFIED;
             else //specified
             {
-                if (ABILITY_DEX.ExistsIn(FormatName, pku.Ability.Value)) //valid
+                if (DDM.DoesAbilityExist(FormatName, pku.Ability.Value)) //valid
                 {
                     int abilIndex = Array.IndexOf(abilitySlots, pku.Ability.Value);
                     if (abilIndex < 0) //mismatch

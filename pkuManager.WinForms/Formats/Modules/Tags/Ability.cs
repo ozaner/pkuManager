@@ -1,4 +1,5 @@
 ﻿using OneOf;
+using pkuManager.Data.Dexes;
 using pkuManager.WinForms.Alerts;
 using pkuManager.WinForms.Formats.Fields;
 using pkuManager.WinForms.Formats.Modules.Templates;
@@ -17,7 +18,17 @@ public interface Ability_E : Tag
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportAbility()
     {
-        AlertType at = IndexTagUtil.ExportIndexTag(pku.Ability, (Data as Ability_O).Ability, "None", ABILITY_DEX, FormatName);
+        AlertType at = IndexTagUtil.ExportIndexTagNew(pku.Ability, (Data as Ability_O).Ability, "None",
+            (v) =>
+            {
+                bool a = DDM.TryGetAbilityID(FormatName, v, out int ID);
+                return (a, ID);
+            },
+            (v) =>
+            {
+                bool a = DDM.TryGetAbilityID(FormatName, v, out string ID);
+                return (a, ID);
+            });
         Warnings.Add(GetAbilityAlert(at));
     }
 
