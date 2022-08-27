@@ -1,4 +1,5 @@
-﻿using pkuManager.WinForms.Formats.Fields;
+﻿using pkuManager.Data.Dexes;
+using pkuManager.WinForms.Formats.Fields;
 using pkuManager.WinForms.Formats.Fields.BAMFields;
 using pkuManager.WinForms.Formats.Modules;
 using pkuManager.WinForms.Formats.Modules.Templates;
@@ -273,6 +274,9 @@ public class pk3Box : Box
         bool shiny = TagUtil.IsPIDShiny(pk3.PID.GetAs<uint>(), pk3.TID.GetAs<uint>(), false);
         var sprites = ImageUtil.GetSprites(sfa, shiny, pk3.Is_Egg.ValueAsBool || pk3.IsBadEggOrInvalidChecksum);
 
+        //get ball
+        DDM.TryGetBallName("pk3", out string ball, pk3.Ball.GetAs<int>());
+
         return new(
             pk3,
             sprites[0],
@@ -284,7 +288,7 @@ public class pk3Box : Box
             StringTagUtil.Decode(pk3.OT.Value, "pk3", lang).decodedStr,
             sfa.Form, //forms
             null, //appearance
-            BALL_DEX.SearchIndexedValue<int?>(pk3.Ball.GetAs<int>(), "pk3", "Indices", "$x"),
+            ball,
             false //can't be shadow
         );
     }

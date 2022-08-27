@@ -1,5 +1,4 @@
-﻿using pkuManager.Data.Dexes;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace pkuManager.Data;
 
@@ -88,38 +87,34 @@ internal static class DexUtil
             && formats.Contains(format); //format is in that array
 
     //assumes indexed property is last key
-    internal static bool TryGetIndexedValue<T>(this JsonElement root, DataDexManager ddm, string format, out T index, string value, params string[] keys) where T : notnull
+    internal static bool TryGetIndexedValue<T>(this JsonElement root, List<string> indexNames, out T value, params string[] keys) where T : notnull
     {
-        index = default!;
+        value = default!;
 
-        //Check if value even exists in format
-        if (!root.ExistsIn(value, format))
-            return false;
+        if (!root.TryGetValue(out JsonElement indexedRoot, keys))
+            return false; //keys don't even point anywhere
 
-        var indexChain = ddm.GetIndexChain(format);
-        string[] keysWithLink = keys.Append("").ToArray();
-        foreach (var link in indexChain)
-        {
-            keysWithLink[^1] = link;
-            if (root.TryGetValue(out index, keysWithLink))
+        //Try each index, in order
+        foreach (string index in indexNames)
+            if (indexedRoot.TryGetValue(out value, index))
                 return true; //index found
-        }
+        
         return false; //no index found
     }
 
     //assumes indexed property is last key
-    internal static bool TryGetIndexedKey<T>(this JsonElement root, DataDexManager ddm, string format, out string x, T value, params string[] keys) where T : notnull
+    internal static bool TryGetIndexedKey<T>(this JsonElement root, List<string> indexNames, out string indexName, T value, params string[] keys) where T : notnull
     {
-        x = null!; //forcing a null here, but you shouldn't use x if false was returned...
+        indexName = null!; //forcing a null here, but you shouldn't use var if false was returned...
 
-        var indexChain = ddm.GetIndexChain(format);
-        string[] keysWithLink = keys.Append("").ToArray();
-        foreach (var link in indexChain)
-        {
-            keysWithLink[^1] = link;
-            if (root.TryGetKey(out x, value, keysWithLink))
+        if (!root.TryGetValue(out JsonElement indexedRoot, keys))
+            return false; //keys don't even point anywhere
+
+        //Try each index, in order
+        foreach (var index in indexNames)
+            if (indexedRoot.TryGetKey(out indexName, value, index))
                 return true; //index found
-        }
+
         return false; //no index found
     }
 }
