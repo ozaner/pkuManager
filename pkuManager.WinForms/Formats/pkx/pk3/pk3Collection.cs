@@ -277,6 +277,9 @@ public class pk3Box : Box
         //get ball
         DDM.TryGetBallName("pk3", out string ball, pk3.Ball.GetAs<int>());
 
+        //get game
+        DDM.TryGetGameName(FormatName, out string game, pk3.Origin_Game.GetAs<int>());
+
         return new(
             pk3,
             sprites[0],
@@ -284,7 +287,7 @@ public class pk3Box : Box
             sprites[2],
             nick,
             sfa.Species,
-            GAME_DEX.SearchIndexedValue<int?>(pk3.Origin_Game.GetAs<int>(), "pk3", "Indices", "$x"),
+            game,
             StringTagUtil.Decode(pk3.OT.Value, "pk3", lang).decodedStr,
             sfa.Form, //forms
             null, //appearance

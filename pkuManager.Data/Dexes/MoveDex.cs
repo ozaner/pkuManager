@@ -45,7 +45,7 @@ public static class MoveDex
     /// <returns>Whether or not a move was found corresponding to <paramref name="ID"/>.</returns>
     public static bool TryGetMoveName<T>(this DataDexManager ddm, string format, out string move, T ID) where T : notnull
     {
-        if (!MDR(ddm).TryGetIndexedKey(ddm.GetIndexChain(format), out move, ID, "Indices"))
+        if (!MDR(ddm).TryGetIndexedKey(ddm.GetIndexChain(format), out move, ID, "$x", "Indices"))
             return false; //no matching ID found in index chain
         
         return DoesMoveExist(ddm, format, move); //whether the found move exists in format.

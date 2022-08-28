@@ -45,7 +45,7 @@ public static class ItemDex
     /// <returns>Whether or not a item was found corresponding to <paramref name="ID"/>.</returns>
     public static bool TryGetItemName<T>(this DataDexManager ddm, string format, out string item, T ID) where T : notnull
     {
-        if (!IDR(ddm).TryGetIndexedKey(ddm.GetIndexChain(format), out item, ID, "Indices"))
+        if (!IDR(ddm).TryGetIndexedKey(ddm.GetIndexChain(format), out item, ID, "$x", "Indices"))
             return false; //no matching ID found in index chain
         
         return DoesItemExist(ddm, format, item); //whether the found item exists in format.

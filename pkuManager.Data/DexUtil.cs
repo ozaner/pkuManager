@@ -52,34 +52,10 @@ internal static class DexUtil
     ///     does not contain exactly one "$x" element.</exception>
     internal static bool TryGetKey<T>(this JsonElement root, out string x, T value, params string[] keys) where T : notnull
     {
-        x = null!; //forcing a null here, but you shouldn't use x if false was returned...
-
-        //Check that there is exactly one $x
-        if (keys.Count(key => key is "$x") is not 1)
-            throw new ArgumentException($"{nameof(keys)} must contain exactly one \"$x\" element.");
-
-        //Partition keys on $x
-        int splitIndex = Array.IndexOf(keys, "$x");
-        string[] firstHalf = keys.Take(splitIndex).ToArray();
-        string[] secondHalf = keys.Skip(splitIndex + 1).Prepend("").ToArray();
-
-        //traverse first half, and make sure it is an object
-        if (!TryGetValue(root, out JsonElement fhNode, firstHalf)
-            || fhNode.ValueKind is not JsonValueKind.Object)
-            return false; //invalid keys/not an object
-
-        //traverse second half for each possible $x until a match is found
-        foreach (var property in fhNode.EnumerateObject())
-        {
-            secondHalf[^1] = property.Name;
-            if (TryGetValue(fhNode, out T valueToMatch, secondHalf) //value found
-                && valueToMatch.Equals(value)) //values match
-            {
-                x = property.Name;
-                return true; //match found
-            }
-        }
-        return false; //no match found
+        bool match(JsonElement fhNode, T value, string[] secondHalf)
+            => TryGetValue(fhNode, out T valueToMatch, secondHalf) //value found
+                && valueToMatch.Equals(value); //values match
+        return TryGetKeyBase(root, out x, value, keys, match);
     }
 
     internal static bool ExistsIn(this JsonElement root, string value, string format)
@@ -103,18 +79,50 @@ internal static class DexUtil
     }
 
     //assumes indexed property is last key
-    internal static bool TryGetIndexedKey<T>(this JsonElement root, List<string> indexNames, out string indexName, T value, params string[] keys) where T : notnull
+    internal static bool TryGetIndexedKey<T>(this JsonElement root, List<string> indexNames, out string x,
+        T value, params string[] keys) where T : notnull
     {
-        indexName = null!; //forcing a null here, but you shouldn't use var if false was returned...
+        bool match(JsonElement fhNode, T value, string[] secondHalf)
+            => TryGetIndexedValue(fhNode, indexNames, out T valueToMatch, secondHalf) //value found
+                && valueToMatch.Equals(value); //values match
 
-        if (!root.TryGetValue(out JsonElement indexedRoot, keys))
-            return false; //keys don't even point anywhere
+        return TryGetKeyBase(root, out x, value, keys, match);
+    }
 
-        //Try each index, in order
-        foreach (var index in indexNames)
-            if (indexedRoot.TryGetKey(out indexName, value, index))
-                return true; //index found
 
-        return false; //no index found
+    /* ------------------------------------
+     * Base Case Methods
+     * ------------------------------------
+    */
+    private static bool TryGetKeyBase<T>(this JsonElement root, out string x, T value, string[] keys,
+        Func<JsonElement, T, string[], bool> matchFunc) where T : notnull
+    {
+        x = null!; //forcing a null here, but you shouldn't use x if false was returned...
+
+        //Check that there is exactly one $x
+        if (keys.Count(key => key is "$x") is not 1)
+            throw new ArgumentException($"{nameof(keys)} must contain exactly one \"$x\" element.");
+
+        //Partition keys on $x
+        int splitIndex = Array.IndexOf(keys, "$x");
+        string[] firstHalf = keys.Take(splitIndex).ToArray();
+        string[] secondHalf = keys.Skip(splitIndex + 1).Prepend("").ToArray();
+
+        //traverse first half, and make sure it is an object
+        if (!TryGetValue(root, out JsonElement fhNode, firstHalf)
+            || fhNode.ValueKind is not JsonValueKind.Object)
+            return false; //invalid keys/not an object
+
+        //traverse second half for each possible $x until a match is found
+        foreach (var property in fhNode.EnumerateObject())
+        {
+            secondHalf[0] = property.Name;
+            if (matchFunc(fhNode, value, secondHalf))
+            {
+                x = property.Name;
+                return true;
+            }
+        }
+        return false; //no match found
     }
 }

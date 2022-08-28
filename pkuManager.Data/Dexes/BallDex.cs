@@ -45,7 +45,7 @@ public static class BallDex
     /// <returns>Whether or not a ball was found corresponding to <paramref name="ID"/>.</returns>
     public static bool TryGetBallName<T>(this DataDexManager ddm, string format, out string ball, T ID) where T : notnull
     {
-        if (!BDR(ddm).TryGetIndexedKey(ddm.GetIndexChain(format), out ball, ID, "Indices"))
+        if (!BDR(ddm).TryGetIndexedKey(ddm.GetIndexChain(format), out ball, ID, "$x", "Indices"))
             return false; //no matching ID found in index chain
         
         return DoesBallExist(ddm, format, ball); //whether the found ball exists in format.

@@ -1,7 +1,7 @@
-﻿using pkuManager.WinForms.Alerts;
+﻿using pkuManager.Data.Dexes;
+using pkuManager.WinForms.Alerts;
 using pkuManager.WinForms.Formats.Fields;
 using pkuManager.WinForms.Formats.pku;
-using pkuManager.WinForms.Utilities;
 using System.Linq;
 using static pkuManager.WinForms.Alerts.Alert;
 
@@ -35,18 +35,14 @@ public static class LocationTagUtil
 
         if (at is AlertType.NONE) //specified and no mismatch
         {
-            //try get location id
-            bool succ = int.TryParse(GAME_DEX.SearchDataDex(location, formatGame, "Locations", "$x"), out int temp2);
-            int? locID = succ ? temp2 : null;
-
-            if (locID is null) //location invalid
+            if (!DDM.TryGetLocationID(formatGame, location, out int ID)) //location invalid
                 at = AlertType.INVALID;
             else //location valid
-                formatField.Value = locID.Value;
+                formatField.Value = ID;
         }
 
-        string defaultLoc = GAME_DEX.ReadDataDex<string>(formatGame, "Locations", "0") ?? "None";
-        return (at, defaultLoc, location);
+        DDM.TryGetLocationName(formatGame, 0, out string defaultLoc);
+        return (at, defaultLoc ?? "None", location);
     }
 
     public static void ExportStringLocation(IField<string> pkuLocationField, IField<string> formatField)

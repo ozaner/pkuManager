@@ -44,7 +44,7 @@ public static class AbilityDex
     /// <returns>Whether or not a ability was found corresponding to <paramref name="ID"/>.</returns>
     public static bool TryGetAbilityName<T>(this DataDexManager ddm, string format, out string ability, T ID) where T : notnull
     {
-        if (!ADR(ddm).TryGetIndexedKey(ddm.GetIndexChain(format), out ability, ID, "Indices"))
+        if (!ADR(ddm).TryGetIndexedKey(ddm.GetIndexChain(format), out ability, ID, "$x", "Indices"))
             return false; //no matching ID found in index chain
         
         return DoesAbilityExist(ddm, format, ability); //whether the found ability exists in format.

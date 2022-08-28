@@ -46,7 +46,6 @@ public static class Registry
             => DataUtil.DownloadJson($"{MASTERDEX_URL}{type}Dex.json", $"{type}Dex");
 
         public static readonly JObject SPECIES_DEX = GetMasterDex("Species");
-        public static readonly JObject GAME_DEX = GetMasterDex("Game");
         public static readonly JObject LANGUAGE_DEX = GetMasterDex("Language");
     }
 }

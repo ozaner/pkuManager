@@ -1,7 +1,7 @@
-﻿using pkuManager.WinForms.Alerts;
+﻿using pkuManager.Data.Dexes;
+using pkuManager.WinForms.Alerts;
 using pkuManager.WinForms.Formats.Fields;
 using pkuManager.WinForms.Formats.pku;
-using pkuManager.WinForms.Utilities;
 using static pkuManager.WinForms.Alerts.Alert;
 using static pkuManager.WinForms.Formats.PorterDirective;
 
@@ -28,11 +28,12 @@ public interface Origin_Game_E : Tag
             at = AlertType.UNSPECIFIED;
         else //specified
         {
-            if (!GAME_DEX.ExistsIn(FormatName, game)) //invalid
+            //Only supports int type game indices
+            if (!DDM.TryGetGameID(FormatName, game, out int ID)) //invalid
                 at = AlertType.INVALID;
             else // success
                 //if game exists and format has a game field, indices must exist
-                originGameObj.Origin_Game.Value = GAME_DEX.GetIndexedValue<int?>(FormatName, game, "Indices").Value;
+                originGameObj.Origin_Game.Value = ID;
         }
 
         //set origin game name
