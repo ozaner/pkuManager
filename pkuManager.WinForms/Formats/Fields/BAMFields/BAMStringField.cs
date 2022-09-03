@@ -1,4 +1,5 @@
-﻿using pkuManager.WinForms.Formats.Modules;
+﻿using pkuManager.Data.Dexes;
+using pkuManager.WinForms.Formats.Modules;
 using pkuManager.WinForms.Formats.Modules.Tags;
 using pkuManager.WinForms.Formats.Modules.Templates;
 using pkuManager.WinForms.Utilities;
@@ -28,9 +29,11 @@ public class BAMStringField : BAMArrayField, IField<string>
     {
         if (ExplicitLang is null)
         {
-            string decodedLang = IndexTagUtil.DecodeFormatField(Language_Field.Language, LANGUAGE_DEX, FormatName);
-            bool langIsValid = LANGUAGE_DEX.ExistsIn(FormatName, decodedLang);
-            return langIsValid ? decodedLang : TagUtil.DEFAULT_SEMANTIC_LANGUAGE;
+            string lang = null;
+            bool success = Language_Field.Language.Match(
+                (v) => DDM.TryGetLanguageName(FormatName, out lang, v.GetAs<int>()),
+                (v) => DDM.TryGetLanguageName(FormatName, out lang, v.Value));
+            return success ? lang : TagUtil.DEFAULT_SEMANTIC_LANGUAGE;
         }
         else 
             return ExplicitLang;

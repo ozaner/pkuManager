@@ -1,8 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
-using OneOf;
+﻿using OneOf;
 using pkuManager.WinForms.Alerts;
 using pkuManager.WinForms.Formats.Fields;
-using pkuManager.WinForms.Utilities;
 using System;
 using static pkuManager.WinForms.Alerts.Alert;
 
@@ -11,27 +9,10 @@ namespace pkuManager.WinForms.Formats.Modules.Templates;
 public static class IndexTagUtil
 {
     /* ------------------------------------
-     * Helper Methods
-     * ------------------------------------
-    */
-    public static void EncodeFormatField(string value, OneOf<IIntField, IField<string>> encodedField, JObject dex, string formatName)
-    {
-        encodedField.Switch(
-            x => x.Value = dex.GetIndexedValue<int?>(formatName, value, "Indices") ?? 0,
-            x => x.Value = dex.GetIndexedValue<string>(formatName, value, "Indices"));
-    }
-
-    public static string DecodeFormatField(OneOf<IIntField, IField<string>> encodedField, JObject dex, string formatName)
-        => encodedField.Match(
-            x => dex.SearchIndexedValue<int?>(x.GetAs<int>(), formatName, "Indices", "$x"),
-            x => dex.SearchIndexedValue(x.Value, formatName, "Indices", "$x"));
-
-
-    /* ------------------------------------
      * Porting
      * ------------------------------------
     */
-    public static AlertType ExportIndexTagNew(IField<string> pkuTag, OneOf<IIntField, IField<string>> formatVal,
+    public static AlertType ExportIndexTag(IField<string> pkuTag, OneOf<IIntField, IField<string>> formatVal,
         string defaultVal, Func<string, (bool, int)> tryGetIntID, Func<string, (bool, string)> tryGetStringID)
     {
         bool helper(OneOf<IIntField, IField<string>> fv, string val)
@@ -68,35 +49,16 @@ public static class IndexTagUtil
         return at;
     }
 
-    public static AlertType ExportIndexTag(IField<string> pkuTag, OneOf<IIntField, IField<string>> formatVal,
-        string defaultVal, JObject dex, string formatName)
+    public static AlertType ImportIndexTag(IField<string> pkuTag, OneOf<IIntField, IField<string>> encodedField,
+        Func<int, (bool, string)> tryGetFromIntID, Func<string, (bool, string)> tryGetFromStringID)
     {
-        AlertType at = AlertType.UNSPECIFIED;
-        string finalVal = defaultVal;
+        (bool valid, string val) = encodedField.Match(
+                x => tryGetFromIntID(x.GetAs<int>()),
+                x => tryGetFromStringID(x.Value));
 
-        if (!pkuTag.IsNull()) //specified
-        {
-            if (dex.ExistsIn(formatName, pkuTag.Value)) //valid
-            {
-                finalVal = pkuTag.Value;
-                at = AlertType.NONE;
-            }
-            else //invalid
-                at = AlertType.INVALID;
-        }
-
-        EncodeFormatField(finalVal, formatVal, dex, formatName);
-        return at;
-    }
-
-    public static AlertType ImportIndexTag(IField<string> pkuTag,
-        OneOf<IIntField, IField<string>> encodedField, JObject dex, string formatName)
-    {
         AlertType at = AlertType.NONE;
-        string decodedVal = DecodeFormatField(encodedField, dex, formatName);
-
-        if (dex.ExistsIn(formatName, decodedVal)) //valid
-            pkuTag.Value = decodedVal;
+        if (valid)
+            pkuTag.Value = val;
         else //invalid
         {
             pkuTag.Value = null;

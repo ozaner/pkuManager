@@ -17,7 +17,7 @@ public interface Item_E : Tag
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportItem()
     {
-        AlertType at = IndexTagUtil.ExportIndexTagNew(pku.Item, (Data as Item_O).Item, "None",
+        AlertType at = IndexTagUtil.ExportIndexTag(pku.Item, (Data as Item_O).Item, "None",
             (v) =>
             {
                 bool a = DDM.TryGetItemID(FormatName, v, out int ID);

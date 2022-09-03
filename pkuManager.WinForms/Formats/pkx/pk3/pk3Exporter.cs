@@ -10,6 +10,7 @@ using System.Numerics;
 using static pkuManager.WinForms.Formats.PorterDirective;
 using pkuManager.WinForms.Formats.Modules.MetaTags;
 using pkuManager.WinForms.Formats.Modules.Templates;
+using pkuManager.Data.Dexes;
 
 namespace pkuManager.WinForms.Formats.pkx.pk3;
 
@@ -96,7 +97,7 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E,
         if (pku.IsEgg())
         {
             //To be seen as legal must have no nickname or a defined language + matching "Egg" nickname.
-            bool isValid = LANGUAGE_DEX.ExistsIn(FormatName, pku.Game_Info.Language.Value);
+            bool isValid = DDM.TryGetLanguageID<int>(FormatName, pku.Game_Info.Language.Value, out _);
             if (pku.Nickname.IsNull() || isValid && TagUtil.EGG_NICKNAME[pku.Game_Info.Language.Value] == pku.Nickname.Value)
             {
                 Data.UseEggName.ValueAsBool = true;

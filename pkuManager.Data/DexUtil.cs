@@ -23,7 +23,7 @@ internal static class DexUtil
 
         var currentNode = root;
         foreach (string key in keys)
-            if (!currentNode.TryGetProperty(key, out currentNode))
+            if (key is null || !currentNode.TryGetProperty(key, out currentNode))
                 return false; //invalid keys
 
         if (currentNode.ValueKind is JsonValueKind.Null)

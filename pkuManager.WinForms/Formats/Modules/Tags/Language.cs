@@ -5,7 +5,6 @@ using pkuManager.WinForms.Formats.Fields;
 using pkuManager.WinForms.Formats.Fields.BAMFields;
 using pkuManager.WinForms.Formats.Modules.MetaTags;
 using pkuManager.WinForms.Formats.Modules.Templates;
-using pkuManager.WinForms.Utilities;
 using System;
 using System.Linq;
 using System.Numerics;
@@ -28,14 +27,25 @@ public interface Language_E : Language_P
     {
         var languageObj = (Data as Language_O).Language;
         bool langDep = DDM.IsLangDependent(FormatName);
-        AlertType at = IndexTagUtil.ExportIndexTag(pku.Game_Info.Language, languageObj, "None", LANGUAGE_DEX, FormatName);
+        AlertType at = IndexTagUtil.ExportIndexTag(pku.Game_Info.Language, languageObj, "None",
+            (v) =>
+            {
+                bool a = DDM.TryGetLanguageID(FormatName, v, out int ID);
+                return (a, ID);
+            },
+            (v) =>
+            {
+                bool a = DDM.TryGetLanguageID(FormatName, v, out string ID);
+                return (a, ID);
+            });
 
         if (langDep && at is not AlertType.NONE) //lang dep & invalid/unspecified
         {
             string[] langs = InitLangDepError(at);
             BigInteger[] langsEnc = new BigInteger[langs.Length];
             for (int i = 0; i < langs.Length; i++)
-                langsEnc[i] = LANGUAGE_DEX.GetIndexedValue<int?>(FormatName, langs[i], "Indices") ?? 0;
+                if (!DDM.TryGetLanguageID(FormatName, langs[i], out langsEnc[i]))
+                    langsEnc[i] = 0; //default to 0 
 
             //Assume all lang dep formats are encoded.
             Language_Resolver = new(Language_DependencyError, languageObj.AsT0, langsEnc);
@@ -57,7 +67,17 @@ public interface Language_I : Language_P
     {
         Language_O Language_Field = Data as Language_O;
         bool langDep = DDM.IsLangDependent(FormatName);
-        AlertType at = IndexTagUtil.ImportIndexTag(pku.Game_Info.Language, Language_Field.Language, LANGUAGE_DEX, FormatName);
+        AlertType at = IndexTagUtil.ImportIndexTag(pku.Game_Info.Language, Language_Field.Language,
+            (v) =>
+            {
+                var x = DDM.TryGetLanguageName(FormatName, out string lang, v);
+                return (x, lang);
+            },
+            (v) =>
+            {
+                var x = DDM.TryGetLanguageName(FormatName, out string lang, v);
+                return (x, lang);
+            });
 
         if (at is AlertType.INVALID)
         {
@@ -81,7 +101,7 @@ public interface Language_P : Tag
 
     protected string[] InitLangDepError(AlertType at)
     {
-        string[] langs = LANGUAGE_DEX.AllExistsIn(FormatName).Append(null).ToArray();
+        string[] langs = DDM.GetAllLanguages(FormatName).Append(null).ToArray();
 
         //get default choice
         int defChoice = Array.IndexOf(langs, TagUtil.DEFAULT_SEMANTIC_LANGUAGE);

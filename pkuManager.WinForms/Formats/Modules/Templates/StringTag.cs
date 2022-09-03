@@ -7,6 +7,7 @@ using pkuManager.WinForms.Formats.Modules.MetaTags;
 using pkuManager.WinForms.Formats.Modules.Tags;
 using pkuManager.WinForms.Utilities;
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 using static pkuManager.WinForms.Alerts.Alert;
@@ -26,7 +27,15 @@ public interface StringTag_E : Tag
         if (Language_DependencyError is null) //valid lang/not lang dep
         {
             bool langDep = DDM.IsLangDependent(FormatName);
-            string lang = langDep ? IndexTagUtil.DecodeFormatField((Data as Language_O).Language, LANGUAGE_DEX, FormatName) : null;
+            string lang = null;
+            if (langDep)
+            {
+                bool success = (Data as Language_O).Language.Match(
+                    (v) => DDM.TryGetLanguageName(FormatName, out lang, v.GetAs<int>()),
+                    (v) => DDM.TryGetLanguageName(FormatName, out lang, v.Value));
+                if (!success)
+                    lang = null;
+            }
             field.Switch(
                 x => {
                     int maxLength = x.Length;
@@ -45,12 +54,12 @@ public interface StringTag_E : Tag
         }
         else //invalid dependent lang
         {
-            string[] langs = LANGUAGE_DEX.AllExistsIn(FormatName);
-            string[] decodedStrs = new string[langs.Length + 1];
-            BigInteger[][] encodedStrs = new BigInteger[langs.Length + 1][];
+            List<string> langs = DDM.GetAllLanguages(FormatName);
+            string[] decodedStrs = new string[langs.Count + 1];
+            BigInteger[][] encodedStrs = new BigInteger[langs.Count + 1][];
             var alertChoices = Language_DependencyError.Choices;
 
-            for (int i = 0; i < langs.Length; i++)
+            for (int i = 0; i < langs.Count; i++)
             {
                 (encodedStrs[i], _, _) = StringTagUtil.Encode(valueFromLang(langs[i]), field.AsT0.Length, FormatName, langs[i]);
                 decodedStrs[i] = StringTagUtil.Decode(encodedStrs[i], FormatName, langs[i]).decodedStr;
@@ -58,9 +67,9 @@ public interface StringTag_E : Tag
             }
 
             // "None" lang option
-            (encodedStrs[langs.Length], _, _) = StringTagUtil.Encode(null, field.AsT0.Length, FormatName);
-            decodedStrs[langs.Length] = "";
-            alertChoices[langs.Length].Message = alertChoices[langs.Length].Message.AddNewLine($"{tagName}: ");
+            (encodedStrs[langs.Count], _, _) = StringTagUtil.Encode(null, field.AsT0.Length, FormatName);
+            decodedStrs[langs.Count] = "";
+            alertChoices[langs.Count].Message = alertChoices[langs.Count].Message.AddNewLine($"{tagName}: ");
             
             return new(Language_DependencyError, field.AsT0, encodedStrs);
         }
@@ -93,8 +102,15 @@ public interface StringTag_I : Tag
     {
         if (Language_DependencyError is null) //valid lang/not lang dep
         {
-            bool langDep = DDM.IsLangDependent(FormatName);
-            string lang = langDep ? IndexTagUtil.DecodeFormatField((Data as Language_O).Language, LANGUAGE_DEX, FormatName) : null;
+            string lang = null;
+            if (DDM.IsLangDependent(FormatName))
+            {
+                bool success = (Data as Language_O).Language.Match(
+                    (v) => DDM.TryGetLanguageName(FormatName, out lang, v.GetAs<int>()),
+                    (v) => DDM.TryGetLanguageName(FormatName, out lang, v.Value));
+                if (!success)
+                    lang = null;
+            }
             field.Switch(
                 x => {
                     (pkuField.Value, bool invalid) = StringTagUtil.Decode(x.Value, FormatName, lang);
@@ -106,17 +122,17 @@ public interface StringTag_I : Tag
         }
         else //invalid dependent lang
         {
-            string[] langs = LANGUAGE_DEX.AllExistsIn(FormatName);
-            string[] decodedStrs = new string[langs.Length + 1];
+            List<string> langs = DDM.GetAllLanguages(FormatName);
+            string[] decodedStrs = new string[langs.Count + 1];
             var alertChoices = Language_DependencyError.Choices;
 
-            for (int i = 0; i < langs.Length; i++)
+            for (int i = 0; i < langs.Count; i++)
             {
                 decodedStrs[i] = StringTagUtil.Decode(field.AsT0.Value, FormatName, langs[i]).decodedStr;
                 alertChoices[i].Message = alertChoices[i].Message.AddNewLine($"{tagName}: {decodedStrs[i]}");
             }
-            decodedStrs[langs.Length] = ""; // "None" lang option
-            alertChoices[langs.Length].Message = alertChoices[langs.Length].Message.AddNewLine($"{tagName}: ");
+            decodedStrs[langs.Count] = ""; // "None" lang option
+            alertChoices[langs.Count].Message = alertChoices[langs.Count].Message.AddNewLine($"{tagName}: ");
             
             return new(Language_DependencyError, pkuField, decodedStrs);
         }

@@ -17,7 +17,7 @@ public interface Ball_E : Tag
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportBall()
     {
-        AlertType at = IndexTagUtil.ExportIndexTagNew(pku.Catch_Info.Ball, (Data as Ball_O).Ball, "Poké Ball",
+        AlertType at = IndexTagUtil.ExportIndexTag(pku.Catch_Info.Ball, (Data as Ball_O).Ball, "Poké Ball",
             (v) =>
             {
                 bool a = DDM.TryGetBallID(FormatName, v, out int ID);

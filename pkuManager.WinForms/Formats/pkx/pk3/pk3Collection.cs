@@ -251,9 +251,8 @@ public class pk3Box : Box
         }
 
         //get lang
-        string decodedLang = IndexTagUtil.DecodeFormatField(pk3.Language, LANGUAGE_DEX, FormatName);
-        bool langIsValid = LANGUAGE_DEX.ExistsIn(FormatName, decodedLang);
-        string lang = langIsValid ? decodedLang : (IsJapanese ? "Japanese" : "English"); //fall back on jpn/eng
+        if (!DDM.TryGetLanguageName(FormatName, out string lang, pk3.Language.Value))
+            lang = IsJapanese ? "Japanese" : "English"; //fall back on jpn/eng
 
         //get nickname
         string nick;

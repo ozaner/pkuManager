@@ -116,18 +116,6 @@ public static class DexUtil
         return Array.Exists(arr, x => x.EqualsCaseInsensitive(format));
     }
 
-    public static string[] AllExistsIn(this JObject dex, string format, params string[] keys)
-    {
-        JObject jobj = ReadDataDex<JObject>(dex, keys);
-        List<string> finalList = new();
-        foreach (var x in jobj)
-        {
-            if (dex.ExistsIn(format, keys.Append(x.Key).ToArray()))
-                finalList.Add(x.Key);
-        }
-        return finalList.ToArray();
-    }
-
     // Common GetIndex code, that allows inner looping of keys (e.g. species combos) and outer looping of formats (e.g. pk3 -> main-series)
     private static T GetIndexedValue<T>(this JObject dex, string format, IEnumerable<List<string>> other_keys)
     {
@@ -143,32 +131,6 @@ public static class DexUtil
             }
         }
         return default;
-    }
-
-    /// <summary>
-    /// Gets an index type value of whatever <paramref name="keys"/> points to for the <paramref name="format"/>.<br/>
-    /// If format fails, tries the format's "Parent Indices".
-    /// </summary>
-    /// <param name="format">The format whose indices are to be searched for.</param>
-    /// <param name="keys">The path of the object in <paramref name="dex"/>.</param>
-    /// <returns>The value at the given index name, or one of its fallback indices.</returns>
-    /// <inheritdoc cref="ReadDataDex{T}(JObject, string[])"/>
-    public static T GetIndexedValue<T>(this JObject dex, string format, params string[] keys)
-        => dex.GetIndexedValue<T>(format, new List<List<string>>() { keys.ToList() });
-
-    public static string SearchIndexedValue<T>(this JObject dex, T value, string format, string indexName, params string[] keys)
-    {
-        List<string> indexChain = DDM.GetIndexChain(format);
-        int xLoc = Array.IndexOf(keys, "$x");
-        foreach (string link in indexChain)
-        {
-            string res = dex.SearchDataDex(value, keys.Append(indexName).Append(link).ToArray());
-            keys[xLoc] = res;
-            if (res is not null && dex.ExistsIn(format, keys))
-                return res;
-            keys[xLoc] = "$x";
-        }
-        return null;
     }
 
 
@@ -354,11 +316,9 @@ public static class DexUtil
     }
 
     /// <summary>
-    /// Like <see cref="GetIndexedValue(JObject, string, string[])"/> but specifically for the <see cref="SPECIES_DEX"/>.<br/>
     /// Searches through the appearances, form(s), then species of a species entry with the given keys.
     /// </summary>
     /// <param name="sfa">The SFA to search through.</param>
-    /// <inheritdoc cref="GetIndexedValue(JObject, string, string[])"/>
     public static T GetSpeciesIndexedValue<T>(SFA sfa, string format, params string[] keys)
     {
         var combos = sfa.GetSearchablePKUCombos();

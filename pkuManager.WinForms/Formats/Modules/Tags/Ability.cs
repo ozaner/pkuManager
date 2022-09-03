@@ -18,7 +18,7 @@ public interface Ability_E : Tag
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportAbility()
     {
-        AlertType at = IndexTagUtil.ExportIndexTagNew(pku.Ability, (Data as Ability_O).Ability, "None",
+        AlertType at = IndexTagUtil.ExportIndexTag(pku.Ability, (Data as Ability_O).Ability, "None",
             (v) =>
             {
                 bool a = DDM.TryGetAbilityID(FormatName, v, out int ID);
