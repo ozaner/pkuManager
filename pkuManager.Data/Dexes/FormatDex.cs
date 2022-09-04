@@ -7,7 +7,7 @@ namespace pkuManager.Data.Dexes;
 /// </summary>
 public static class FormatDex
 {
-    private static JsonElement FDR(DataDexManager ddm) => ddm.GetDex("Format").RootElement;
+    private static JsonElement FDR(DataDexManager ddm) => ddm.GetDexRoot("Format");
 
     //TODO: make this internal
     /// <summary>

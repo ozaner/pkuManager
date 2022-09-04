@@ -7,7 +7,7 @@ namespace pkuManager.Data.Dexes;
 /// </summary>
 public static class LanguageDex
 {
-    private static JsonElement LDR(DataDexManager ddm) => ddm.GetDex("Language").RootElement;
+    private static JsonElement LDR(DataDexManager ddm) => ddm.GetDexRoot("Language");
 
     /// <summary>
     /// Checks if <paramref name="langauge"/> exists in the given <paramref name="format"/>.

@@ -7,7 +7,7 @@ namespace pkuManager.Data.Dexes;
 /// </summary>
 public static class MoveDex
 {
-    private static JsonElement MDR(DataDexManager ddm) => ddm.GetDex("Move").RootElement;
+    private static JsonElement MDR(DataDexManager ddm) => ddm.GetDexRoot("Move");
 
     /// <summary>
     /// Checks if <paramref name="move"/> exists in the given <paramref name="format"/>.

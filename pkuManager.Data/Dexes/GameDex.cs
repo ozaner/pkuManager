@@ -7,7 +7,7 @@ namespace pkuManager.Data.Dexes;
 /// </summary>
 public static class GameDex
 {
-    private static JsonElement GDR(DataDexManager ddm) => ddm.GetDex("Game").RootElement;
+    private static JsonElement GDR(DataDexManager ddm) => ddm.GetDexRoot("Game");
 
     /// <summary>
     /// Checks if <paramref name="game"/> exists in the given <paramref name="format"/>.

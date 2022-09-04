@@ -6,7 +6,7 @@ namespace pkuManager.Data.Dexes;
 /// </summary>
 public static class AbilityDex
 {
-    private static JsonElement ADR(DataDexManager ddm) => ddm.GetDex("Ability").RootElement;
+    private static JsonElement ADR(DataDexManager ddm) => ddm.GetDexRoot("Ability");
 
     /// <summary>
     /// Checks if <paramref name="ability"/> exists in the given <paramref name="format"/>.

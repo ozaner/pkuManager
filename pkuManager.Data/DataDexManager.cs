@@ -43,14 +43,8 @@ public class DataDexManager
      * DataDexes
      * ------------------------------------
     */
-    private readonly Dictionary<string, Task<JsonDocument>> DexList = new();
-    internal JsonDocument GetDex(string name)
-    {
-        var dexTask = DexList[name];
-        if (!dexTask.IsCompleted)
-            dexTask.Wait();
-        return dexTask.Result;
-    }
+    private readonly Dictionary<string, JsonDocument> DexList = new();
+    internal JsonElement GetDexRoot(string name) => DexList[name].RootElement;
 
 
     /* ------------------------------------
@@ -91,8 +85,10 @@ public class DataDexManager
         var config = Task.Run(() => ReadDex("config.json")).Result;
 
         JsonElement dexesDict = config.RootElement.GetProperty("Dexes");
+        List<Task<JsonDocument>> tasks = new();
         foreach (JsonProperty dex in dexesDict.EnumerateObject())
-            DexList[dex.Name] = ReadDex(dex.Value.GetString()!); //assume no null filenames
+            tasks.Add(Task.Run(async () => DexList[dex.Name] = await ReadDex(dex.Value.GetString()!))); //assume no null filenames
+        Task.Run(() => Task.WhenAll(tasks)).Wait();
     }
 
 

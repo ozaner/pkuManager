@@ -7,7 +7,7 @@ namespace pkuManager.Data.Dexes;
 /// </summary>
 public static class ItemDex
 {
-    private static JsonElement IDR(DataDexManager ddm) => ddm.GetDex("Item").RootElement;
+    private static JsonElement IDR(DataDexManager ddm) => ddm.GetDexRoot("Item");
 
     /// <summary>
     /// Checks if <paramref name="item"/> exists in the given <paramref name="format"/>.
