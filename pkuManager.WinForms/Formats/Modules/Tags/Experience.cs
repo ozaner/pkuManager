@@ -1,8 +1,10 @@
-﻿using pkuManager.WinForms.Alerts;
+﻿using pkuManager.Data.Dexes;
+using pkuManager.WinForms.Alerts;
 using pkuManager.WinForms.Formats.Fields;
 using pkuManager.WinForms.Formats.Modules.Templates;
 using System;
 using System.Numerics;
+using static pkuManager.Data.Dexes.SpeciesDex;
 using static pkuManager.WinForms.Alerts.Alert;
 using static pkuManager.WinForms.Formats.PorterDirective;
 
@@ -18,7 +20,8 @@ public interface Experience_E : Tag
     [PorterDirective(ProcessingPhase.FirstPass)]
     public void ExportExperience()
     {
-        GrowthRate gr = TagUtil.GetGrowthRate(pku);
+        if (!DDM.TryGetGrowthRate(pku, out GrowthRate gr))
+            throw new Exception($"SPECIES '{pku.Species}' HAS INVALID GROWTHRATE.");
         BigInteger level100EXP = TagUtil.GetMinExpFromLevel(100, gr);
 
         //data collection - Level

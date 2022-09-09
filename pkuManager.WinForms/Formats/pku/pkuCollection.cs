@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualBasic.FileIO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using pkuManager.Data.Dexes;
 using pkuManager.WinForms.Formats.Fields;
 using pkuManager.WinForms.Formats.Fields.LambdaFields;
 using pkuManager.WinForms.Formats.Modules;
@@ -501,7 +502,7 @@ public class pkuBox : Box
             pku.Species.Value,
             pku.Game_Info.Origin_Game.Value,
             pku.Game_Info.OT.Value,
-            pku.Forms.Value.JoinLexical() ?? DexUtil.GetDefaultForm(pku.Species.Value),
+            pku.Forms.Value.JoinLexical() ?? DDM.GetDefaultForm(pku.Species.Value),
             pku.Appearance.Value?.Take(10).ToArray().JoinLexical(),
             pku.Catch_Info.Ball.Value,
             pku.IsShadow()

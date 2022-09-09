@@ -10,6 +10,8 @@ using pkuManager.WinForms.Formats.Fields.LambdaFields;
 using pkuManager.WinForms.Formats.Modules.Tags;
 using pkuManager.WinForms.Formats.Modules.MetaTags;
 using pkuManager.WinForms.Formats.Modules;
+using static pkuManager.Data.Dexes.SpeciesDex;
+using pkuManager.Data;
 
 namespace pkuManager.WinForms.Formats.pkx.pk3;
 
@@ -143,12 +145,15 @@ public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nat
         Form = new(() => Species.Value == 201 ? TagUtil.GetPIDUnownFormID(PID.GetAs<uint>()) : 0, _ => { });
         Shiny = new(() => TagUtil.IsPIDShiny(PID.GetAs<uint>(), TID.GetAs<uint>(), Shiny_Gen6Odds), _ => { });
         Gender = new(() => {
-            //deoxys, castform, and unown forms keep same gender ratio, no need to check.
-            DexUtil.SFA sfa = DexUtil.GetSFAFromIndices(FormatName, Species.GetAs<int>(), (int?)null, false);
-            if (sfa.Species is null)
-                return TagEnums.Gender.Genderless; //this pk3 has an undefined species
+            //deoxys, castform, and unown forms keep same gender ratio, no need to check those forms specifically.
+            if (DDM.TryGetSFAMFromIDs<int?>(out SFAM sfam, FormatName, Species.GetAs<int>(), null, null, false))
+                return TagEnums.Gender.Genderless; //this pk3 has an undefined SFAM
             else
-                return TagUtil.GetPIDGender(TagUtil.GetGenderRatio(sfa), PID.GetAs<uint>());
+            {
+                if (!DDM.TryGetGenderRatio(sfam, out GenderRatio gr))
+                    throw new Exception($"SPECIES '{sfam.Species}' HAS INVALID GENDERRATIO.");
+                return TagUtil.GetPIDGender(gr, PID.GetAs<uint>());
+            }
         }, _ => { });
         Nature = new(() => TagUtil.GetPIDNature(PID.GetAs<uint>()), _ => { });
     }

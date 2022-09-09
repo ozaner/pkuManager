@@ -2,8 +2,10 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using pkuManager.Data;
 using pkuManager.WinForms.Formats.Fields;
 using pkuManager.WinForms.Formats.Fields.BackedFields;
+using pkuManager.WinForms.Formats.Modules;
 using pkuManager.WinForms.Utilities;
 using System;
 using System.Collections;
@@ -329,6 +331,17 @@ public class pkuObject : FormatObject
         [JsonExtensionData]
         public Dictionary<string, JToken> ExtraTags { get; set; } = new();
     }
+
+
+    /* ------------------------------------
+     * Misc. Util
+     * ------------------------------------
+    */
+    public static implicit operator SFAM(pkuObject pku)
+        => new (pku.Species.Value ?? "",
+                pku.Forms.IsNull() ? "" : pku.Forms.Value.JoinLexical(),
+                pku.Appearance.IsNull() ? "" : pku.Appearance.Value.JoinLexical(),
+                pku.Gender.ToEnum<Gender>() is TagEnums.Gender.Female);
 
 
     /* ------------------------------------

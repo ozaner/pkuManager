@@ -6,7 +6,9 @@ using pkuManager.WinForms.Formats.Fields.LambdaFields;
 using pkuManager.WinForms.Formats.Modules.MetaTags;
 using pkuManager.WinForms.Formats.Modules.Templates;
 using pkuManager.WinForms.Utilities;
+using System;
 using System.Collections.Generic;
+using static pkuManager.Data.Dexes.SpeciesDex;
 using static pkuManager.WinForms.Alerts.Alert;
 using static pkuManager.WinForms.Formats.PorterDirective;
 
@@ -45,7 +47,8 @@ public interface Gender_E : Tag
 
         AlertType at = AlertType.NONE;
         Gender? readGender = pku.Gender.ToEnum<Gender>();
-        GenderRatio gr = TagUtil.GetGenderRatio(pku);
+        if (!DDM.TryGetGenderRatio(pku, out GenderRatio gr))
+            throw new Exception($"SPECIES '{pku.Species}' HAS INVALID GENDERRATIO.");
         Gender? mandatoryGender = gr switch
         {
             GenderRatio.All_Genderless => Gender.Genderless,

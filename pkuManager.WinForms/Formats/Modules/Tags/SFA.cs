@@ -1,4 +1,6 @@
 ﻿using OneOf;
+using pkuManager.Data;
+using pkuManager.Data.Dexes;
 using pkuManager.WinForms.Alerts;
 using pkuManager.WinForms.Formats.Fields;
 using pkuManager.WinForms.Utilities;
@@ -25,23 +27,35 @@ public interface SFA_E : Tag
     {
         //Set Species field
         (Data as Species_O).Species.Switch(
-            x => x.SetAs(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, "Indices").Value), //int field
-            x => x.Value = DexUtil.GetSpeciesIndexedValue<string>(pku, FormatName, "Indices") //string field
+            x => {
+                DDM.TryGetSpeciesID(pku, FormatName, out int ID);
+                x.SetAs(ID);
+            }, //int field
+            x => {
+                DDM.TryGetSpeciesID(pku, FormatName, out string ID);
+                x.Value = ID;
+            } //string field
         );
 
         //Set Form field (if it exists)
         if (Data is Form_O formObj)
         {
             formObj.Form.Switch(
-                x => x.SetAs(DexUtil.GetSpeciesIndexedValue<int?>(pku, FormatName, "Form Indices").Value), //int field
-                x => x.Value = DexUtil.GetSpeciesIndexedValue<string>(pku, FormatName, "Form Indices") //string field
+                x => {
+                    DDM.TryGetFormID(pku, FormatName, out int ID);
+                    x.SetAs(ID);
+                }, //int field
+                x => {
+                    DDM.TryGetFormID(pku, FormatName, out string ID);
+                    x.Value = ID;
+                } //string field
             );
         }
 
-        Warnings.Add(GetSFAAlert(pku)); //run alert
+        Warnings.Add(GetSFAMAlert(pku)); //run alert
     }
 
-    public Alert GetSFAAlert(DexUtil.SFA sfa) => null;
+    public Alert GetSFAMAlert(SFAM sfam) => null;
 }
 
 public interface SFA_I : Tag
@@ -51,22 +65,22 @@ public interface SFA_I : Tag
     {
         bool isString = (Data as Species_O).Species.IsT1;
         bool isFemale = (Data as Gender_O)?.Value is Gender.Female;
-        DexUtil.SFA sfa;
+        SFAM sfam;
         if (isString) //string indices
         {
             string speciesID = (Data as Species_O).Species.AsT1.Value;
             string formID = Data is Form_O formObj ? formObj.Form.AsT1.Value : null;
-            sfa = DexUtil.GetSFAFromIndices(FormatName, speciesID, formID, isFemale);
+            DDM.TryGetSFAMFromIDs(out sfam, FormatName, speciesID, formID, null, isFemale);
         }
         else //int indices
         {
-            int? speciesID = (Data as Species_O).Species.AsT0.GetAs<int>();
+            int speciesID = (Data as Species_O).Species.AsT0.GetAs<int>();
             int? formID = Data is Form_O formObj ? formObj.Form.AsT0.GetAs<int>() : null;
-            sfa = DexUtil.GetSFAFromIndices(FormatName, speciesID, formID, isFemale);
+            DDM.TryGetSFAMFromIDs(out sfam, FormatName, speciesID, formID, null, isFemale);
         }
 
-        pku.Species.Value = sfa.Species;
-        pku.Forms.Value = sfa.Form is "" ? null : sfa.Form.SplitLexical();
-        pku.Appearance.Value = sfa.Appearance is "" ? null : sfa.Appearance.SplitLexical();
+        pku.Species.Value = sfam.Species;
+        pku.Forms.Value = sfam.Form is "" ? null : sfam.Form.SplitLexical();
+        pku.Appearance.Value = sfam.Appearance is "" ? null : sfam.Appearance.SplitLexical();
     }
 }

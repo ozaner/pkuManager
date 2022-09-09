@@ -9,7 +9,6 @@ public static class FormatDex
 {
     private static JsonElement FDR(DataDexManager ddm) => ddm.GetDexRoot("Format");
 
-    //TODO: make this internal
     /// <summary>
     /// Gets an array of index names (e.g. "pk3", "main-series"), called the 'index chain',<br/>
     /// in order of precedence that they should be checked when searching for an indexed value.<br/>
@@ -17,7 +16,7 @@ public static class FormatDex
     /// </summary>
     /// <param name="format">The format in question.</param>
     /// <returns>The index chain of the given <paramref name="format"/>.</returns>
-    public static List<string> GetIndexChain(this DataDexManager ddm, string format)
+    internal static List<string> GetIndexChain(this DataDexManager ddm, string format)
     {
         List<string> indexChain = new() { format };
         if (FDR(ddm).TryGetValue(out string[] indexParents, format, "Parent Indices"))

@@ -52,7 +52,7 @@ internal static class DexUtil
     ///     does not contain exactly one "$x" element.</exception>
     internal static bool TryGetKey<T>(this JsonElement root, out string x, T value, params string[] keys) where T : notnull
     {
-        bool match(JsonElement fhNode, T value, string[] secondHalf)
+        static bool match(JsonElement fhNode, T value, string[] secondHalf)
             => TryGetValue(fhNode, out T valueToMatch, secondHalf) //value found
                 && valueToMatch.Equals(value); //values match
         return TryGetKeyBase(root, out x, value, keys, match);
@@ -79,8 +79,7 @@ internal static class DexUtil
     }
 
     //assumes indexed property is last key
-    internal static bool TryGetIndexedKey<T>(this JsonElement root, List<string> indexNames, out string x,
-        T value, params string[] keys) where T : notnull
+    internal static bool TryGetIndexedKey<T>(this JsonElement root, List<string> indexNames, out string x, T value, params string[] keys) where T : notnull
     {
         bool match(JsonElement fhNode, T value, string[] secondHalf)
             => TryGetIndexedValue(fhNode, indexNames, out T valueToMatch, secondHalf) //value found

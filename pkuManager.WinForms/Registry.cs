@@ -1,11 +1,9 @@
-﻿global using static pkuManager.WinForms.Registry.DataDexes; //DataDexes are global constants
-global using pkuManager.Data;
+﻿global using static pkuManager.WinForms.Registry; //to give global scope to DDM
 
-using Newtonsoft.Json.Linq;
+using pkuManager.Data;
 using pkuManager.WinForms.Formats.pku;
 using pkuManager.WinForms.Formats.pkx.pk3;
 using pkuManager.WinForms.Formats.showdown;
-using pkuManager.WinForms.Utilities;
 using System;
 using System.Collections.Generic;
 
@@ -13,6 +11,8 @@ namespace pkuManager.WinForms;
 
 public static class Registry
 {
+    public static readonly DataDexManager DDM = new();
+
     public readonly struct FormatInfo
     {
         public readonly Type Importer, Exporter, Collection;
@@ -35,16 +35,4 @@ public static class Registry
         { "pk3", new FormatInfo("pk3", "sav", typeof(pk3Importer), typeof(pk3Exporter), typeof(pk3Collection)) },
         { "Showdown", new FormatInfo("txt", null, null, typeof(ShowdownExporter), null, true) }
     };
-
-    public static class DataDexes
-    {
-        public static readonly DataDexManager DDM = new();
-
-        private const string MASTERDEX_URL = "https://raw.githubusercontent.com/project-pku/pkuData/build/";
-
-        private static JObject GetMasterDex(string type)
-            => DataUtil.DownloadJson($"{MASTERDEX_URL}{type}Dex.json", $"{type}Dex");
-
-        public static readonly JObject SPECIES_DEX = GetMasterDex("Species");
-    }
 }

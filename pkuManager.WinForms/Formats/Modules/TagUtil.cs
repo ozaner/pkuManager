@@ -1,9 +1,11 @@
 ﻿global using static pkuManager.WinForms.Formats.Modules.TagEnums; //TagEnums are global constants
+using pkuManager.Data;
 using pkuManager.Data.Dexes;
 using pkuManager.WinForms.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using static pkuManager.Data.Dexes.SpeciesDex;
 
 namespace pkuManager.WinForms.Formats.Modules;
 
@@ -67,32 +69,16 @@ public static class TagUtil
      * Species Methods
      * ------------------------------------
     */
-    /// <summary>
-    /// Gets the National dex number of the given <paramref name="species"/>.
-    /// </summary>
-    /// <param name="species">A Pokémon species name, with any capitalization.</param>
-    /// <returns>The national dex # of the given <paramref name="species"/>,
-    ///          or <see langword="null"/> if it doesn't have one.</returns>
-    public static int? GetNationalDex(string species)
-        => SPECIES_DEX.ReadDataDex<int?>(species, "Indices", "main-series");
-
-    /// <summary>
-    /// Gets the English name of the species with the given <paramref name="dex"/> #.
-    /// </summary>
-    /// <param name="dex">The national dex # of the desired species.</param>
-    /// <returns>The English name of the species with the <paramref name="dex"/> #.
-    ///          Null if there is no match.</returns>
-    public static string GetSpeciesName(int dex)
-        => SPECIES_DEX.SearchDataDex<int?>(dex, "$x", "Indices", "main-series");
-
-    public static string GetDefaultName(DexUtil.SFA sfa, bool isEgg, string lang)
+    public static string GetDefaultName(SFAM sfam, bool isEgg, string lang)
     {
         if (isEgg)
         {
             EGG_NICKNAME.TryGetValue(lang ?? "", out string eggName);
             return eggName;
         }
-        return DexUtil.ReadSpeciesDex<string>(sfa, "Names", lang);
+        if (DDM.TryGetSpeciesLangName(sfam, lang, out string name))
+            return name;
+        return ""; //no name found for this lang
     }
 
 
@@ -199,9 +185,6 @@ public static class TagUtil
      * Exp Methods
      * ------------------------------------
     */
-    public static GrowthRate GetGrowthRate(DexUtil.SFA sfa)
-        => DexUtil.ReadSpeciesDex<string>(sfa, "Growth Rate").ToEnum<GrowthRate>().Value;
-
     public static BigInteger GetMinExpFromLevel(BigInteger level, GrowthRate gr)
     {
         if (level < 2)
@@ -260,14 +243,6 @@ public static class TagUtil
      * Misc. Methods
      * ------------------------------------
     */
-    /// <summary>
-    /// Gets the gender ratio of the given <paramref name="sfa"/>.
-    /// </summary>
-    /// <param name="sfa">A SFA to search the speciesDex.</param>
-    /// <returns>The gender ratio of <paramref name="sfa"/>.</returns>
-    public static GenderRatio GetGenderRatio(DexUtil.SFA sfa)
-        => DexUtil.ReadSpeciesDex<string>(sfa, "Gender Ratio").ToEnum<GenderRatio>().Value;
-
     /// <summary>
     /// Gets the Unown form name the given ID corresponds to.
     /// </summary>
@@ -377,22 +352,6 @@ public static class TagEnums
         Male,
         Female,
         Genderless
-    }
-
-    /// <summary>
-    /// A gender ratio a Pokémon species can have.<br/>
-    /// Index numbers correspond to the gender threshold use to determine a Pokémon's gender.
-    /// </summary>
-    public enum GenderRatio
-    {
-        All_Male = 0,
-        Male_7_Female_1 = 31,
-        Male_3_Female_1 = 63,
-        Male_1_Female_1 = 127,
-        Male_1_Female_3 = 191,
-        Male_1_Female_7 = 225,
-        All_Female = 254,
-        All_Genderless = 255
     }
 
     /// <summary>
@@ -586,20 +545,6 @@ public static class TagEnums
         Thorny_Mark,
         Vigor_Mark,
         Slump_Mark,
-    }
-
-    /// <summary>
-    /// An EXP growth type a Pokémon species can have.
-    /// Index numbers correspond to those used in the official games.
-    /// </summary>
-    public enum GrowthRate
-    {
-        Erratic = 0,
-        Fluctuating,
-        Medium_Fast,
-        Medium_Slow,
-        Fast,
-        Slow
     }
 
     /// <summary>

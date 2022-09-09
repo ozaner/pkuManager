@@ -2,7 +2,6 @@
 using pkuManager.WinForms.Formats.Modules.MetaTags;
 using pkuManager.WinForms.Formats.Modules.Tags;
 using pkuManager.WinForms.Formats.pku;
-using pkuManager.WinForms.Utilities;
 using static pkuManager.WinForms.Alerts.Alert;
 using static pkuManager.WinForms.Formats.PorterDirective;
 
@@ -26,7 +25,8 @@ public class ShowdownExporter : Exporter, BattleStatOverride_E, FormCasting_E, S
     public ShowdownExporter(pkuObject pku, GlobalFlags globalFlags, bool checkMode) : base(pku, globalFlags, checkMode)
     {
         // Screen Species & Form
-        if (DexUtil.FirstFormInFormat(pku, FormatName, true, GlobalFlags.Default_Form_Override) is null)
+        if (FormCastingUtil.GetCastedForm(pku, FormatName,
+            GlobalFlags.Default_Form_Override).fcs is FormCastingUtil.FormCastStatus.DNE)
             Reason = "Must be a species & form that exists in Showdown.";
 
         // Screen Shadow Pokemon

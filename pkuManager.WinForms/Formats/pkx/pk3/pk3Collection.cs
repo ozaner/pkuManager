@@ -1,11 +1,14 @@
-﻿using pkuManager.Data.Dexes;
+﻿using pkuManager.Data;
+using pkuManager.Data.Dexes;
 using pkuManager.WinForms.Formats.Fields;
 using pkuManager.WinForms.Formats.Fields.BAMFields;
 using pkuManager.WinForms.Formats.Modules;
 using pkuManager.WinForms.Formats.Modules.Templates;
 using pkuManager.WinForms.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using static pkuManager.Data.Dexes.SpeciesDex;
 
 namespace pkuManager.WinForms.Formats.pkx.pk3;
 
@@ -237,17 +240,17 @@ public class pk3Box : Box
         };
 
         //get SFA
-        DexUtil.SFA sfa = DexUtil.GetSFAFromIndices<int?>("pk3", pk3.Species.GetAs<int>(), form, false);
-        if (sfa.Species is not null)
+        if (DDM.TryGetSFAMFromIDs<int?>(out SFAM sfam, "pk3", pk3.Species.GetAs<int>(), form, null, false)) //get male SFA
         {
             //get gender ratio
-            var gr = TagUtil.GetGenderRatio(sfa);
+            if (!DDM.TryGetGenderRatio(sfam, out GenderRatio gr))
+                throw new Exception($"SPECIES '{sfam.Species}' HAS INVALID GENDERRATIO.");
             bool female = gr is GenderRatio.All_Female ||
                           gr is not GenderRatio.All_Male or GenderRatio.All_Genderless
                           && (int)gr > pk3.PID.Value % 256;
 
-            //gender determined, now get true SFA
-            sfa = DexUtil.GetSFAFromIndices<int?>("pk3", pk3.Species.GetAs<int>(), form, female);
+            //gender determined, now get true SFA (must exist if male one existed)
+            DDM.TryGetSFAMFromIDs<int?>(out sfam, "pk3", pk3.Species.GetAs<int>(), form, null, female);
         }
 
         //get lang
@@ -271,7 +274,7 @@ public class pk3Box : Box
 
         //get sprites
         bool shiny = TagUtil.IsPIDShiny(pk3.PID.GetAs<uint>(), pk3.TID.GetAs<uint>(), false);
-        var sprites = ImageUtil.GetSprites(sfa, shiny, pk3.Is_Egg.ValueAsBool || pk3.IsBadEggOrInvalidChecksum);
+        var sprites = ImageUtil.GetSprites(sfam, shiny, pk3.Is_Egg.ValueAsBool || pk3.IsBadEggOrInvalidChecksum);
 
         //get ball
         DDM.TryGetBallName("pk3", out string ball, pk3.Ball.GetAs<int>());
@@ -285,10 +288,10 @@ public class pk3Box : Box
             sprites[1],
             sprites[2],
             nick,
-            sfa.Species,
+            sfam.Species,
             game,
             StringTagUtil.Decode(pk3.OT.Value, "pk3", lang).decodedStr,
-            sfa.Form, //forms
+            sfam.Form, //forms
             null, //appearance
             ball,
             false //can't be shadow

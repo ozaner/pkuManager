@@ -11,6 +11,7 @@ using static pkuManager.WinForms.Formats.PorterDirective;
 using pkuManager.WinForms.Formats.Modules.MetaTags;
 using pkuManager.WinForms.Formats.Modules.Templates;
 using pkuManager.Data.Dexes;
+using pkuManager.Data;
 
 namespace pkuManager.WinForms.Formats.pkx.pk3;
 
@@ -34,7 +35,8 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E,
     public pk3Exporter(pkuObject pku, GlobalFlags globalFlags, bool checkMode) : base(pku, globalFlags, checkMode)
     {
         // Screen Species & Form
-        if (DexUtil.FirstFormInFormat(this.pku, FormatName, true, GlobalFlags.Default_Form_Override) is null)
+        if (FormCastingUtil.GetCastedForm(pku, FormatName,
+            GlobalFlags.Default_Form_Override).fcs is FormCastingUtil.FormCastStatus.DNE)
             Reason = "Must be a species & form that exists in Gen 3.";
         
         // Screen Shadow Pokemon
@@ -197,11 +199,11 @@ public class pk3Exporter : Exporter, BattleStatOverride_E, FormCasting_E, SFA_E,
      * Custom Alerts
      * ------------------------------------
     */
-    public Alert GetSFAAlert(DexUtil.SFA sfa)
+    public Alert GetSFAMAlert(SFAM sfam)
     {
-        if (sfa.Species == "Deoxys" && sfa.Form != "Normal") //must be another valid deoxys form to get here
+        if (sfam.Species == "Deoxys" && sfam.Form != "Normal") //must be another valid deoxys form to get here
             return new("Form", "Note that in generation 3, Deoxys' form depends on what game it is currently in.");
-        else if (sfa.Species == "Castform" && sfa.Form != "Normal")
+        else if (sfam.Species == "Castform" && sfam.Form != "Normal")
             return new("Form", "Note that in generation 3, Castform can only be in its 'Normal' form out of battle.");
         else
             return null;

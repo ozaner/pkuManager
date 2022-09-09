@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
-using pkuManager.Data.Dexes;
-using pkuManager.WinForms.Formats.pku;
+using pkuManager.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -66,149 +65,21 @@ public static class DexUtil
         return default; //shouldn't get here
     }
 
-    /// <summary>
-    /// Returns the key that, when substituted in for "$x",
-    /// has <paramref name="value"/> matching the value at <paramref name="keys"/>.
-    /// </summary>
-    /// <param name="value">The value to search for.</param>
-    /// <returns>The key that when substituted into the "$x" term, results in <paramref name="value"/> matching.</returns>
-    /// <inheritdoc cref="ReadDataDex{T}(JObject, string[])"/>
-    public static string SearchDataDex<T>(this JObject dex, T value, params string[] keys)
-    {
-        int splitIndex = Array.IndexOf(keys, "$x");
-        if (splitIndex is -1)
-            throw new ArgumentException("keys neeeds at least one \"$x\" key", nameof(keys));
-
-        JObject fh = splitIndex is 0 ? dex : dex.ReadDataDex<JObject>(keys.Take(splitIndex).ToArray());
-        foreach (var x in fh ?? new())
-        {
-            if (x.Key is "$override") //search override last
-                continue;
-            keys[splitIndex] = x.Key;
-            T res = dex.ReadDataDex<T>(keys);
-            if ((value is null && res is null) || value is not null && value.Equals(res))
-                return x.Key; //match found
-        }
-        keys[splitIndex] = "$x"; //put $x back in split index
-
-        // no local key found, look for possible override
-        if (fh?.ContainsKey("$override") is true) //search override if it exists
-        {
-            List<string> remote_keys = new(fh["$override"].ToObject<string[]>());
-            remote_keys.AddRange(keys.Skip(splitIndex));
-            return dex.SearchDataDex(value, remote_keys.ToArray());
-        }
-        return null; //no match
-    }
-
-    /// <summary>
-    /// Checks if <paramref name="format"/> exists in the "Exists in" array
-    /// at the location given by <paramref name="keys"/> in <paramref name="dex"/>.
-    /// </summary>
-    /// <param name="format">The format whose indices are to be checked.</param>
-    /// <returns>Whether or not the object at the given location exists in the given format.</returns>
-    /// <inheritdoc cref="ReadDataDex{T}(JObject, string[])"/>
-    public static bool ExistsIn(this JObject dex, string format, params string[] keys)
-    {
-        string[] arr = dex.ReadDataDex<string[]>(keys.Append("Exists in").ToArray());
-        if (arr is null)
-            return false;
-        return Array.Exists(arr, x => x.EqualsCaseInsensitive(format));
-    }
-
-    // Common GetIndex code, that allows inner looping of keys (e.g. species combos) and outer looping of formats (e.g. pk3 -> main-series)
-    private static T GetIndexedValue<T>(this JObject dex, string format, IEnumerable<List<string>> other_keys)
-    {
-        List<string> indexChain = DDM.GetIndexChain(format);
-        foreach (string link in indexChain)
-        {
-            foreach (var keys in other_keys)
-            {
-                List<string> temp = new(keys) { link };
-                T index = dex.ReadDataDex<T>(temp.ToArray());
-                if (index is not null)
-                    return index;
-            }
-        }
-        return default;
-    }
-
 
     /* ------------------------------------
      * SpeciesDex Methods
      * ------------------------------------
     */
     /// <summary>
-    /// A data structure representing a particular type of Pokémon under the
-    /// pku indexing system (i.e. a species, form, and appearance).
-    /// </summary>
-    public readonly struct SFA
-    {
-        /// <summary>
-        /// A pku species (e.g. "Pikachu")
-        /// </summary>
-        public readonly string Species;
-
-        /// <summary>
-        /// A searchable pku form (e.g. "", or "Origin", or "Galarian|Zen Mode")
-        /// </summary>
-        public readonly string Form;
-
-        /// <summary>
-        /// A searchable pku appearance (e.g. null or "Sinnoh Cap")
-        /// </summary>
-        public readonly string Appearance;
-
-        /// <summary>
-        /// Whether or not to use the male or female value in the case of a gender-split.
-        /// </summary>
-        public readonly bool IsFemale;
-
-        public SFA(string species, string form, string appearance, bool isFemale)
-        {
-            Species = species;
-            Form = form ?? GetDefaultForm(species); //null form is default form
-            Appearance = appearance;
-            IsFemale = isFemale;
-        }
-
-        public SFA(string species, string[] forms, string[] appearances, bool isFemale)
-        {
-            Species = species;
-            Form = forms.JoinLexical() ?? GetDefaultForm(species); //null form is default form
-            Appearance = appearances.JoinLexical();
-            IsFemale = isFemale;
-        }
-
-        public static implicit operator SFA(pkuObject pku)
-            => new(pku.Species.Value, pku.Forms.Value, pku.Appearance.Value, pku.Gender.ToEnum<Gender>() is Gender.Female);
-    }
-
-    /// <summary>
-    /// Gets a list of all form names the given <paramref name="sfa"/> can be casted to, starting with its current form.<br/>
-    /// Null and empty form arrays are treated as default forms.
-    /// </summary>
-    /// <param name="sfa">An SFA.</param>
-    /// <returns>A list of all forms the given <paramref name="sfa"/> can be casted to.</returns>
-    public static List<string> GetCastableForms(this SFA sfa)
-    {
-        List<string> castableFormList = new() { sfa.Form };
-        castableFormList.AddRange(SPECIES_DEX.ReadDataDex<List<string>>(
-            sfa.Species, "Forms", sfa.Form, "Castable to"
-        ) ?? new List<string>());
-        return castableFormList;
-    }
-
-    /// <summary>
     /// Enumerates all the different subsets of appearances
-    /// of the given <paramref name="sfa"/>'s appearance.<br/>
+    /// of the given <paramref name="sfam"/>'s appearance.<br/>
     /// This method enumerates the appearance combos in the canonical order.
     /// </summary>
-    /// <param name="sfa">An SFA.</param>
-    /// <returns>An enumerator of <paramref name="sfa"/>'s different appearance combinations.</returns>
-    private static IEnumerable<string> GetSearchableAppearances(this SFA sfa)
+    /// <param name="sfam">An SFA.</param>
+    /// <returns>An enumerator of <paramref name="sfam"/>'s different appearance combinations.</returns>
+    private static IEnumerable<string> GetSearchableAppearances(this SFAM sfam)
     {
-        string[] appList = sfa.Appearance.SplitLexical();
+        string[] appList = sfam.Appearance.SplitLexical();
         if (appList is not null)
         {
             int effectiveSize = appList.Length > 10 ? 10 : appList.Length;
@@ -227,21 +98,12 @@ public static class DexUtil
         yield return null; //no appearance
     }
 
-    /// <summary>
-    /// Searches for the the default form of the given species.<br/>
-    /// If the default form is unnamed (e.g. Bulbasaur) then the empty string will be returned.
-    /// </summary>
-    /// <param name="species">The species whose default form is to be retrieved.</param>
-    /// <returns>The default form for this species or, if none found, the empty string.</returns>
-    public static string GetDefaultForm(string species)
-        => SPECIES_DEX.ReadDataDex<string>(species, "Default Form") ?? "";
-
     // Iterates through each possible appearance, returning every combo of key prefixes for species/form/appearances.
     // Used to search through the SpeciesDex.
-    private static IEnumerable<List<string>> GetSearchablePKUCombos(this SFA sfa)
+    private static IEnumerable<List<string>> GetSearchablePKUCombos(this SFAM sfam)
     {
-        var apps = sfa.GetSearchableAppearances();
-        List<string> keys = new() { sfa.Species, "Forms", sfa.Form, "Appearance", null };
+        var apps = sfam.GetSearchableAppearances();
+        List<string> keys = new() { sfam.Species, "Forms", sfam.Form, "Appearance", null };
         foreach (string app in apps)
         {
             if (app is null)
@@ -250,18 +112,18 @@ public static class DexUtil
                 keys[4] = app;
             yield return keys;
         }
-        yield return new() { sfa.Species }; //all forms/appearnces failed, try base species.
+        yield return new() { sfam.Species }; //all forms/appearnces failed, try base species.
     }
 
     /// <summary>
-    /// Like <see cref="ReadDataDex{T}(JObject, string[])"/> but specifically for the <see cref="SPECIES_DEX"/>.<br/>
+    /// Like <see cref="ReadDataDex{T}(JObject, string[])"/> but specifically for SpeciesDexes.<br/>
     /// Searches through the appearances, form(s), then species of a species entry with the given keys.
     /// </summary>
-    /// <param name="sfa">The pku whose species/form/appearance is to be used.</param>
+    /// <param name="sfam">The pku whose species/form/appearance is to be used.</param>
     /// <inheritdoc cref="ReadDataDex{T}(JObject, string[])"/>
-    public static T ReadSpeciesDex<T>(this JObject dex, SFA sfa, params string[] keys)
+    public static T ReadSpeciesDex<T>(this JObject dex, SFAM sfam, params string[] keys)
     {
-        var combos = sfa.GetSearchablePKUCombos();
+        var combos = sfam.GetSearchablePKUCombos();
         foreach (var combo in combos)
         {
             combo.AddRange(keys);
@@ -272,131 +134,9 @@ public static class DexUtil
             {
                 T[] objArr = dex.ReadDataDex<T[]>(combo.ToArray());
                 if (objArr?.Length == 2) //two values, one for each gender
-                    return objArr[Convert.ToInt32(sfa.IsFemale)];
+                    return objArr[Convert.ToInt32(sfam.IsFemale)];
             }
         }
         return default;
-    }
-
-    /// <inheritdoc cref="ReadSpeciesDex{T}(JObject, SFA, string[])"/>
-    public static T ReadSpeciesDex<T>(SFA sfa, params string[] keys)
-        => ReadSpeciesDex<T>(SPECIES_DEX, sfa, keys);
-
-    /// <summary>
-    /// Searches the <see cref="SPECIES_DEX"/> for the first castable form of the pku that exists in the given format.<br/>
-    /// The priority order being : original -> casted -> default (if allowed).
-    /// </summary>
-    /// <param name="sfa">The pku whose species/form is to be searched.</param>
-    /// <param name="format">The desired format.</param>
-    /// <param name="allowCasting">Whether or not to include castable forms.</param>
-    /// <param name="allowDefault">Whether or not to include the default form (essentially casting to it).</param>
-    /// <returns>The first form found to exist in the format, or <see langword="null"/> if no form exists.</returns>
-    public static string FirstFormInFormat(this SFA sfa, string format, bool allowCasting, bool allowDefault)
-    {
-        string defaultForm = GetDefaultForm(sfa.Species);
-
-        List<string> forms = new() { sfa.Form };
-        if (allowCasting)
-            forms.AddRange(GetCastableForms(sfa));
-        if (allowDefault && !forms.Contains(defaultForm))
-            forms.Add(defaultForm);
-
-        var combos = sfa.GetSearchablePKUCombos();
-        foreach(string form in forms)
-        {
-            foreach (var combo in combos)
-            {
-                if(combo.Count > 2)
-                    combo[2] = form; // 0: species, 1: "Form", 2: form
-                if (SPECIES_DEX.ExistsIn(format, combo.ToArray()))
-                    return form;
-            }
-        }
-        return null; //pku combo not found
-    }
-
-    /// <summary>
-    /// Searches through the appearances, form(s), then species of a species entry with the given keys.
-    /// </summary>
-    /// <param name="sfa">The SFA to search through.</param>
-    public static T GetSpeciesIndexedValue<T>(SFA sfa, string format, params string[] keys)
-    {
-        var combos = sfa.GetSearchablePKUCombos();
-        IEnumerable<List<string>> temp()
-        {
-            foreach(var combo in combos)
-            {
-                combo.AddRange(keys);
-                yield return combo;
-            }
-        }
-        
-        T val = SPECIES_DEX.GetIndexedValue<T>(format, temp());
-        if (val is not null)
-            return val;
-        else //try gender split
-        {
-            T[] valArr = SPECIES_DEX.GetIndexedValue<T[]>(format, temp());
-            if (valArr?.Length == 2) //two values, one for each gender
-                return valArr[Convert.ToInt32(sfa.IsFemale)];
-        }
-        return default;
-    }
-
-    /// <summary>
-    /// Gets the SFA that corresponds to the given species, form, and appearance indices for the given
-    /// <paramref name="format"/>. If any index is null, it will be ignored in the search.<br/>
-    /// Basically maps from a format's indexing system to project pku's.
-    /// </summary>
-    /// <typeparam name="T">The nullable type of the index (e.g. int?, string).</typeparam>
-    /// <param name="format">The format to map the indices from.</param>
-    /// <param name="speciesID">The index of the species.</param>
-    /// <param name="formID">The index of the form.</param>
-    /// <param name="isFemale">Whether to use the male or female value in the case of a gender-split.</param>
-    /// <param name="appearanceID">The index of the appearance.</param>
-    /// <returns>The SFA corresponding to the given indices. The SFA will have all null entries if no match is found.</returns>
-    public static SFA GetSFAFromIndices<T>(string format, T speciesID, T formID, bool isFemale, T appearanceID = default)
-    {
-        if (speciesID is null)
-            return new();
-
-        bool matchFound(SFA sfa)
-        {
-            List<string> keys = new(){ sfa.Species, "Forms", sfa.Form };
-            if (sfa.Appearance is not null)
-            {
-                keys.Add("Appearances");
-                keys.Add(sfa.Appearance);
-            }
-            return SPECIES_DEX.ExistsIn(format, keys.ToArray()) &&
-                GetSpeciesIndexedValue<T>(sfa, format, "Indices").Equals(speciesID) &&
-                (formID is null || GetSpeciesIndexedValue<T>(sfa, format, "Form Indices").Equals(formID)) &&
-                (appearanceID is null || GetSpeciesIndexedValue<T>(sfa, format, "Appearance Indices").Equals(appearanceID));
-        }
-
-        foreach (var species in SPECIES_DEX)
-        {
-            if ((species.Value as JObject).ContainsKey("Forms"))
-            {
-                JObject formsObj = species.Value["Forms"] as JObject;
-                foreach (var form in formsObj)
-                {
-                    if ((form.Value as JObject).ContainsKey("Appearances"))
-                    {
-                        JObject appsObj = form.Value["Appearances"] as JObject;
-                        foreach (var app in appsObj)
-                        {
-                            SFA sfa1 = new(species.Key, form.Key, app.Key, isFemale);
-                            if (matchFound(sfa1))
-                                return sfa1;
-                        }
-                    }
-                    SFA sfa2 = new(species.Key, form.Key, null, isFemale);
-                    if (matchFound(sfa2))
-                        return sfa2;
-                }
-            }
-        }
-        return new();
     }
 }

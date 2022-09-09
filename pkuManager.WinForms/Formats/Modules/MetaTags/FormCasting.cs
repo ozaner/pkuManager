@@ -1,38 +1,65 @@
-﻿using pkuManager.WinForms.Alerts;
+﻿using pkuManager.Data;
+using pkuManager.Data.Dexes;
+using pkuManager.WinForms.Alerts;
 using pkuManager.WinForms.Formats.pku;
 using pkuManager.WinForms.Utilities;
-using System.Linq;
 using static pkuManager.WinForms.Formats.PorterDirective;
 
 namespace pkuManager.WinForms.Formats.Modules.MetaTags;
+
+public static class FormCastingUtil
+{
+    public enum FormCastStatus
+    {
+        DNE,
+        No_Cast_Needed,
+        Casted,
+        Casted_to_Default
+    }
+
+    public static (FormCastStatus fcs, string form) GetCastedForm(SFAM sfam, string format, bool allowDefault)
+    {
+        if (DDM.SFAMExists(sfam, format)) //form exists, no need to cast
+            return (FormCastStatus.No_Cast_Needed, sfam.Form);
+
+        //try castable forms
+        SFAM testSFAM = new(sfam.Species, sfam.Form, sfam.Appearance, sfam.IsFemale);
+        foreach (var form in DDM.GetCastableForms(sfam))
+        {
+            testSFAM.Form = form;
+            if (DDM.SFAMExists(testSFAM, format))
+                return (FormCastStatus.Casted, form);
+        }
+
+        //try default form if allowed
+        if (allowDefault)
+        {
+            testSFAM.Form = DDM.GetDefaultForm(sfam.Species);
+            if (DDM.SFAMExists(testSFAM, format))
+                return (FormCastStatus.Casted_to_Default, testSFAM.Form);
+        }
+
+        return (FormCastStatus.DNE, null); //no form exists
+    }
+}
 
 public interface FormCasting_E : Tag
 {
     [PorterDirective(ProcessingPhase.PreProcessing)]
     public void ApplyFormCasting()
     {
-        string form = DexUtil.FirstFormInFormat(pku, FormatName, true, GlobalFlags.Default_Form_Override);
-        if (form is null)
+        (var fcs, string form) = FormCastingUtil.GetCastedForm(pku, FormatName, GlobalFlags.Default_Form_Override);
+        
+        if (fcs is FormCastingUtil.FormCastStatus.DNE) //no form valid (shouldn't have gotten here then)
             throw new("FormCasting module should not have been run if this pku has no existant forms in this format.");
 
-        string originalForm = ((DexUtil.SFA)pku).Form;
-        if (form == originalForm) //no need to cast
-            return;
+        if (fcs is not FormCastingUtil.FormCastStatus.No_Cast_Needed) //cast occured
+        {
+            Notes.Add(GetFormCastingAlert(fcs is FormCastingUtil.FormCastStatus.Casted_to_Default,
+                pku.Forms.Value.ToFormattedString(), form.SplitLexical().ToFormattedString()));
 
-        //using a casted/default form
-        bool usingDefaultOverride = false;
-        var castableForms = DexUtil.GetCastableForms(pku);
-        string defaultForm = DexUtil.GetDefaultForm(pku.Species.Value);
-        if (castableForms.Any(x => x == form))
-            usingDefaultOverride = false;
-        else if (GlobalFlags.Default_Form_Override && form == defaultForm)
-            usingDefaultOverride = true;
-        else //this is impossible
-            throw new("There's something wrong with the this method or FirstFormInFormat if we got here...");
-
-        pku.Forms.Value = form.SplitLexical(); //cast form
-        Notes.Add(GetFormCastingAlert(usingDefaultOverride, originalForm.SplitLexical().ToFormattedString(),
-                form.SplitLexical().ToFormattedString()));
+            pku.Forms.Value = form.SplitLexical(); //cast form
+        }
     }
 
     protected static Alert GetFormCastingAlert(bool usingDefaultOverride, string originalForm, string castedForm)

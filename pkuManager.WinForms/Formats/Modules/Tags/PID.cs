@@ -3,6 +3,7 @@ using pkuManager.WinForms.Formats.Fields;
 using pkuManager.WinForms.Formats.Modules.Templates;
 using System.Collections.Generic;
 using System.Numerics;
+using static pkuManager.Data.Dexes.SpeciesDex;
 using static pkuManager.WinForms.Alerts.Alert;
 using static pkuManager.WinForms.Formats.PorterDirective;
 

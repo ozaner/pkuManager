@@ -34,7 +34,8 @@ public interface Ability_Slot_E : Tag
         Alert alert = null;
 
         Ability_Slot_O abilitySlotObj = Data as Ability_Slot_O;
-        string[] abilitySlots = DexUtil.GetSpeciesIndexedValue<string[]>(pku, FormatName, "Ability Slots"); //must exist
+        if (!DDM.TryGetAbilitySlots(pku, FormatName, out string[] abilitySlots))
+            throw new Exception($"DATA ERROR, ABILITY SLOTS DONT EXIST FOR '{pku.Species}' in FORMAT '{FormatName}'.");
         int getSlotNum(AbilitySlot slot) => abilitySlotObj.Slot_Mapping is null ? (int)slot : abilitySlotObj.Slot_Mapping[slot];
 
         //process ability slot w/ dummy
