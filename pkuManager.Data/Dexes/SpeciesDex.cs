@@ -225,6 +225,26 @@ public static class SpeciesDex
      * SpeciesDex Base Methods
      * ------------------------------------
     */
+    private static JsonElement UnwrapModifiedValue(ref JsonElement value, SFAM sfam)
+    {
+        while (true)
+        {
+            //check for modified value
+            if (value.ValueKind is JsonValueKind.Array)
+            {
+                var en = value.EnumerateArray().ToArray();
+                if (en.Length > 0 && en[0].ValueKind is JsonValueKind.String && en[0].GetString()!.StartsWith("$")) //is modifier
+                    if (sfam.Modifiers.TryGetValue(en[0].GetString()!, out int index)) //found modifier match
+                        value = en[index + 1];
+                    else //no modifier match, default to index 0
+                        value = en[0 + 1];
+            }
+            else //bare value
+                break; //done unwrapping
+        }
+        return value;
+    }
+
     private static bool TryGetSFAMValueBase<T>(Func<JsonElement, string[], (bool, JsonElement)> getValFunc,
         JsonElement root, SFAM sfam, out T value, params string[] keys) where T : notnull
     {
@@ -235,22 +255,14 @@ public static class SpeciesDex
             (bool success, JsonElement valueAsElement) = getValFunc(sfamRoot, keys);
             if (success)
             {
-                //check for modified value
-                if (valueAsElement.ValueKind is JsonValueKind.Array)
-                {
-                    var en = valueAsElement.EnumerateArray().ToArray();
-                    if (en.Length > 0 && en[0].ValueKind is JsonValueKind.String && en[0].GetString()!.StartsWith("$")) //modifier
-                        if (sfam.Modifiers.TryGetValue(en[0].GetString()!, out int index)) //found modifier match
-                            valueAsElement = en[index + 1];
-                        else //no modifier match, default to index 0
-                            valueAsElement = en[0 + 1];
-                }
+                //unwrap value
+                UnwrapModifiedValue(ref valueAsElement, sfam);
 
                 //try casting value
                 try
                 {
-                    value = valueAsElement.Deserialize<T>()!; //cannot be null because of previous check
-                    return true;
+                    value = valueAsElement.Deserialize<T>()!;
+                    return value is not null; //null means value DNE
                 }
                 catch { return false; } //type mismatch, return false
             }

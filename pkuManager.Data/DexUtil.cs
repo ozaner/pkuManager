@@ -32,7 +32,7 @@ internal static class DexUtil
         try
         {
             value = currentNode.Deserialize<T>()!; //cannot be null because of previous check
-            return true;
+            return value is not null; //null means value DNE
         }
         catch { return false; } //type mismatch, return false
     }
