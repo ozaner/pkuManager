@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualBasic.FileIO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using pkuManager.Data;
 using pkuManager.Data.Dexes;
 using pkuManager.WinForms.Formats.Fields;
 using pkuManager.WinForms.Formats.Fields.LambdaFields;
@@ -492,7 +493,8 @@ public class pkuBox : Box
     {
         pkuObject pku = pkmn as pkuObject;
         string defaultName = TagUtil.GetDefaultName(pku, pku.IsEgg(), pku.Game_Info.Language.Value);
-        var sprites = ImageUtil.GetSprites(pku);
+        var sprites = SDM.Get3Sprites(pku);
+
         Slot s = new(
             pku,
             sprites[0],

@@ -24,7 +24,8 @@ public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nat
                          Experience_O, Moves_O, PP_Ups_O, PP_O, Item_O, Ability_Slot_O, PID_O, TID_O,
                          Friendship_O, IVs_O, EVs_O, Contest_Stats_O, Ball_O, OT_O, Origin_Game_O,
                          Met_Location_O, Met_Level_O, OT_Gender_O, Language_O, Fateful_Encounter_O,
-                         Markings_O, Ribbons_O, Is_Egg_O, Egg_Steps_O, Pokerus_O, ByteOverride_O
+                         Markings_O, Ribbons_O, Is_Egg_O, Egg_Steps_O, Pokerus_O, ByteOverride_O,
+                         IModifiers
 {
     public override string FormatName => "pk3";
 
@@ -146,7 +147,8 @@ public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nat
         Shiny = new(() => TagUtil.IsPIDShiny(PID.GetAs<uint>(), TID.GetAs<uint>(), Shiny_Gen6Odds), _ => { });
         Gender = new(() => {
             //deoxys, castform, and unown forms keep same gender ratio, no need to check those forms specifically.
-            if (DDM.TryGetSFAMFromIDs<int?>(out SFAM sfam, FormatName, Species.GetAs<int>(), null, null, false))
+            //no need to take into account any mods, bc gender ratio in these games is species dependent only
+            if (!DDM.TryGetSFAMFromIDs<int?>(out SFAM sfam, FormatName, Species.GetAs<int>(), null, null, new HashSet<string>()))
                 return TagEnums.Gender.Genderless; //this pk3 has an undefined SFAM
             else
             {
@@ -431,6 +433,15 @@ public class pk3Object : FormatObject, Species_O, Form_O, Shiny_O, Gender_O, Nat
 
     public bool IsBadEggOrInvalidChecksum
         => Is_Bad_Egg.ValueAsBool || Checksum.Value != CalculateChecksum();
+
+
+    /* ------------------------------------
+     * SFAM Implementation
+     * ------------------------------------
+    */
+    bool IModifiers.Female => Gender.Value is TagEnums.Gender.Female;
+    bool IModifiers.Shiny => Shiny.Value is true;
+    bool IModifiers.Egg => Is_Egg.ValueAsBool;
 
 
     /* ------------------------------------

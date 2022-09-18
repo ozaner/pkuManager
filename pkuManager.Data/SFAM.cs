@@ -12,24 +12,20 @@ public struct SFAM
     public string Species;
 
     /// <summary>
-    /// A normalized pku form (e.g. "", or "Origin", or "Galarian|Zen Mode")
+    /// A normalized pku form (e.g. "", "Origin", "Galarian|Zen Mode")
     /// </summary>
     public string Form;
 
     /// <summary>
-    /// A normalized pku appearance (e.g. null or "Sinnoh Cap")
+    /// A normalized pku appearance (e.g. "Kabuki Trim", "Sinnoh Cap")<br/>
+    /// Note that empty appearances are denoted by "".
     /// </summary>
     public string Appearance;
 
     /// <summary>
-    /// Modifiers on the pku index (e.g. male-female, shiny-fusion-partner).
+    /// Modifiers on the pku index (e.g. "Female", "Shadow", "Egg", etc.).
     /// </summary>
-    public Dictionary<string, int> Modifiers = new();
-
-    /// <summary>
-    /// A short-hand for telling if <see cref="Modifiers"/> contains the M/F split with index 1 (female).
-    /// </summary>
-    public bool IsFemale => Modifiers.TryGetValue("$Male-Female", out int val) && val is 1;
+    public HashSet<string> Modifiers = new();
 
     /// <summary>
     /// Constructs an SFAM with the given parameters.
@@ -37,14 +33,33 @@ public struct SFAM
     /// <param name="species">The species.</param>
     /// <param name="form">The searchable form, delimited with '|' characters.</param>
     /// <param name="appearance">The searchable appearance, delimited with '|' characters.</param>
-    /// <param name="isFemale">Whether this SFAM has the M/F split with index = 1 (female).</param>
-    public SFAM(string species, string form, string appearance, bool isFemale)
+    /// <param name="modifiers">A list of SFAM modifiers in no particular order (e.g. "Female", "Shiny").</param>
+    public SFAM(string species, string form, string appearance, HashSet<string> modifiers)
     {
         Species = species;
         Form = form;
         Appearance = appearance;
+        Modifiers.UnionWith(modifiers);
+    }
 
-        if (isFemale)
-            Modifiers.Add("$Male-Female", 1);
+    public SFAM(string species, string form, string appearance, IModifiers modObj)
+        : this(species, form, appearance, modObj.GetModifiers()) { }
+}
+
+public interface IModifiers
+{
+    bool Female => false;
+    bool Shiny => false;
+    bool Shadow => false;
+    bool Egg => false;
+
+    public HashSet<string> GetModifiers()
+    {
+        HashSet<string> hs = new();
+        if (Female) hs.Add("Female");
+        if (Shiny) hs.Add("Shiny");
+        if (Shadow) hs.Add("Shadow");
+        if (Egg) hs.Add("Egg");
+        return hs;
     }
 }

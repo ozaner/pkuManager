@@ -18,7 +18,7 @@ using System.Text;
 namespace pkuManager.WinForms.Formats.pku;
 
 [JsonObject(MemberSerialization.OptIn)]
-public class pkuObject : FormatObject
+public class pkuObject : FormatObject, IModifiers
 {
     public override string FormatName => "pku";
 
@@ -334,14 +334,21 @@ public class pkuObject : FormatObject
 
 
     /* ------------------------------------
-     * Misc. Util
+     * SFAM Implementation
      * ------------------------------------
     */
     public static implicit operator SFAM(pkuObject pku)
-        => new (pku.Species.Value ?? "",
+    {
+        return new(pku.Species.Value ?? "",
                 pku.Forms.IsNull() ? "" : pku.Forms.Value.JoinLexical(),
                 pku.Appearance.IsNull() ? "" : pku.Appearance.Value.JoinLexical(),
-                pku.Gender.ToEnum<Gender>() is TagEnums.Gender.Female);
+                pku); //implements IModifiers
+    }
+
+    bool IModifiers.Female => Gender.ToEnum<Gender>() is TagEnums.Gender.Female;
+    bool IModifiers.Shiny => IsShiny();
+    bool IModifiers.Egg => IsEgg();
+    bool IModifiers.Shadow => IsShadow();
 
 
     /* ------------------------------------

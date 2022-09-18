@@ -25,7 +25,7 @@ public static class SpeciesDex
     /// <returns>An array of all forms the given <paramref name="sfam"/> can be casted to.</returns>
     public static string[] GetCastableForms(this DataDexManager ddm, SFAM sfam)
     {
-        if (SDR(ddm).TryGetValue(out string[] readForms, sfam.Species, "Forms", sfam.Form, "Castable to"))
+        if (SDR(ddm).TryGetModifiedValue(sfam, out string[] readForms, sfam.Species, "Forms", sfam.Form, "Castable to"))
             return readForms;
         return Array.Empty<string>();
     }
@@ -126,7 +126,7 @@ public static class SpeciesDex
     public static bool SFAMExists(this DataDexManager ddm, SFAM sfam, string format)
     {
         foreach (var sfamRoot in SDR(ddm).GetSFAMRoots(sfam))
-            if (sfamRoot.TryGetValue(out string[] formats, "Exists in") && Array.Exists(formats, x => x == format))
+            if (sfamRoot.TryGetModifiedValue(sfam, out string[] formats, "Exists in") && Array.Exists(formats, x => x == format))
                 return true;
         return false; //no match
     }
@@ -145,7 +145,7 @@ public static class SpeciesDex
     /// <param name="sfam">The <see cref="SFAM"/> corresponding to the given indices in <paramref name="format"/>, if found.</param>
     /// <returns>Whther or not an <paramref name="sfam"/> was found.</returns>
     public static bool TryGetSFAMFromIDs<T>(this DataDexManager ddm, out SFAM sfam, string format,
-        T speciesID, T? formID, T? appID, bool isFemale) where T : notnull
+        T speciesID, T? formID, T? appID, HashSet<string> modifiers) where T : notnull
     {
         bool doesSFAMMatch(SFAM sfam)
         {
@@ -158,7 +158,7 @@ public static class SpeciesDex
             return false; //species doesn't even exist
         }
 
-        sfam = new(null!, null!, "", isFemale);
+        sfam = new(null!, null!, "", modifiers);
         foreach (var speciesProp in SDR(ddm).EnumerateObject()) //for all species
         {
             sfam.Species = speciesProp.Name;
@@ -185,15 +185,19 @@ public static class SpeciesDex
         return false; //no form matched
     }
 
+    public static bool TryGetSFAMFromIDs<T>(this DataDexManager ddm, out SFAM sfam, string format,
+        T speciesID, T? formID, T? appID, IModifiers modObj) where T : notnull
+        => ddm.TryGetSFAMFromIDs(out sfam, format, speciesID, formID, appID, modObj.GetModifiers());
+
 
     /* ------------------------------------
      * Species Related Enums
      * ------------------------------------
     */
-    /// <summary>
-    /// An EXP growth type a Pokémon species can have.
-    /// Index numbers correspond to those used in the official games.
-    /// </summary>
+        /// <summary>
+        /// An EXP growth type a Pokémon species can have.
+        /// Index numbers correspond to those used in the official games.
+        /// </summary>
     public enum GrowthRate
     {
         Erratic = 0,
@@ -225,56 +229,83 @@ public static class SpeciesDex
      * SpeciesDex Base Methods
      * ------------------------------------
     */
-    private static JsonElement UnwrapModifiedValue(ref JsonElement value, SFAM sfam)
+    private static bool TryGetModifiedValue<T>(this JsonElement root, SFAM sfam, out T value, params string[] keys) where T : notnull
     {
-        while (true)
+        value = default!; //shouldn't use this value if false returned anyway...
+
+        var currentNode = root;
+        foreach (string key in keys)
         {
-            //check for modified value
-            if (value.ValueKind is JsonValueKind.Array)
+            //null keys & explicit usage of '$' is invalid
+            if (key is null || key.IndexOf('$') != -1)
+                return false;
+
+            //try unmodified key
+            if (currentNode.TryGetProperty(key, out var tempNode))
+                currentNode = tempNode; //found & using unmodified key
+
+            //try modified key
+            else if (currentNode.TryGetProperty($"{key}$", out currentNode))
             {
-                var en = value.EnumerateArray().ToArray();
-                if (en.Length > 0 && en[0].ValueKind is JsonValueKind.String && en[0].GetString()!.StartsWith("$")) //is modifier
-                    if (sfam.Modifiers.TryGetValue(en[0].GetString()!, out int index)) //found modifier match
-                        value = en[index + 1];
-                    else //no modifier match, default to index 0
-                        value = en[0 + 1];
+                bool unmodifiedFound = false;
+                while (!unmodifiedFound) //inside modified context
+                {
+                    foreach (var modProp in currentNode.EnumerateObject()) //modifiers are presorted in priority order
+                    {
+                        string trueName = modProp.Name.Replace("$", "");
+
+                        //first modifier that applies
+                        if (sfam.Modifiers.Contains(trueName) || trueName is "")
+                        {
+                            currentNode = modProp.Value;
+                            unmodifiedFound = !modProp.Name.EndsWith('$'); //val is fully unwrapped, break out of while
+                            break; //modifier found, keep unwrapping
+                        }
+                    }
+                }
             }
-            else //bare value
-                break; //done unwrapping
+            else return false; //key DNE (modified or not)
         }
-        return value;
+
+        if (currentNode.ValueKind is JsonValueKind.Null)
+            return false;
+
+        try
+        {
+            value = currentNode.Deserialize<T>()!; //cannot be null because of previous check
+            return value is not null; //null means value DNE
+        }
+        catch { return false; } //type mismatch, return false
     }
 
-    private static bool TryGetSFAMValueBase<T>(Func<JsonElement, string[], (bool, JsonElement)> getValFunc,
-        JsonElement root, SFAM sfam, out T value, params string[] keys) where T : notnull
+    internal static bool TryGetSFAMValue<T>(this JsonElement root, SFAM sfam, out T value, params string[] keys) where T : notnull
     {
         value = default!; //shouldn't use this value if false returned anyway...
 
         foreach (JsonElement sfamRoot in root.GetSFAMRoots(sfam))
         {
-            (bool success, JsonElement valueAsElement) = getValFunc(sfamRoot, keys);
-            if (success)
-            {
-                //unwrap value
-                UnwrapModifiedValue(ref valueAsElement, sfam);
-
-                //try casting value
-                try
-                {
-                    value = valueAsElement.Deserialize<T>()!;
-                    return value is not null; //null means value DNE
-                }
-                catch { return false; } //type mismatch, return false
-            }
+            if (sfamRoot.TryGetModifiedValue(sfam, out value, keys))
+                return true; //match found, we're done
         }
         return false; //no matches
     }
 
-    private static bool TryGetSFAMValue<T>(this JsonElement root, SFAM sfam, out T value, params string[] keys) where T : notnull
-        => TryGetSFAMValueBase((r, k) => (DexUtil.TryGetValue(r, out JsonElement je, k), je), root, sfam, out value, keys);
-
     private static bool TryGetSFAMIndexedValue<T>(this JsonElement root, SFAM sfam, List<string> indexNames, out T value, params string[] keys) where T : notnull
-        => TryGetSFAMValueBase((r, k) => (DexUtil.TryGetIndexedValue(r, indexNames, out JsonElement je, k), je), root, sfam, out value, keys);
+    {
+        value = default!; //shouldn't use this value if false returned anyway...
+
+        foreach (JsonElement sfamRoot in root.GetSFAMRoots(sfam))
+        {
+            if (!sfamRoot.TryGetModifiedValue(sfam, out JsonElement indexedRoot, keys))
+                continue; //keys don't even point anywhere
+
+            //Try each index, in order
+            foreach (string index in indexNames)
+                if (indexedRoot.TryGetModifiedValue(sfam, out value, new[] { index }))
+                    return true; //index found
+        }
+        return false; //no matches
+    }
 
     private static IEnumerable<JsonElement> GetSFAMRoots(this JsonElement root, SFAM sfam)
     {

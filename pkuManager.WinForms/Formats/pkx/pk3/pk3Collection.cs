@@ -5,7 +5,6 @@ using pkuManager.WinForms.Formats.Fields.BAMFields;
 using pkuManager.WinForms.Formats.Modules;
 using pkuManager.WinForms.Formats.Modules.Templates;
 using pkuManager.WinForms.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using static pkuManager.Data.Dexes.SpeciesDex;
@@ -239,20 +238,6 @@ public class pk3Box : Box
             _ => 0
         };
 
-        //get SFA
-        if (DDM.TryGetSFAMFromIDs<int?>(out SFAM sfam, "pk3", pk3.Species.GetAs<int>(), form, null, false)) //get male SFA
-        {
-            //get gender ratio
-            if (!DDM.TryGetGenderRatio(sfam, out GenderRatio gr))
-                throw new Exception($"SPECIES '{sfam.Species}' HAS INVALID GENDERRATIO.");
-            bool female = gr is GenderRatio.All_Female ||
-                          gr is not GenderRatio.All_Male or GenderRatio.All_Genderless
-                          && (int)gr > pk3.PID.Value % 256;
-
-            //gender determined, now get true SFA (must exist if male one existed)
-            DDM.TryGetSFAMFromIDs<int?>(out sfam, "pk3", pk3.Species.GetAs<int>(), form, null, female);
-        }
-
         //get lang
         if (!DDM.TryGetLanguageName(FormatName, out string lang, pk3.Language.Value))
             lang = IsJapanese ? "Japanese" : "English"; //fall back on jpn/eng
@@ -271,16 +256,11 @@ public class pk3Box : Box
             TagUtil.EGG_NICKNAME.TryGetValue(lang, out string eggName);
             nick = eggName.ToUpperInvariant();
         }
-
-        //get sprites
-        bool shiny = TagUtil.IsPIDShiny(pk3.PID.GetAs<uint>(), pk3.TID.GetAs<uint>(), false);
-        var sprites = ImageUtil.GetSprites(sfam, shiny, pk3.Is_Egg.ValueAsBool || pk3.IsBadEggOrInvalidChecksum);
-
-        //get ball
-        DDM.TryGetBallName("pk3", out string ball, pk3.Ball.GetAs<int>());
-
-        //get game
-        DDM.TryGetGameName(FormatName, out string game, pk3.Origin_Game.GetAs<int>());
+         
+        DDM.TryGetSFAMFromIDs<int?>(out SFAM sfam, "pk3", pk3.Species.GetAs<int>(), form, null, pk3); //get SFAM
+        var sprites = SDM.Get3Sprites(sfam); //get sprites
+        DDM.TryGetBallName("pk3", out string ball, pk3.Ball.GetAs<int>()); //get ball
+        DDM.TryGetGameName(FormatName, out string game, pk3.Origin_Game.GetAs<int>()); //get game
 
         return new(
             pk3,

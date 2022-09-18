@@ -23,7 +23,7 @@ public static class FormCastingUtil
             return (FormCastStatus.No_Cast_Needed, sfam.Form);
 
         //try castable forms
-        SFAM testSFAM = new(sfam.Species, sfam.Form, sfam.Appearance, sfam.IsFemale);
+        SFAM testSFAM = new(sfam.Species, sfam.Form, sfam.Appearance, sfam.Modifiers);
         foreach (var form in DDM.GetCastableForms(sfam))
         {
             testSFAM.Form = form;

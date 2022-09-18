@@ -64,19 +64,18 @@ public interface SFA_I : Tag
     public void ImportSFA()
     {
         bool isString = (Data as Species_O).Species.IsT1;
-        bool isFemale = (Data as Gender_O)?.Value is Gender.Female;
         SFAM sfam;
         if (isString) //string indices
         {
             string speciesID = (Data as Species_O).Species.AsT1.Value;
             string formID = Data is Form_O formObj ? formObj.Form.AsT1.Value : null;
-            DDM.TryGetSFAMFromIDs(out sfam, FormatName, speciesID, formID, null, isFemale);
+            DDM.TryGetSFAMFromIDs(out sfam, FormatName, speciesID, formID, null, Data as IModifiers);
         }
         else //int indices
         {
             int speciesID = (Data as Species_O).Species.AsT0.GetAs<int>();
             int? formID = Data is Form_O formObj ? formObj.Form.AsT0.GetAs<int>() : null;
-            DDM.TryGetSFAMFromIDs(out sfam, FormatName, speciesID, formID, null, isFemale);
+            DDM.TryGetSFAMFromIDs(out sfam, FormatName, speciesID, formID, null, Data as IModifiers);
         }
 
         pku.Species.Value = sfam.Species;

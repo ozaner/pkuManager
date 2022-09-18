@@ -12,6 +12,7 @@ namespace pkuManager.WinForms;
 public static class Registry
 {
     public static readonly DataDexManager DDM = new();
+    public static readonly SpriteDexManager SDM = new();
 
     public readonly struct FormatInfo
     {
