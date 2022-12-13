@@ -1,6 +1,7 @@
 ﻿global using static pkuManager.WinForms.Registry; //to give global scope to DDM
 
 using pkuManager.Data;
+using pkuManager.WinForms.Formats.essentials.uranium;
 using pkuManager.WinForms.Formats.pku;
 using pkuManager.WinForms.Formats.pkx.pk3;
 using pkuManager.WinForms.Formats.showdown;
@@ -34,6 +35,7 @@ public static class Registry
     {
         { "pku", new FormatInfo("pku", null, null, null, typeof(pkuCollection)) },
         { "pk3", new FormatInfo("pk3", "sav", typeof(pk3Importer), typeof(pk3Exporter), typeof(pk3Collection)) },
-        { "Showdown", new FormatInfo("txt", null, null, typeof(ShowdownExporter), null, true) }
+        { "Showdown", new FormatInfo("txt", null, null, typeof(ShowdownExporter), null, true) },
+        { "Uranium", new FormatInfo("pkeUranium", null, null, typeof(pkeUraniumExporter), null, true) }
     };
 }
