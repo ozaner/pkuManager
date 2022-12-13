@@ -59,9 +59,13 @@ public static class SpeciesSpriteDex
     private static bool TryGetSpriteBase(this SpriteDexManager sdm, SFAM sfam, out string url, out string author, string key)
     {
         url = author = null!; //shouldn't be used if false returned
-        if (!SDR(sdm).TryGetSFAMValue(sfam, out string[] temp, "Sprites", key))
+        if (!SDR(sdm).TryGetSFAMValue(sfam, out string[] temp, out List<string> usedMods, "Sprites", key))
             return false;
-        
+
+        //eggs w/ no egg sprite fail (so you should use default (egg) sprite)
+        if (sfam.Modifiers.Contains("Egg") && !usedMods.Contains("Egg"))
+            return false;
+
         //success (temp = [url, author])
         url = temp[0];
         author = temp[1];

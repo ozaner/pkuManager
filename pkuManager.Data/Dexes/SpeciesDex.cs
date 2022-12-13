@@ -229,9 +229,14 @@ public static class SpeciesDex
      * SpeciesDex Base Methods
      * ------------------------------------
     */
+    //ignore used modifiers
     private static bool TryGetModifiedValue<T>(this JsonElement root, SFAM sfam, out T value, params string[] keys) where T : notnull
+        => root.TryGetModifiedValue(sfam, out value, out _, keys);
+
+    private static bool TryGetModifiedValue<T>(this JsonElement root, SFAM sfam, out T value, out List<string> usedMods, params string[] keys) where T : notnull
     {
         value = default!; //shouldn't use this value if false returned anyway...
+        usedMods = new();
 
         var currentNode = root;
         foreach (string key in keys)
@@ -257,6 +262,7 @@ public static class SpeciesDex
                         //first modifier that applies
                         if (sfam.Modifiers.Contains(trueName) || trueName is "")
                         {
+                            usedMods.Add(trueName);
                             currentNode = modProp.Value;
                             unmodifiedFound = !modProp.Name.EndsWith('$'); //val is fully unwrapped, break out of while
                             break; //modifier found, keep unwrapping
@@ -278,13 +284,19 @@ public static class SpeciesDex
         catch { return false; } //type mismatch, return false
     }
 
+    //ignore used modifiers
     internal static bool TryGetSFAMValue<T>(this JsonElement root, SFAM sfam, out T value, params string[] keys) where T : notnull
+        => root.TryGetSFAMValue(sfam, out value, out _, keys);
+
+    internal static bool TryGetSFAMValue<T>(this JsonElement root, SFAM sfam, out T value, out List<string> usedMods, params string[] keys) where T : notnull
     {
-        value = default!; //shouldn't use this value if false returned anyway...
+        //shouldn't use these values if false returned anyway...
+        value = default!;
+        usedMods = default!;
 
         foreach (JsonElement sfamRoot in root.GetSFAMRoots(sfam))
         {
-            if (sfamRoot.TryGetModifiedValue(sfam, out value, keys))
+            if (sfamRoot.TryGetModifiedValue(sfam, out value, out usedMods, keys))
                 return true; //match found, we're done
         }
         return false; //no matches
