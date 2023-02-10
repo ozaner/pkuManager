@@ -12,8 +12,9 @@ namespace pkuManager.WinForms;
 
 public static class Registry
 {
-    public static readonly DataDexManager DDM = new();
-    public static readonly SpriteDexManager SDM = new();
+    //pkuData & pkuSprite builds as of September 26, 2022.
+    public static readonly DataDexManager DDM = new("e138b5dc0a024391992b6cdb667e308011365e63");
+    public static readonly SpriteDexManager SDM = new("a51d6b0f270c1a4cc0e2781690854d37730f5e66");
 
     public readonly struct FormatInfo
     {

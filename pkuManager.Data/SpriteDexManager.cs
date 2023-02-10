@@ -7,4 +7,8 @@ public class SpriteDexManager : DexManager
 {
     //Base URL of the https://github.com/project-pku/pkuSprite repo
     protected override string ONLINE_BASE_URL => "https://raw.githubusercontent.com/project-pku/pkuSprite";
+
+    public SpriteDexManager() : base() { }
+    public SpriteDexManager(string hash) : base(hash) { }
+    public SpriteDexManager(DirectoryInfo directory) : base(directory) { }
 }
